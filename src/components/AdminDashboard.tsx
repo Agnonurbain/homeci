@@ -50,6 +50,9 @@ export default function AdminDashboard() {
   const [filterPropStatus, setFilterPropStatus] = useState('');
   const [filterPropCity, setFilterPropCity] = useState('');
   const [sortProp, setSortProp] = useState<'date_desc'|'date_asc'|'price_asc'|'price_desc'>('date_desc');
+  const [filterModType, setFilterModType] = useState('');
+  const [sortMod, setSortMod] = useState<'date_desc'|'date_asc'|'price_asc'|'price_desc'>('date_desc');
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
   useEffect(() => { loadData(); }, []);
 
@@ -122,6 +125,18 @@ export default function AdminDashboard() {
   }, [properties, filterPropType, filterPropStatus, filterPropCity, sortProp]);
 
   const pendingProperties = properties.filter(p => p.status === 'pending');
+
+  const filteredPendingProperties = useMemo(() => {
+    let list = [...pendingProperties];
+    if (filterModType) list = list.filter(p => p.property_type === filterModType);
+    list.sort((a, b) => {
+      if (sortMod === 'price_asc')  return a.price - b.price;
+      if (sortMod === 'price_desc') return b.price - a.price;
+      if (sortMod === 'date_asc')   return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+    return list;
+  }, [pendingProperties, filterModType, sortMod]);
   const firstName = profile?.full_name?.split(' ')[0] || 'Admin';
 
   const TABS = [
@@ -557,54 +572,111 @@ export default function AdminDashboard() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {pendingProperties.map(p => (
-                  <div key={p.id} className="rounded-2xl overflow-hidden"
-                    style={{ background: HColors.white, border: `1px solid ${HAlpha.gold25}`, boxShadow: '0 2px 12px rgba(26,14,0,0.05)' }}>
-                    <div className="h-1" style={{ background: 'linear-gradient(90deg,#D4A017,#C07C3E)', opacity: 0.5 }} />
-                    <div className="flex items-start gap-4 p-5">
-                      {p.images?.[0] ? (
-                        <img src={p.images[0]} alt={p.title} className="w-20 h-20 rounded-xl object-cover shrink-0"
-                          style={{ border: `1px solid ${HAlpha.gold20}` }} />
-                      ) : (
-                        <div className="w-20 h-20 rounded-xl flex items-center justify-center shrink-0"
-                          style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold15}` }}>
-                          <Building2 className="w-7 h-7" style={{ color: HAlpha.gold30 }} />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold mb-2"
-                          style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
-                          {p.title}
-                        </h3>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs mb-3"
-                          style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                          <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Type : </span>{TYPE_LABELS[p.property_type] || p.property_type}</span>
-                          <span className="flex items-center gap-1"><MapPin className="w-3 h-3" style={{ color: HColors.terracotta }} />{p.city}</span>
-                          <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Prix : </span>{p.price.toLocaleString('fr-FR')} FCFA</span>
-                          <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Soumis : </span>{new Date(p.created_at).toLocaleDateString('fr-FR')}</span>
-                        </div>
-                        {p.description && (
-                          <p className="text-xs line-clamp-2"
-                            style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>{p.description}</p>
-                        )}
-                      </div>
-                      <div className="flex flex-col gap-2 shrink-0">
-                        <button onClick={() => approveProperty(p.id)}
-                          className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl transition-all hover:opacity-90"
-                          style={{ background: 'linear-gradient(135deg,#2D6A4F,#1A4F3A)', color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
-                          <CheckCircle className="w-3.5 h-3.5" /> Approuver
-                        </button>
-                        <button onClick={() => rejectProperty(p.id)}
-                          className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-xl transition-all hover:opacity-80"
-                          style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord25}`, color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
-                          <XCircle className="w-3.5 h-3.5" /> Rejeter
-                        </button>
-                      </div>
-                    </div>
+              <>
+                {/* ── Filtres modération ── */}
+                <div className="flex items-center gap-3 px-5 py-3.5 mb-4 flex-wrap rounded-2xl"
+                  style={{ background: 'rgba(249,243,232,0.7)', border: `1px solid ${HAlpha.gold15}` }}>
+
+                  <select value={filterModType} onChange={e => setFilterModType(e.target.value)}
+                    className="px-3 py-2 rounded-xl text-xs outline-none"
+                    style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
+                             color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                    <option value="">Tous les types</option>
+                    {Object.entries(TYPE_LABELS).map(([k, v]) => (
+                      <option key={k} value={k}>{v}</option>
+                    ))}
+                  </select>
+
+                  <select value={sortMod} onChange={e => setSortMod(e.target.value as typeof sortMod)}
+                    className="px-3 py-2 rounded-xl text-xs outline-none"
+                    style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
+                             color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                    <option value="date_desc">↓ Date (récent)</option>
+                    <option value="date_asc">↑ Date (ancien)</option>
+                    <option value="price_desc">↓ Prix (élevé)</option>
+                    <option value="price_asc">↑ Prix (bas)</option>
+                  </select>
+
+                  {filterModType && (
+                    <button onClick={() => setFilterModType('')}
+                      className="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs transition-all hover:opacity-80"
+                      style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}`,
+                               color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
+                      <XCircle className="w-3 h-3"/> Effacer
+                    </button>
+                  )}
+
+                  <span className="ml-auto text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                    {filteredPendingProperties.length} bien{filteredPendingProperties.length > 1 ? 's' : ''} en attente
+                  </span>
+                </div>
+
+                {filteredPendingProperties.length === 0 ? (
+                  <div className="rounded-2xl p-10 text-center"
+                    style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+                    <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                      Aucun bien ne correspond à ce filtre
+                    </p>
                   </div>
-                ))}
-              </div>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredPendingProperties.map(p => (
+                      <div key={p.id} className="rounded-2xl overflow-hidden"
+                        style={{ background: HColors.white, border: `1px solid ${HAlpha.gold25}`,
+                                 boxShadow: '0 2px 12px rgba(26,14,0,0.05)' }}>
+                        <div className="h-1" style={{ background: 'linear-gradient(90deg,#D4A017,#C07C3E)', opacity: 0.5 }} />
+                        <div className="flex items-start gap-4 p-5">
+                          {p.images?.[0] ? (
+                            <img src={p.images[0]} alt={p.title} className="w-20 h-20 rounded-xl object-cover shrink-0"
+                              style={{ border: `1px solid ${HAlpha.gold20}` }} />
+                          ) : (
+                            <div className="w-20 h-20 rounded-xl flex items-center justify-center shrink-0"
+                              style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold15}` }}>
+                              <Building2 className="w-7 h-7" style={{ color: HAlpha.gold30 }} />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold mb-2"
+                              style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
+                              {p.title}
+                            </h3>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs mb-3"
+                              style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                              <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Type : </span>{TYPE_LABELS[p.property_type] || p.property_type}</span>
+                              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" style={{ color: HColors.terracotta }} />{p.city}</span>
+                              <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Prix : </span>{p.price.toLocaleString('fr-FR')} FCFA</span>
+                              <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Soumis : </span>{new Date(p.created_at).toLocaleDateString('fr-FR')}</span>
+                            </div>
+                            {p.description && (
+                              <p className="text-xs line-clamp-2"
+                                style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>{p.description}</p>
+                            )}
+                          </div>
+                          <div className="flex flex-col gap-2 shrink-0">
+                            <button onClick={() => setSelectedProperty(p)}
+                              className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-xl transition-all hover:opacity-80"
+                              style={{ background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}`,
+                                       color: HColors.navy, fontFamily: 'var(--font-nunito)' }}>
+                              <Eye className="w-3.5 h-3.5" /> Voir détails
+                            </button>
+                            <button onClick={() => approveProperty(p.id)}
+                              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl transition-all hover:opacity-90"
+                              style={{ background: 'linear-gradient(135deg,#2D6A4F,#1A4F3A)', color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
+                              <CheckCircle className="w-3.5 h-3.5" /> Approuver
+                            </button>
+                            <button onClick={() => rejectProperty(p.id)}
+                              className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-xl transition-all hover:opacity-80"
+                              style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord25}`,
+                                       color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
+                              <XCircle className="w-3.5 h-3.5" /> Rejeter
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
@@ -614,7 +686,185 @@ export default function AdminDashboard() {
         {activeTab === 'admin-management' && <AdminManagement />}
       </div>
 
-      {/* ── Modal Détails Utilisateur ── */}
+      {/* ── Modal Détails Bien ── */}
+      {selectedProperty && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
+          style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}
+          onClick={() => setSelectedProperty(null)}>
+          <div className="w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
+            style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}
+            onClick={e => e.stopPropagation()}>
+            <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#D4A017,#C07C3E,#2D6A4F,#D4A017)' }}/>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4"
+              style={{ borderBottom: `1px solid ${HAlpha.gold10}` }}>
+              <div>
+                <h3 className="font-bold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.4rem' }}>
+                  {selectedProperty.title}
+                </h3>
+                <div className="flex items-center gap-2 mt-1">
+                  <PropertyStatusBadge status={selectedProperty.status} />
+                  <span className="text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                    {TYPE_LABELS[selectedProperty.property_type] || selectedProperty.property_type}
+                  </span>
+                </div>
+              </div>
+              <button onClick={() => setSelectedProperty(null)}
+                className="p-1.5 rounded-full hover:opacity-70 transition-all"
+                style={{ background: HAlpha.gold08, color: HColors.brown }}>
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scrollable body */}
+            <div className="overflow-y-auto p-6 space-y-5">
+
+              {/* Photos */}
+              {selectedProperty.images && selectedProperty.images.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider mb-2"
+                    style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                    Photos ({selectedProperty.images.length})
+                  </p>
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {selectedProperty.images.map((img, i) => (
+                      <img key={i} src={img} alt={`Photo ${i+1}`}
+                        className="w-32 h-24 rounded-xl object-cover shrink-0"
+                        style={{ border: `1px solid ${HAlpha.gold20}` }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Infos principales */}
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider mb-2"
+                  style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                  Informations générales
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: 'Type de bien',    value: TYPE_LABELS[selectedProperty.property_type] || selectedProperty.property_type },
+                    { label: 'Transaction',      value: selectedProperty.listing_type === 'rent' ? 'Location' : 'Vente' },
+                    { label: 'Prix',             value: `${selectedProperty.price.toLocaleString('fr-FR')} FCFA${selectedProperty.listing_type === 'rent' ? '/mois' : ''}` },
+                    { label: 'Surface',          value: selectedProperty.area ? `${selectedProperty.area} m²` : '—' },
+                    { label: 'Chambres',         value: selectedProperty.bedrooms ?? '—' },
+                    { label: 'Salles de bain',   value: selectedProperty.bathrooms ?? '—' },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="flex justify-between items-center py-2 px-3 rounded-xl"
+                      style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}` }}>
+                      <span className="text-xs font-semibold" style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>{label}</span>
+                      <span className="text-xs font-bold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>{String(value)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Localisation */}
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider mb-2"
+                  style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                  Localisation
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: 'Ville',      value: selectedProperty.city || '—' },
+                    { label: 'Quartier',   value: selectedProperty.neighborhood || '—' },
+                    { label: 'Adresse',    value: selectedProperty.address || '—' },
+                    { label: 'Pays',       value: selectedProperty.country || "Côte d'Ivoire" },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="flex justify-between items-center py-2 px-3 rounded-xl"
+                      style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}` }}>
+                      <span className="text-xs font-semibold" style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>{label}</span>
+                      <span className="text-xs text-right max-w-[140px] truncate" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Équipements */}
+              {selectedProperty.amenities && selectedProperty.amenities.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider mb-2"
+                    style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                    Équipements
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedProperty.amenities.map((a: string) => (
+                      <span key={a} className="px-2.5 py-1 rounded-full text-xs"
+                        style={{ background: HAlpha.gold08, color: HColors.brownMid,
+                                 border: `1px solid ${HAlpha.gold20}`, fontFamily: 'var(--font-nunito)' }}>
+                        {a}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Description */}
+              {selectedProperty.description && (
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider mb-2"
+                    style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                    Description
+                  </p>
+                  <div className="p-3 rounded-xl text-xs leading-relaxed"
+                    style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}`,
+                             color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                    {selectedProperty.description}
+                  </div>
+                </div>
+              )}
+
+              {/* Métadonnées */}
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider mb-2"
+                  style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                  Métadonnées
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: 'ID',           value: selectedProperty.id },
+                    { label: 'Propriétaire', value: selectedProperty.owner_id || '—' },
+                    { label: 'Soumis le',    value: new Date(selectedProperty.created_at).toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' }) },
+                    { label: 'Modifié le',   value: selectedProperty.updated_at ? new Date(selectedProperty.updated_at).toLocaleDateString('fr-FR') : '—' },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="flex justify-between items-center py-2 px-3 rounded-xl"
+                      style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}` }}>
+                      <span className="text-xs font-semibold" style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>{label}</span>
+                      <span className="text-xs text-right max-w-[150px] truncate font-mono" style={{ color: HColors.darkBrown }}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Actions footer */}
+            <div className="flex gap-2 px-6 py-4" style={{ borderTop: `1px solid ${HAlpha.gold10}` }}>
+              <button onClick={() => { approveProperty(selectedProperty.id); setSelectedProperty(null); }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg,#2D6A4F,#1A4F3A)', color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
+                <CheckCircle className="w-4 h-4" /> Approuver
+              </button>
+              <button onClick={() => { rejectProperty(selectedProperty.id); setSelectedProperty(null); }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80"
+                style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord25}`,
+                         color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
+                <XCircle className="w-4 h-4" /> Rejeter
+              </button>
+              <button onClick={() => setSelectedProperty(null)}
+                className="px-5 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80"
+                style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold20}`,
+                         color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal Détails Utilisateur ── */}}
       {selectedUser && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
           style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}
