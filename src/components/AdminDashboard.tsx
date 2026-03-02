@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Users, Home, Shield, FileCheck, AlertCircle, TrendingUp, CheckCircle, XCircle, Activity, UserCog } from 'lucide-react';
+import {
+  Users, Home, Shield, FileCheck, AlertCircle, TrendingUp,
+  CheckCircle, XCircle, Activity, UserCog, RotateCcw,
+  MapPin, Calendar, Building2, Eye,
+} from 'lucide-react';
 import { collection, getDocs, orderBy, query, limit, Timestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
@@ -8,6 +12,8 @@ import type { Property } from '../types/property';
 import type { Profile } from '../contexts/AuthContext';
 import AdminLoginHistory from './AdminLoginHistory';
 import AdminManagement from './AdminManagement';
+import { KenteLine } from './ui/KenteLine';
+import { HColors, HAlpha } from '../styles/homeci-tokens';
 
 interface Stats {
   total_users: number;
@@ -16,30 +22,38 @@ interface Stats {
   verified_properties: number;
 }
 
+const ROLE_CFG: Record<string, { label: string; bg: string; bd: string; text: string }> = {
+  locataire:    { label: 'Locataire',     bg: HAlpha.navy08,  bd: HAlpha.navy20,  text: HColors.navy     },
+  proprietaire: { label: 'Propriétaire',  bg: HAlpha.green10, bd: HAlpha.green25, text: HColors.green    },
+  agent:        { label: 'Agent',         bg: HAlpha.gold10,  bd: HAlpha.gold25,  text: HColors.brownMid },
+  notaire:      { label: 'Notaire',       bg: HAlpha.terra10, bd: HAlpha.terra20, text: HColors.brownDeep},
+  admin:        { label: 'Admin',         bg: HAlpha.bord10,  bd: HAlpha.bord25,  text: HColors.bordeaux },
+};
+
+const TYPE_LABELS: Record<string, string> = {
+  appartement:'Appartement', maison:'Maison', villa:'Villa',
+  terrain:'Terrain', hotel:'Hôtel', appart_hotel:'Appart-Hôtel',
+};
+
 export default function AdminDashboard() {
   const { profile } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'properties' | 'verification' | 'security' | 'admin-management'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview'|'users'|'properties'|'verification'|'security'|'admin-management'>('overview');
   const [properties, setProperties] = useState<Property[]>([]);
   const [users, setUsers] = useState<Profile[]>([]);
-  const [stats, setStats] = useState<Stats>({
-    total_users: 0,
-    total_properties: 0,
-    pending_properties: 0,
-    verified_properties: 0,
-  });
+  const [stats, setStats] = useState<Stats>({ total_users:0, total_properties:0, pending_properties:0, verified_properties:0 });
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadData(); }, []);
+
+  function showToast(msg: string, ok = true) {
+    setToast({ msg, ok }); setTimeout(() => setToast(null), 3000);
+  }
 
   const loadData = async () => {
+    setLoading(true);
     try {
-      const usersQuery = query(
-        collection(db, 'profiles'),
-        orderBy('created_at', 'desc'),
-        limit(20)
-      );
+      const usersQuery = query(collection(db,'profiles'), orderBy('created_at','desc'), limit(20));
       const usersSnapshot = await getDocs(usersQuery);
       const profiles = usersSnapshot.docs.map(d => {
         const data = d.data();
@@ -49,370 +63,373 @@ export default function AdminDashboard() {
           return String(v);
         };
         return {
-          id: d.id,
-          email: String(data.email ?? ''),
-          full_name: String(data.full_name ?? ''),
-          phone: (data.phone as string | null) ?? null,
-          role: (data.role as Profile['role']) ?? 'locataire',
-          avatar_url: (data.avatar_url as string | null) ?? null,
-          company_name: (data.company_name as string | null) ?? null,
-          verified: Boolean(data.verified ?? false),
-          created_at: toISO(data.created_at),
-          updated_at: toISO(data.updated_at),
+          id: d.id, email: String(data.email ?? ''), full_name: String(data.full_name ?? ''),
+          phone: (data.phone as string | null) ?? null, role: (data.role as Profile['role']) ?? 'locataire',
+          avatar_url: (data.avatar_url as string | null) ?? null, company_name: (data.company_name as string | null) ?? null,
+          verified: Boolean(data.verified ?? false), created_at: toISO(data.created_at), updated_at: toISO(data.updated_at),
         } as Profile;
       });
-
       const allProperties = await propertyService.getAllProperties();
-
-      setUsers(profiles);
-      setProperties(allProperties.slice(0, 10));
-
+      setUsers(profiles); setProperties(allProperties.slice(0, 20));
       setStats({
-        total_users: profiles.length,
-        total_properties: allProperties.length,
+        total_users: profiles.length, total_properties: allProperties.length,
         pending_properties: allProperties.filter(p => p.status === 'pending').length,
         verified_properties: allProperties.filter(p => p.verified_notaire).length,
       });
-    } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const refreshData = () => {
-    setLoading(true);
-    loadData();
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
   };
 
   const approveProperty = async (propertyId: string) => {
-    try {
-      await propertyService.updateProperty(propertyId, { status: 'published' });
-      refreshData();
-    } catch (error) {
-      console.error('Error approving property:', error);
-    }
+    try { await propertyService.updateProperty(propertyId, { status: 'published' }); loadData(); showToast('Bien approuvé ✅'); }
+    catch { showToast('Erreur', false); }
   };
 
   const rejectProperty = async (propertyId: string) => {
-    try {
-      await propertyService.updateProperty(propertyId, { status: 'rejected' });
-      refreshData();
-    } catch (error) {
-      console.error('Error rejecting property:', error);
-    }
+    try { await propertyService.updateProperty(propertyId, { status: 'rejected' }); loadData(); showToast('Bien rejeté'); }
+    catch { showToast('Erreur', false); }
   };
 
-  const getRoleBadge = (role: string) => {
-    const styles = {
-      locataire: 'bg-blue-100 text-blue-700',
-      proprietaire: 'bg-green-100 text-green-700',
-      agent: 'bg-purple-100 text-purple-700',
-      admin: 'bg-red-100 text-red-700',
-    };
+  const pendingProperties = properties.filter(p => p.status === 'pending');
+  const firstName = profile?.full_name?.split(' ')[0] || 'Admin';
 
-    const labels = {
-      locataire: 'Locataire',
-      proprietaire: 'Propriétaire',
-      agent: 'Agent',
-      admin: 'Admin',
-    };
-
-    return (
-      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${styles[role as keyof typeof styles] || styles.locataire}`}>
-        {labels[role as keyof typeof labels] || role}
-      </span>
-    );
-  };
+  const TABS = [
+    { id: 'overview',          icon: TrendingUp, label: 'Vue d\'ensemble', count: undefined           },
+    { id: 'users',             icon: Users,      label: 'Utilisateurs',    count: stats.total_users   },
+    { id: 'properties',        icon: Home,       label: 'Biens',           count: stats.total_properties },
+    { id: 'verification',      icon: FileCheck,  label: 'Modération',      count: stats.pending_properties || undefined },
+    { id: 'security',          icon: Activity,   label: 'Sécurité',        count: undefined           },
+    { id: 'admin-management',  icon: UserCog,    label: 'Admins',          count: undefined           },
+  ] as const;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-gradient-to-r from-red-600 to-red-700 text-white py-6 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <Shield className="w-8 h-8" />
-            <div>
-              <h1 className="text-2xl font-bold">Panneau Administrateur</h1>
-              <p className="text-red-100 text-sm">Gestion et modération de la plateforme HOMECI</p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen" style={{ background: HColors.creamBg }}>
 
-      <div className="bg-white border-b border-gray-200 sticky top-16 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-8">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'overview'
-                  ? 'border-red-500 text-red-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5" />
-                <span>Vue d'ensemble</span>
+      {/* ── Header ── */}
+      <div style={{ background: `linear-gradient(135deg,${HColors.night},#1A0E00)`, borderBottom: `1px solid ${HAlpha.gold20}` }}>
+        <KenteLine height={4} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-0">
+          <div className="flex items-center justify-between gap-4 flex-wrap pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center"
+                style={{ background: HAlpha.bord20, border: `1px solid ${HAlpha.bord35}` }}>
+                <Shield className="w-5 h-5" style={{ color: HColors.cream }} />
               </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('users')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'users'
-                  ? 'border-red-500 text-red-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                <span>Utilisateurs</span>
+              <div>
+                <h1 className="font-bold" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: '1.6rem' }}>
+                  Panneau Administrateur
+                </h1>
+                <p className="text-sm" style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
+                  Bonjour, {firstName} — Gestion & modération HOMECI
+                </p>
               </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('properties')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'properties'
-                  ? 'border-red-500 text-red-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Home className="w-5 h-5" />
-                <span>Biens immobiliers</span>
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('verification')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'verification'
-                  ? 'border-red-500 text-red-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <FileCheck className="w-5 h-5" />
-                <span>Modération</span>
+            </div>
+            <div className="flex items-center gap-3">
+              {/* Stats rapides */}
+              <div className="hidden md:flex items-center gap-2 text-xs" style={{ fontFamily: 'var(--font-nunito)' }}>
+                <span className="px-2.5 py-1 rounded-full font-semibold"
+                  style={{ background: HAlpha.gold10, color: HColors.gold, border: `1px solid ${HAlpha.gold30}` }}>
+                  {stats.total_users} utilisateurs
+                </span>
+                <span className="px-2.5 py-1 rounded-full font-semibold"
+                  style={{ background: HAlpha.green10, color: HColors.green, border: `1px solid ${HAlpha.green25}` }}>
+                  {stats.verified_properties} certifiés
+                </span>
                 {stats.pending_properties > 0 && (
-                  <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
-                    {stats.pending_properties}
+                  <span className="px-2.5 py-1 rounded-full font-bold animate-pulse"
+                    style={{ background: HAlpha.bord20, color: HColors.cream, border: `1px solid ${HAlpha.bord35}` }}>
+                    {stats.pending_properties} en attente
                   </span>
                 )}
               </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('security')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'security'
-                  ? 'border-red-500 text-red-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Activity className="w-5 h-5" />
-                <span>Sécurité</span>
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('admin-management')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'admin-management'
-                  ? 'border-red-500 text-red-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <UserCog className="w-5 h-5" />
-                <span>Gestion Admins</span>
-              </div>
-            </button>
+              <button onClick={loadData} aria-label="Actualiser"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80"
+                style={{ background: HAlpha.gold10, border: `1px solid ${HAlpha.gold25}`, color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                <RotateCcw className="w-3.5 h-3.5" /> Actualiser
+              </button>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <nav className="flex space-x-1 overflow-x-auto">
+            {TABS.map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                aria-label={tab.label}
+                aria-current={activeTab === tab.id ? 'page' : undefined}
+                className="flex items-center gap-2 py-3 px-4 border-b-2 text-sm font-medium transition-all whitespace-nowrap"
+                style={activeTab === tab.id
+                  ? { borderColor: HColors.gold, color: HColors.gold, fontFamily: 'var(--font-nunito)' }
+                  : { borderColor: 'transparent', color: HAlpha.cream45, fontFamily: 'var(--font-nunito)' }}>
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
+                {tab.count !== undefined && tab.count > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full text-xs font-bold"
+                    style={tab.id === 'verification'
+                      ? { background: HAlpha.bord20, color: HColors.cream }
+                      : { background: HAlpha.gold15, color: HColors.gold }}>
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            ))}
           </nav>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
+
+        {/* ══ VUE D'ENSEMBLE ══ */}
         {activeTab === 'overview' && (
           <div>
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Vue d'ensemble</h2>
-              <p className="text-gray-600">Statistiques générales de la plateforme</p>
-            </div>
-
+            <SectionTitle title="Vue d'ensemble" sub="Statistiques générales de la plateforme HOMECI" />
             {loading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+              <div className="flex justify-center py-16">
+                <div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin"
+                  style={{ borderColor: HAlpha.gold20, borderTopColor: HColors.gold }} />
               </div>
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Users className="w-6 h-6 text-blue-600" />
+              <>
+                {/* Stat cards */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                  {[
+                    { icon: Users,     label: 'Utilisateurs inscrits',    value: stats.total_users,        accent: HColors.navy,      bg: HAlpha.navy08  },
+                    { icon: Home,      label: 'Biens immobiliers',         value: stats.total_properties,   accent: HColors.green,     bg: HAlpha.green10 },
+                    { icon: AlertCircle, label: 'En attente de modération',value: stats.pending_properties, accent: HColors.gold,      bg: HAlpha.gold10  },
+                    { icon: FileCheck, label: 'Biens vérifiés Notaire',    value: stats.verified_properties,accent: HColors.terracotta,bg: HAlpha.terra10 },
+                  ].map(({ icon: Icon, label, value, accent, bg }) => (
+                    <div key={label} className="rounded-2xl p-5"
+                      style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}`, boxShadow: '0 2px 12px rgba(26,14,0,0.05)' }}>
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+                        style={{ background: bg, border: `1px solid ${accent}30` }}>
+                        <Icon className="w-5 h-5" style={{ color: accent }} />
+                      </div>
+                      <div className="text-2xl font-bold mb-0.5"
+                        style={{ color: accent, fontFamily: 'var(--font-cormorant)' }}>{value}</div>
+                      <div className="text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>{label}</div>
                     </div>
-                  </div>
-                  <div className="text-3xl font-bold text-gray-900 mb-1">{stats.total_users}</div>
-                  <div className="text-sm text-gray-600">Utilisateurs inscrits</div>
+                  ))}
                 </div>
 
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                      <Home className="w-6 h-6 text-green-600" />
-                    </div>
+                {/* Biens récents */}
+                <div className="rounded-2xl overflow-hidden"
+                  style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+                  <div className="flex items-center justify-between px-5 py-4"
+                    style={{ borderBottom: `1px solid ${HAlpha.gold10}` }}>
+                    <h3 className="font-bold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
+                      Biens récents
+                    </h3>
+                    <span className="text-xs px-2.5 py-1 rounded-full"
+                      style={{ background: HAlpha.gold08, color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                      {properties.length} affichés
+                    </span>
                   </div>
-                  <div className="text-3xl font-bold text-gray-900 mb-1">{stats.total_properties}</div>
-                  <div className="text-sm text-gray-600">Biens immobiliers</div>
-                </div>
-
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                      <AlertCircle className="w-6 h-6 text-yellow-600" />
-                    </div>
+                  <div className="divide-y" style={{ borderColor: HAlpha.gold08 }}>
+                    {properties.slice(0, 5).map(p => (
+                      <div key={p.id} className="flex items-center gap-4 px-5 py-3">
+                        {p.images?.[0] ? (
+                          <img src={p.images[0]} alt={p.title} className="w-10 h-10 rounded-lg object-cover shrink-0"
+                            style={{ border: `1px solid ${HAlpha.gold15}` }} />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                            style={{ background: HAlpha.gold08 }}>
+                            <Building2 className="w-4 h-4" style={{ color: HAlpha.gold30 }} />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate"
+                            style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>{p.title}</p>
+                          <p className="text-xs flex items-center gap-1"
+                            style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                            <MapPin className="w-3 h-3" style={{ color: HColors.terracotta }} />
+                            {p.city} · {TYPE_LABELS[p.property_type] || p.property_type}
+                          </p>
+                        </div>
+                        <PropertyStatusBadge status={p.status} />
+                      </div>
+                    ))}
                   </div>
-                  <div className="text-3xl font-bold text-gray-900 mb-1">{stats.pending_properties}</div>
-                  <div className="text-sm text-gray-600">En attente de modération</div>
                 </div>
-
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
-                      <FileCheck className="w-6 h-6 text-emerald-600" />
-                    </div>
-                  </div>
-                  <div className="text-3xl font-bold text-gray-900 mb-1">{stats.verified_properties}</div>
-                  <div className="text-sm text-gray-600">Biens vérifiés</div>
-                </div>
-              </div>
+              </>
             )}
           </div>
         )}
 
+        {/* ══ UTILISATEURS ══ */}
         {activeTab === 'users' && (
           <div>
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Gestion des Utilisateurs</h2>
-              <p className="text-gray-600">Liste de tous les utilisateurs de la plateforme</p>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Utilisateur
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Rôle
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Statut
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date d'inscription
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{user.full_name}</div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getRoleBadge(user.role)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                          Actif
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {new Date(user.created_at).toLocaleDateString('fr-FR')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button className="text-red-600 hover:text-red-900">
-                          Détails
-                        </button>
-                      </td>
+            <SectionTitle title="Gestion des Utilisateurs" sub="Liste des utilisateurs inscrits sur la plateforme" />
+            <div className="rounded-2xl overflow-hidden"
+              style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead>
+                    <tr style={{ background: HColors.night }}>
+                      {['Utilisateur', 'Rôle', 'Statut', "Date d'inscription", 'Actions'].map(h => (
+                        <th key={h} className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider"
+                          style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>{h}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {users.map((user, i) => (
+                      <tr key={user.id}
+                        style={{ background: i % 2 === 0 ? HColors.white : 'rgba(249,243,232,0.4)', borderBottom: `1px solid ${HAlpha.gold08}` }}>
+                        <td className="px-5 py-3.5">
+                          <div className="text-sm font-semibold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                            {user.full_name}
+                          </div>
+                          <div className="text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>{user.email}</div>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <RoleBadge role={user.role} />
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                            style={{ background: HAlpha.green10, color: HColors.green, border: `1px solid ${HAlpha.green20}`, fontFamily: 'var(--font-nunito)' }}>
+                            Actif
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5 text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" style={{ color: HColors.terracotta }} />
+                            {new Date(user.created_at).toLocaleDateString('fr-FR')}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <button className="flex items-center gap-1 text-xs font-medium transition-all hover:opacity-70"
+                            style={{ color: HColors.navy, fontFamily: 'var(--font-nunito)' }}>
+                            <Eye className="w-3.5 h-3.5" /> Détails
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
 
+        {/* ══ BIENS ══ */}
         {activeTab === 'properties' && (
           <div>
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Tous les Biens</h2>
-              <p className="text-gray-600">Gérez tous les biens immobiliers de la plateforme</p>
-            </div>
-
-            <div className="bg-white rounded-xl p-12 text-center">
-              <Home className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Liste complète à venir</h3>
-              <p className="text-gray-600">Fonctionnalité de gestion avancée en développement</p>
+            <SectionTitle title="Tous les Biens" sub="Vue complète de tous les biens immobiliers de la plateforme" />
+            <div className="rounded-2xl overflow-hidden"
+              style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead>
+                    <tr style={{ background: HColors.night }}>
+                      {['Bien', 'Type', 'Ville', 'Prix', 'Statut', 'Date'].map(h => (
+                        <th key={h} className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider"
+                          style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {properties.map((p, i) => (
+                      <tr key={p.id}
+                        style={{ background: i % 2 === 0 ? HColors.white : 'rgba(249,243,232,0.4)', borderBottom: `1px solid ${HAlpha.gold08}` }}>
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-2">
+                            {p.images?.[0] ? (
+                              <img src={p.images[0]} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0"
+                                style={{ border: `1px solid ${HAlpha.gold15}` }} />
+                            ) : (
+                              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                                style={{ background: HAlpha.gold08 }}>
+                                <Building2 className="w-3.5 h-3.5" style={{ color: HAlpha.gold30 }} />
+                              </div>
+                            )}
+                            <span className="text-sm font-medium truncate max-w-[180px]"
+                              style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>{p.title}</span>
+                          </div>
+                        </td>
+                        <td className="px-5 py-3 text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                          {TYPE_LABELS[p.property_type] || p.property_type}
+                        </td>
+                        <td className="px-5 py-3 text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3" style={{ color: HColors.terracotta }} />{p.city}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3 text-xs font-semibold" style={{ color: HColors.terracotta, fontFamily: 'var(--font-nunito)' }}>
+                          {p.price.toLocaleString('fr-FR')} FCFA
+                        </td>
+                        <td className="px-5 py-3"><PropertyStatusBadge status={p.status} /></td>
+                        <td className="px-5 py-3 text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                          {new Date(p.created_at).toLocaleDateString('fr-FR')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
 
+        {/* ══ MODÉRATION ══ */}
         {activeTab === 'verification' && (
           <div>
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Modération des Biens</h2>
-              <p className="text-gray-600">Approuvez ou rejetez les nouvelles annonces</p>
-            </div>
+            <SectionTitle title="Modération des Biens"
+              sub="Approuvez ou rejetez les nouvelles annonces soumises à validation" />
 
-            {properties.length === 0 ? (
-              <div className="bg-white rounded-xl p-12 text-center">
-                <FileCheck className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Aucun bien en attente</h3>
-                <p className="text-gray-600">Tous les biens ont été modérés</p>
+            {pendingProperties.length === 0 ? (
+              <div className="rounded-2xl p-16 text-center"
+                style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+                <CheckCircle className="w-14 h-14 mx-auto mb-4" style={{ color: HAlpha.green15 }} />
+                <h3 className="font-bold mb-1"
+                  style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.3rem' }}>
+                  File vide
+                </h3>
+                <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                  Tous les biens ont été modérés
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
-                {properties.map((property) => (
-                  <div key={property.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{property.title}</h3>
-                        <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
-                          <div>
-                            <span className="font-medium">Propriétaire:</span> {property.owner_id}
-                          </div>
-                          <div>
-                            <span className="font-medium">Type:</span> {property.property_type}
-                          </div>
-                          <div>
-                            <span className="font-medium">Ville:</span> {property.city}
-                          </div>
-                          <div>
-                            <span className="font-medium">Prix:</span> {property.price.toLocaleString()} FCFA
-                          </div>
+                {pendingProperties.map(p => (
+                  <div key={p.id} className="rounded-2xl overflow-hidden"
+                    style={{ background: HColors.white, border: `1px solid ${HAlpha.gold25}`, boxShadow: '0 2px 12px rgba(26,14,0,0.05)' }}>
+                    <div className="h-1" style={{ background: 'linear-gradient(90deg,#D4A017,#C07C3E)', opacity: 0.5 }} />
+                    <div className="flex items-start gap-4 p-5">
+                      {p.images?.[0] ? (
+                        <img src={p.images[0]} alt={p.title} className="w-20 h-20 rounded-xl object-cover shrink-0"
+                          style={{ border: `1px solid ${HAlpha.gold20}` }} />
+                      ) : (
+                        <div className="w-20 h-20 rounded-xl flex items-center justify-center shrink-0"
+                          style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold15}` }}>
+                          <Building2 className="w-7 h-7" style={{ color: HAlpha.gold30 }} />
                         </div>
-                        <div className="text-sm text-gray-500">
-                          Soumis le {new Date(property.created_at).toLocaleDateString('fr-FR')}
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold mb-2"
+                          style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
+                          {p.title}
+                        </h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs mb-3"
+                          style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                          <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Type : </span>{TYPE_LABELS[p.property_type] || p.property_type}</span>
+                          <span className="flex items-center gap-1"><MapPin className="w-3 h-3" style={{ color: HColors.terracotta }} />{p.city}</span>
+                          <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Prix : </span>{p.price.toLocaleString('fr-FR')} FCFA</span>
+                          <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Soumis : </span>{new Date(p.created_at).toLocaleDateString('fr-FR')}</span>
                         </div>
+                        {p.description && (
+                          <p className="text-xs line-clamp-2"
+                            style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>{p.description}</p>
+                        )}
                       </div>
-                      <div className="flex gap-3 ml-6">
-                        <button
-                          onClick={() => approveProperty(property.id)}
-                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 font-medium"
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                          Approuver
+                      <div className="flex flex-col gap-2 shrink-0">
+                        <button onClick={() => approveProperty(p.id)}
+                          className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl transition-all hover:opacity-90"
+                          style={{ background: 'linear-gradient(135deg,#2D6A4F,#1A4F3A)', color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
+                          <CheckCircle className="w-3.5 h-3.5" /> Approuver
                         </button>
-                        <button
-                          onClick={() => rejectProperty(property.id)}
-                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 font-medium"
-                        >
-                          <XCircle className="w-4 h-4" />
-                          Rejeter
+                        <button onClick={() => rejectProperty(p.id)}
+                          className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-xl transition-all hover:opacity-80"
+                          style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord25}`, color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
+                          <XCircle className="w-3.5 h-3.5" /> Rejeter
                         </button>
                       </div>
                     </div>
@@ -423,14 +440,65 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {activeTab === 'security' && (
-          <AdminLoginHistory />
-        )}
-
-        {activeTab === 'admin-management' && (
-          <AdminManagement />
-        )}
+        {activeTab === 'security' && <AdminLoginHistory />}
+        {activeTab === 'admin-management' && <AdminManagement />}
       </div>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 overflow-hidden rounded-2xl shadow-2xl" style={{ minWidth: 260 }}>
+          <KenteLine height={3} />
+          <div className="flex items-center gap-2 px-4 py-3"
+            style={{ background: toast.ok ? HColors.night : HColors.bordeaux }}>
+            {toast.ok
+              ? <CheckCircle className="w-4 h-4 shrink-0" style={{ color: HColors.gold }} />
+              : <XCircle className="w-4 h-4 shrink-0" style={{ color: HColors.cream }} />}
+            <span className="text-sm font-medium" style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
+              {toast.msg}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+// ── Sous-composants ────────────────────────────────────────────────────────────
+function SectionTitle({ title, sub }: { title: string; sub: string }) {
+  return (
+    <div className="mb-6">
+      <h2 className="font-bold mb-0.5" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.8rem' }}>
+        {title}
+      </h2>
+      <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>{sub}</p>
+    </div>
+  );
+}
+
+function RoleBadge({ role }: { role: string }) {
+  const cfg = ROLE_CFG[role] || ROLE_CFG.locataire;
+  return (
+    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
+      style={{ background: cfg.bg, border: `1px solid ${cfg.bd}`, color: cfg.text, fontFamily: 'var(--font-nunito)' }}>
+      {cfg.label}
+    </span>
+  );
+}
+
+function PropertyStatusBadge({ status }: { status: string }) {
+  const cfg: Record<string, { bg: string; bd: string; text: string; label: string }> = {
+    published: { bg: HAlpha.green10, bd: HAlpha.green25, text: HColors.green,     label: 'Publié'      },
+    pending:   { bg: HAlpha.gold10,  bd: HAlpha.gold25,  text: HColors.brownMid,  label: 'En attente'  },
+    draft:     { bg: HAlpha.gold08,  bd: HAlpha.gold15,  text: HColors.brown,     label: 'Brouillon'   },
+    rejected:  { bg: HAlpha.bord10,  bd: HAlpha.bord25,  text: HColors.bordeaux,  label: 'Rejeté'      },
+    rented:    { bg: HAlpha.navy08,  bd: HAlpha.navy20,  text: HColors.navy,      label: 'Loué'        },
+    sold:      { bg: HAlpha.terra10, bd: HAlpha.terra20, text: HColors.brownDeep, label: 'Vendu'       },
+  };
+  const c = cfg[status] || cfg.draft;
+  return (
+    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
+      style={{ background: c.bg, border: `1px solid ${c.bd}`, color: c.text, fontFamily: 'var(--font-nunito)' }}>
+      {c.label}
+    </span>
   );
 }
