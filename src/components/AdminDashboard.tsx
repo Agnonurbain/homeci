@@ -46,6 +46,10 @@ export default function AdminDashboard() {
   const [filterRole, setFilterRole] = useState('');
   const [filterDate, setFilterDate] = useState<'asc'|'desc'>('desc');
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
+  const [filterPropType, setFilterPropType] = useState('');
+  const [filterPropStatus, setFilterPropStatus] = useState('');
+  const [filterPropCity, setFilterPropCity] = useState('');
+  const [sortProp, setSortProp] = useState<'date_desc'|'date_asc'|'price_asc'|'price_desc'>('date_desc');
 
   useEffect(() => { loadData(); }, []);
 
@@ -102,6 +106,20 @@ export default function AdminDashboard() {
     });
     return list;
   }, [users, filterRole, filterDate]);
+
+  const filteredProperties = useMemo(() => {
+    let list = [...properties];
+    if (filterPropType)   list = list.filter(p => p.property_type === filterPropType);
+    if (filterPropStatus) list = list.filter(p => p.status === filterPropStatus);
+    if (filterPropCity)   list = list.filter(p => p.city?.toLowerCase().includes(filterPropCity.toLowerCase()));
+    list.sort((a, b) => {
+      if (sortProp === 'price_asc')  return a.price - b.price;
+      if (sortProp === 'price_desc') return b.price - a.price;
+      if (sortProp === 'date_asc')   return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+    return list;
+  }, [properties, filterPropType, filterPropStatus, filterPropCity, sortProp]);
 
   const pendingProperties = properties.filter(p => p.status === 'pending');
   const firstName = profile?.full_name?.split(' ')[0] || 'Admin';
@@ -287,6 +305,7 @@ export default function AdminDashboard() {
                   <option value="proprietaire">Propriétaire</option>
                   <option value="agent">Agent</option>
                   <option value="notaire">Notaire</option>
+                  <option value="admin">Admin</option>
                 </select>
 
                 <button onClick={() => setFilterDate(d => d === 'desc' ? 'asc' : 'desc')}
@@ -390,6 +409,74 @@ export default function AdminDashboard() {
             <SectionTitle title="Tous les Biens" sub="Vue complète de tous les biens immobiliers de la plateforme" />
             <div className="rounded-2xl overflow-hidden"
               style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+
+              {/* ── Filtres ── */}
+              <div className="flex items-center gap-3 px-5 py-3.5 flex-wrap"
+                style={{ borderBottom: `1px solid ${HAlpha.gold10}`, background: 'rgba(249,243,232,0.5)' }}>
+
+                {/* Type */}
+                <select value={filterPropType} onChange={e => setFilterPropType(e.target.value)}
+                  className="px-3 py-2 rounded-xl text-xs outline-none"
+                  style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
+                           color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                  <option value="">Tous les types</option>
+                  {Object.entries(TYPE_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>{v}</option>
+                  ))}
+                </select>
+
+                {/* Statut */}
+                <select value={filterPropStatus} onChange={e => setFilterPropStatus(e.target.value)}
+                  className="px-3 py-2 rounded-xl text-xs outline-none"
+                  style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
+                           color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                  <option value="">Tous les statuts</option>
+                  <option value="published">Publié</option>
+                  <option value="pending">En attente</option>
+                  <option value="draft">Brouillon</option>
+                  <option value="rejected">Rejeté</option>
+                  <option value="rented">Loué</option>
+                  <option value="sold">Vendu</option>
+                </select>
+
+                {/* Ville */}
+                <div className="relative">
+                  <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3"
+                    style={{ color: HColors.terracotta }} />
+                  <input type="text" value={filterPropCity}
+                    onChange={e => setFilterPropCity(e.target.value)}
+                    placeholder="Ville…"
+                    className="pl-7 pr-3 py-2 rounded-xl text-xs outline-none w-28"
+                    style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
+                             color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }} />
+                </div>
+
+                {/* Tri */}
+                <select value={sortProp} onChange={e => setSortProp(e.target.value as typeof sortProp)}
+                  className="px-3 py-2 rounded-xl text-xs outline-none"
+                  style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
+                           color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                  <option value="date_desc">↓ Date (récent)</option>
+                  <option value="date_asc">↑ Date (ancien)</option>
+                  <option value="price_desc">↓ Prix (élevé)</option>
+                  <option value="price_asc">↑ Prix (bas)</option>
+                </select>
+
+                {/* Effacer */}
+                {(filterPropType || filterPropStatus || filterPropCity) && (
+                  <button onClick={() => { setFilterPropType(''); setFilterPropStatus(''); setFilterPropCity(''); }}
+                    className="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs transition-all hover:opacity-80"
+                    style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}`,
+                             color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
+                    <XCircle className="w-3 h-3"/> Effacer
+                  </button>
+                )}
+
+                <span className="ml-auto text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                  {filteredProperties.length} bien{filteredProperties.length > 1 ? 's' : ''}
+                </span>
+              </div>
+
               <div className="overflow-x-auto">
                 <table className="min-w-full">
                   <thead>
@@ -401,9 +488,17 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {properties.map((p, i) => (
+                    {filteredProperties.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="text-center py-10 text-sm"
+                          style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                          Aucun bien pour ces filtres
+                        </td>
+                      </tr>
+                    ) : filteredProperties.map((p, i) => (
                       <tr key={p.id}
-                        style={{ background: i % 2 === 0 ? HColors.white : 'rgba(249,243,232,0.4)', borderBottom: `1px solid ${HAlpha.gold08}` }}>
+                        style={{ background: i % 2 === 0 ? HColors.white : 'rgba(249,243,232,0.4)',
+                                 borderBottom: `1px solid ${HAlpha.gold08}` }}>
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-2">
                             {p.images?.[0] ? (
