@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   Users, Home, Shield, FileCheck, AlertCircle, TrendingUp,
   CheckCircle, XCircle, Activity, UserCog, RotateCcw,
-  MapPin, Calendar, Building2, Eye,
+  MapPin, Calendar, Building2, Eye, Award, Copy, Plus, Loader as LoaderIcon,
 } from 'lucide-react';
 import { collection, getDocs, orderBy, query, limit, Timestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -14,6 +14,8 @@ import AdminLoginHistory from './AdminLoginHistory';
 import AdminManagement from './AdminManagement';
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
+import { collection, addDoc, getDocs, updateDoc, doc, query, orderBy } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 interface Stats {
   total_users: number;
@@ -37,7 +39,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 export default function AdminDashboard() {
   const { profile } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview'|'users'|'properties'|'verification'|'security'|'admin-management'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview'|'users'|'properties'|'verification'|'notaires'|'security'|'admin-management'>('overview');
   const [properties, setProperties] = useState<Property[]>([]);
   const [users, setUsers] = useState<Profile[]>([]);
   const [stats, setStats] = useState<Stats>({ total_users:0, total_properties:0, pending_properties:0, verified_properties:0 });
@@ -98,6 +100,7 @@ export default function AdminDashboard() {
     { id: 'users',             icon: Users,      label: 'Utilisateurs',    count: stats.total_users   },
     { id: 'properties',        icon: Home,       label: 'Biens',           count: stats.total_properties },
     { id: 'verification',      icon: FileCheck,  label: 'Modération',      count: stats.pending_properties || undefined },
+    { id: 'notaires',          icon: Award,      label: 'Notaires',        count: undefined           },
     { id: 'security',          icon: Activity,   label: 'Sécurité',        count: undefined           },
     { id: 'admin-management',  icon: UserCog,    label: 'Admins',          count: undefined           },
   ] as const;
@@ -440,6 +443,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {activeTab === 'notaires' && <NotairesTab showToast={showToast} />}
         {activeTab === 'security' && <AdminLoginHistory />}
         {activeTab === 'admin-management' && <AdminManagement />}
       </div>
@@ -500,5 +504,235 @@ function PropertyStatusBadge({ status }: { status: string }) {
       style={{ background: c.bg, border: `1px solid ${c.bd}`, color: c.text, fontFamily: 'var(--font-nunito)' }}>
       {c.label}
     </span>
+  );
+}
+
+// ── Onglet Notaires ────────────────────────────────────────────────────────────
+interface NotaireCode {
+  id: string;
+  code: string;
+  used: boolean;
+  used_at?: string;
+  created_at: string;
+  expires_at?: string;
+  note?: string;
+}
+
+function generateCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const array = new Uint8Array(10);
+  crypto.getRandomValues(array);
+  return Array.from(array, b => chars[b % chars.length]).join('');
+}
+
+function NotairesTab({ showToast }: { showToast: (msg: string, ok?: boolean) => void }) {
+  const [codes, setCodes] = useState<NotaireCode[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [note, setNote] = useState('');
+  const [expireDays, setExpireDays] = useState(7);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  useEffect(() => { loadCodes(); }, []);
+
+  async function loadCodes() {
+    setLoading(true);
+    try {
+      const q = query(collection(db, 'notaire_codes'), orderBy('created_at', 'desc'));
+      const snap = await getDocs(q);
+      setCodes(snap.docs.map(d => ({ id: d.id, ...d.data() } as NotaireCode)));
+    } catch(e) { console.error(e); }
+    finally { setLoading(false); }
+  }
+
+  async function handleGenerate() {
+    setGenerating(true);
+    try {
+      const code = generateCode();
+      const expires = new Date();
+      expires.setDate(expires.getDate() + expireDays);
+      const data = {
+        code,
+        used: false,
+        created_at: new Date().toISOString(),
+        expires_at: expires,
+        note: note.trim() || null,
+      };
+      const ref = await addDoc(collection(db, 'notaire_codes'), data);
+      setCodes(prev => [{ id: ref.id, ...data, expires_at: expires.toISOString() }, ...prev]);
+      setNote('');
+      showToast(`Code notaire généré : ${code}`);
+    } catch { showToast('Erreur lors de la génération', false); }
+    finally { setGenerating(false); }
+  }
+
+  async function handleRevoke(id: string) {
+    try {
+      await updateDoc(doc(db, 'notaire_codes', id), { used: true, used_at: new Date().toISOString() });
+      setCodes(prev => prev.map(c => c.id === id ? { ...c, used: true } : c));
+      showToast('Code révoqué.');
+    } catch { showToast('Erreur', false); }
+  }
+
+  async function handleCopy(code: string, id: string) {
+    await navigator.clipboard.writeText(code);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  }
+
+  const isExpired = (c: NotaireCode) => c.expires_at ? new Date(c.expires_at) < new Date() : false;
+
+  return (
+    <div>
+      <SectionTitle title="Accès Notaires" sub="Générez des codes d'invitation à usage unique pour les notaires agréés" />
+
+      {/* Générateur */}
+      <div className="rounded-2xl p-6 mb-6"
+        style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}>
+        <h3 className="font-bold mb-4" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.2rem' }}>
+          Générer un nouveau code
+        </h3>
+        <div className="flex flex-wrap gap-3 items-end">
+          <div className="flex-1 min-w-48">
+            <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+              style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+              Note (optionnel)
+            </label>
+            <input type="text" value={note} onChange={e => setNote(e.target.value)}
+              placeholder="Ex: Me Konaté, Cabinet Abidjan..."
+              className="w-full px-3 py-2.5 rounded-xl outline-none text-sm"
+              style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold20}`,
+                       color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }} />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+              style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+              Expire dans
+            </label>
+            <select value={expireDays} onChange={e => setExpireDays(Number(e.target.value))}
+              className="px-3 py-2.5 rounded-xl outline-none text-sm"
+              style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold20}`,
+                       color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+              <option value={1}>1 jour</option>
+              <option value={3}>3 jours</option>
+              <option value={7}>7 jours</option>
+              <option value={30}>30 jours</option>
+            </select>
+          </div>
+          <button onClick={handleGenerate} disabled={generating}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:opacity-90 disabled:opacity-50"
+            style={{ background: 'linear-gradient(135deg,#D4A017,#C07C3E)', color: HColors.night,
+                     fontFamily: 'var(--font-nunito)' }}>
+            {generating ? <LoaderIcon className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            Générer un code
+          </button>
+        </div>
+      </div>
+
+      {/* Liste codes */}
+      <div className="rounded-2xl overflow-hidden"
+        style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+        <div className="flex items-center justify-between px-5 py-4"
+          style={{ borderBottom: `1px solid ${HAlpha.gold10}` }}>
+          <h3 className="font-bold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
+            Codes générés
+          </h3>
+          <button onClick={loadCodes} className="text-xs flex items-center gap-1 hover:opacity-70 transition-all"
+            style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+            <RotateCcw className="w-3.5 h-3.5" /> Actualiser
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-10">
+            <LoaderIcon className="w-6 h-6 animate-spin" style={{ color: HColors.gold }} />
+          </div>
+        ) : codes.length === 0 ? (
+          <div className="text-center py-12">
+            <Award className="w-10 h-10 mx-auto mb-3" style={{ color: HAlpha.gold20 }} />
+            <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+              Aucun code généré pour l'instant
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y" style={{ borderColor: HAlpha.gold08 }}>
+            {codes.map((c, i) => {
+              const expired = isExpired(c);
+              const inactive = c.used || expired;
+              return (
+                <div key={c.id} className="flex items-center gap-4 px-5 py-3.5"
+                  style={{ background: i % 2 === 0 ? HColors.white : 'rgba(249,243,232,0.4)', opacity: inactive ? 0.6 : 1 }}>
+                  {/* Code */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-mono font-bold tracking-widest text-sm"
+                        style={{ color: inactive ? HColors.brown : HColors.darkBrown }}>
+                        {c.code}
+                      </span>
+                      {c.note && (
+                        <span className="text-xs px-2 py-0.5 rounded-full"
+                          style={{ background: HAlpha.gold08, color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                          {c.note}
+                        </span>
+                      )}
+                      {/* Badge statut */}
+                      {c.used ? (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                          style={{ background: HAlpha.green10, color: HColors.green, border: `1px solid ${HAlpha.green20}`, fontFamily: 'var(--font-nunito)' }}>
+                          Utilisé
+                        </span>
+                      ) : expired ? (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                          style={{ background: HAlpha.bord10, color: HColors.bordeaux, border: `1px solid ${HAlpha.bord20}`, fontFamily: 'var(--font-nunito)' }}>
+                          Expiré
+                        </span>
+                      ) : (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                          style={{ background: HAlpha.gold10, color: HColors.brownMid, border: `1px solid ${HAlpha.gold25}`, fontFamily: 'var(--font-nunito)' }}>
+                          Actif
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex gap-3 text-xs mt-0.5" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" style={{ color: HColors.terracotta }} />
+                        Créé le {new Date(c.created_at).toLocaleDateString('fr-FR')}
+                      </span>
+                      {c.expires_at && (
+                        <span>Expire le {new Date(c.expires_at).toLocaleDateString('fr-FR')}</span>
+                      )}
+                      {c.used_at && (
+                        <span>Utilisé le {new Date(c.used_at).toLocaleDateString('fr-FR')}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {!inactive && (
+                      <>
+                        <button onClick={() => handleCopy(c.code, c.id)}
+                          className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80"
+                          style={{ background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}`,
+                                   color: copiedId === c.id ? HColors.green : HColors.navy, fontFamily: 'var(--font-nunito)' }}>
+                          <Copy className="w-3 h-3" />
+                          {copiedId === c.id ? 'Copié !' : 'Copier'}
+                        </button>
+                        <button onClick={() => handleRevoke(c.id)}
+                          className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80"
+                          style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}`,
+                                   color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
+                          <XCircle className="w-3 h-3" /> Révoquer
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
