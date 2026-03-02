@@ -287,7 +287,6 @@ export default function AdminDashboard() {
                   <option value="proprietaire">Propriétaire</option>
                   <option value="agent">Agent</option>
                   <option value="notaire">Notaire</option>
-                  <option value="admin">Admin</option>
                 </select>
 
                 <button onClick={() => setFilterDate(d => d === 'desc' ? 'asc' : 'desc')}
