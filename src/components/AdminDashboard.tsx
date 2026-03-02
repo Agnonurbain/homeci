@@ -4,7 +4,7 @@ import {
   CheckCircle, XCircle, Activity, UserCog, RotateCcw,
   MapPin, Calendar, Building2, Eye, Award, Copy, Plus, Loader as LoaderIcon,
 } from 'lucide-react';
-import { collection, getDocs, orderBy, query, limit, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, limit, Timestamp, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { propertyService } from '../services/propertyService';
@@ -14,8 +14,6 @@ import AdminLoginHistory from './AdminLoginHistory';
 import AdminManagement from './AdminManagement';
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
-import { collection, addDoc, getDocs, updateDoc, doc, query, orderBy } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 
 interface Stats {
   total_users: number;
