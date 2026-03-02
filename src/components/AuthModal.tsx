@@ -102,10 +102,14 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
         await signIn(email, password);
       } else {
         if (!fullName.trim()) throw new Error('Veuillez entrer votre nom complet');
-        if (role === 'notaire' && !notaireCodeValid) throw new Error('Veuillez valider votre code notaire');
-        await signUp(email, password, fullName, role);
+        // Sécurité double : si panneau notaire ouvert sans code validé → bloquer
+        if (showNotaireCode && !notaireCodeValid) {
+          throw new Error('Veuillez valider votre code d\'invitation notaire avant de créer le compte.');
+        }
+        const finalRole = (showNotaireCode && notaireCodeValid) ? 'notaire' : role;
+        await signUp(email, password, fullName, finalRole);
         // Marquer le code comme utilisé
-        if (role === 'notaire' && validatedCodeDocId) {
+        if (showNotaireCode && notaireCodeValid && validatedCodeDocId) {
           await markNotaireCodeUsed(validatedCodeDocId);
         }
       }
@@ -368,7 +372,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
             </div>
 
             {/* Submit */}
-            <button type="submit" disabled={loading || (mode === 'signup' && role === 'notaire' && !notaireCodeValid)}
+            <button type="submit" disabled={loading || (mode === 'signup' && showNotaireCode && !notaireCodeValid)}
               className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-50 mt-2"
               style={{ background: 'linear-gradient(135deg, #D4A017 0%, #C07C3E 100%)',
                        color: HColors.night, fontFamily: 'var(--font-nunito)' }}>
