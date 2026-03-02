@@ -1,0 +1,180 @@
+/* ── Google Fonts — doit être en premier ── */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Nunito:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HOMECI African Design System — Tokens CSS
+   Source de vérité : modifier ici pour propager sur tout le site.
+══════════════════════════════════════════════════════════════════════════ */
+:root {
+  /* ── Couleurs primaires ── */
+  --homeci-night:      #0D1F12;
+  --homeci-dark-brown: #1A0E00;
+  --homeci-gold:       #D4A017;
+  --homeci-terracotta: #C07C3E;
+  --homeci-green:      #2D6A4F;
+  --homeci-cream:      #F5E6C8;
+  --homeci-cream-bg:   #F9F3E8;
+  --homeci-bordeaux:   #8B1D1D;
+  --homeci-navy:       #1A3A6B;
+  --homeci-brown:      #8B6A30;
+
+  /* ── Gold avec opacités ── */
+  --homeci-gold-05:  rgba(212,160,23,0.05);
+  --homeci-gold-08:  rgba(212,160,23,0.08);
+  --homeci-gold-10:  rgba(212,160,23,0.10);
+  --homeci-gold-12:  rgba(212,160,23,0.12);
+  --homeci-gold-15:  rgba(212,160,23,0.15);
+  --homeci-gold-18:  rgba(212,160,23,0.18);
+  --homeci-gold-20:  rgba(212,160,23,0.20);
+  --homeci-gold-25:  rgba(212,160,23,0.25);
+  --homeci-gold-30:  rgba(212,160,23,0.30);
+  --homeci-gold-35:  rgba(212,160,23,0.35);
+
+  /* ── Green avec opacités ── */
+  --homeci-green-10: rgba(45,106,79,0.10);
+  --homeci-green-20: rgba(45,106,79,0.20);
+  --homeci-green-25: rgba(45,106,79,0.25);
+  --homeci-green-30: rgba(45,106,79,0.30);
+
+  /* ── Terracotta avec opacités ── */
+  --homeci-terra-08: rgba(192,124,62,0.08);
+  --homeci-terra-15: rgba(192,124,62,0.15);
+  --homeci-terra-22: rgba(192,124,62,0.22);
+  --homeci-terra-30: rgba(192,124,62,0.30);
+  --homeci-terra-35: rgba(192,124,62,0.35);
+
+  /* ── Polices ── */
+  --font-cormorant: 'Cormorant Garamond', Georgia, serif;
+  --font-nunito:    'Nunito', sans-serif;
+
+  /* ── Gradients ── */
+  --homeci-gradient-primary: linear-gradient(135deg, #D4A017, #C07C3E);
+  --homeci-gradient-dark:    linear-gradient(160deg, #0D1F12, #1A0E00);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Classes utilitaires HOMECI
+══════════════════════════════════════════════════════════════════════════ */
+
+/* Typographie */
+.homeci-display { font-family: var(--font-cormorant); font-weight: 700; color: var(--homeci-cream); }
+.homeci-body    { font-family: var(--font-nunito); }
+
+/* Bouton primaire */
+.homeci-btn-primary {
+  background: var(--homeci-gradient-primary);
+  color: var(--homeci-night);
+  font-family: var(--font-nunito);
+  font-weight: 700;
+  border-radius: 0.75rem;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.homeci-btn-primary:hover  { opacity: 0.9; }
+.homeci-btn-primary:active { transform: scale(0.97); }
+.homeci-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Bouton secondaire */
+.homeci-btn-secondary {
+  background: var(--homeci-gold-08);
+  border: 1px solid var(--homeci-gold-20);
+  color: #7A5500;
+  font-family: var(--font-nunito);
+  font-weight: 600;
+  border-radius: 0.75rem;
+  transition: opacity 0.15s;
+}
+.homeci-btn-secondary:hover { opacity: 0.8; }
+
+/* Input / Select */
+.homeci-input {
+  background: rgba(255,255,255,0.75);
+  border: 1px solid var(--homeci-gold-25);
+  color: var(--homeci-dark-brown);
+  font-family: var(--font-nunito);
+  border-radius: 0.75rem;
+  outline: none;
+}
+.homeci-input:focus {
+  border-color: var(--homeci-gold-50, rgba(212,160,23,0.5));
+  box-shadow: 0 0 0 2px var(--homeci-gold-10);
+}
+.homeci-input:disabled {
+  background: rgba(255,255,255,0.4);
+  border-color: var(--homeci-gold-12);
+  color: rgba(26,14,0,0.4);
+  cursor: not-allowed;
+}
+
+/* Label */
+.homeci-label {
+  color: rgba(122,85,0,0.8);
+  font-family: var(--font-nunito);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Card */
+.homeci-card {
+  background: #ffffff;
+  border: 1px solid var(--homeci-gold-15);
+  border-radius: 1rem;
+}
+
+/* Header dark */
+.homeci-header-dark {
+  background: var(--homeci-night);
+  border-bottom: 1px solid var(--homeci-gold-20);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Animations
+══════════════════════════════════════════════════════════════════════════ */
+@keyframes homeci-float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-18px) rotate(3deg); }
+  66%       { transform: translateY(-8px) rotate(-2deg); }
+}
+@keyframes homeci-float2 {
+  0%, 100% { transform: translateY(0px) rotate(45deg); }
+  50%       { transform: translateY(-24px) rotate(50deg); }
+}
+@keyframes homeci-float3 {
+  0%, 100% { transform: translateY(0px); }
+  40%       { transform: translateY(-12px); }
+}
+@keyframes homeci-fadeslide {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes homeci-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes homeci-shimmer {
+  from { background-position: -200% center; }
+  to   { background-position: 200% center; }
+}
+
+.homeci-float  { animation: homeci-float  9s ease-in-out infinite; }
+.homeci-float2 { animation: homeci-float2 12s ease-in-out infinite; }
+.homeci-float3 { animation: homeci-float3 7s ease-in-out infinite; }
+
+.homeci-reveal-1 { animation: homeci-fadeslide 0.7s cubic-bezier(.22,1,.36,1) 0.1s both; }
+.homeci-reveal-2 { animation: homeci-fadeslide 0.7s cubic-bezier(.22,1,.36,1) 0.3s both; }
+.homeci-reveal-3 { animation: homeci-fadeslide 0.7s cubic-bezier(.22,1,.36,1) 0.5s both; }
+.homeci-reveal-4 { animation: homeci-fadeslide 0.7s cubic-bezier(.22,1,.36,1) 0.7s both; }
+.homeci-reveal-5 { animation: homeci-fadeslide 0.7s cubic-bezier(.22,1,.36,1) 0.9s both; }
+.homeci-reveal-6 { animation: homeci-fadein 0.8s ease 1.0s both; }
+
+/* Shimmer loading skeleton */
+.homeci-skeleton {
+  background: linear-gradient(90deg, var(--homeci-gold-05) 25%, var(--homeci-gold-10) 50%, var(--homeci-gold-05) 75%);
+  background-size: 200% auto;
+  animation: homeci-shimmer 1.5s linear infinite;
+}
