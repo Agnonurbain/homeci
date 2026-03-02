@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Users, Home, Shield, FileCheck, AlertCircle, TrendingUp,
   CheckCircle, XCircle, Activity, UserCog, RotateCcw,
@@ -43,6 +43,9 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats>({ total_users:0, total_properties:0, pending_properties:0, verified_properties:0 });
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [filterRole, setFilterRole] = useState('');
+  const [filterDate, setFilterDate] = useState<'asc'|'desc'>('desc');
+  const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
 
   useEffect(() => { loadData(); }, []);
 
@@ -89,6 +92,16 @@ export default function AdminDashboard() {
     try { await propertyService.updateProperty(propertyId, { status: 'rejected' }); loadData(); showToast('Bien rejeté'); }
     catch { showToast('Erreur', false); }
   };
+
+  const filteredUsers = useMemo(() => {
+    let list = [...users];
+    if (filterRole) list = list.filter(u => u.role === filterRole);
+    list.sort((a, b) => {
+      const d = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      return filterDate === 'desc' ? -d : d;
+    });
+    return list;
+  }, [users, filterRole, filterDate]);
 
   const pendingProperties = properties.filter(p => p.status === 'pending');
   const firstName = profile?.full_name?.split(' ')[0] || 'Admin';
@@ -261,6 +274,44 @@ export default function AdminDashboard() {
             <SectionTitle title="Gestion des Utilisateurs" sub="Liste des utilisateurs inscrits sur la plateforme" />
             <div className="rounded-2xl overflow-hidden"
               style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+
+              {/* ── Barre filtres ── */}
+              <div className="flex items-center gap-3 px-5 py-3.5 flex-wrap"
+                style={{ borderBottom: `1px solid ${HAlpha.gold10}`, background: 'rgba(249,243,232,0.5)' }}>
+                <select value={filterRole} onChange={e => setFilterRole(e.target.value)}
+                  className="px-3 py-2 rounded-xl text-xs outline-none"
+                  style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
+                           color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                  <option value="">Tous les rôles</option>
+                  <option value="locataire">Locataire</option>
+                  <option value="proprietaire">Propriétaire</option>
+                  <option value="agent">Agent</option>
+                  <option value="notaire">Notaire</option>
+                  <option value="admin">Admin</option>
+                </select>
+
+                <button onClick={() => setFilterDate(d => d === 'desc' ? 'asc' : 'desc')}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80"
+                  style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
+                           color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                  <Calendar className="w-3.5 h-3.5" style={{ color: HColors.terracotta }}/>
+                  {filterDate === 'desc' ? '↓ Plus récent' : '↑ Plus ancien'}
+                </button>
+
+                {filterRole && (
+                  <button onClick={() => setFilterRole('')}
+                    className="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs transition-all hover:opacity-80"
+                    style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}`,
+                             color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
+                    <XCircle className="w-3 h-3"/> Effacer filtre
+                  </button>
+                )}
+
+                <span className="ml-auto text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                  {filteredUsers.length} utilisateur{filteredUsers.length > 1 ? 's' : ''}
+                </span>
+              </div>
+
               <div className="overflow-x-auto">
                 <table className="min-w-full">
                   <thead>
@@ -272,33 +323,56 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map((user, i) => (
+                    {filteredUsers.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-10 text-sm"
+                          style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                          Aucun utilisateur pour ce filtre
+                        </td>
+                      </tr>
+                    ) : filteredUsers.map((user, i) => (
                       <tr key={user.id}
-                        style={{ background: i % 2 === 0 ? HColors.white : 'rgba(249,243,232,0.4)', borderBottom: `1px solid ${HAlpha.gold08}` }}>
+                        style={{ background: i % 2 === 0 ? HColors.white : 'rgba(249,243,232,0.4)',
+                                 borderBottom: `1px solid ${HAlpha.gold08}` }}>
                         <td className="px-5 py-3.5">
-                          <div className="text-sm font-semibold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
-                            {user.full_name}
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
+                              style={{ background: HAlpha.gold10, color: HColors.gold,
+                                       fontFamily: 'var(--font-cormorant)', border: `1px solid ${HAlpha.gold25}` }}>
+                              {user.full_name?.charAt(0).toUpperCase() || '?'}
+                            </div>
+                            <div>
+                              <div className="text-sm font-semibold"
+                                style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                                {user.full_name}
+                              </div>
+                              <div className="text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                                {user.email}
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>{user.email}</div>
                         </td>
                         <td className="px-5 py-3.5">
                           <RoleBadge role={user.role} />
                         </td>
                         <td className="px-5 py-3.5">
                           <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                            style={{ background: HAlpha.green10, color: HColors.green, border: `1px solid ${HAlpha.green20}`, fontFamily: 'var(--font-nunito)' }}>
+                            style={{ background: HAlpha.green10, color: HColors.green,
+                                     border: `1px solid ${HAlpha.green20}`, fontFamily: 'var(--font-nunito)' }}>
                             Actif
                           </span>
                         </td>
-                        <td className="px-5 py-3.5 text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                        <td className="px-5 py-3.5 text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" style={{ color: HColors.terracotta }} />
                             {new Date(user.created_at).toLocaleDateString('fr-FR')}
                           </span>
                         </td>
                         <td className="px-5 py-3.5">
-                          <button className="flex items-center gap-1 text-xs font-medium transition-all hover:opacity-70"
-                            style={{ color: HColors.navy, fontFamily: 'var(--font-nunito)' }}>
+                          <button onClick={() => setSelectedUser(user)}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80"
+                            style={{ background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}`,
+                                     color: HColors.navy, fontFamily: 'var(--font-nunito)' }}>
                             <Eye className="w-3.5 h-3.5" /> Détails
                           </button>
                         </td>
@@ -445,6 +519,77 @@ export default function AdminDashboard() {
         {activeTab === 'security' && <AdminLoginHistory />}
         {activeTab === 'admin-management' && <AdminManagement />}
       </div>
+
+      {/* ── Modal Détails Utilisateur ── */}
+      {selectedUser && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
+          style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}
+          onClick={() => setSelectedUser(null)}>
+          <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
+            style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}
+            onClick={e => e.stopPropagation()}>
+            <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#D4A017,#C07C3E,#2D6A4F,#D4A017)' }}/>
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex items-start justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-2xl"
+                    style={{ background: HAlpha.gold15, color: HColors.gold,
+                             fontFamily: 'var(--font-cormorant)', border: `2px solid ${HAlpha.gold30}` }}>
+                    {selectedUser.full_name?.charAt(0).toUpperCase() || '?'}
+                  </div>
+                  <div>
+                    <h3 className="font-bold mb-1"
+                      style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.3rem' }}>
+                      {selectedUser.full_name}
+                    </h3>
+                    <RoleBadge role={selectedUser.role} />
+                  </div>
+                </div>
+                <button onClick={() => setSelectedUser(null)}
+                  className="p-1.5 rounded-full hover:opacity-70 transition-all"
+                  style={{ background: HAlpha.gold08, color: HColors.brown }}>
+                  <XCircle className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Infos */}
+              <div className="space-y-2">
+                {[
+                  { label: 'Email',        value: selectedUser.email,                              icon: '✉' },
+                  { label: 'Téléphone',    value: selectedUser.phone || '—',                       icon: '📞' },
+                  { label: 'Entreprise',   value: selectedUser.company_name || '—',                icon: '🏢' },
+                  { label: 'Vérifié',      value: selectedUser.verified ? 'Oui ✓' : 'Non',        icon: '🔒' },
+                  { label: 'Inscrit le',   value: new Date(selectedUser.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }), icon: '📅' },
+                  { label: 'ID',           value: selectedUser.id,                                 icon: '#'  },
+                ].map(({ label, value, icon }) => (
+                  <div key={label} className="flex items-center justify-between gap-3 py-2.5 px-3 rounded-xl"
+                    style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}` }}>
+                    <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider shrink-0"
+                      style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                      <span>{icon}</span>{label}
+                    </span>
+                    <span className="text-xs text-right truncate max-w-[200px]"
+                      style={{ color: HColors.darkBrown, fontFamily: label === 'ID' ? 'monospace' : 'var(--font-nunito)' }}>
+                      {value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 mt-5">
+                <button onClick={() => setSelectedUser(null)}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
+                  style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold20}`,
+                           color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                  Fermer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Toast */}
       {toast && (
