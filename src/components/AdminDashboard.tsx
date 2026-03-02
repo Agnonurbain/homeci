@@ -864,7 +864,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ── Modal Détails Utilisateur ── */}}
+      {/* ── Modal Détails Utilisateur ── */}
       {selectedUser && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
           style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}
