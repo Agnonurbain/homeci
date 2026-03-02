@@ -1,127 +1,240 @@
-import { useState } from 'react';
-import { Shield, Key, AlertCircle, Home } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Shield, Key, CheckCircle, RefreshCw, Home, Loader, AlertCircle } from 'lucide-react';
+import { KenteLine } from './ui/KenteLine';
+import { HColors, HAlpha } from '../styles/homeci-tokens';
 
 interface AdminAccessCodeProps {
   onSuccess: () => void;
 }
 
+// Génère un code alphanumérique sécurisé de 8 caractères
+function generateSessionCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sans 0/O/1/I pour lisibilité
+  let code = '';
+  const array = new Uint8Array(8);
+  crypto.getRandomValues(array);
+  for (let i = 0; i < 8; i++) {
+    code += chars[array[i] % chars.length];
+  }
+  return code;
+}
+
+const SESSION_CODE_KEY = 'homeci_admin_session_code';
+const SESSION_CODE_EXPIRY = 'homeci_admin_session_expiry';
+const CODE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+export function getOrCreateSessionCode(): string {
+  // Vérifie si un code valide existe déjà en session
+  const existing = sessionStorage.getItem(SESSION_CODE_KEY);
+  const expiry = sessionStorage.getItem(SESSION_CODE_EXPIRY);
+  if (existing && expiry && Date.now() < parseInt(expiry)) return existing;
+  // Génère un nouveau code
+  const newCode = generateSessionCode();
+  sessionStorage.setItem(SESSION_CODE_KEY, newCode);
+  sessionStorage.setItem(SESSION_CODE_EXPIRY, String(Date.now() + CODE_TTL_MS));
+  return newCode;
+}
+
+export function clearSessionCode(): void {
+  sessionStorage.removeItem(SESSION_CODE_KEY);
+  sessionStorage.removeItem(SESSION_CODE_EXPIRY);
+}
+
 export default function AdminAccessCode({ onSuccess }: AdminAccessCodeProps) {
-  const [code, setCode] = useState('');
+  const [sessionCode] = useState(() => getOrCreateSessionCode());
+  const [input, setInput] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(CODE_TTL_MS);
+  const [copied, setCopied] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const VALID_CODE = '9573517c';
+  // Countdown
+  useEffect(() => {
+    const expiry = parseInt(sessionStorage.getItem(SESSION_CODE_EXPIRY) || '0');
+    const interval = setInterval(() => {
+      const remaining = expiry - Date.now();
+      if (remaining <= 0) {
+        clearSessionCode();
+        window.location.reload();
+      } else {
+        setTimeLeft(remaining);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const minutes = Math.floor(timeLeft / 60000);
+  const seconds = Math.floor((timeLeft % 60000) / 1000);
+  const progressPct = (timeLeft / CODE_TTL_MS) * 100;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     setTimeout(() => {
-      if (code.toLowerCase() === VALID_CODE.toLowerCase()) {
-        onSuccess();
+      if (input.toUpperCase() === sessionCode) {
+        setConfirmed(true);
+        setTimeout(() => onSuccess(), 800);
       } else {
-        setError('Code d\'accès invalide. Veuillez réessayer.');
-        setCode('');
+        setError('Code incorrect. Recopiez exactement le code affiché ci-dessus.');
+        setInput('');
+        inputRef.current?.focus();
       }
       setLoading(false);
-    }, 500);
+    }, 400);
   };
 
-  const handleBackToHome = () => {
-    window.location.pathname = '/';
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(sessionCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center px-4 relative">
-      <button
-        onClick={handleBackToHome}
-        className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors backdrop-blur-sm group"
-      >
-        <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
-        <span className="font-medium">Accueil</span>
+    <div className="min-h-screen flex items-center justify-center px-4 relative"
+      style={{ background: `linear-gradient(135deg, ${HColors.night} 0%, #1A0E00 100%)` }}>
+      <KenteLine height={4} className="fixed top-0 left-0 right-0 z-50" />
+
+      <button onClick={() => window.location.pathname = '/'}
+        className="absolute top-8 left-8 flex items-center gap-2 px-4 py-2 rounded-xl transition-all hover:opacity-80"
+        style={{ background: HAlpha.gold10, border: `1px solid ${HAlpha.gold25}`, color: HColors.brownMid, fontFamily: 'var(--font-nunito)', fontSize: '0.875rem' }}>
+        <Home className="w-4 h-4" /> Accueil
       </button>
 
       <div className="max-w-md w-full">
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
-              <Shield className="w-8 h-8 text-red-600" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Accès Sécurisé</h1>
-            <p className="text-gray-600">Code de validation administrateur</p>
-          </div>
+        <div className="rounded-3xl overflow-hidden shadow-2xl"
+          style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}>
+          <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#D4A017,#C07C3E,#2D6A4F,#D4A017)', backgroundSize: '200%' }} />
 
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
-                Code d'accès
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Key className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="code"
-                  type="text"
-                  required
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  disabled={loading}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed font-mono text-lg tracking-wider"
-                  placeholder="Entrez le code"
-                  maxLength={8}
-                />
+          <div className="p-8">
+            {/* Header */}
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
+                style={{ background: confirmed ? HAlpha.green10 : HAlpha.gold10,
+                         border: `2px solid ${confirmed ? HAlpha.green25 : HAlpha.gold30}` }}>
+                {confirmed
+                  ? <CheckCircle className="w-8 h-8" style={{ color: HColors.green }} />
+                  : <Key className="w-8 h-8" style={{ color: HColors.gold }} />}
               </div>
-              <p className="mt-2 text-sm text-gray-500">
-                Format : 7 chiffres + 1 lettre (ex: 1234567a)
+              <h1 className="font-bold mb-1"
+                style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '2rem' }}>
+                {confirmed ? 'Accès accordé !' : 'Code de session'}
+              </h1>
+              <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                {confirmed ? 'Redirection vers le tableau de bord…' : 'Étape 2 sur 2 — Vérification'}
               </p>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading || code.length < 8}
-              className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Vérification...</span>
-                </>
-              ) : (
-                <>
-                  <Shield className="w-5 h-5" />
-                  <span>Valider le code</span>
-                </>
-              )}
-            </button>
-          </form>
-
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-amber-800">
-                  <p className="font-semibold mb-1">Accès restreint</p>
-                  <p>Ce code est réservé aux administrateurs autorisés uniquement. Toutes les tentatives d'accès sont enregistrées.</p>
-                </div>
+              {/* Stepper */}
+              <div className="flex items-center justify-center gap-2 mt-3">
+                <div className="w-8 h-1.5 rounded-full" style={{ background: HColors.green }} />
+                <div className="w-8 h-1.5 rounded-full" style={{ background: confirmed ? HColors.green : HColors.gold }} />
               </div>
             </div>
+
+            {!confirmed && (
+              <>
+                {/* Code affiché */}
+                <div className="mb-5 rounded-2xl p-5 text-center"
+                  style={{ background: HColors.night, border: `1px solid ${HAlpha.gold25}` }}>
+                  <p className="text-xs font-semibold uppercase tracking-widest mb-3"
+                    style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
+                    Votre code de session
+                  </p>
+
+                  {/* Code en grandes lettres */}
+                  <div className="flex items-center justify-center gap-1.5 mb-4">
+                    {sessionCode.split('').map((char, i) => (
+                      <div key={i} className="w-9 h-11 rounded-lg flex items-center justify-center font-mono font-bold text-xl"
+                        style={{ background: HAlpha.gold10, border: `1px solid ${HAlpha.gold30}`, color: HColors.gold }}>
+                        {char}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Expiry bar */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: HAlpha.gold10 }}>
+                      <div className="h-full rounded-full transition-all duration-1000"
+                        style={{ width: `${progressPct}%`,
+                                 background: progressPct > 50 ? HColors.green : progressPct > 20 ? HColors.gold : HColors.bordeaux }} />
+                    </div>
+                    <span className="text-xs font-mono shrink-0"
+                      style={{ color: progressPct > 20 ? HColors.brownMid : HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
+                      {minutes}:{seconds.toString().padStart(2, '0')}
+                    </span>
+                  </div>
+                  <p className="text-xs" style={{ color: HAlpha.cream40, fontFamily: 'var(--font-nunito)' }}>
+                    Ce code expire dans {minutes}min {seconds}s
+                  </p>
+
+                  <button onClick={handleCopy}
+                    className="mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg mx-auto text-xs font-medium transition-all hover:opacity-80"
+                    style={{ background: HAlpha.gold10, border: `1px solid ${HAlpha.gold25}`,
+                             color: copied ? HColors.green : HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                    {copied ? <CheckCircle className="w-3.5 h-3.5" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                    {copied ? 'Copié !' : 'Copier'}
+                  </button>
+                </div>
+
+                {/* Info */}
+                <div className="mb-4 p-3 rounded-xl flex items-start gap-2"
+                  style={{ background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}` }}>
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: HColors.navy }} />
+                  <p className="text-xs" style={{ color: HColors.navy, fontFamily: 'var(--font-nunito)' }}>
+                    Ce code est généré automatiquement pour cette session. Recopiez-le dans le champ ci-dessous pour confirmer votre identité.
+                  </p>
+                </div>
+
+                {/* Erreur */}
+                {error && (
+                  <div className="mb-4 p-3 rounded-xl flex items-start gap-2"
+                    style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord25}` }}>
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: HColors.bordeaux }} />
+                    <p className="text-xs" style={{ color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>{error}</p>
+                  </div>
+                )}
+
+                {/* Saisie */}
+                <form onSubmit={handleSubmit}>
+                  <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                    style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                    Confirmez le code
+                  </label>
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={input}
+                    onChange={e => setInput(e.target.value.toUpperCase())}
+                    placeholder="Ex: AB3K7P2Z"
+                    maxLength={8}
+                    autoFocus
+                    className="w-full px-4 py-3 rounded-xl outline-none text-center font-mono text-lg tracking-[0.3em] font-bold mb-4"
+                    style={{ background: HColors.creamBg, border: `1.5px solid ${HAlpha.gold25}`,
+                             color: HColors.darkBrown }}
+                  />
+                  <button type="submit" disabled={loading || input.length < 8}
+                    className="w-full py-3.5 rounded-xl font-bold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    style={{ background: 'linear-gradient(135deg,#D4A017,#C07C3E)', color: HColors.night,
+                             fontFamily: 'var(--font-nunito)' }}>
+                    {loading ? <Loader className="w-5 h-5 animate-spin" /> : <Shield className="w-5 h-5" />}
+                    {loading ? 'Vérification…' : 'Accéder au Dashboard'}
+                  </button>
+                </form>
+              </>
+            )}
+
+            {confirmed && (
+              <div className="flex justify-center py-4">
+                <Loader className="w-8 h-8 animate-spin" style={{ color: HColors.gold }} />
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-400">
-            Système de sécurité HOMECI
-          </p>
-        </div>
+        <p className="text-center text-xs mt-5" style={{ color: HAlpha.cream40, fontFamily: 'var(--font-nunito)' }}>
+          Code unique par session — invalidé à la déconnexion
+        </p>
       </div>
     </div>
   );

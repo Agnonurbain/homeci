@@ -10,7 +10,7 @@ import TenantDashboard from './components/TenantDashboard';
 import OwnerAgentDashboard from './components/OwnerAgentDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import NotaireDashboard from './components/NotaireDashboard';
-import AdminAccessCode from './components/AdminAccessCode';
+import AdminAccessCode, { clearSessionCode } from './components/AdminAccessCode';
 import AdminLogin from './components/AdminLogin';
 import AdminSessionManager from './components/AdminSessionManager';
 
@@ -53,6 +53,7 @@ function AppContent() {
     } else if (!user) {
       setAdminAuthenticated(false);
       setAccessCodeValidated(false);
+      clearSessionCode();
     }
   }, [user, profile, isAdminRoute]);
 
@@ -77,14 +78,15 @@ function AppContent() {
         </div>
       );
     }
-    if (!accessCodeValidated) return <AdminAccessCode onSuccess={() => setAccessCodeValidated(true)} />;
     if (!adminAuthenticated || profile?.role !== 'admin') return <AdminLogin onSuccess={() => setAdminAuthenticated(true)} />;
+    if (!accessCodeValidated) return <AdminAccessCode onSuccess={() => setAccessCodeValidated(true)} />;
     return (
       <AdminSessionManager
         timeoutMinutes={profile?.session_timeout_minutes || 30}
         onTimeout={() => {
           setAdminAuthenticated(false);
           setAccessCodeValidated(false);
+          clearSessionCode();
           alert("Votre session a expiré. Veuillez vous reconnecter.");
         }}
       >

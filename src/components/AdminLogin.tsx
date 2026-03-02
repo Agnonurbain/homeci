@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Shield, Lock, Mail, AlertCircle, CheckCircle, Eye, EyeOff, Home } from 'lucide-react';
+import { Shield, Lock, Mail, AlertCircle, Eye, EyeOff, Home, Loader } from 'lucide-react';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
+import { KenteLine } from './ui/KenteLine';
+import { HColors, HAlpha } from '../styles/homeci-tokens';
 
 interface AdminLoginProps {
   onSuccess: () => void;
@@ -19,165 +21,135 @@ export default function AdminLogin({ onSuccess }: AdminLoginProps) {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const userDoc = await getDoc(doc(db, 'profiles', userCredential.user.uid));
-
-      if (!userDoc.exists() || userDoc.data()?.role !== 'admin') {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      const snap = await getDoc(doc(db, 'profiles', cred.user.uid));
+      if (!snap.exists() || snap.data()?.role !== 'admin') {
         await signOut(auth);
-        setError('Accès non autorisé. Cette page est réservée aux administrateurs.');
+        setError('Accès non autorisé. Ce portail est réservé aux administrateurs.');
         return;
       }
-
       onSuccess();
     } catch (err: any) {
-      console.error('Login error:', err);
-      if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+      if (['auth/wrong-password','auth/user-not-found','auth/invalid-credential'].includes(err.code)) {
         setError('Identifiants incorrects. Veuillez réessayer.');
       } else {
-        setError(err.message || 'Une erreur est survenue. Veuillez réessayer.');
+        setError(err.message || 'Une erreur est survenue.');
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleBackToHome = () => {
-    window.location.pathname = '/';
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center px-4 relative">
-      <button
-        onClick={handleBackToHome}
-        className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors backdrop-blur-sm group"
-      >
-        <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
-        <span className="font-medium">Accueil</span>
+    <div className="min-h-screen flex items-center justify-center px-4 relative"
+      style={{ background: `linear-gradient(135deg, ${HColors.night} 0%, #1A0E00 100%)` }}>
+      <KenteLine height={4} className="fixed top-0 left-0 right-0 z-50" />
+
+      <button onClick={() => window.location.pathname = '/'}
+        className="absolute top-8 left-8 flex items-center gap-2 px-4 py-2 rounded-xl transition-all hover:opacity-80"
+        style={{ background: HAlpha.gold10, border: `1px solid ${HAlpha.gold25}`, color: HColors.brownMid, fontFamily: 'var(--font-nunito)', fontSize: '0.875rem' }}>
+        <Home className="w-4 h-4" /> Accueil
       </button>
 
       <div className="max-w-md w-full">
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
-              <Shield className="w-8 h-8 text-red-600" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Portail Administrateur</h1>
-            <p className="text-gray-600">Connexion sécurisée HOMECI</p>
-          </div>
+        {/* Card */}
+        <div className="rounded-3xl overflow-hidden shadow-2xl"
+          style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}>
+          <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#D4A017,#C07C3E,#2D6A4F,#D4A017)', backgroundSize: '200%' }} />
 
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-800">{error}</p>
+          <div className="p-8">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
+                style={{ background: HAlpha.gold10, border: `2px solid ${HAlpha.gold30}` }}>
+                <Shield className="w-8 h-8" style={{ color: HColors.gold }} />
+              </div>
+              <h1 className="font-bold mb-1"
+                style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '2rem' }}>
+                Portail Administrateur
+              </h1>
+              <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                Étape 1 sur 2 — Identification
+              </p>
+              {/* Stepper */}
+              <div className="flex items-center justify-center gap-2 mt-3">
+                <div className="w-8 h-1.5 rounded-full" style={{ background: HColors.gold }} />
+                <div className="w-8 h-1.5 rounded-full" style={{ background: HAlpha.gold20 }} />
+              </div>
             </div>
-          )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Adresse email
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+            {/* Erreur */}
+            {error && (
+              <div className="mb-5 p-3.5 rounded-xl flex items-start gap-3"
+                style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord25}` }}>
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: HColors.bordeaux }} />
+                <p className="text-sm" style={{ color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>{error}</p>
+              </div>
+            )}
+
+            {/* Formulaire */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                  style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                  Adresse email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: HColors.brown }} />
+                  <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                    disabled={loading} placeholder="admin@homeci.ci"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl outline-none transition-all"
+                    style={{ background: HColors.creamBg, border: `1.5px solid ${HAlpha.gold20}`,
+                             color: HColors.darkBrown, fontFamily: 'var(--font-nunito)', fontSize: '0.9rem' }} />
                 </div>
-                <input
-                  id="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  placeholder="admin@homeci.com"
-                />
               </div>
-            </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Mot de passe
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
+              <div>
+                <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                  style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                  Mot de passe
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: HColors.brown }} />
+                  <input type={showPassword ? 'text' : 'password'} required value={password}
+                    onChange={e => setPassword(e.target.value)} disabled={loading} placeholder="••••••••"
+                    className="w-full pl-10 pr-12 py-3 rounded-xl outline-none transition-all"
+                    style={{ background: HColors.creamBg, border: `1.5px solid ${HAlpha.gold20}`,
+                             color: HColors.darkBrown, fontFamily: 'var(--font-nunito)', fontSize: '0.9rem' }} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 transition-all hover:opacity-70"
+                    style={{ color: HColors.brown }}>
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
-                  className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  disabled={loading}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors disabled:cursor-not-allowed"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Connexion en cours...</span>
-                </>
-              ) : (
-                <>
-                  <Shield className="w-5 h-5" />
-                  <span>Connexion Sécurisée</span>
-                </>
-              )}
-            </button>
-          </form>
+              <button type="submit" disabled={loading}
+                className="w-full py-3.5 rounded-xl font-bold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+                style={{ background: 'linear-gradient(135deg,#D4A017,#C07C3E)', color: HColors.night,
+                         fontFamily: 'var(--font-nunito)', fontSize: '0.95rem' }}>
+                {loading ? <Loader className="w-5 h-5 animate-spin" /> : <Shield className="w-5 h-5" />}
+                {loading ? 'Vérification…' : 'Connexion Sécurisée'}
+              </button>
+            </form>
 
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <div className="space-y-3">
-              <div className="flex items-start gap-2 text-sm text-gray-600">
-                <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                <span>Connexion chiffrée SSL/TLS</span>
-              </div>
-              <div className="flex items-start gap-2 text-sm text-gray-600">
-                <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                <span>Protection contre les attaques par force brute</span>
-              </div>
-              <div className="flex items-start gap-2 text-sm text-gray-600">
-                <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                <span>Verrouillage automatique après 5 tentatives échouées</span>
-              </div>
-              <div className="flex items-start gap-2 text-sm text-gray-600">
-                <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                <span>Session sécurisée avec expiration automatique</span>
-              </div>
+            {/* Sécurité */}
+            <div className="mt-6 pt-5 border-t space-y-2" style={{ borderColor: HAlpha.gold15 }}>
+              {['Chiffrement SSL/TLS end-to-end', 'Protection brute force active', 'Code de session dynamique généré à la connexion'].map(txt => (
+                <div key={txt} className="flex items-center gap-2 text-xs"
+                  style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                  <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: HColors.green }} />
+                  {txt}
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-400">
-            Accès réservé aux administrateurs autorisés
-          </p>
-          <p className="text-xs text-gray-500 mt-2">
-            Toutes les tentatives de connexion sont enregistrées
-          </p>
-        </div>
+        <p className="text-center text-xs mt-5" style={{ color: HAlpha.cream40, fontFamily: 'var(--font-nunito)' }}>
+          Toutes les tentatives de connexion sont enregistrées
+        </p>
       </div>
     </div>
   );
