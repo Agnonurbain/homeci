@@ -156,13 +156,14 @@ export default function NotaireDashboard() {
   }
 
   const {disponible,enCours,pret,certifie}=useMemo(()=>{
-    const ec:Property[]=[],pr:Property[]=[],ce:Property[]=[];
+    const di:Property[]=[],ec:Property[]=[],pr:Property[]=[],ce:Property[]=[];
     for(const p of properties){
+      if(!p.notaire_id || p.notaire_id !== profile?.id) { di.push(p); continue; }
       const s=getDocStatus(p);
       if(s==='certifie') ce.push(p); else if(s==='complet') pr.push(p); else ec.push(p);
     }
-    return {enCours:ec,pret:pr,certifie:ce};
-  },[properties]);
+    return {disponible:di,enCours:ec,pret:pr,certifie:ce};
+  },[properties,profile?.id]);
 
   const currentList=activeTab==='disponible'?disponible:activeTab==='en_cours'?enCours:activeTab==='pret'?pret:certifie;
   const filtered=useMemo(()=>{
