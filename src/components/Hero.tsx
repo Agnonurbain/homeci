@@ -251,11 +251,15 @@ export function Hero({ onSearch }: HeroProps) {
           {/* Quick filters */}
           <div className="flex flex-wrap gap-2">
             {[
-              { label:'✦ Vérifié Notaire', type:'',        tx:'' },
-              { label:'Terrains',          type:'terrain',  tx:'' },
-              { label:'Hôtels',            type:'hotel',    tx:'' },
-              { label:'À louer',           type:'',         tx:'location' },
-              { label:'À vendre',          type:'',         tx:'vente' },
+              { label:'✦ Vérifié Notaire', type:'',            tx:'' },
+              { label:'Maisons',           type:'maison',       tx:'' },
+              { label:'Appartements',      type:'appartement',  tx:'' },
+              { label:'Villas',            type:'villa',        tx:'' },
+              { label:'Terrains',          type:'terrain',      tx:'' },
+              { label:'Hôtels',            type:'hotel',        tx:'' },
+              { label:'Appart-Hôtels',     type:'appart_hotel', tx:'' },
+              { label:'À louer',           type:'',             tx:'location' },
+              { label:'À vendre',          type:'',             tx:'vente' },
             ].map(tag => (
               <button key={tag.label}
                 onClick={() => {
