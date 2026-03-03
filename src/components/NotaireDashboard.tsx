@@ -208,11 +208,15 @@ export default function NotaireDashboard() {
     return list;
   },[currentList,searchQuery,filterType,owners]);
 
-  const stats=useMemo(()=>({
-    disponible:disponible.length, enCours:enCours.length, pret:pret.length, certifie:certifie.length,
-    docsAttente:properties.flatMap(p=>p.documents||[]).filter(d=>d.status==='en_attente').length,
-    docsValides:properties.flatMap(p=>p.documents||[]).filter(d=>d.status==='valide').length,
-  }),[disponible,enCours,pret,certifie,properties,profile?.id]);
+  const stats=useMemo(()=>{
+    // Uniquement les dossiers actifs (en cours + prêts) — pas les certifiés
+    const activeProp=[...enCours,...pret];
+    return {
+      disponible:disponible.length, enCours:enCours.length, pret:pret.length, certifie:certifie.length,
+      docsAttente:activeProp.flatMap(p=>p.documents||[]).filter(d=>d.status==='en_attente').length,
+      docsValides:activeProp.flatMap(p=>p.documents||[]).filter(d=>d.status==='valide').length,
+    };
+  },[disponible,enCours,pret,certifie,profile?.id]);
 
   if(loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{background:HColors.creamBg}}>
@@ -248,18 +252,24 @@ export default function NotaireDashboard() {
                       {stats.docsAttente} doc{stats.docsAttente>1?'s':''} à examiner
                     </span>
                   )}
+                  {stats.pret>0&&(
+                    <span className="px-2 py-0.5 rounded-full text-xs font-bold"
+                      style={{background:HAlpha.navy08,color:HColors.navy,border:`1px solid ${HAlpha.navy20}`}}>
+                      {stats.pret} prêt{stats.pret>1?'s':''} à certifier
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <div className="hidden md:flex items-center gap-2 text-xs" style={{fontFamily:'var(--font-nunito)'}}>
                 <span className="px-2.5 py-1 rounded-full font-semibold"
-                  style={{background:HAlpha.green10,color:HColors.green,border:`1px solid ${HAlpha.green25}`}}>
-                  {stats.docsValides} validé{stats.docsValides>1?'s':''}
+                  style={{background:HAlpha.gold10,color:HColors.brownMid,border:`1px solid ${HAlpha.gold25}`}}>
+                  {stats.docsAttente} doc{stats.docsAttente>1?'s':''} en attente
                 </span>
                 <span className="px-2.5 py-1 rounded-full font-semibold"
-                  style={{background:HAlpha.gold10,color:HColors.brownMid,border:`1px solid ${HAlpha.gold25}`}}>
-                  {stats.docsAttente} en attente
+                  style={{background:HAlpha.green10,color:HColors.green,border:`1px solid ${HAlpha.green25}`}}>
+                  {stats.pret} prêt{stats.pret>1?'s':''} à certifier
                 </span>
                 <span className="px-2.5 py-1 rounded-full font-semibold"
                   style={{background:HAlpha.navy08,color:HColors.navy,border:`1px solid ${HAlpha.navy20}`}}>
