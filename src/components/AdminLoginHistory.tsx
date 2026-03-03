@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Shield, CheckCircle, XCircle, Clock, Monitor } from 'lucide-react';
+import { Shield, CheckCircle, XCircle, Clock, Monitor, RotateCcw, Loader } from 'lucide-react';
 import { collection, getDocs, orderBy, query, limit, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { KenteLine } from './ui/KenteLine';
+import { HColors, HAlpha } from '../styles/homeci-tokens';
 
 interface LoginAttempt {
   id: string;
@@ -10,6 +12,30 @@ interface LoginAttempt {
   ip_address: string | null;
   success: boolean;
   user_agent: string | null;
+  role?: string;
+}
+
+function getBrowserInfo(ua: string | null): string {
+  if (!ua) return 'Inconnu';
+  if (ua.includes('Edg'))     return 'Edge';
+  if (ua.includes('Chrome'))  return 'Chrome';
+  if (ua.includes('Firefox')) return 'Firefox';
+  if (ua.includes('Safari'))  return 'Safari';
+  return 'Autre';
+}
+
+function getOSInfo(ua: string | null): string {
+  if (!ua) return '';
+  if (ua.includes('Windows')) return 'Windows';
+  if (ua.includes('Mac'))     return 'macOS';
+  if (ua.includes('Linux'))   return 'Linux';
+  if (ua.includes('Android')) return 'Android';
+  if (ua.includes('iPhone') || ua.includes('iPad')) return 'iOS';
+  return '';
+}
+
+function formatDate(d: string) {
+  return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'medium' }).format(new Date(d));
 }
 
 export default function AdminLoginHistory() {
@@ -17,157 +43,162 @@ export default function AdminLoginHistory() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'success' | 'failed'>('all');
 
-  useEffect(() => {
-    loadLoginAttempts();
-  }, [filter]);
+  useEffect(() => { load(); }, [filter]);
 
-  const loadLoginAttempts = async () => {
+  async function load() {
     setLoading(true);
     try {
-      const constraints: any[] = [orderBy('attempted_at', 'desc'), limit(50)];
-      if (filter === 'success') constraints.push(where('success', '==', true));
-      else if (filter === 'failed') constraints.push(where('success', '==', false));
-
-      const q = query(collection(db, 'login_attempts'), ...constraints);
+      // Requête simple sur orderBy uniquement — on filtre côté client pour éviter l'index composite
+      const q = query(collection(db, 'login_attempts'), orderBy('attempted_at', 'desc'), limit(100));
       const snap = await getDocs(q);
-      setAttempts(snap.docs.map(d => ({ id: d.id, ...d.data() })) as LoginAttempt[]);
-    } catch (error) {
-      console.error('Error loading login attempts:', error);
+      let data = snap.docs.map(d => ({ id: d.id, ...d.data() })) as LoginAttempt[];
+      if (filter === 'success') data = data.filter(a => a.success);
+      if (filter === 'failed')  data = data.filter(a => !a.success);
+      setAttempts(data.slice(0, 50));
+    } catch (e) {
+      console.error(e);
       setAttempts([]);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('fr-FR', {
-      dateStyle: 'short',
-      timeStyle: 'medium'
-    }).format(date);
-  };
+  const successCount = attempts.filter(a => a.success).length;
+  const failedCount  = attempts.filter(a => !a.success).length;
 
-  const getBrowserInfo = (userAgent: string | null) => {
-    if (!userAgent) return 'Navigateur inconnu';
-
-    if (userAgent.includes('Chrome')) return 'Chrome';
-    if (userAgent.includes('Firefox')) return 'Firefox';
-    if (userAgent.includes('Safari')) return 'Safari';
-    if (userAgent.includes('Edge')) return 'Edge';
-
-    return 'Autre navigateur';
-  };
+  const FILTERS: { key: typeof filter; label: string; color: string; bg: string; border: string }[] = [
+    { key: 'all',     label: 'Toutes',   color: HColors.darkBrown, bg: HAlpha.gold10,  border: HAlpha.gold25  },
+    { key: 'success', label: 'Réussies', color: HColors.green,     bg: HAlpha.green10, border: HAlpha.green25 },
+    { key: 'failed',  label: 'Échouées', color: HColors.bordeaux,  bg: HAlpha.bord10,  border: HAlpha.bord25  },
+  ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div>
+      {/* Header */}
+      <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Historique des Connexions</h2>
-          <p className="text-gray-600 mt-1">Surveillance des tentatives de connexion à la plateforme</p>
+          <h2 className="font-bold mb-1"
+            style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.6rem' }}>
+            Historique des Connexions
+          </h2>
+          <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+            Surveillance des tentatives de connexion au portail admin
+          </p>
         </div>
-
-        <div className="flex gap-2">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              filter === 'all'
-                ? 'bg-gray-900 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Toutes
-          </button>
-          <button
-            onClick={() => setFilter('success')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              filter === 'success'
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Réussies
-          </button>
-          <button
-            onClick={() => setFilter('failed')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              filter === 'failed'
-                ? 'bg-red-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Échouées
-          </button>
-        </div>
+        <button onClick={load}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80"
+          style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold20}`,
+                   color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+          <RotateCcw className="w-3.5 h-3.5" /> Actualiser
+        </button>
       </div>
 
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        {[
+          { label: 'Total',    value: attempts.length, bg: HAlpha.gold08,  border: HAlpha.gold20,  color: HColors.darkBrown },
+          { label: 'Réussies', value: successCount,    bg: HAlpha.green10, border: HAlpha.green20, color: HColors.green     },
+          { label: 'Échouées', value: failedCount,     bg: HAlpha.bord10,  border: HAlpha.bord20,  color: HColors.bordeaux  },
+        ].map(s => (
+          <div key={s.label} className="rounded-2xl p-4 text-center"
+            style={{ background: s.bg, border: `1px solid ${s.border}` }}>
+            <div className="text-2xl font-bold mb-0.5"
+              style={{ color: s.color, fontFamily: 'var(--font-cormorant)' }}>{s.value}</div>
+            <div className="text-xs" style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filtres */}
+      <div className="flex gap-2 mb-4">
+        {FILTERS.map(f => (
+          <button key={f.key} onClick={() => setFilter(f.key)}
+            className="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+            style={filter === f.key
+              ? { background: f.bg, border: `1px solid ${f.border}`, color: f.color, fontFamily: 'var(--font-nunito)' }
+              : { background: HColors.white, border: `1px solid ${HAlpha.gold15}`, color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tableau */}
       {loading ? (
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        <div className="flex justify-center py-16 rounded-2xl"
+          style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+          <Loader className="w-7 h-7 animate-spin" style={{ color: HColors.gold }} />
         </div>
       ) : attempts.length === 0 ? (
-        <div className="bg-white rounded-xl p-12 text-center border border-gray-200">
-          <Shield className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">Aucune tentative</h3>
-          <p className="text-gray-600">Aucune tentative de connexion enregistrée</p>
+        <div className="rounded-2xl p-16 text-center"
+          style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+          <Shield className="w-12 h-12 mx-auto mb-3" style={{ color: HAlpha.gold20 }} />
+          <h3 className="font-bold mb-1"
+            style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.2rem' }}>
+            Aucune tentative enregistrée
+          </h3>
+          <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+            Les connexions au portail admin apparaîtront ici
+          </p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+        <div className="rounded-2xl overflow-hidden"
+          style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+          <KenteLine height={3} />
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Statut
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date & Heure
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Adresse IP
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Navigateur
-                  </th>
+            <table className="min-w-full">
+              <thead>
+                <tr style={{ background: HColors.night }}>
+                  {['Statut', 'Email', 'Date & Heure', 'IP', 'Navigateur / OS'].map(h => (
+                    <th key={h} className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider"
+                      style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>{h}</th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {attempts.map((attempt) => (
-                  <tr key={attempt.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {attempt.success ? (
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="w-5 h-5 text-green-600" />
-                          <span className="text-sm font-medium text-green-700">Réussie</span>
-                        </div>
+              <tbody>
+                {attempts.map((a, i) => (
+                  <tr key={a.id}
+                    style={{ background: i % 2 === 0 ? HColors.white : 'rgba(249,243,232,0.4)',
+                             borderBottom: `1px solid ${HAlpha.gold08}` }}>
+                    <td className="px-5 py-3.5">
+                      {a.success ? (
+                        <span className="flex items-center gap-1.5 text-xs font-semibold"
+                          style={{ color: HColors.green }}>
+                          <CheckCircle className="w-4 h-4" /> Réussie
+                        </span>
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <XCircle className="w-5 h-5 text-red-600" />
-                          <span className="text-sm font-medium text-red-700">Échouée</span>
-                        </div>
+                        <span className="flex items-center gap-1.5 text-xs font-semibold"
+                          style={{ color: HColors.bordeaux }}>
+                          <XCircle className="w-4 h-4" /> Échouée
+                        </span>
                       )}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">{attempt.email}</div>
+                    <td className="px-5 py-3.5 text-sm font-medium"
+                      style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                      {a.email}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Clock className="w-4 h-4" />
-                        {formatDate(attempt.attempted_at)}
-                      </div>
+                    <td className="px-5 py-3.5">
+                      <span className="flex items-center gap-1.5 text-xs"
+                        style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                        <Clock className="w-3.5 h-3.5" style={{ color: HColors.terracotta }} />
+                        {formatDate(a.attempted_at)}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-600">
-                        {attempt.ip_address || 'Non disponible'}
-                      </div>
+                    <td className="px-5 py-3.5 text-xs font-mono"
+                      style={{ color: HColors.brown }}>
+                      {a.ip_address || '—'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Monitor className="w-4 h-4" />
-                        {getBrowserInfo(attempt.user_agent)}
-                      </div>
+                    <td className="px-5 py-3.5">
+                      <span className="flex items-center gap-1.5 text-xs"
+                        style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                        <Monitor className="w-3.5 h-3.5" style={{ color: HColors.navy }} />
+                        {getBrowserInfo(a.user_agent)}
+                        {getOSInfo(a.user_agent) && (
+                          <span className="px-1.5 py-0.5 rounded-md text-xs"
+                            style={{ background: HAlpha.navy08, color: HColors.navy }}>
+                            {getOSInfo(a.user_agent)}
+                          </span>
+                        )}
+                      </span>
                     </td>
                   </tr>
                 ))}

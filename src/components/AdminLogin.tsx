@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Shield, Lock, Mail, AlertCircle, Eye, EyeOff, Home, Loader } from 'lucide-react';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { KenteLine } from './ui/KenteLine';
@@ -8,6 +10,21 @@ import { HColors, HAlpha } from '../styles/homeci-tokens';
 
 interface AdminLoginProps {
   onSuccess: () => void;
+}
+
+async function logLoginAttempt(email: string, success: boolean) {
+  try {
+    await addDoc(collection(db, 'login_attempts'), {
+      email,
+      success,
+      attempted_at: new Date().toISOString(),
+      ip_address: null,
+      user_agent: navigator.userAgent,
+      role: 'admin',
+    });
+  } catch (e) {
+    // Non bloquant
+  }
 }
 
 export default function AdminLogin({ onSuccess }: AdminLoginProps) {
@@ -26,12 +43,15 @@ export default function AdminLogin({ onSuccess }: AdminLoginProps) {
       const snap = await getDoc(doc(db, 'profiles', cred.user.uid));
       if (!snap.exists() || snap.data()?.role !== 'admin') {
         await signOut(auth);
+        await logLoginAttempt(email, false);
         setError('Accès non autorisé. Ce portail est réservé aux administrateurs.');
         return;
       }
+      await logLoginAttempt(email, true);
       onSuccess();
     } catch (err: any) {
       if (['auth/wrong-password','auth/user-not-found','auth/invalid-credential'].includes(err.code)) {
+        await logLoginAttempt(email, false);
         setError('Identifiants incorrects. Veuillez réessayer.');
       } else {
         setError(err.message || 'Une erreur est survenue.');
