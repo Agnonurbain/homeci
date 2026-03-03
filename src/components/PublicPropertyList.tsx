@@ -10,7 +10,7 @@ import { HColors, HAlpha } from '../styles/homeci-tokens';
 
 interface PublicPropertyListProps {
   onShowAuth?: (mode: 'login' | 'signup') => void;
-  initialFilters?: { propertyType?: string; transactionType?: string; district?: string; region?: string; departement?: string; city?: string; commune?: string; quartier?: string; };
+  initialFilters?: { propertyType?: string; propertyTypes?: string[]; verifiedNotaire?: boolean; transactionType?: string; district?: string; region?: string; departement?: string; city?: string; commune?: string; quartier?: string; };
 }
 
 const PER_PAGE = 9;
@@ -27,7 +27,9 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
     propertyService.getProperties({ status: 'published' }).then(data => {
       setAllProperties(data);
       let result = data;
-      if (initialFilters?.propertyType) result = result.filter(p => p.property_type === initialFilters.propertyType);
+      const types = initialFilters?.propertyTypes?.length ? initialFilters.propertyTypes : (initialFilters?.propertyType ? [initialFilters.propertyType] : []);
+      if (types.length) result = result.filter(p => types.includes(p.property_type));
+      if (initialFilters?.verifiedNotaire) result = result.filter(p => p.verified_notaire);
       if (initialFilters?.city) result = result.filter(p => p.city === initialFilters.city);
       if (initialFilters?.transactionType) result = result.filter(p => p.transaction_type === initialFilters.transactionType || p.transaction_type === 'both');
       setFiltered(result);
@@ -38,7 +40,9 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
   useEffect(() => {
     if (allProperties.length === 0) return;
     let result = [...allProperties];
-    if (initialFilters?.propertyType) result = result.filter(p => p.property_type === initialFilters.propertyType);
+    const types2 = initialFilters?.propertyTypes?.length ? initialFilters.propertyTypes : (initialFilters?.propertyType ? [initialFilters.propertyType] : []);
+    if (types2.length) result = result.filter(p => types2.includes(p.property_type));
+    if (initialFilters?.verifiedNotaire) result = result.filter(p => p.verified_notaire);
     if (initialFilters?.transactionType) result = result.filter(p => p.transaction_type === initialFilters.transactionType || p.transaction_type === 'both');
     if (initialFilters?.district) result = result.filter(p => (p as any).district === initialFilters.district);
     if (initialFilters?.region) result = result.filter(p => (p as any).region === initialFilters.region);
@@ -48,7 +52,7 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
     if (initialFilters?.quartier) result = result.filter(p => p.quartier?.toLowerCase().includes((initialFilters.quartier || '').toLowerCase()));
     setFiltered(result);
     setPage(1);
-  }, [initialFilters?.propertyType, initialFilters?.transactionType, initialFilters?.district, initialFilters?.region, initialFilters?.departement, initialFilters?.city, initialFilters?.commune, initialFilters?.quartier]);
+  }, [initialFilters?.propertyTypes, initialFilters?.propertyType, initialFilters?.verifiedNotaire, initialFilters?.transactionType, initialFilters?.district, initialFilters?.region, initialFilters?.departement, initialFilters?.city, initialFilters?.commune, initialFilters?.quartier]);
 
   const handleFilterChange = (filters: FilterValues) => {
     let result = [...allProperties];

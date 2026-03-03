@@ -7,15 +7,16 @@ import {
 } from '../data/coteIvoireGeo';
 
 interface HeroSearchValues {
-  propertyType: string; transactionType: string;
+  propertyType: string; propertyTypes: string[]; transactionType: string;
+  verifiedNotaire: boolean;
   district: string; region: string; departement: string;
   city: string; commune: string; quartier: string;
 }
 interface HeroProps { onSearch?: (filters: HeroSearchValues) => void; }
 
 const EMPTY: HeroSearchValues = {
-  propertyType:'', transactionType:'', district:'', region:'',
-  departement:'', city:'', commune:'', quartier:'',
+  propertyType:'', propertyTypes:[], transactionType:'', verifiedNotaire:false,
+  district:'', region:'', departement:'', city:'', commune:'', quartier:'',
 };
 
 function KenteStripe({ flip = false }: { flip?: boolean }) {
@@ -248,31 +249,63 @@ export function Hero({ onSearch }: HeroProps) {
             </div>
           )}
 
-          {/* Quick filters */}
+          {/* Quick filters — multi-sélection */}
           <div className="flex flex-wrap gap-2">
-            {[
-              { label:'✦ Vérifié Notaire', type:'',            tx:'' },
-              { label:'Maisons',           type:'maison',       tx:'' },
-              { label:'Appartements',      type:'appartement',  tx:'' },
-              { label:'Villas',            type:'villa',        tx:'' },
-              { label:'Terrains',          type:'terrain',      tx:'' },
-              { label:'Hôtels',            type:'hotel',        tx:'' },
-              { label:'Appart-Hôtels',     type:'appart_hotel', tx:'' },
-              { label:'À louer',           type:'',             tx:'location' },
-              { label:'À vendre',          type:'',             tx:'vente' },
-            ].map(tag => (
-              <button key={tag.label}
-                onClick={() => {
-                  const next = { ...f, ...(tag.type ? { propertyType:tag.type } : {}), ...(tag.tx ? { transactionType:tag.tx } : {}) };
+            {([
+              { label:'✦ Vérifié Notaire', kind:'notaire', value:'notaire'      },
+              { label:'Maisons',           kind:'type',    value:'maison'       },
+              { label:'Appartements',      kind:'type',    value:'appartement'  },
+              { label:'Villas',            kind:'type',    value:'villa'        },
+              { label:'Terrains',          kind:'type',    value:'terrain'      },
+              { label:'Hôtels',            kind:'type',    value:'hotel'        },
+              { label:'Appart-Hôtels',     kind:'type',    value:'appart_hotel' },
+              { label:'À louer',           kind:'tx',      value:'location'     },
+              { label:'À vendre',          kind:'tx',      value:'vente'        },
+            ] as {label:string;kind:string;value:string}[]).map(tag => {
+              const isActive =
+                tag.kind === 'notaire' ? f.verifiedNotaire :
+                tag.kind === 'type'    ? f.propertyTypes.includes(tag.value) :
+                                         f.transactionType === tag.value;
+              const toggle = () => {
+                let next = { ...f };
+                if (tag.kind === 'notaire') {
+                  next.verifiedNotaire = !f.verifiedNotaire;
+                } else if (tag.kind === 'type') {
+                  const has = f.propertyTypes.includes(tag.value);
+                  next.propertyTypes = has
+                    ? f.propertyTypes.filter((t: string) => t !== tag.value)
+                    : [...f.propertyTypes, tag.value];
+                  next.propertyType = next.propertyTypes[0] || '';
+                } else {
+                  next.transactionType = f.transactionType === tag.value ? '' : tag.value;
+                }
+                setF(next);
+                setTimeout(() => { onSearch?.(next); document.getElementById('property-list')?.scrollIntoView({ behavior:'smooth' }); }, 50);
+              };
+              return (
+                <button key={tag.label} onClick={toggle}
+                  className="px-4 py-1.5 rounded-full text-xs font-medium transition-all"
+                  style={isActive
+                    ? { background:'rgba(212,160,23,0.30)', border:'2px solid rgba(212,160,23,0.80)',
+                        color:HColors.cream, fontFamily:'var(--font-nunito)', fontWeight:700 }
+                    : { background:'rgba(212,160,23,0.07)', border:'1px solid rgba(212,160,23,0.25)',
+                        color:HColors.cream, opacity:0.80, fontFamily:'var(--font-nunito)' }}>
+                  {tag.label}
+                </button>
+              );
+            })}
+            {(f.propertyTypes.length > 0 || f.verifiedNotaire || f.transactionType) && (
+              <button onClick={() => {
+                  const next = { ...f, propertyTypes:[], propertyType:'', verifiedNotaire:false, transactionType:'' };
                   setF(next);
                   setTimeout(() => { onSearch?.(next); document.getElementById('property-list')?.scrollIntoView({ behavior:'smooth' }); }, 50);
                 }}
-                className="px-4 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-100"
-                style={{ background:'rgba(212,160,23,0.07)', border:'1px solid rgba(212,160,23,0.25)',
-                         color:HColors.cream, opacity:0.85, fontFamily:'var(--font-nunito)' }}>
-                {tag.label}
+                className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+                style={{ background:'rgba(192,60,60,0.15)', border:'1px solid rgba(192,60,60,0.40)',
+                         color:'#ffaaaa', fontFamily:'var(--font-nunito)' }}>
+                ✕ Effacer
               </button>
-            ))}
+            )}
           </div>
         </div>
 

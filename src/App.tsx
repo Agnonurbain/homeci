@@ -16,8 +16,11 @@ import AdminSessionManager from './components/AdminSessionManager';
 
 interface HeroFilters {
   propertyType: string;
-  city: string;
+  propertyTypes: string[];
+  verifiedNotaire: boolean;
   transactionType: string;
+  district: string; region: string; departement: string;
+  city: string; commune: string; quartier: string;
 }
 
 function AppContent() {
@@ -27,7 +30,7 @@ function AppContent() {
   const [isAdminRoute, setIsAdminRoute] = useState(false);
   const [accessCodeValidated, setAccessCodeValidated] = useState(false);
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
-  const [heroFilters, setHeroFilters] = useState<HeroFilters>({ propertyType: '', transactionType: '', district: '', region: '', departement: '', city: '', commune: '', quartier: '' });
+  const [heroFilters, setHeroFilters] = useState<HeroFilters>({ propertyType: '', propertyTypes: [], verifiedNotaire: false, transactionType: '', district: '', region: '', departement: '', city: '', commune: '', quartier: '' });
 
   useEffect(() => {
     const checkRoute = () => {
