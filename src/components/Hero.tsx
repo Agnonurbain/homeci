@@ -103,7 +103,13 @@ export function Hero({ onSearch }: HeroProps) {
                   : f.city        ? getQuartiersByVille(f.city)           : [];
 
   const locSummary  = [f.quartier,f.commune,f.city,f.departement,f.region,f.district].find(Boolean);
-  const activeCount = Object.values(f).filter(Boolean).length;
+  const activeCount = [
+    f.propertyTypes.length > 0,
+    f.verifiedNotaire,
+    !!f.transactionType,
+    !!f.district, !!f.region, !!f.departement,
+    !!f.city, !!f.commune, !!f.quartier,
+  ].filter(Boolean).length;
 
   const darkSel = {
     background:'rgba(13,31,18,0.75)', border:'1px solid rgba(212,160,23,0.22)',
