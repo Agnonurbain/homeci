@@ -35,7 +35,7 @@ const REQUIRED_DOCS: Record<string, string[]> = {
 };
 
 type DocStatus = 'en_attente'|'valide'|'refuse';
-type TabId = 'en_cours'|'pret'|'certifie';
+type TabId = 'disponible'|'en_cours'|'pret'|'certifie';
 
 function isReadyToCertify(p: Property) {
   const req = REQUIRED_DOCS[p.property_type] || ['titre_foncier'];
@@ -53,12 +53,13 @@ export default function NotaireDashboard() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [owners, setOwners] = useState<Record<string, OwnerProfile>>({});
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<TabId>('en_cours');
+  const [activeTab, setActiveTab] = useState<TabId>('disponible');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('');
   const [expandedId, setExpandedId] = useState<string|null>(null);
   const [actionLoading, setActionLoading] = useState<string|null>(null);
   const [certifyingId, setCertifyingId] = useState<string|null>(null);
+  const [takingId, setTakingId] = useState<string|null>(null);
   const [refusalReasons, setRefusalReasons] = useState<Record<string,string>>({});
   const [showRefusalInput, setShowRefusalInput] = useState<string|null>(null);
   const [toast, setToast] = useState<{msg:string;ok:boolean}|null>(null);
@@ -69,7 +70,11 @@ export default function NotaireDashboard() {
     setLoading(true);
     try {
       const all = await propertyService.getProperties();
-      const withDocs = all.filter(p => p.documents?.length > 0 || p.verified_notaire);
+      // Un notaire voit : les biens sans notaire_id (disponibles) + les siens
+      const withDocs = all.filter(p =>
+        (p.documents?.length > 0 || p.verified_notaire) &&
+        (!p.notaire_id || p.notaire_id === profile?.id)
+      );
       setProperties(withDocs);
       const ownerIds = [...new Set(withDocs.map(p => p.owner_id))];
       const entries = await Promise.all(ownerIds.map(async id => {
@@ -138,7 +143,19 @@ export default function NotaireDashboard() {
     finally { setCertifyingId(null); }
   }
 
-  const {enCours,pret,certifie}=useMemo(()=>{
+  async function handleTakeCharge(property: Property) {
+    if (!profile?.id) return;
+    setTakingId(property.id);
+    try {
+      await propertyService.updateProperty(property.id, { notaire_id: profile.id });
+      setProperties(prev => prev.map(p => p.id === property.id ? { ...p, notaire_id: profile.id } : p));
+      setActiveTab('en_cours');
+      showToast('Dossier pris en charge — il apparaît dans "En cours".');
+    } catch { showToast('Erreur lors de la prise en charge', false); }
+    finally { setTakingId(null); }
+  }
+
+  const {disponible,enCours,pret,certifie}=useMemo(()=>{
     const ec:Property[]=[],pr:Property[]=[],ce:Property[]=[];
     for(const p of properties){
       const s=getDocStatus(p);
@@ -147,7 +164,7 @@ export default function NotaireDashboard() {
     return {enCours:ec,pret:pr,certifie:ce};
   },[properties]);
 
-  const currentList=activeTab==='en_cours'?enCours:activeTab==='pret'?pret:certifie;
+  const currentList=activeTab==='disponible'?disponible:activeTab==='en_cours'?enCours:activeTab==='pret'?pret:certifie;
   const filtered=useMemo(()=>{
     let list=[...currentList];
     if(searchQuery){ const q=searchQuery.toLowerCase(); list=list.filter(p=>p.title.toLowerCase().includes(q)||p.city?.toLowerCase().includes(q)||(owners[p.owner_id]?.full_name||'').toLowerCase().includes(q)); }
@@ -156,10 +173,10 @@ export default function NotaireDashboard() {
   },[currentList,searchQuery,filterType,owners]);
 
   const stats=useMemo(()=>({
-    enCours:enCours.length, pret:pret.length, certifie:certifie.length,
+    disponible:disponible.length, enCours:enCours.length, pret:pret.length, certifie:certifie.length,
     docsAttente:properties.flatMap(p=>p.documents||[]).filter(d=>d.status==='en_attente').length,
     docsValides:properties.flatMap(p=>p.documents||[]).filter(d=>d.status==='valide').length,
-  }),[enCours,pret,certifie,properties]);
+  }),[disponible,enCours,pret,certifie,properties,profile?.id]);
 
   if(loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{background:HColors.creamBg}}>
@@ -224,9 +241,10 @@ export default function NotaireDashboard() {
           {/* Tabs */}
           <nav className="flex gap-1 overflow-x-auto">
             {([
-              {id:'en_cours',label:'En cours',       count:stats.enCours,  accent:HColors.brownMid, bg:HAlpha.gold10,  bd:HAlpha.gold25 },
-              {id:'pret',     label:'Prêts à certifier',count:stats.pret,  accent:HColors.navy,     bg:HAlpha.navy08,  bd:HAlpha.navy20 },
-              {id:'certifie', label:'Certifiés',      count:stats.certifie, accent:HColors.green,    bg:HAlpha.green10, bd:HAlpha.green25},
+              {id:'disponible',label:'Disponibles',     count:stats.disponible,accent:HColors.terracotta,bg:HAlpha.terra10, bd:HAlpha.terra28},
+              {id:'en_cours',label:'En cours',          count:stats.enCours,  accent:HColors.brownMid, bg:HAlpha.gold10,  bd:HAlpha.gold25 },
+              {id:'pret',     label:'Prêts à certifier',count:stats.pret,     accent:HColors.navy,     bg:HAlpha.navy08,  bd:HAlpha.navy20 },
+              {id:'certifie', label:'Certifiés',        count:stats.certifie, accent:HColors.green,    bg:HAlpha.green10, bd:HAlpha.green25},
             ] as const).map(tab=>(
               <button key={tab.id} onClick={()=>setActiveTab(tab.id)}
                 aria-label={tab.label} aria-current={activeTab===tab.id?'page':undefined}
@@ -276,6 +294,17 @@ export default function NotaireDashboard() {
           </p>
         </div>
 
+        {/* Banner disponibles */}
+        {activeTab==='disponible'&&filtered.length>0&&(
+          <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl"
+            style={{background:HAlpha.terra10,border:`1px solid ${HAlpha.terra28}`}}>
+            <FileCheck className="w-4 h-4 shrink-0" style={{color:HColors.terracotta}}/>
+            <span className="text-sm" style={{color:HColors.terracotta,fontFamily:'var(--font-nunito)'}}>
+              Ces dossiers sont disponibles — cliquez <strong>Prendre en charge</strong> pour les assigner à votre espace.
+            </span>
+          </div>
+        )}
+
         {/* Banner prêts à certifier */}
         {activeTab==='pret'&&filtered.length>0&&(
           <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl"
@@ -293,7 +322,7 @@ export default function NotaireDashboard() {
             style={{background:HColors.white,border:`1px solid ${HAlpha.gold15}`}}>
             <FileCheck className="w-12 h-12 mx-auto mb-3" style={{color:HAlpha.gold20}}/>
             <p className="text-sm" style={{color:HColors.brown,fontFamily:'var(--font-nunito)'}}>
-              {activeTab==='en_cours'?'Aucun dossier en cours':activeTab==='pret'?'Aucun dossier prêt à certifier':"Aucun bien certifié pour l'instant"}
+              {activeTab==='disponible'?'Aucun dossier disponible':activeTab==='en_cours'?'Aucun dossier en cours':activeTab==='pret'?'Aucun dossier prêt à certifier':"Aucun bien certifié pour l'instant"}
             </p>
           </div>
         ):(
@@ -360,7 +389,16 @@ export default function NotaireDashboard() {
                       </div>
                     </div>
 
-                    <button onClick={()=>setExpandedId(isExpanded?null:property.id)}
+                    {activeTab==='disponible' ? (
+                      <button onClick={()=>handleTakeCharge(property)}
+                        disabled={takingId===property.id}
+                        className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl shrink-0 self-start transition-all hover:opacity-90 disabled:opacity-50"
+                        style={{background:'linear-gradient(135deg,#D4A017,#C07C3E)',color:HColors.night,fontFamily:'var(--font-nunito)'}}>
+                        {takingId===property.id?<Loader className="w-3.5 h-3.5 animate-spin"/>:<FileCheck className="w-3.5 h-3.5"/>}
+                        Prendre en charge
+                      </button>
+                    ) : (
+                      <button onClick={()=>setExpandedId(isExpanded?null:property.id)}
                       aria-label={isExpanded?'Fermer':`Examiner ${property.title}`}
                       aria-expanded={isExpanded}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl shrink-0 self-start transition-all hover:opacity-80"
@@ -371,6 +409,7 @@ export default function NotaireDashboard() {
                       {isExpanded?'Fermer':'Examiner'}
                       <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isExpanded?'rotate-180':''}`}/>
                     </button>
+                    )}
                   </div>
 
                   {isExpanded&&(
