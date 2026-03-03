@@ -166,7 +166,16 @@ export default function NotaireDashboard() {
     setTakingId(property.id);
     try {
       await propertyService.updateProperty(property.id, { notaire_id: profile.id });
-      setProperties(prev => prev.map(p => p.id === property.id ? { ...p, notaire_id: profile.id } : p));
+      const updated = { ...property, notaire_id: profile.id };
+      // Retirer des legacy si c'était un bien antérieur
+      setLegacyProperties(prev => prev.filter(p => p.id !== property.id));
+      // Ajouter dans properties (ou mettre à jour s'il y est déjà)
+      setProperties(prev => {
+        const exists = prev.some(p => p.id === property.id);
+        return exists
+          ? prev.map(p => p.id === property.id ? updated : p)
+          : [...prev, updated];
+      });
       setActiveTab('en_cours');
       showToast('Dossier pris en charge — il apparaît dans "En cours".');
     } catch { showToast('Erreur lors de la prise en charge', false); }
