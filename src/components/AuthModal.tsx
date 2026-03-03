@@ -115,12 +115,33 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
       }
       onClose();
       setEmail(''); setPassword(''); setFullName('');
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Une erreur est survenue';
-      if (msg.includes('Invalid login credentials')) setError('Email ou mot de passe incorrect');
-      else if (msg.includes('User already registered')) setError('Cet email est déjà utilisé');
-      else if (msg.includes('Email not confirmed')) setError('Veuillez confirmer votre email');
-      else setError(msg);
+    } catch (err: any) {
+      const code = err?.code || '';
+      const msg  = err instanceof Error ? err.message : String(err);
+      // ── Connexion ──
+      if (code === 'auth/wrong-password' || code === 'auth/invalid-credential' || msg.includes('Invalid login credentials'))
+        setError('Mot de passe incorrect. Veuillez réessayer.');
+      else if (code === 'auth/user-not-found' || msg.includes('user-not-found'))
+        setError('Aucun compte trouvé avec cet email.');
+      else if (code === 'auth/invalid-email')
+        setError('Adresse email invalide. Vérifiez le format.');
+      else if (code === 'auth/user-disabled')
+        setError('Ce compte a été désactivé. Contactez le support.');
+      else if (code === 'auth/too-many-requests')
+        setError('Trop de tentatives. Réessayez dans quelques minutes.');
+      // ── Inscription ──
+      else if (code === 'auth/email-already-in-use' || msg.includes('User already registered'))
+        setError('Cet email est déjà associé à un compte.');
+      else if (code === 'auth/weak-password')
+        setError('Mot de passe trop faible. Utilisez au moins 6 caractères.');
+      else if (code === 'auth/operation-not-allowed')
+        setError('Inscription temporairement désactivée.');
+      // ── Email ──
+      else if (msg.includes('Email not confirmed'))
+        setError('Veuillez confirmer votre adresse email avant de vous connecter.');
+      // ── Autres ──
+      else
+        setError(msg || 'Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -201,10 +222,11 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
 
           {/* Erreur */}
           {error && (
-            <div className="mb-5 px-4 py-3 rounded-xl text-sm"
-              style={{ background: HAlpha.bord30, border: '1px solid rgba(139,29,29,0.5)',
-                       color: '#FFAAAA', fontFamily: 'var(--font-nunito)' }}>
-              {error}
+            <div className="mb-5 flex items-start gap-2.5 px-4 py-3 rounded-xl text-sm"
+              style={{ background: 'rgba(139,29,29,0.18)', border: '1px solid rgba(200,50,50,0.45)',
+                       color: '#FFBBBB', fontFamily: 'var(--font-nunito)' }}>
+              <span className="shrink-0 mt-0.5 text-base">⚠️</span>
+              <span>{error}</span>
             </div>
           )}
 
