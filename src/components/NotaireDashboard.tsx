@@ -70,11 +70,15 @@ export default function NotaireDashboard() {
     setLoading(true);
     try {
       const all = await propertyService.getProperties();
-      // Un notaire voit : les biens sans notaire_id (disponibles) + les siens
-      const withDocs = all.filter(p =>
-        (p.documents?.length > 0 || p.verified_notaire) &&
-        (!p.notaire_id || p.notaire_id === profile?.id)
-      );
+      // Un notaire voit :
+      // - Les biens avec docs soumis, NON certifiés, NON assignés à un autre notaire
+      // - Ses propres biens (assignés à lui)
+      const withDocs = all.filter(p => {
+        if (!p.documents?.length && !p.verified_notaire) return false;
+        // Déjà assigné à un AUTRE notaire → invisible
+        if (p.notaire_id && p.notaire_id !== profile?.id) return false;
+        return true;
+      });
       setProperties(withDocs);
       const ownerIds = [...new Set(withDocs.map(p => p.owner_id))];
       const entries = await Promise.all(ownerIds.map(async id => {
@@ -158,9 +162,16 @@ export default function NotaireDashboard() {
   const {disponible,enCours,pret,certifie}=useMemo(()=>{
     const di:Property[]=[],ec:Property[]=[],pr:Property[]=[],ce:Property[]=[];
     for(const p of properties){
-      if(!p.notaire_id || p.notaire_id !== profile?.id) { di.push(p); continue; }
-      const s=getDocStatus(p);
-      if(s==='certifie') ce.push(p); else if(s==='complet') pr.push(p); else ec.push(p);
+      // Disponible = pas encore assigné à ce notaire ET pas certifié
+      if(!p.notaire_id) {
+        if(!p.verified_notaire) di.push(p); // certifié sans notaire_id = ancien data, ignorer
+        continue;
+      }
+      // Assigné à CE notaire
+      if(p.notaire_id === profile?.id) {
+        const s=getDocStatus(p);
+        if(s==='certifie') ce.push(p); else if(s==='complet') pr.push(p); else ec.push(p);
+      }
     }
     return {disponible:di,enCours:ec,pret:pr,certifie:ce};
   },[properties,profile?.id]);
