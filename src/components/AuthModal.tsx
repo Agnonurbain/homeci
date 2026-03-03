@@ -96,12 +96,35 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // ── Validation côté client ──
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim()) {
+      setError('Veuillez saisir votre adresse email.');
+      return;
+    }
+    if (!emailRegex.test(email.trim())) {
+      setError('Adresse email invalide. Vérifiez le format (ex: nom@domaine.com).');
+      return;
+    }
+    if (!password) {
+      setError('Veuillez saisir votre mot de passe.');
+      return;
+    }
+    if (mode === 'signup' && password.length < 6) {
+      setError('Le mot de passe doit contenir au moins 6 caractères.');
+      return;
+    }
+    if (mode === 'signup' && !fullName.trim()) {
+      setError('Veuillez entrer votre nom complet.');
+      return;
+    }
+
     setLoading(true);
     try {
       if (mode === 'login') {
         await signIn(email, password);
       } else {
-        if (!fullName.trim()) throw new Error('Veuillez entrer votre nom complet');
         // Sécurité double : si panneau notaire ouvert sans code validé → bloquer
         if (showNotaireCode && !notaireCodeValid) {
           throw new Error('Veuillez valider votre code d\'invitation notaire avant de créer le compte.');
