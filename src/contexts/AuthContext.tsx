@@ -134,14 +134,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function signIn(email: string, password: string) {
-    setLoading(true);
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // onAuthStateChanged prend le relais
-    } catch (error) {
-      setLoading(false);
-      throw error;
-    }
+    // Ne pas setLoading(true) ici — évite de masquer le modal d'erreur
+    // onAuthStateChanged prend le relais en cas de succès
+    await signInWithEmailAndPassword(auth, email, password);
   }
 
   async function signUp(
@@ -150,7 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fullName: string,
     role: Profile['role']
   ) {
-    setLoading(true);
+    // Ne pas setLoading(true) ici — évite de masquer le modal d'erreur
     try {
       const { user: newUser } = await createUserWithEmailAndPassword(auth, email, password);
 
@@ -184,7 +179,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(profileData);
       setLoading(false);
     } catch (error) {
-      setLoading(false);
       throw error;
     }
   }
