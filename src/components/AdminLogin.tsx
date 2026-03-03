@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { Shield, Lock, Mail, AlertCircle, Eye, EyeOff, Home, Loader } from 'lucide-react';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
