@@ -60,6 +60,7 @@ export default function NotaireDashboard() {
   const [actionLoading, setActionLoading] = useState<string|null>(null);
   const [certifyingId, setCertifyingId] = useState<string|null>(null);
   const [takingId, setTakingId] = useState<string|null>(null);
+  const [legacyProperties, setLegacyProperties] = useState<Property[]>([]);
   const [refusalReasons, setRefusalReasons] = useState<Record<string,string>>({});
   const [showRefusalInput, setShowRefusalInput] = useState<string|null>(null);
   const [toast, setToast] = useState<{msg:string;ok:boolean}|null>(null);
@@ -70,13 +71,26 @@ export default function NotaireDashboard() {
     setLoading(true);
     try {
       const all = await propertyService.getProperties();
+      // Biens legacy : certifiés ou avec docs validés, sans notaire_id (avant la MAJ)
+      const legacy = all.filter(p =>
+        !p.notaire_id &&
+        (p.verified_notaire || p.documents?.some((d: any) => d.status === 'valide'))
+      );
+      setLegacyProperties(legacy);
+
       // Un notaire voit :
-      // - Les biens avec docs soumis, NON certifiés, NON assignés à un autre notaire
-      // - Ses propres biens (assignés à lui)
+      // 1. Ses propres biens (notaire_id === profile.id), peu importe leur état
+      // 2. Biens disponibles = docs soumis, AUCUN doc validé, pas certifié, pas assigné
       const withDocs = all.filter(p => {
-        if (!p.documents?.length && !p.verified_notaire) return false;
-        // Déjà assigné à un AUTRE notaire → invisible
+        // Ses biens → toujours visibles
+        if (p.notaire_id === profile?.id) return true;
+        // Assigné à un AUTRE notaire → invisible
         if (p.notaire_id && p.notaire_id !== profile?.id) return false;
+        // Legacy (certifié ou docs validés sans notaire_id) → géré séparément
+        if (p.verified_notaire || p.documents?.some((d: any) => d.status === 'valide')) return false;
+        // Pas de documents → invisible
+        if (!p.documents?.length) return false;
+        // Disponible : docs soumis, tous en_attente, pas assigné
         return true;
       });
       setProperties(withDocs);
@@ -162,15 +176,16 @@ export default function NotaireDashboard() {
   const {disponible,enCours,pret,certifie}=useMemo(()=>{
     const di:Property[]=[],ec:Property[]=[],pr:Property[]=[],ce:Property[]=[];
     for(const p of properties){
-      // Disponible = pas encore assigné à ce notaire ET pas certifié
       if(!p.notaire_id) {
-        if(!p.verified_notaire) di.push(p); // certifié sans notaire_id = ancien data, ignorer
+        // Disponible : docs soumis, pas validés, pas certifié (filtré en amont)
+        di.push(p);
         continue;
       }
-      // Assigné à CE notaire
       if(p.notaire_id === profile?.id) {
         const s=getDocStatus(p);
-        if(s==='certifie') ce.push(p); else if(s==='complet') pr.push(p); else ec.push(p);
+        if(s==='certifie') ce.push(p);
+        else if(s==='complet') pr.push(p);
+        else ec.push(p);
       }
     }
     return {disponible:di,enCours:ec,pret:pr,certifie:ce};
@@ -606,6 +621,74 @@ export default function NotaireDashboard() {
           </div>
         )}
       </div>
+
+      {/* ── Section Dossiers Legacy ── */}
+      {legacyProperties.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+          <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl"
+            style={{background:HAlpha.gold08,border:`1px solid ${HAlpha.gold25}`}}>
+            <AlertCircle className="w-4 h-4 shrink-0" style={{color:HColors.gold}}/>
+            <div className="text-sm" style={{color:HColors.brownMid,fontFamily:'var(--font-nunito)'}}>
+              <strong>{legacyProperties.length} dossier{legacyProperties.length>1?'s':''} antérieur{legacyProperties.length>1?'s':''}</strong> — Ces biens ont été traités avant la mise à jour du système.
+              Prenez-les en charge pour les gérer depuis votre espace.
+            </div>
+          </div>
+          <div className="space-y-3">
+            {legacyProperties.map(p => {
+              const docSt = getDocStatus(p);
+              return (
+                <div key={p.id} className="rounded-2xl overflow-hidden"
+                  style={{background:HColors.white,border:`1px solid ${HAlpha.gold25}`,
+                          boxShadow:'0 2px 8px rgba(26,14,0,0.04)',opacity:0.9}}>
+                  <div className="h-1" style={{background:HColors.gold,opacity:0.3}}/>
+                  <div className="flex items-center gap-4 p-4">
+                    {p.images?.[0] ? (
+                      <img src={p.images[0]} alt={p.title}
+                        className="w-14 h-14 rounded-xl object-cover shrink-0"
+                        style={{border:`1px solid ${HAlpha.gold15}`}}/>
+                    ) : (
+                      <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0"
+                        style={{background:HAlpha.gold08,border:`1px solid ${HAlpha.gold15}`}}>
+                        <Building2 className="w-5 h-5" style={{color:HAlpha.gold30}}/>
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-sm leading-tight mb-1"
+                        style={{color:HColors.darkBrown,fontFamily:'var(--font-cormorant)',fontSize:'1rem'}}>
+                        {p.title}
+                      </h3>
+                      <div className="flex items-center gap-2 text-xs flex-wrap"
+                        style={{color:HColors.brown,fontFamily:'var(--font-nunito)'}}>
+                        <span className="flex items-center gap-1">
+                          <Building2 className="w-3 h-3"/>{TYPE_LABELS[p.property_type]||p.property_type}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3" style={{color:HColors.terracotta}}/>{p.city}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full font-medium"
+                          style={{background:HAlpha.gold08,border:`1px solid ${HAlpha.gold20}`,color:HColors.brownMid}}>
+                          Dossier antérieur
+                        </span>
+                        <DocStatusBadgeFull status={docSt}/>
+                      </div>
+                    </div>
+                    <button onClick={()=>handleTakeCharge(p)}
+                      disabled={takingId===p.id}
+                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl shrink-0 transition-all hover:opacity-90 disabled:opacity-50"
+                      style={{background:'linear-gradient(135deg,#D4A017,#C07C3E)',
+                              color:HColors.night,fontFamily:'var(--font-nunito)'}}>
+                      {takingId===p.id
+                        ? <Loader className="w-3.5 h-3.5 animate-spin"/>
+                        : <FileCheck className="w-3.5 h-3.5"/>}
+                      Reprendre
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Toast */}
       {toast&&(
