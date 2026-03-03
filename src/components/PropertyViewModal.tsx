@@ -46,8 +46,17 @@ function formatPrice(p: number) {
 }
 
 export default function PropertyViewModal({ propertyId, onClose, onRequestVisit, onShowAuth }: PropertyViewModalProps) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [property, setProperty] = useState<Property | null>(null);
+  // Peut voir les docs : notaire, propriétaire du bien, agent
+  const canSeeDocs = (p: Property | null) => {
+    if (!p || !user || !profile) return false;
+    if (profile.role === 'notaire') return true;
+    if (profile.role === 'admin') return true;
+    if (p.owner_id === user.uid) return true;
+    if (profile.role === 'agent' && p.owner_id === user.uid) return true;
+    return false;
+  };
   const [myVisit, setMyVisit] = useState<VisitRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [imgIndex, setImgIndex] = useState(0);
@@ -337,43 +346,58 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
 
               {/* ── Documents officiels ── */}
               {property.documents && property.documents.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-bold mb-2 flex items-center gap-2" style={{ color:HColors.darkBrown, fontFamily:'var(--font-cormorant)', fontSize:'1rem' }}>
-                    <FileText className="w-4 h-4" style={{ color:HColors.terracotta }} />
-                    Documents officiels
-                  </h3>
-                  <div className="space-y-2">
-                    {property.documents.map((doc, i) => {
-                      const st = DOC_STATUS[doc.status] ?? DOC_STATUS['en_attente'];
-                      const isValidated = doc.status === 'valide';
-                      return (
-                        <div key={i} className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl"
-                          style={doc.status === 'valide' ? { background:'rgba(45,106,79,0.08)', border:'1px solid rgba(45,106,79,0.3)' } : doc.status === 'refuse' ? { background:'rgba(139,29,29,0.08)', border:'1px solid rgba(139,29,29,0.25)' } : { background:HAlpha.gold08, border:'1px solid rgba(212,160,23,0.25)' }}>
-                          <div className="flex items-center gap-2 min-w-0">
-                            <FileText className="w-4 h-4 shrink-0 opacity-70" style={{ color:HColors.terracotta }} />
-                            <span className="text-sm font-medium truncate" style={{ color:HColors.darkBrown, fontFamily:'var(--font-nunito)' }}>{doc.label || doc.type}</span>
+                canSeeDocs(property) ? (
+                  <div>
+                    <h3 className="text-sm font-bold mb-2 flex items-center gap-2" style={{ color:HColors.darkBrown, fontFamily:'var(--font-cormorant)', fontSize:'1rem' }}>
+                      <FileText className="w-4 h-4" style={{ color:HColors.terracotta }} />
+                      Documents officiels
+                    </h3>
+                    <div className="space-y-2">
+                      {property.documents.map((doc, i) => {
+                        const st = DOC_STATUS[doc.status] ?? DOC_STATUS['en_attente'];
+                        const isValidated = doc.status === 'valide';
+                        return (
+                          <div key={i} className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl"
+                            style={doc.status === 'valide' ? { background:'rgba(45,106,79,0.08)', border:'1px solid rgba(45,106,79,0.3)' } : doc.status === 'refuse' ? { background:'rgba(139,29,29,0.08)', border:'1px solid rgba(139,29,29,0.25)' } : { background:HAlpha.gold08, border:'1px solid rgba(212,160,23,0.25)' }}>
+                            <div className="flex items-center gap-2 min-w-0">
+                              <FileText className="w-4 h-4 shrink-0 opacity-70" style={{ color:HColors.terracotta }} />
+                              <span className="text-sm font-medium truncate" style={{ color:HColors.darkBrown, fontFamily:'var(--font-nunito)' }}>{doc.label || doc.type}</span>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background:'rgba(255,255,255,0.6)', border:'1px solid currentColor', fontFamily:'var(--font-nunito)' }}>
+                                {st.label}
+                              </span>
+                              {isValidated && doc.url && (
+                                <a href={doc.url} target="_blank" rel="noopener noreferrer"
+                                  className="flex items-center gap-1 text-xs font-medium hover:underline" style={{ color:HColors.green, fontFamily:'var(--font-nunito)' }}>
+                                  <ExternalLink className="w-3.5 h-3.5" /> Voir
+                                </a>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background:'rgba(255,255,255,0.6)', border:'1px solid currentColor', fontFamily:'var(--font-nunito)' }}>
-                              {st.label}
-                            </span>
-                            {isValidated && doc.url && (
-                              <a href={doc.url} target="_blank" rel="noopener noreferrer"
-                                className="flex items-center gap-1 text-xs font-medium hover:underline" style={{ color:HColors.green, fontFamily:'var(--font-nunito)' }}>
-                                <ExternalLink className="w-3.5 h-3.5" /> Voir
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
+                    {!property.verified_notaire && (
+                      <p className="text-xs mt-2 flex items-center gap-1" style={{ color:HAlpha.brown50, fontFamily:'var(--font-nunito)' }}>
+                        <Lock className="w-3 h-3" />Les documents sont accessibles après validation notaire
+                      </p>
+                    )}
                   </div>
-                  {!property.verified_notaire && (
-                    <p className="text-xs mt-2 flex items-center gap-1" style={{ color:HAlpha.brown50, fontFamily:'var(--font-nunito)' }}>
-                      <Lock className="w-3 h-3" />Les documents sont accessibles après validation notaire
-                    </p>
-                  )}
-                </div>
+                ) : (
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl"
+                    style={{ background:HAlpha.gold08, border:`1px solid ${HAlpha.gold20}` }}>
+                    <Lock className="w-4 h-4 shrink-0" style={{ color:HColors.brownMid }} />
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color:HColors.darkBrown, fontFamily:'var(--font-nunito)' }}>
+                        Documents confidentiels
+                      </p>
+                      <p className="text-xs" style={{ color:HColors.brown, fontFamily:'var(--font-nunito)' }}>
+                        Les documents officiels sont réservés au propriétaire et au notaire en charge du dossier.
+                      </p>
+                    </div>
+                  </div>
+                )
               )}
 
               {/* Vérification notaire */}
