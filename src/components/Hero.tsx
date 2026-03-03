@@ -280,7 +280,7 @@ export function Hero({ onSearch }: HeroProps) {
                   next.transactionType = f.transactionType === tag.value ? '' : tag.value;
                 }
                 setF(next);
-                setTimeout(() => { onSearch?.(next); document.getElementById('property-list')?.scrollIntoView({ behavior:'smooth' }); }, 50);
+                // Filtres mis à jour — scroll déclenché uniquement par le bouton Rechercher
               };
               return (
                 <button key={tag.label} onClick={toggle}
@@ -298,7 +298,7 @@ export function Hero({ onSearch }: HeroProps) {
               <button onClick={() => {
                   const next = { ...f, propertyTypes:[], propertyType:'', verifiedNotaire:false, transactionType:'' };
                   setF(next);
-                  setTimeout(() => { onSearch?.(next); document.getElementById('property-list')?.scrollIntoView({ behavior:'smooth' }); }, 50);
+                  onSearch?.(next);
                 }}
                 className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
                 style={{ background:'rgba(192,60,60,0.15)', border:'1px solid rgba(192,60,60,0.40)',
