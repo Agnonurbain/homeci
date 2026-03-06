@@ -485,6 +485,45 @@ export default function NotaireDashboard() {
                         </div>
                       )}
 
+                      {/* ── Titre de l'annonce à vérifier ── */}
+                      <div className="rounded-xl overflow-hidden"
+                        style={{background:HColors.white,border:`1px solid ${HAlpha.gold15}`}}>
+                        <div className="flex items-center gap-3 p-3">
+                          <FileText className="w-4 h-4 shrink-0" style={{color:HColors.gold}}/>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs font-bold uppercase tracking-wider" style={{color:HAlpha.brown50,fontFamily:'var(--font-nunito)'}}>Titre de l'annonce</span>
+                              <span className="text-xs px-1.5 py-0.5 rounded font-medium" style={{background:HAlpha.gold08,color:HColors.brownMid}}>À vérifier</span>
+                            </div>
+                            <p className="text-sm font-semibold mt-0.5" style={{color:HColors.darkBrown,fontFamily:'var(--font-nunito)'}}>
+                              {property.title}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* ── Titre de l'annonce ── */}
+                      <div className="rounded-xl overflow-hidden"
+                        style={{background:HColors.white,border:`1px solid ${HAlpha.gold15}`}}>
+                        <div className="flex items-center gap-3 p-3">
+                          <FileText className="w-4 h-4 shrink-0" style={{color:HColors.gold}}/>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-xs font-bold uppercase tracking-wider"
+                              style={{color:HAlpha.brown50,fontFamily:'var(--font-nunito)'}}>
+                              Titre de l'annonce
+                            </span>
+                            <p className="text-sm font-semibold mt-0.5"
+                              style={{color:HColors.darkBrown,fontFamily:'var(--font-nunito)'}}>
+                              {property.title}
+                            </p>
+                          </div>
+                          <span className="text-xs px-2 py-1 rounded-lg font-medium shrink-0"
+                            style={{background:HAlpha.gold08,color:HColors.brownMid,border:`1px solid ${HAlpha.gold15}`,fontFamily:'var(--font-nunito)'}}>
+                            À vérifier
+                          </span>
+                        </div>
+                      </div>
+
                       <div>
                         <h4 className="text-xs font-bold uppercase tracking-wider mb-2"
                           style={{color:HAlpha.brown50,fontFamily:'var(--font-nunito)'}}>Documents soumis</h4>

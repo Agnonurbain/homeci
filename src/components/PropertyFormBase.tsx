@@ -29,7 +29,7 @@ import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 export interface PropertyFormData {
-  title: string; description: string;
+  title: string;
   property_type: string; transaction_type: string; price: string;
   district: string; region: string; departement: string;
   city: string; commune: string; quartier: string; address: string;
@@ -44,7 +44,7 @@ export interface PropertyFormData {
 }
 
 export const DEFAULT_FORM_DATA: PropertyFormData = {
-  title: '', description: '', property_type: 'appartement', transaction_type: 'location',
+  title: '', property_type: 'appartement', transaction_type: 'location',
   price: '', city: 'Abidjan', district: '', region: '', departement: '',
   commune: '', quartier: '', address: '', latitude: null, longitude: null,
   bedrooms: '1', bathrooms: '1', surface_area: '', land_area: '',
@@ -139,7 +139,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
           return h?.departement || '';
         };
         setFormData({
-          title: data.title || '', description: data.description || '',
+          title: data.title || '',
           property_type: data.property_type || 'appartement',
           transaction_type: data.transaction_type || 'location',
           price: data.price?.toString() || '',
@@ -232,8 +232,8 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
   const validateStep = (step: number): boolean => {
     setError('');
     if (step === 1) {
-      if (!formData.title.trim() || !formData.description.trim()) {
-        setError('Veuillez remplir le titre et la description'); return false;
+      if (!formData.title.trim()) {
+        setError('Veuillez remplir le titre de l\'annonce'); return false;
       }
       if (!formData.price || parseFloat(formData.price) <= 0) {
         setError('Veuillez entrer un prix valide'); return false;
@@ -476,12 +476,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                     className={inputCls} style={S.input} placeholder="Ex: Belle villa avec piscine à Cocody" />
                 </div>
 
-                <div>
-                  <label className="block mb-1.5" style={S.label}>Description *</label>
-                  <textarea name="description" value={formData.description} onChange={handleChange} rows={4}
-                    className={inputCls} style={{ ...S.input, resize:'vertical' }}
-                    placeholder="Décrivez le bien, son emplacement, ses atouts…" />
-                </div>
+                
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
