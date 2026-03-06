@@ -5,6 +5,10 @@ import {
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+  TwitterAuthProvider,
+  signInWithPopup,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
@@ -28,6 +32,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string, role: Profile['role']) => Promise<void>;
+  signInWithProvider: (provider: 'google' | 'facebook' | 'twitter') => Promise<{ isNewUser: boolean; uid: string; displayName: string; email: string; photoURL: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -183,6 +188,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function signInWithProvider(provider: 'google' | 'facebook' | 'twitter'): Promise<{ isNewUser: boolean; uid: string; displayName: string; email: string; photoURL: string | null }> {
+    const authProvider =
+      provider === 'google'   ? new GoogleAuthProvider()   :
+      provider === 'facebook' ? new FacebookAuthProvider() :
+                                new TwitterAuthProvider();
+    const result = await signInWithPopup(auth, authProvider);
+    const fbUser = result.user;
+    const profileRef = doc(db, 'profiles', fbUser.uid);
+    const snap = await getDoc(profileRef);
+    if (!snap.exists()) {
+      // Nouveau utilisateur — on crée un profil temporaire locataire
+      // Le rôle sera mis à jour par le modal de sélection
+      const now = new Date().toISOString();
+      const profileData: Profile = {
+        id: fbUser.uid,
+        email: fbUser.email || '',
+        full_name: fbUser.displayName || 'Utilisateur',
+        role: 'locataire',
+        phone: null,
+        avatar_url: fbUser.photoURL || null,
+        company_name: null,
+        verified: false,
+        created_at: now,
+        updated_at: now,
+      };
+      await setDoc(profileRef, {
+        ...profileData,
+        created_at: serverTimestamp(),
+        updated_at: serverTimestamp(),
+      });
+      setCachedProfile(profileData);
+      setProfile(profileData);
+      return { isNewUser: true, uid: fbUser.uid, displayName: fbUser.displayName || '', email: fbUser.email || '', photoURL: fbUser.photoURL };
+    }
+    return { isNewUser: false, uid: fbUser.uid, displayName: fbUser.displayName || '', email: fbUser.email || '', photoURL: fbUser.photoURL };
+  }
+
   async function signOut() {
     if (user) clearCachedProfile(user.uid);
     setUser(null);
@@ -191,7 +233,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signInWithProvider, signOut }}>
       {children}
     </AuthContext.Provider>
   );

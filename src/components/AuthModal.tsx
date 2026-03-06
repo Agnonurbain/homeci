@@ -3,6 +3,7 @@ import { X, Eye, EyeOff, Building2, User, Home, Briefcase, Award, Key, Loader, A
 import { useAuth } from '../contexts/AuthContext';
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
+import RoleSelectModal from './RoleSelectModal';
 import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
@@ -43,6 +44,7 @@ async function markNotaireCodeUsed(docId: string) {
 export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
   const { signIn, signUp, signInWithProvider } = useAuth();
   const [socialLoading, setSocialLoading] = useState<string|null>(null);
+  const [newGoogleUser, setNewGoogleUser] = useState<{uid:string;displayName:string;photoURL:string|null}|null>(null);
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -178,6 +180,18 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
     color: HColors.cream,
     fontFamily: 'var(--font-nunito)',
   } as React.CSSProperties;
+
+  // Afficher le modal de sélection de rôle pour les nouveaux utilisateurs Google
+  if (newGoogleUser) {
+    return (
+      <RoleSelectModal
+        uid={newGoogleUser.uid}
+        displayName={newGoogleUser.displayName}
+        photoURL={newGoogleUser.photoURL}
+        onDone={() => { setNewGoogleUser(null); onClose(); }}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 flex items-center justify-center p-4 z-50"
@@ -443,22 +457,12 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
           {/* ── Connexion sociale ── */}
           <div className="flex gap-3">
             {([
-              { id:'google',   label:'Google',   icon:(
+              { id:'google', label:'Continuer avec Google', icon:(
                 <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                   <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                   <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-              )},
-              { id:'facebook', label:'Facebook', icon:(
-                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="#1877F2">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-              )},
-              { id:'twitter',  label:'X',        icon:(
-                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                 </svg>
               )},
             ] as {id:string;label:string;icon:React.ReactNode}[]).map(p => (
@@ -467,18 +471,30 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                   setSocialLoading(p.id);
                   setError('');
                   try {
-                    await signInWithProvider(p.id as 'google'|'facebook'|'twitter');
-                    onClose();
+                    const result = await signInWithProvider(p.id as 'google'|'facebook'|'twitter');
+                    if (result.isNewUser) {
+                      // Nouveau utilisateur → afficher modal de sélection de rôle
+                      setNewGoogleUser({ uid: result.uid, displayName: result.displayName, photoURL: result.photoURL });
+                    } else {
+                      onClose();
+                    }
                   } catch (err: any) {
                     const code = err?.code || '';
+                    console.error('[Google Auth] code:', code, '| message:', err?.message);
                     if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
-                      // Utilisateur a fermé le popup — pas d'erreur
+                      // Utilisateur a fermé le popup — pas d'erreur à afficher
+                    } else if (code === 'auth/unauthorized-domain') {
+                      setError('Domaine non autorisé. Ajoutez ce domaine dans Firebase Console → Authentication → Domaines autorisés.');
+                    } else if (code === 'auth/operation-not-allowed') {
+                      setError('Connexion Google non activée. Activez-la dans Firebase Console → Authentication → Sign-in method.');
                     } else if (code === 'auth/account-exists-with-different-credential') {
-                      setError('Un compte existe déjà avec cet email via une autre méthode de connexion.');
+                      setError('Un compte existe déjà avec cet email. Connectez-vous avec email/mot de passe.');
                     } else if (code === 'auth/popup-blocked') {
-                      setError('Popup bloquée par le navigateur. Autorisez les popups pour ce site.');
+                      setError('Popup bloquée. Autorisez les popups pour ce site dans votre navigateur.');
+                    } else if (code === 'auth/network-request-failed') {
+                      setError('Erreur réseau. Vérifiez votre connexion internet.');
                     } else {
-                      setError('Erreur lors de la connexion. Veuillez réessayer.');
+                      setError(`Erreur Google (${code || err?.message || 'inconnue'}). Vérifiez la console du navigateur.`);
                     }
                   } finally {
                     setSocialLoading(null);
