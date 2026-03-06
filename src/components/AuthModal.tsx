@@ -3,7 +3,6 @@ import { X, Eye, EyeOff, Building2, User, Home, Briefcase, Award, Key, Loader, A
 import { useAuth } from '../contexts/AuthContext';
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
-import RoleSelectModal from './RoleSelectModal';
 import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
@@ -11,6 +10,7 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialMode?: 'login' | 'signup';
+  onNewGoogleUser?: (data: {uid:string;displayName:string;photoURL:string|null}) => void;
 }
 
 // Rôles publics — Notaire retiré délibérément
@@ -41,10 +41,9 @@ async function markNotaireCodeUsed(docId: string) {
   await updateDoc(doc(db, 'notaire_codes', docId), { used: true, used_at: new Date().toISOString() });
 }
 
-export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, initialMode = 'login', onNewGoogleUser }: AuthModalProps) {
   const { signIn, signUp, signInWithProvider } = useAuth();
   const [socialLoading, setSocialLoading] = useState<string|null>(null);
-  const [newGoogleUser, setNewGoogleUser] = useState<{uid:string;displayName:string;photoURL:string|null}|null>(null);
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -180,18 +179,6 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
     color: HColors.cream,
     fontFamily: 'var(--font-nunito)',
   } as React.CSSProperties;
-
-  // Afficher le modal de sélection de rôle pour les nouveaux utilisateurs Google
-  if (newGoogleUser) {
-    return (
-      <RoleSelectModal
-        uid={newGoogleUser.uid}
-        displayName={newGoogleUser.displayName}
-        photoURL={newGoogleUser.photoURL}
-        onDone={() => { setNewGoogleUser(null); onClose(); }}
-      />
-    );
-  }
 
   return (
     <div className="fixed inset-0 flex items-center justify-center p-4 z-50"
@@ -472,12 +459,10 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                   setError('');
                   try {
                     const result = await signInWithProvider(p.id as 'google'|'facebook'|'twitter');
-                    if (result.isNewUser) {
-                      // Nouveau utilisateur → afficher modal de sélection de rôle
-                      setNewGoogleUser({ uid: result.uid, displayName: result.displayName, photoURL: result.photoURL });
-                    } else {
-                      onClose();
+                    if (result.isNewUser && onNewGoogleUser) {
+                      onNewGoogleUser({ uid: result.uid, displayName: result.displayName, photoURL: result.photoURL });
                     }
+                    onClose();
                   } catch (err: any) {
                     const code = err?.code || '';
                     console.error('[Google Auth] code:', code, '| message:', err?.message);

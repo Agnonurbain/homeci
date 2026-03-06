@@ -13,6 +13,7 @@ import NotaireDashboard from './components/NotaireDashboard';
 import AdminAccessCode, { clearSessionCode } from './components/AdminAccessCode';
 import AdminLogin from './components/AdminLogin';
 import AdminSessionManager from './components/AdminSessionManager';
+import RoleSelectModal from './components/RoleSelectModal';
 
 interface HeroFilters {
   propertyType: string;
@@ -30,6 +31,7 @@ function AppContent() {
   const [isAdminRoute, setIsAdminRoute] = useState(false);
   const [accessCodeValidated, setAccessCodeValidated] = useState(false);
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
+  const [pendingRoleUser, setPendingRoleUser] = useState<{uid:string;displayName:string;photoURL:string|null}|null>(null);
   const [heroFilters, setHeroFilters] = useState<HeroFilters>({ propertyType: '', propertyTypes: [], verifiedNotaire: false, transactionType: '', district: '', region: '', departement: '', city: '', commune: '', quartier: '' });
 
   useEffect(() => {
@@ -156,14 +158,35 @@ function AppContent() {
           isOpen={showAuthModal}
           onClose={() => setShowAuthModal(false)}
           initialMode={authMode}
+          onNewGoogleUser={(data) => setPendingRoleUser(data)}
         />
+        {pendingRoleUser && (
+          <RoleSelectModal
+            uid={pendingRoleUser.uid}
+            displayName={pendingRoleUser.displayName}
+            photoURL={pendingRoleUser.photoURL}
+            onDone={() => setPendingRoleUser(null)}
+          />
+        )}
       </>
     );
   }
 
   // ── DASHBOARDS CONNECTÉS ──
   const renderDashboard = () => {
-    if (!profile) return null;
+    if (!profile) return (
+      <div className="min-h-screen flex items-center justify-center"
+        style={{ background: 'linear-gradient(160deg, #0D1F12 0%, #1A0E00 100%)' }}>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 rounded-full border-2 animate-spin"
+            style={{ borderColor: 'rgba(212,160,23,0.2)', borderTopColor: '#D4A017' }} />
+          <p className="text-xs tracking-widest uppercase"
+            style={{ color: 'rgba(245,230,200,0.4)', fontFamily: 'var(--font-nunito)' }}>
+            Chargement…
+          </p>
+        </div>
+      </div>
+    );
     switch (profile.role) {
       case 'locataire': return <TenantDashboard />;
       case 'proprietaire':
@@ -182,7 +205,16 @@ function AppContent() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         initialMode={authMode}
+        onNewGoogleUser={(data) => setPendingRoleUser(data)}
       />
+      {pendingRoleUser && (
+        <RoleSelectModal
+          uid={pendingRoleUser.uid}
+          displayName={pendingRoleUser.displayName}
+          photoURL={pendingRoleUser.photoURL}
+          onDone={() => setPendingRoleUser(null)}
+        />
+      )}
     </div>
   );
 }
