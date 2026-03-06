@@ -324,12 +324,6 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
                 {p.cuisine_par_unite && <Badge color="orange" label="Cuisine/unité" />}
               </div>
 
-              {/* Description */}
-              <div>
-                <h3 className="text-sm font-bold mb-2" style={{ color:HColors.darkBrown, fontFamily:'var(--font-cormorant)', fontSize:'1rem' }}>Description</h3>
-                <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color:HColors.brownDark, fontFamily:'var(--font-nunito)' }}>{property.description}</p>
-              </div>
-
               {/* Équipements */}
               {amenitiesList.length > 0 && (
                 <div>
