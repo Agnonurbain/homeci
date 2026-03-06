@@ -134,6 +134,26 @@ export default function NotaireDashboard() {
     finally { setActionLoading(null); }
   }
 
+  async function handleTitleAction(property:Property, newStatus:'valide'|'refuse'|'en_attente'){
+    const key=`title:${property.id}`; setActionLoading(key);
+    try {
+      const titleStatus = newStatus === 'valide' ? { title_status:'valide', title_validated_at: new Date().toISOString() }
+                        : newStatus === 'refuse'  ? { title_status:'refuse',  title_rejection_reason: refusalReasons[key]||'' }
+                        :                           { title_status:'en_attente', title_validated_at: null };
+      await propertyService.updateProperty(property.id, titleStatus);
+      const stLbl = newStatus==='valide'?'validé ✅':newStatus==='refuse'?'refusé ❌':'remis en attente';
+      await notificationService.createNotification({user_id:property.owner_id,type:'system',
+        title:`📋 Titre de l'annonce ${newStatus==='valide'?'validé':newStatus==='refuse'?'refusé':'en attente'}`,
+        message:`Le titre de votre annonce "${property.title}" a été ${stLbl}.`,
+        property_id:property.id,
+      });
+      setProperties(prev=>prev.map(p=>p.id===property.id?{...p,...titleStatus}:p));
+      setShowRefusalInput(null);
+      showToast(`Titre ${stLbl}`);
+    } catch { showToast('Erreur lors de la mise à jour du titre',false); }
+    finally { setActionLoading(null); }
+  }
+
   async function handleCertify(property:Property){
     if(!isReadyToCertify(property)) return; setCertifyingId(property.id);
     try {
@@ -485,44 +505,95 @@ export default function NotaireDashboard() {
                         </div>
                       )}
 
-                      {/* ── Titre de l'annonce à vérifier ── */}
-                      <div className="rounded-xl overflow-hidden"
-                        style={{background:HColors.white,border:`1px solid ${HAlpha.gold15}`}}>
-                        <div className="flex items-center gap-3 p-3">
-                          <FileText className="w-4 h-4 shrink-0" style={{color:HColors.gold}}/>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-xs font-bold uppercase tracking-wider" style={{color:HAlpha.brown50,fontFamily:'var(--font-nunito)'}}>Titre de l'annonce</span>
-                              <span className="text-xs px-1.5 py-0.5 rounded font-medium" style={{background:HAlpha.gold08,color:HColors.brownMid}}>À vérifier</span>
-                            </div>
-                            <p className="text-sm font-semibold mt-0.5" style={{color:HColors.darkBrown,fontFamily:'var(--font-nunito)'}}>
-                              {property.title}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
                       {/* ── Titre de l'annonce ── */}
-                      <div className="rounded-xl overflow-hidden"
-                        style={{background:HColors.white,border:`1px solid ${HAlpha.gold15}`}}>
-                        <div className="flex items-center gap-3 p-3">
-                          <FileText className="w-4 h-4 shrink-0" style={{color:HColors.gold}}/>
-                          <div className="flex-1 min-w-0">
-                            <span className="text-xs font-bold uppercase tracking-wider"
-                              style={{color:HAlpha.brown50,fontFamily:'var(--font-nunito)'}}>
-                              Titre de l'annonce
-                            </span>
-                            <p className="text-sm font-semibold mt-0.5"
-                              style={{color:HColors.darkBrown,fontFamily:'var(--font-nunito)'}}>
-                              {property.title}
-                            </p>
+                      {(()=>{
+                        const titleKey=`title:${property.id}`;
+                        const titleStatus=(property as any).title_status||'en_attente';
+                        const isLoadingTitle=actionLoading===titleKey;
+                        const isShowingTitleRefusal=showRefusalInput===titleKey;
+                        const titleSt = titleStatus==='valide'
+                          ? {bg:'rgba(45,106,79,0.08)',bd:'rgba(45,106,79,0.3)',text:HColors.green,label:'Validé'}
+                          : titleStatus==='refuse'
+                          ? {bg:'rgba(139,29,29,0.08)',bd:'rgba(139,29,29,0.25)',text:HColors.bordeaux,label:'Refusé'}
+                          : {bg:HAlpha.gold08,bd:HAlpha.gold20,text:HColors.brownMid,label:'En attente'};
+                        return (
+                          <div className="rounded-xl overflow-hidden"
+                            style={{background:HColors.white,border:`1px solid ${HAlpha.gold15}`}}>
+                            <div className="flex items-center gap-3 p-3">
+                              <FileText className="w-4 h-4 shrink-0" style={{color:HColors.gold}}/>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-xs font-bold uppercase tracking-wider"
+                                    style={{color:HAlpha.brown50,fontFamily:'var(--font-nunito)'}}>Titre de l'annonce</span>
+                                  <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
+                                    style={{background:titleSt.bg,color:titleSt.text,border:`1px solid ${titleSt.bd}`}}>
+                                    {titleSt.label}
+                                  </span>
+                                </div>
+                                <p className="text-sm font-semibold mt-0.5"
+                                  style={{color:HColors.darkBrown,fontFamily:'var(--font-nunito)'}}>
+                                  {property.title}
+                                </p>
+                                {titleStatus==='valide'&&(property as any).title_validated_at&&(
+                                  <p className="text-xs mt-0.5" style={{color:HAlpha.brown50,fontFamily:'var(--font-nunito)'}}>
+                                    Validé le {new Date((property as any).title_validated_at).toLocaleDateString('fr-FR')}
+                                  </p>
+                                )}
+                                {titleStatus==='refuse'&&(property as any).title_rejection_reason&&(
+                                  <p className="text-xs mt-0.5" style={{color:HColors.bordeaux,fontFamily:'var(--font-nunito)'}}>
+                                    Motif : {(property as any).title_rejection_reason}
+                                  </p>
+                                )}
+                              </div>
+                              {!property.verified_notaire&&(
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  {titleStatus!=='valide'&&(
+                                    <button onClick={()=>handleTitleAction(property,'valide')}
+                                      disabled={isLoadingTitle}
+                                      className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80 disabled:opacity-50"
+                                      style={{background:HAlpha.green10,border:`1px solid ${HAlpha.green25}`,color:HColors.green}}>
+                                      {isLoadingTitle?<Loader className="w-3 h-3 animate-spin"/>:<ThumbsUp className="w-3 h-3"/>}
+                                      Valider
+                                    </button>
+                                  )}
+                                  {titleStatus!=='refuse'&&(
+                                    <button onClick={()=>setShowRefusalInput(isShowingTitleRefusal?null:titleKey)}
+                                      disabled={isLoadingTitle}
+                                      className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80 disabled:opacity-50"
+                                      style={{background:'rgba(139,29,29,0.08)',border:'1px solid rgba(139,29,29,0.25)',color:HColors.bordeaux}}>
+                                      <ThumbsDown className="w-3 h-3"/> Refuser
+                                    </button>
+                                  )}
+                                  {titleStatus!=='en_attente'&&(
+                                    <button onClick={()=>handleTitleAction(property,'en_attente')}
+                                      disabled={isLoadingTitle}
+                                      className="p-1.5 rounded-lg transition-all hover:opacity-80"
+                                      style={{background:HAlpha.gold08,border:`1px solid ${HAlpha.gold15}`,color:HColors.brownMid}}>
+                                      <RotateCcw className="w-3 h-3"/>
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            {isShowingTitleRefusal&&(
+                              <div className="px-3 pb-3 flex gap-2">
+                                <input type="text" placeholder="Motif du refus (optionnel)"
+                                  value={refusalReasons[titleKey]||''}
+                                  onChange={e=>setRefusalReasons(prev=>({...prev,[titleKey]:e.target.value}))}
+                                  className="flex-1 px-3 py-1.5 rounded-lg text-xs outline-none"
+                                  style={{background:'rgba(139,29,29,0.06)',border:'1px solid rgba(139,29,29,0.2)',
+                                          color:HColors.darkBrown,fontFamily:'var(--font-nunito)'}}/>
+                                <button onClick={()=>handleTitleAction(property,'refuse')}
+                                  disabled={isLoadingTitle}
+                                  className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all hover:opacity-80 disabled:opacity-50"
+                                  style={{background:'rgba(139,29,29,0.12)',border:'1px solid rgba(139,29,29,0.3)',color:HColors.bordeaux}}>
+                                  Confirmer le refus
+                                </button>
+                              </div>
+                            )}
                           </div>
-                          <span className="text-xs px-2 py-1 rounded-lg font-medium shrink-0"
-                            style={{background:HAlpha.gold08,color:HColors.brownMid,border:`1px solid ${HAlpha.gold15}`,fontFamily:'var(--font-nunito)'}}>
-                            À vérifier
-                          </span>
-                        </div>
-                      </div>
+                        );
+                      })()}
 
                       <div>
                         <h4 className="text-xs font-bold uppercase tracking-wider mb-2"
