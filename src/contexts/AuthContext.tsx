@@ -33,6 +33,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string, role: Profile['role']) => Promise<void>;
   signInWithProvider: (provider: 'google' | 'facebook' | 'twitter') => Promise<{ isNewUser: boolean; uid: string; displayName: string; email: string; photoURL: string | null }>;
+  refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -225,6 +226,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { isNewUser: false, uid: fbUser.uid, displayName: fbUser.displayName || '', email: fbUser.email || '', photoURL: fbUser.photoURL };
   }
 
+  async function refreshProfile() {
+    if (!user) return;
+    try {
+      const docRef = doc(db, 'profiles', user.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data() as Profile;
+        setProfile(data);
+        setCachedProfile(data);
+      }
+    } catch (e) {
+      console.error('refreshProfile error:', e);
+    }
+  }
+
   async function signOut() {
     if (user) clearCachedProfile(user.uid);
     setUser(null);
@@ -233,7 +249,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signInWithProvider, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signInWithProvider, refreshProfile, signOut }}>
       {children}
     </AuthContext.Provider>
   );

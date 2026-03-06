@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { useAuth } from '../contexts/AuthContext';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { KenteLine } from './ui/KenteLine';
 import { Home, Building2, Briefcase, Loader } from 'lucide-react';
@@ -34,6 +35,7 @@ const ROLES = [
 ] as const;
 
 export default function RoleSelectModal({ uid, displayName, photoURL, onDone }: RoleSelectModalProps) {
+  const { refreshProfile } = useAuth();
   const [selected, setSelected] = useState<'locataire' | 'proprietaire' | 'agent'>('locataire');
   const [loading, setLoading] = useState(false);
 
@@ -51,6 +53,8 @@ export default function RoleSelectModal({ uid, displayName, photoURL, onDone }: 
         const parsed = JSON.parse(cached);
         localStorage.setItem(cacheKey, JSON.stringify({ ...parsed, role: selected }));
       }
+      // Recharger le profil en mémoire → déclenche le bon dashboard
+      await refreshProfile();
     } catch (e) {
       console.error(e);
     } finally {

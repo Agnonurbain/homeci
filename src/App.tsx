@@ -174,6 +174,20 @@ function AppContent() {
 
   // ── DASHBOARDS CONNECTÉS ──
   const renderDashboard = () => {
+    // Bloquer le dashboard pendant la sélection de rôle
+    if (pendingRoleUser) return (
+      <div className="min-h-screen flex items-center justify-center"
+        style={{ background: 'linear-gradient(160deg, #0D1F12 0%, #1A0E00 100%)' }}>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 rounded-full border-2 animate-spin"
+            style={{ borderColor: 'rgba(212,160,23,0.2)', borderTopColor: '#D4A017' }} />
+          <p className="text-xs tracking-widest uppercase"
+            style={{ color: 'rgba(245,230,200,0.4)', fontFamily: 'var(--font-nunito)' }}>
+            Configuration du compte…
+          </p>
+        </div>
+      </div>
+    );
     if (!profile) return (
       <div className="min-h-screen flex items-center justify-center"
         style={{ background: 'linear-gradient(160deg, #0D1F12 0%, #1A0E00 100%)' }}>
