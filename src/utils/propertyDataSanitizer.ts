@@ -6,7 +6,7 @@ export interface RawFormData {
   property_type: string;
   transaction_type: string;
   title: string;
-  description: string;
+  description?: string;
   price: string;
   district: string;
   region: string;
@@ -52,7 +52,7 @@ export function sanitizePropertyData(formData: RawFormData): SanitizedBase {
 
   const base = {
     title: formData.title.trim(),
-    description: formData.description.trim(),
+    description: (formData.description || '').trim(),
     property_type: type,
     transaction_type: formData.transaction_type as PropertyInsert['transaction_type'],
     price: parseFloat(formData.price) || 0,
