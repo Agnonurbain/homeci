@@ -8,7 +8,7 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   X, ArrowLeft, ArrowRight, Home, MapPin, Image, Check,
-  Upload, Trash2, FileText,
+  Upload, Trash2, FileText, AlertCircle,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { propertyService } from '../services/propertyService';
@@ -274,6 +274,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
           ...sanitizePropertyData(formData),
           owner_id: user.uid, status: 'pending', images: [],
           documents: [], verified_notaire: false, verification_date: null,
+          notaire_id: null,
           views_count: 0, featured: false,
         };
         const newId = await propertyService.createProperty(propertyData);
@@ -323,6 +324,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
         }
       }
     } catch (err) {
+      console.error('[HOMECI] Erreur publication:', err);
       setError(err instanceof Error ? err.message : 'Une erreur est survenue.');
       setSaving(false);
     }
@@ -898,8 +900,20 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
         </div>
 
         {/* ── Navigation ── */}
-        <div className="flex-shrink-0 flex items-center justify-between gap-3 px-5 py-4"
+        <div className="flex-shrink-0 px-5 py-4"
           style={{ borderTop:'1px solid rgba(212,160,23,0.15)', background:'rgba(249,243,232,0.95)' }}>
+
+          {/* Erreur visible près du bouton */}
+          {error && (
+            <div className="mb-3 px-4 py-2.5 rounded-xl text-xs flex items-center gap-2"
+              style={{ background:'rgba(139,29,29,0.15)', border:'1px solid rgba(139,29,29,0.3)',
+                       color:'#8B1D1D', fontFamily:'var(--font-nunito)' }}>
+              <AlertCircle className="w-4 h-4 shrink-0" style={{ color:'#8B1D1D' }} />
+              {error}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between gap-3">
           <button type="button" aria-label="Étape précédente"
             onClick={currentStep === 1 ? onClose : handlePrevious}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
@@ -935,6 +949,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
               {mode === 'create' ? 'Publier' : 'Sauvegarder'}
             </button>
           )}
+          </div>
         </div>
       </div>
     </div>
