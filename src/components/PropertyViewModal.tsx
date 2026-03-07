@@ -48,13 +48,12 @@ function formatPrice(p: number) {
 export default function PropertyViewModal({ propertyId, onClose, onRequestVisit, onShowAuth }: PropertyViewModalProps) {
   const { user, profile } = useAuth();
   const [property, setProperty] = useState<Property | null>(null);
-  // Peut voir les docs : notaire, propriétaire du bien, agent
+  // Peut voir les docs : notaire, propriétaire du bien
   const canSeeDocs = (p: Property | null) => {
     if (!p || !user || !profile) return false;
     if (profile.role === 'notaire') return true;
     if (profile.role === 'admin') return true;
     if (p.owner_id === user.uid) return true;
-    if (profile.role === 'agent' && p.owner_id === user.uid) return true;
     return false;
   };
   const [myVisit, setMyVisit] = useState<VisitRequest | null>(null);

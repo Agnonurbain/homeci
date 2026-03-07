@@ -17,7 +17,6 @@ interface AuthModalProps {
 const PUBLIC_ROLES = [
   { value: 'locataire',    label: 'Locataire / Acheteur', icon: Home,      desc: 'Je cherche un bien'    },
   { value: 'proprietaire', label: 'Propriétaire',          icon: Building2, desc: 'Je loue ou vends'      },
-  { value: 'agent',        label: 'Agent immobilier',      icon: Briefcase, desc: 'Je représente des biens'},
 ];
 
 async function validateNotaireCode(code: string): Promise<{ valid: boolean; docId?: string }> {
@@ -48,7 +47,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onNewGoogleU
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [role, setRole] = useState<'locataire' | 'proprietaire' | 'agent' | 'notaire'>('locataire');
+  const [role, setRole] = useState<'locataire' | 'proprietaire' | 'notaire'>('locataire');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);

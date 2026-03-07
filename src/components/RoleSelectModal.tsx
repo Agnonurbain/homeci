@@ -13,12 +13,11 @@ interface RoleSelectModalProps {
   onDone: () => void;
 }
 
-type RoleId = 'locataire' | 'proprietaire' | 'agent' | 'notaire';
+type RoleId = 'locataire' | 'proprietaire' | 'notaire';
 
 const ROLES: { id: RoleId; label: string; desc: string; icon: React.ReactNode; needsCode?: boolean }[] = [
   { id: 'locataire',    label: 'Locataire / Acheteur', desc: 'Je cherche un bien à louer ou à acheter', icon: <Home      className="w-5 h-5" /> },
   { id: 'proprietaire', label: 'Propriétaire',          desc: 'Je loue ou vends mes biens',             icon: <Building2 className="w-5 h-5" /> },
-  { id: 'agent',        label: 'Agent immobilier',      desc: 'Je représente des biens pour mes clients',icon: <Briefcase className="w-5 h-5" /> },
   { id: 'notaire',      label: 'Notaire Agréé',         desc: 'Code d\'invitation requis',               icon: <Award     className="w-5 h-5" />, needsCode: true },
 ];
 

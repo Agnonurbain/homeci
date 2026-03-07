@@ -18,7 +18,7 @@ export interface Profile {
   email: string;
   full_name: string;
   phone: string | null;
-  role: 'locataire' | 'proprietaire' | 'agent' | 'admin' | 'notaire';
+  role: 'locataire' | 'proprietaire' | 'admin' | 'notaire';
   avatar_url: string | null;
   company_name: string | null;
   verified: boolean;

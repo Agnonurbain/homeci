@@ -102,6 +102,7 @@ export interface Property {
   status: 'draft' | 'pending' | 'published' | 'rented' | 'sold' | 'rejected';
   verified_notaire: boolean;
   verification_date: string | null;
+  notaire_id: string | null;
   views_count: number;
   featured: boolean;
   available_from: string | null;
@@ -170,6 +171,7 @@ function docToProperty(id: string, data: Record<string, unknown>): Property {
     model3d_request: (data.model3d_request as Property['model3d_request']) ?? null,
     status: (data.status as Property['status']) ?? 'pending',
     verified_notaire: Boolean(data.verified_notaire ?? false),
+    notaire_id: (data.notaire_id as string) || null,
     verification_date: (data.verification_date as string | null) ?? null,
     views_count: Number(data.views_count ?? 0),
     featured: Boolean(data.featured ?? false),

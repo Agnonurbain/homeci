@@ -203,8 +203,7 @@ function AppContent() {
     );
     switch (profile.role) {
       case 'locataire': return <TenantDashboard />;
-      case 'proprietaire':
-      case 'agent': return <OwnerAgentDashboard />;
+      case 'proprietaire': return <OwnerAgentDashboard />;
       case 'admin': return <AdminDashboard />;
       case 'notaire': return <NotaireDashboard />;
       default: return <TenantDashboard />;

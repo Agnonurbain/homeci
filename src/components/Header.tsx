@@ -75,7 +75,7 @@ export function Header({ onLoginClick, onSignupClick }: HeaderProps) {
                   style={{ color:'rgba(245,230,200,0.7)', fontFamily:'var(--font-nunito)' }}>
                   <span className="flex items-center gap-1.5"><Heart className="w-3.5 h-3.5" />Favoris</span>
                 </a>
-                {(profile?.role === 'proprietaire' || profile?.role === 'agent') && (
+                {(profile?.role === 'proprietaire') && (
                   <a href="#dashboard" className={navLink}
                     style={{ color:'rgba(245,230,200,0.7)', fontFamily:'var(--font-nunito)' }}>
                     Mes biens
@@ -138,7 +138,7 @@ export function Header({ onLoginClick, onSignupClick }: HeaderProps) {
               {user ? (
                 <>
                   <a href="#favorites" style={{ color:'rgba(245,230,200,0.8)' }}>Favoris</a>
-                  {(profile?.role === 'proprietaire' || profile?.role === 'agent') && (
+                  {(profile?.role === 'proprietaire') && (
                     <a href="#dashboard" style={{ color:'rgba(245,230,200,0.8)' }}>Mes biens</a>
                   )}
                   <div className="pt-2" style={{ borderTop:'1px solid rgba(212,160,23,0.15)' }}>

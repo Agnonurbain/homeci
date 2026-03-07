@@ -48,7 +48,7 @@ export function Footer() {
             <h3 className="font-semibold mb-5 text-sm tracking-widest uppercase"
               style={{ color:HColors.gold, fontFamily:'var(--font-nunito)' }}>Navigation</h3>
             <ul className="space-y-3">
-              {['Rechercher','Biens à louer','Biens à vendre','Agents','Blog'].map(l => (
+              {['Rechercher','Biens à louer','Biens à vendre','Blog'].map(l => (
                 <li key={l}>
                   <a href="#" className="text-sm transition-colors hover:opacity-100"
                     style={{ color:HAlpha.cream50, fontFamily:'var(--font-nunito)' }}>
