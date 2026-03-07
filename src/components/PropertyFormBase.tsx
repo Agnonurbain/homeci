@@ -766,7 +766,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                 <LocationPicker
                   latitude={formData.latitude} longitude={formData.longitude}
                   city={formData.city} quartier={formData.quartier}
-                  onLocationSelect={(lat, lng) => setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }))}
+                  onChange={(lat, lng) => setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }))}
                 />
               </div>
             )}
