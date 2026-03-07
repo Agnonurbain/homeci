@@ -178,3 +178,101 @@
   background-size: 200% auto;
   animation: homeci-shimmer 1.5s linear infinite;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Mobile & Touch optimizations
+══════════════════════════════════════════════════════════════════════════ */
+
+/* Smooth scroll global */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe area (notch iPhone / écrans percés) */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Touch targets minimum 44px (WCAG 2.1) */
+@media (pointer: coarse) {
+  button, a, select, input[type="checkbox"], input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  /* Exception : petits boutons décoratifs (dots, badges) */
+  .homeci-dot, [class*="w-1.5"][class*="h-1.5"],
+  [class*="w-2"][class*="h-2"] {
+    min-height: unset;
+    min-width: unset;
+  }
+}
+
+/* Cache la scrollbar horizontale des onglets tout en gardant le scroll */
+.homeci-tabs-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;           /* Firefox */
+  -ms-overflow-style: none;        /* Edge/IE */
+}
+.homeci-tabs-scroll::-webkit-scrollbar {
+  display: none;                   /* Chrome/Safari */
+}
+
+/* Indicateur de scroll horizontal sur les tables */
+.homeci-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+.homeci-table-scroll::after {
+  content: '';
+  position: sticky;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 32px;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, rgba(249,243,232,0.8));
+}
+
+/* Prévenir le zoom sur les inputs iOS (< 16px = zoom auto) */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Animations réduites si l'utilisateur le préfère */
+@media (prefers-reduced-motion: reduce) {
+  .homeci-float, .homeci-float2, .homeci-float3 { animation: none; }
+  .homeci-reveal-1, .homeci-reveal-2, .homeci-reveal-3,
+  .homeci-reveal-4, .homeci-reveal-5, .homeci-reveal-6 {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* Fix body scroll quand un modal est ouvert */
+body.modal-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+/* Stepper labels cachés sur petits écrans */
+@media screen and (max-width: 480px) {
+  .homeci-step-label { display: none; }
+  .homeci-step-connector { min-width: 12px; }
+}
+
+/* Floating shapes cachées sur mobile (performance) */
+@media screen and (max-width: 640px) {
+  .homeci-float, .homeci-float2, .homeci-float3 {
+    display: none;
+  }
+}

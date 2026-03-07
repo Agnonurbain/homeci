@@ -305,7 +305,7 @@ export default function NotaireDashboard() {
           </div>
 
           {/* Tabs */}
-          <nav className="flex gap-1 overflow-x-auto">
+          <nav className="flex gap-1 homeci-tabs-scroll">
             {([
               {id:'disponible',label:'Disponibles',     count:stats.disponible,accent:HColors.terracotta,bg:HAlpha.terra10, bd:HAlpha.terra28},
               {id:'en_cours',label:'En cours',          count:stats.enCours,  accent:HColors.brownMid, bg:HAlpha.gold10,  bd:HAlpha.gold25 },

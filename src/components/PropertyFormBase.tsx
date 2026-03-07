@@ -26,6 +26,7 @@ import { Property3DViewer } from './Property3DViewer';
 import { KenteLine } from './ui/KenteLine';
 import type { PropertyInsert, PropertyUpdate, PropertyDocument, Model3D } from '../services/propertyService';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 export interface PropertyFormData {
@@ -92,6 +93,7 @@ const inputCls = 'w-full px-3 py-2.5 rounded-xl text-sm outline-none';
 ══════════════════════════════════════════════════════════════════════════════ */
 export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess }: PropertyFormBaseProps) {
   const { user } = useAuth();
+  useBodyScrollLock(true);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<PropertyFormData>(DEFAULT_FORM_DATA);
   const [error, setError] = useState('');
@@ -783,7 +785,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                       style={{ color:'rgba(122,85,0,0.7)', fontFamily:'var(--font-nunito)' }}>
                       Photos actuelles
                     </p>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                       {existingImages.map((url, i) => (
                         <div key={i} className="relative rounded-xl overflow-hidden group aspect-square"
                           style={{ border:'1px solid rgba(212,160,23,0.2)' }}>
@@ -808,7 +810,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
 
                 {/* Nouvelles photos */}
                 {mode === 'create' && imagePreviews.length > 0 && (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                     {imagePreviews.map((src, i) => (
                       <div key={i} className="relative rounded-xl overflow-hidden group aspect-square"
                         style={{ border:'1px solid rgba(212,160,23,0.2)' }}>
@@ -836,7 +838,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                       style={{ color:'rgba(122,85,0,0.7)', fontFamily:'var(--font-nunito)' }}>
                       Nouvelles photos à ajouter
                     </p>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                       {newImagePreviews.map((src, i) => (
                         <div key={i} className="relative rounded-xl overflow-hidden group aspect-square"
                           style={{ border:'2px solid rgba(212,160,23,0.5)' }}>

@@ -3,6 +3,7 @@ import { doc, updateDoc, serverTimestamp, collection, query, where, getDocs } fr
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { KenteLine } from './ui/KenteLine';
 import { Home, Building2, Briefcase, Award, Loader, CheckCircle, XCircle } from 'lucide-react';
 
@@ -39,6 +40,7 @@ async function markNotaireCodeUsed(docId: string) {
 
 export default function RoleSelectModal({ uid, displayName, photoURL, onDone }: RoleSelectModalProps) {
   const { refreshProfile } = useAuth();
+  useBodyScrollLock(true);
   const [selected, setSelected] = useState<RoleId>('locataire');
   const [loading, setLoading] = useState(false);
 

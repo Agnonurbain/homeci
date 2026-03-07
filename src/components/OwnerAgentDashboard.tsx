@@ -217,7 +217,7 @@ export default function OwnerAgentDashboard() {
         style={{ background: 'rgba(10,22,14,0.97)', backdropFilter: 'blur(12px)',
                  borderBottom: `1px solid ${HAlpha.gold15}` }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-1 overflow-x-auto">
+          <nav className="flex space-x-1 homeci-tabs-scroll">
             {[
               { id: 'properties',    icon: Home,     label: 'Mes Biens',          count: stats.total },
               { id: 'requests',      icon: Calendar, label: 'Demandes de visite', count: stats.pendingVisits },
@@ -302,7 +302,7 @@ export default function OwnerAgentDashboard() {
               <div className="rounded-2xl overflow-hidden"
                 style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}`,
                          boxShadow: '0 2px 12px rgba(26,14,0,0.05)' }}>
-                <div className="overflow-x-auto">
+                <div className="homeci-table-scroll">
                   <table className="min-w-full">
                     <thead>
                       <tr style={{ borderBottom: `1px solid ${HAlpha.gold15}`, background: 'rgba(212,160,23,0.04)' }}>

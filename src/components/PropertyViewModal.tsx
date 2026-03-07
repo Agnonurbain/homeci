@@ -14,6 +14,7 @@ import OptimizedImage from './OptimizedImage';
 import MapDisplay from './MapDisplay';
 import { Property3DViewer } from './Property3DViewer';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface PropertyViewModalProps {
   propertyId: string;
@@ -47,6 +48,7 @@ function formatPrice(p: number) {
 
 export default function PropertyViewModal({ propertyId, onClose, onRequestVisit, onShowAuth }: PropertyViewModalProps) {
   const { user, profile } = useAuth();
+  useBodyScrollLock(true);
   const [property, setProperty] = useState<Property | null>(null);
   // Peut voir les docs : notaire, propriétaire du bien
   const canSeeDocs = (p: Property | null) => {
@@ -254,12 +256,12 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
           )}
 
           {/* ── Grille principale ── */}
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* ── Colonne principale ── */}
             <div className="lg:col-span-2 space-y-5">
 
               {/* Prix + localisation */}
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
                 <div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold" style={{ color:HColors.terracotta, fontFamily:'var(--font-cormorant)' }}>{formatPrice(property.price)}</span>
@@ -270,10 +272,10 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
                     {[property.quartier, property.commune, property.city, (p.departement || ''), (p.region || '')].filter(Boolean).join(' · ')}
                   </div>
                 </div>
-                <div className="text-right shrink-0">
-                  <div className="flex items-center gap-1 text-xs justify-end" style={{ color:'rgba(139,106,48,0.55)', fontFamily:'var(--font-nunito)' }}><Eye className="w-3.5 h-3.5" />{property.views_count || 0} vue{(property.views_count||0)>1?'s':''}</div>
+                <div className="sm:text-right shrink-0">
+                  <div className="flex items-center gap-1 text-xs sm:justify-end" style={{ color:'rgba(139,106,48,0.55)', fontFamily:'var(--font-nunito)' }}><Eye className="w-3.5 h-3.5" />{property.views_count || 0} vue{(property.views_count||0)>1?'s':''}</div>
                   {property.available_from && (
-                    <div className="flex items-center gap-1 text-xs mt-1 justify-end" style={{ color:'rgba(139,106,48,0.65)', fontFamily:'var(--font-nunito)' }}>
+                    <div className="flex items-center gap-1 text-xs mt-1 sm:justify-end" style={{ color:'rgba(139,106,48,0.65)', fontFamily:'var(--font-nunito)' }}>
                       <Calendar className="w-3.5 h-3.5" />Dispo {new Date(property.available_from).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})}
                     </div>
                   )}

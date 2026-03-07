@@ -198,7 +198,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Tabs */}
-          <nav className="flex space-x-1 overflow-x-auto">
+          <nav className="flex space-x-1 homeci-tabs-scroll">
             {TABS.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id as typeof activeTab)}
                 aria-label={tab.label}
@@ -345,7 +345,7 @@ export default function AdminDashboard() {
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="homeci-table-scroll">
                 <table className="min-w-full">
                   <thead>
                     <tr style={{ background: HColors.night }}>
@@ -492,7 +492,7 @@ export default function AdminDashboard() {
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="homeci-table-scroll">
                 <table className="min-w-full">
                   <thead>
                     <tr style={{ background: HColors.night }}>

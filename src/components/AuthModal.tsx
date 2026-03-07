@@ -5,6 +5,7 @@ import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -42,6 +43,7 @@ async function markNotaireCodeUsed(docId: string) {
 
 export function AuthModal({ isOpen, onClose, initialMode = 'login', onNewGoogleUser }: AuthModalProps) {
   const { signIn, signUp, signInWithProvider } = useAuth();
+  useBodyScrollLock(isOpen);
   const [socialLoading, setSocialLoading] = useState<string|null>(null);
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [email, setEmail] = useState('');

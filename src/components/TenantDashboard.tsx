@@ -232,7 +232,7 @@ export default function TenantDashboard() {
           </div>
 
           {/* Tabs */}
-          <nav className="flex space-x-1 overflow-x-auto">
+          <nav className="flex space-x-1 homeci-tabs-scroll">
             {[
               { id:'search',        icon:Search,   label:'Rechercher',    count:undefined },
               { id:'favorites',     icon:Heart,    label:'Mes favoris',   count:favoriteIds.length || undefined },
