@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FileText, Upload, CheckCircle, Clock, X, Eye, AlertTriangle } from 'lucide-react';
 import { storageService } from '../services/storageService';
 import type { PropertyDocument } from '../services/propertyService';
+import { fixDocUrl } from '../utils/fixDocUrl';
 
 const DOCUMENTS_BY_TYPE: Record<string, { type: string; label: string; required: boolean; hint: string }[]> = {
   appartement: [
@@ -156,7 +157,7 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
                         <Clock className="w-3 h-3" /> En attente de validation
                       </span>
                       <a
-                        href={doc.url}
+                        href={fixDocUrl(doc.url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"

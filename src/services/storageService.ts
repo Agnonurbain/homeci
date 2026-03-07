@@ -60,21 +60,27 @@ export const storageService = {
     documentType: string
   ): Promise<string> {
     return new Promise((resolve, reject) => {
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      const resourceType = isPdf ? 'raw' : 'auto';
+
       const formData = new FormData();
       formData.append('file', file);
       formData.append('upload_preset', UPLOAD_PRESET);
       formData.append('folder', `homeci/documents/${propertyId}`);
       formData.append('public_id', `${documentType}_${Date.now()}`);
-      // Permettre PDF et images
-      formData.append('resource_type', 'auto');
 
       const xhr = new XMLHttpRequest();
-      const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`;
+      const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`;
 
       xhr.addEventListener('load', () => {
         if (xhr.status === 200) {
           const response = JSON.parse(xhr.responseText);
-          resolve(response.secure_url);
+          let url = response.secure_url;
+          // S'assurer que les PDFs utilisent /raw/upload/ pour l'accès direct
+          if (isPdf && url.includes('/image/upload/')) {
+            url = url.replace('/image/upload/', '/raw/upload/');
+          }
+          resolve(url);
         } else {
           reject(new Error(`Upload document échoué (${xhr.status})`));
         }

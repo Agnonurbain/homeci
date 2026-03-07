@@ -15,6 +15,7 @@ import MapDisplay from './MapDisplay';
 import { Property3DViewer } from './Property3DViewer';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { fixDocUrl } from '../utils/fixDocUrl';
 
 interface PropertyViewModalProps {
   propertyId: string;
@@ -363,7 +364,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
                                 {st.label}
                               </span>
                               {isValidated && doc.url && (
-                                <a href={doc.url} target="_blank" rel="noopener noreferrer"
+                                <a href={fixDocUrl(doc.url)} target="_blank" rel="noopener noreferrer"
                                   className="flex items-center gap-1 text-xs font-medium hover:underline" style={{ color:HColors.green, fontFamily:'var(--font-nunito)' }}>
                                   <ExternalLink className="w-3.5 h-3.5" /> Voir
                                 </a>

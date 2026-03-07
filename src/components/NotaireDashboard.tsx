@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
+import { fixDocUrl } from '../utils/fixDocUrl';
 
 const TYPE_LABELS: Record<string, string> = {
   appartement:'Appartement', maison:'Maison', villa:'Villa',
@@ -633,7 +634,7 @@ export default function NotaireDashboard() {
                                   </div>
                                   <div className="flex items-center gap-1.5 shrink-0">
                                     {docItem.url&&(
-                                      <a href={docItem.url} target="_blank" rel="noopener noreferrer"
+                                      <a href={fixDocUrl(docItem.url)} target="_blank" rel="noopener noreferrer"
                                         className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80"
                                         style={{background:HAlpha.navy08,border:`1px solid ${HAlpha.navy20}`,color:HColors.navy}}>
                                         <ExternalLink className="w-3 h-3"/> Consulter
