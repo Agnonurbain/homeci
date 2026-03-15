@@ -44,6 +44,15 @@ export default function CGVLocataireModal({ onAccept, onClose }: CGVLocataireMod
     }
   };
 
+  const H3 = ({ children }: { children: React.ReactNode }) => (
+    <h3 style={{ color: HColors.gold, fontFamily: 'var(--font-cormorant)', fontSize: '1rem', fontWeight: 700 }}>
+      {children}
+    </h3>
+  );
+  const P = ({ children, indent }: { children: React.ReactNode; indent?: boolean }) => (
+    <p style={indent ? { paddingLeft: '1rem' } : undefined}>{children}</p>
+  );
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4"
       style={{ background: 'rgba(10,22,14,0.85)', backdropFilter: 'blur(8px)' }}>
@@ -61,7 +70,7 @@ export default function CGVLocataireModal({ onAccept, onClose }: CGVLocataireMod
             <div>
               <h2 className="text-lg font-bold"
                 style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>
-                Conditions d'utilisation — Locataire
+                Conditions Générales d'Utilisation — Locataire / Acheteur
               </h2>
               <p className="text-xs" style={{ color: 'rgba(245,230,200,0.5)', fontFamily: 'var(--font-nunito)' }}>
                 Veuillez lire et accepter avant de demander votre première visite
@@ -80,82 +89,132 @@ export default function CGVLocataireModal({ onAccept, onClose }: CGVLocataireMod
               style={{ background: HAlpha.gold05, border: `1px solid ${HAlpha.gold15}` }}>
               <Shield className="w-4 h-4 shrink-0 mt-0.5" style={{ color: HColors.gold }} />
               <p className="text-xs" style={{ color: HColors.gold }}>
-                Ce document régit vos droits et obligations en tant que locataire/acheteur sur HOMECI.
+                Ce document régit vos droits et obligations en tant que locataire ou acheteur sur HOMECI,
+                conformément à la loi n°2013-546 du 30 juillet 2013 relative aux transactions électroniques
+                en Côte d'Ivoire.
               </p>
             </div>
 
-            <h3 style={{ color: HColors.gold, fontFamily: 'var(--font-cormorant)', fontSize: '1rem', fontWeight: 700 }}>
-              Article 1 — Objet
-            </h3>
-            <p>
-              Les présentes Conditions Générales d'Utilisation régissent l'accès et l'utilisation de la plateforme
-              HOMECI par les locataires et acheteurs souhaitant consulter des annonces immobilières et demander
-              des visites de biens en Côte d'Ivoire.
-            </p>
+            <H3>Article 1 — Objet et cadre juridique</H3>
+            <P>
+              Les présentes Conditions Générales d'Utilisation (ci-après « CGU ») régissent l'accès
+              et l'utilisation de la plateforme HOMECI par les locataires et acheteurs souhaitant consulter
+              des annonces immobilières et demander des visites de biens en Côte d'Ivoire. Elles sont établies
+              conformément à la loi n°2018-575 du 13 juin 2018 relative au bail à usage d'habitation,
+              au Code de la Construction et de l'Habitat (loi n°2019-575 du 26 juin 2019), et à la loi
+              n°2013-546 relative aux transactions électroniques.
+            </P>
 
-            <h3 style={{ color: HColors.gold, fontFamily: 'var(--font-cormorant)', fontSize: '1rem', fontWeight: 700 }}>
-              Article 2 — Demandes de visite
-            </h3>
-            <p>
-              Chaque demande de visite est soumise à des frais de service de 500 FCFA, payables via Mobile Money
-              (Orange Money, MTN MoMo, Wave ou Moov Flooz). Ces frais couvrent la mise en relation avec le
-              propriétaire et la coordination de la visite. Les frais ne sont pas remboursables en cas d'annulation
-              par le demandeur.
-            </p>
+            <H3>Article 2 — Définitions</H3>
+            <P indent>
+              a) <strong>Locataire/Acheteur</strong> : toute personne physique ou morale utilisant la plateforme HOMECI
+              pour rechercher un bien immobilier à louer ou à acquérir en Côte d'Ivoire.
+            </P>
+            <P indent>
+              b) <strong>Visite</strong> : rendez-vous organisé via la plateforme entre le locataire/acheteur
+              et le propriétaire pour la consultation physique d'un bien immobilier.
+            </P>
+            <P indent>
+              c) <strong>Bien certifié</strong> : bien dont les documents légaux ont été vérifiés et validés
+              par un notaire agréé inscrit au tableau de l'Ordre des Notaires de Côte d'Ivoire
+              (loi n°2014-138 du 24 mars 2014).
+            </P>
 
-            <h3 style={{ color: HColors.gold, fontFamily: 'var(--font-cormorant)', fontSize: '1rem', fontWeight: 700 }}>
-              Article 3 — Engagements du locataire
-            </h3>
-            <p>Le locataire/acheteur s'engage à :</p>
-            <p style={{ paddingLeft: '1rem' }}>
-              a) Fournir des informations d'identité exactes lors de son inscription sur la plateforme.
-            </p>
-            <p style={{ paddingLeft: '1rem' }}>
+            <H3>Article 3 — Demandes de visite et tarification</H3>
+            <P>
+              Chaque demande de visite est soumise à des frais de service de 500 FCFA, payables via
+              les moyens de paiement Mobile Money disponibles (Orange Money, MTN MoMo, Wave, Moov Flooz).
+              Ces paiements sont régis par la réglementation de la BCEAO relative à la monnaie électronique.
+              Les frais couvrent la mise en relation avec le propriétaire et la coordination de la visite.
+              Les frais ne sont pas remboursables en cas d'annulation par le demandeur. En cas d'annulation
+              par le propriétaire, le locataire sera recrédité dans un délai de 72 heures ouvrées.
+            </P>
+
+            <H3>Article 4 — Engagements du locataire/acheteur</H3>
+            <P>Le locataire/acheteur s'engage à :</P>
+            <P indent>
+              a) Fournir des informations d'identité exactes et vérifiables lors de son inscription
+              sur la plateforme. Toute usurpation d'identité est passible de sanctions pénales
+              au titre de la loi n°2013-451 du 19 juin 2013 relative à la lutte contre la cybercriminalité.
+            </P>
+            <P indent>
               b) Se présenter aux visites programmées ou prévenir le propriétaire en cas d'empêchement
-              au moins 24 heures à l'avance.
-            </p>
-            <p style={{ paddingLeft: '1rem' }}>
-              c) Respecter les biens visités et ne causer aucun dommage lors des visites.
-            </p>
-            <p style={{ paddingLeft: '1rem' }}>
-              d) Ne pas utiliser les coordonnées des propriétaires obtenues via la plateforme à des fins
+              au moins 24 heures à l'avance via la plateforme.
+            </P>
+            <P indent>
+              c) Respecter les biens visités et ne causer aucun dommage. Tout dommage causé lors d'une visite
+              engage la responsabilité civile du visiteur au sens des articles 1382 et suivants
+              du Code civil ivoirien.
+            </P>
+            <P indent>
+              d) Ne pas utiliser les coordonnées des propriétaires obtenues via HOMECI à des fins
               commerciales, frauduleuses ou de harcèlement.
-            </p>
+            </P>
+            <P indent>
+              e) Respecter les dispositions de la loi n°2018-575 du 13 juin 2018 relative au bail
+              à usage d'habitation dans le cadre de toute relation locative conclue suite à l'utilisation
+              de la plateforme, notamment les obligations du preneur prévues aux articles 22 et suivants.
+            </P>
 
-            <h3 style={{ color: HColors.gold, fontFamily: 'var(--font-cormorant)', fontSize: '1rem', fontWeight: 700 }}>
-              Article 4 — Annonces vérifiées
-            </h3>
-            <p>
-              HOMECI s'engage à ce que chaque bien publié soit vérifié par un notaire agréé. Cependant,
-              HOMECI ne garantit pas l'état final du bien et encourage le locataire à effectuer ses propres
-              vérifications lors de la visite.
-            </p>
+            <H3>Article 5 — Garanties et limites de la certification</H3>
+            <P>
+              HOMECI s'engage à ce que chaque bien publié soit vérifié par un notaire agréé conformément
+              à la loi n°2014-138. La certification porte exclusivement sur la validité des documents
+              légaux fournis par le propriétaire (titre foncier, permis de construire, etc.) et non sur
+              l'état physique, l'habitabilité ou la conformité technique du bien. Le locataire/acheteur
+              est encouragé à effectuer ses propres vérifications lors de la visite et, en cas d'achat,
+              à se faire accompagner par un professionnel du droit pour la rédaction de l'acte de vente.
+            </P>
 
-            <h3 style={{ color: HColors.gold, fontFamily: 'var(--font-cormorant)', fontSize: '1rem', fontWeight: 700 }}>
-              Article 5 — Responsabilité
-            </h3>
-            <p>
-              HOMECI agit en tant qu'intermédiaire de mise en relation. La plateforme ne saurait être tenue
-              responsable des litiges entre locataires et propriétaires, ni de l'état réel des biens proposés.
-              Toute transaction financière directe entre les parties se fait sous leur seule responsabilité.
-            </p>
+            <H3>Article 6 — Droits du locataire/acheteur</H3>
+            <P>Conformément à la législation ivoirienne, le locataire/acheteur bénéficie :</P>
+            <P indent>
+              a) Du droit d'accès aux informations complètes sur le bien (superficie, localisation,
+              prix, statut de certification) avant toute visite.
+            </P>
+            <P indent>
+              b) Du droit de signaler toute annonce suspecte ou frauduleuse via la plateforme.
+              HOMECI s'engage à traiter tout signalement dans un délai de 48 heures.
+            </P>
+            <P indent>
+              c) Du droit de rétractation sur les frais de visite dans un délai de 24 heures suivant
+              le paiement, si la visite n'a pas encore été programmée.
+            </P>
 
-            <h3 style={{ color: HColors.gold, fontFamily: 'var(--font-cormorant)', fontSize: '1rem', fontWeight: 700 }}>
-              Article 6 — Protection des données
-            </h3>
-            <p>
-              Vos données personnelles sont traitées conformément à la loi n°2013-450 relative à la protection
-              des données à caractère personnel en Côte d'Ivoire. Vous disposez d'un droit d'accès,
-              de rectification et de suppression en contactant contact@homeci.ci.
-            </p>
+            <H3>Article 7 — Responsabilité de HOMECI</H3>
+            <P>
+              HOMECI agit en tant qu'intermédiaire de mise en relation au sens de la loi n°2013-546
+              relative aux transactions électroniques. La plateforme ne saurait être tenue responsable
+              des litiges entre locataires et propriétaires, ni de l'état réel des biens proposés.
+              Toute transaction financière directe entre les parties (loyer, caution, prix de vente)
+              se fait sous leur seule responsabilité et doit respecter les dispositions légales applicables,
+              notamment la loi n°2018-575 relative au bail à usage d'habitation.
+            </P>
 
-            <h3 style={{ color: HColors.gold, fontFamily: 'var(--font-cormorant)', fontSize: '1rem', fontWeight: 700 }}>
-              Article 7 — Droit applicable
-            </h3>
-            <p>
-              Les présentes conditions sont régies par le droit ivoirien. Tout litige sera soumis
+            <H3>Article 8 — Règlement des litiges</H3>
+            <P>
+              En cas de litige lié à une visite ou à une annonce, le locataire/acheteur peut saisir
+              le service de médiation de HOMECI à l'adresse contact@homeci.ci. Si aucune solution
+              amiable n'est trouvée dans un délai de 30 jours, le litige pourra être soumis
               aux juridictions compétentes d'Abidjan.
-            </p>
+            </P>
+
+            <H3>Article 9 — Protection des données personnelles</H3>
+            <P>
+              Conformément à la loi n°2013-450 du 19 juin 2013 relative à la protection des données
+              à caractère personnel, vos données sont collectées et traitées aux seules fins de la fourniture
+              des services HOMECI. Le traitement est déclaré auprès de l'ARTCI. Vous disposez d'un droit
+              d'accès, de rectification, d'opposition et de suppression de vos données en contactant
+              contact@homeci.ci. Vos données ne sont jamais cédées à des tiers sans votre consentement
+              préalable, sauf obligation légale.
+            </P>
+
+            <H3>Article 10 — Droit applicable et juridiction compétente</H3>
+            <P>
+              Les présentes CGU sont régies par le droit ivoirien. Tout litige relatif à leur interprétation
+              ou exécution sera soumis aux juridictions compétentes d'Abidjan, Côte d'Ivoire,
+              conformément au Code de procédure civile, commerciale et administrative.
+            </P>
 
             <p className="pt-3" style={{ color: 'rgba(245,230,200,0.4)', fontStyle: 'italic', fontSize: '0.75rem' }}>
               Dernière mise à jour : Mars 2026
@@ -163,7 +222,6 @@ export default function CGVLocataireModal({ onAccept, onClose }: CGVLocataireMod
           </div>
         </div>
 
-        {/* Scroll indicator */}
         {!hasScrolledToBottom && (
           <div className="px-6 py-2 flex items-center gap-2 text-xs shrink-0"
             style={{ color: 'rgba(212,160,23,0.6)', fontFamily: 'var(--font-nunito)', borderTop: `1px solid ${HAlpha.gold10}` }}>
@@ -172,7 +230,6 @@ export default function CGVLocataireModal({ onAccept, onClose }: CGVLocataireMod
           </div>
         )}
 
-        {/* Footer */}
         <div className="px-6 py-4 shrink-0"
           style={{ borderTop: `1px solid ${HAlpha.gold15}`, background: 'rgba(10,22,14,0.5)' }}>
           <label className="flex items-start gap-3 cursor-pointer mb-4 select-none">
@@ -181,6 +238,7 @@ export default function CGVLocataireModal({ onAccept, onClose }: CGVLocataireMod
             <span className="text-sm leading-snug"
               style={{ color: hasScrolledToBottom ? HColors.cream : 'rgba(245,230,200,0.35)', fontFamily: 'var(--font-nunito)' }}>
               J'ai lu et j'accepte les Conditions Générales d'Utilisation de HOMECI en tant que locataire/acheteur.
+              Je m'engage à respecter les biens visités et la législation ivoirienne en vigueur.
             </span>
           </label>
           <div className="flex gap-3">
