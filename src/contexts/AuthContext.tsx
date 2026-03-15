@@ -8,8 +8,7 @@ import {
   GoogleAuthProvider,
   FacebookAuthProvider,
   TwitterAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
@@ -27,7 +26,6 @@ export interface Profile {
   updated_at: string;
 }
 
-/** Données d'un nouvel utilisateur Google en attente de sélection de rôle */
 export interface PendingNewUser {
   uid: string;
   displayName: string;
@@ -38,12 +36,11 @@ interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
-  /** Nouvel utilisateur Google en attente de sélection de rôle */
   pendingNewUser: PendingNewUser | null;
   clearPendingNewUser: () => void;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string, role: Profile['role']) => Promise<void>;
-  signInWithProvider: (provider: 'google' | 'facebook' | 'twitter') => void;
+  signInWithProvider: (provider: 'google' | 'facebook' | 'twitter') => Promise<void>;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -57,21 +54,15 @@ function getCachedProfile(uid: string): Profile | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY(uid));
     return raw ? (JSON.parse(raw) as Profile) : null;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 function setCachedProfile(profile: Profile) {
-  try {
-    localStorage.setItem(CACHE_KEY(profile.id), JSON.stringify(profile));
-  } catch {}
+  try { localStorage.setItem(CACHE_KEY(profile.id), JSON.stringify(profile)); } catch {}
 }
 
 function clearCachedProfile(uid: string) {
-  try {
-    localStorage.removeItem(CACHE_KEY(uid));
-  } catch {}
+  try { localStorage.removeItem(CACHE_KEY(uid)); } catch {}
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -81,59 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [pendingNewUser, setPendingNewUser] = useState<PendingNewUser | null>(null);
   const skipNextProfileLoad = useRef(false);
-  const redirectHandled = useRef(false);
 
-  // ── Gestion du retour de redirect Google/Facebook/Twitter ──
-  useEffect(() => {
-    if (redirectHandled.current) return;
-    redirectHandled.current = true;
-
-    getRedirectResult(auth)
-      .then(async (result) => {
-        if (!result) return; // Pas de redirect en cours
-
-        const fbUser = result.user;
-        const profileRef = doc(db, 'users', fbUser.uid);
-        const snap = await getDoc(profileRef);
-
-        if (!snap.exists()) {
-          // Nouvel utilisateur → créer profil temporaire + afficher RoleSelectModal
-          const now = new Date().toISOString();
-          const profileData: Profile = {
-            id: fbUser.uid,
-            email: fbUser.email || '',
-            full_name: fbUser.displayName || 'Utilisateur',
-            role: 'locataire',
-            phone: null,
-            avatar_url: fbUser.photoURL || null,
-            company_name: null,
-            verified: false,
-            created_at: now,
-            updated_at: now,
-          };
-          await setDoc(profileRef, {
-            ...profileData,
-            created_at: serverTimestamp(),
-            updated_at: serverTimestamp(),
-          });
-          setCachedProfile(profileData);
-          setProfile(profileData);
-
-          // Déclencher le modal de sélection de rôle
-          setPendingNewUser({
-            uid: fbUser.uid,
-            displayName: fbUser.displayName || '',
-            photoURL: fbUser.photoURL,
-          });
-        }
-        // Si l'utilisateur existe déjà, onAuthStateChanged s'en charge
-      })
-      .catch((err) => {
-        console.error('[HOMECI] Erreur redirect auth:', err);
-      });
-  }, []);
-
-  // ── Listener auth standard ──
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       (async () => {
@@ -225,13 +164,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  /** Lance la redirection vers le fournisseur OAuth (Google, Facebook, Twitter) */
-  function signInWithProvider(provider: 'google' | 'facebook' | 'twitter') {
+  async function signInWithProvider(provider: 'google' | 'facebook' | 'twitter') {
     const authProvider =
       provider === 'google'   ? new GoogleAuthProvider()   :
       provider === 'facebook' ? new FacebookAuthProvider() :
                                 new TwitterAuthProvider();
-    signInWithRedirect(auth, authProvider);
+
+    const result = await signInWithPopup(auth, authProvider);
+    const fbUser = result.user;
+    const profileRef = doc(db, 'users', fbUser.uid);
+    const snap = await getDoc(profileRef);
+
+    if (!snap.exists()) {
+      // Nouvel utilisateur → créer profil temporaire locataire
+      const now = new Date().toISOString();
+      const profileData: Profile = {
+        id: fbUser.uid,
+        email: fbUser.email || '',
+        full_name: fbUser.displayName || 'Utilisateur',
+        role: 'locataire',
+        phone: null,
+        avatar_url: fbUser.photoURL || null,
+        company_name: null,
+        verified: false,
+        created_at: now,
+        updated_at: now,
+      };
+      await setDoc(profileRef, {
+        ...profileData,
+        created_at: serverTimestamp(),
+        updated_at: serverTimestamp(),
+      });
+      setCachedProfile(profileData);
+      setProfile(profileData);
+
+      // Afficher le modal de sélection de rôle
+      setPendingNewUser({
+        uid: fbUser.uid,
+        displayName: fbUser.displayName || '',
+        photoURL: fbUser.photoURL,
+      });
+    }
+    // Utilisateur existant → onAuthStateChanged charge le profil automatiquement
   }
 
   function clearPendingNewUser() {

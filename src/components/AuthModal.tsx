@@ -454,16 +454,29 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               )},
             ] as {id:string;label:string;icon:React.ReactNode}[]).map(p => (
               <button key={p.id} type="button"
-                onClick={() => {
+                onClick={async () => {
                   setSocialLoading(p.id);
                   setError('');
                   try {
-                    signInWithProvider(p.id as 'google'|'facebook'|'twitter');
-                    // La page redirige vers le fournisseur OAuth
-                    // Au retour, getRedirectResult() dans AuthContext gère tout
+                    await signInWithProvider(p.id as 'google'|'facebook'|'twitter');
+                    onClose();
                   } catch (err: any) {
+                    const code = err?.code || '';
+                    if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+                      // Utilisateur a fermé le popup — pas d'erreur
+                    } else if (code === 'auth/unauthorized-domain') {
+                      setError('Domaine non autorisé. Ajoutez ce domaine dans Firebase Console → Authentication → Domaines autorisés.');
+                    } else if (code === 'auth/operation-not-allowed') {
+                      setError('Connexion Google non activée. Activez-la dans Firebase Console → Authentication → Sign-in method.');
+                    } else if (code === 'auth/account-exists-with-different-credential') {
+                      setError('Un compte existe déjà avec cet email. Connectez-vous avec email/mot de passe.');
+                    } else if (code === 'auth/popup-blocked') {
+                      setError('Popup bloquée. Autorisez les popups pour ce site.');
+                    } else {
+                      setError(`Erreur connexion (${code || err?.message || 'inconnue'}).`);
+                    }
+                  } finally {
                     setSocialLoading(null);
-                    setError('Erreur lors de la connexion. Réessayez.');
                   }
                 }}
                 disabled={!!socialLoading}
