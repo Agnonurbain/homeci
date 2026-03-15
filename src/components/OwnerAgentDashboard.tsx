@@ -178,10 +178,10 @@ export default function OwnerAgentDashboard() {
 
   const handleVisitAction = async (action: 'accepted' | 'rejected' | 'counter') => {
     if (!selectedVisit || visitActionLoading) return;
+    if (action === 'counter' && (!counterDate || !counterTime)) return;
     setVisitActionLoading(true);
     try {
       if (action === 'counter') {
-        if (!counterDate || !counterTime) return;
         await visitService.proposeCounterDate(selectedVisit.id, counterDate, counterTime, 'owner');
         await notificationService.createNotification({
           user_id: selectedVisit.tenant_id,
@@ -210,8 +210,10 @@ export default function OwnerAgentDashboard() {
       }
       setSelectedVisit(null);
       setCounterDate(''); setCounterTime('');
-    } catch (e) { console.error(e); }
-    finally { setVisitActionLoading(false); }
+    } catch (e: any) {
+      console.error('[HOMECI] Erreur visite:', e);
+      alert(`Erreur : ${e?.message || 'Impossible de traiter la demande. Vérifiez votre connexion.'}`);
+    } finally { setVisitActionLoading(false); }
   };
 
   const handleMarkAllRead = async () => {
