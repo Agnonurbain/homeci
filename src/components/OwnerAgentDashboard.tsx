@@ -23,6 +23,7 @@ import ScrollTimePicker from './ScrollTimePicker';
 import CGVModal from './CGVModal';
 import PaymentModal from './PaymentModal';
 import type { PaymentConfig } from './PaymentModal';
+import SatisfactionModal from './SatisfactionModal';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
 
 /* ── Constants ─────────────────────────────────────────────────────────── */
@@ -99,6 +100,7 @@ export default function OwnerAgentDashboard() {
   const [visitActionLoading, setVisitActionLoading] = useState(false);
   const [visitFilter, setVisitFilter] = useState<'all' | 'pending' | 'accepted' | 'rejected'>('all');
   const [submittingVerif, setSubmittingVerif] = useState<string | null>(null);
+  const [surveyData, setSurveyData] = useState<{ trigger: 'visit_accepted'; propertyId?: string; propertyTitle?: string } | null>(null);
 
   useEffect(() => { loadAll(); }, []);
 
@@ -228,6 +230,14 @@ export default function OwnerAgentDashboard() {
       }
       setSelectedVisit(null);
       setCounterDate(''); setCounterTime('');
+      // Déclencher l'enquête de satisfaction après acceptation
+      if (action === 'accepted') {
+        setSurveyData({
+          trigger: 'visit_accepted',
+          propertyId: selectedVisit.property_id,
+          propertyTitle: selectedVisit.property_title,
+        });
+      }
     } catch (e: any) {
       console.error('[HOMECI] Erreur visite:', e);
       alert(`Erreur : ${e?.message || 'Impossible de traiter la demande. Vérifiez votre connexion.'}`);
@@ -862,6 +872,19 @@ export default function OwnerAgentDashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Enquête de satisfaction */}
+      {surveyData && user && (
+        <SatisfactionModal
+          isOpen={true}
+          onClose={() => setSurveyData(null)}
+          userId={user.uid}
+          userRole={profile?.role || 'proprietaire'}
+          trigger={surveyData.trigger}
+          propertyId={surveyData.propertyId}
+          propertyTitle={surveyData.propertyTitle}
+        />
       )}
     </div>
   );

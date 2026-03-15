@@ -21,6 +21,7 @@ import type { FilterValues } from './PropertyFilters';
 import { KenteLine } from './ui/KenteLine';
 import CGVLocataireModal from './CGVLocataireModal';
 import PaymentModal from './PaymentModal';
+import SatisfactionModal from './SatisfactionModal';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
 
 const PER_PAGE = 9;
@@ -80,6 +81,7 @@ export default function TenantDashboard() {
   const visitSuccessTimer = useRef<ReturnType<typeof setTimeout>>();
   const [showCGVLocataire, setShowCGVLocataire] = useState(false);
   const [showVisitPayment, setShowVisitPayment] = useState(false);
+  const [surveyData, setSurveyData] = useState<{ trigger: 'visit_accepted'; propertyId?: string; propertyTitle?: string } | null>(null);
   const [pendingVisitProperty, setPendingVisitProperty] = useState<Property | null>(null);
 
   useEffect(() => {
@@ -187,6 +189,7 @@ export default function TenantDashboard() {
       });
       const updated = await visitService.getVisitRequestsByTenant(user!.uid);
       setVisitRequests(updated);
+      setSurveyData({ trigger: 'visit_accepted', propertyId: visit.property_id, propertyTitle: visit.property_title });
     } catch (e) { console.error(e); }
   };
 
@@ -866,6 +869,19 @@ export default function TenantDashboard() {
             setPendingVisitProperty(null);
           }}
           onClose={() => { setShowVisitPayment(false); setPendingVisitProperty(null); }}
+        />
+      )}
+
+      {/* Enquête de satisfaction */}
+      {surveyData && user && (
+        <SatisfactionModal
+          isOpen={true}
+          onClose={() => setSurveyData(null)}
+          userId={user.uid}
+          userRole={profile?.role || 'locataire'}
+          trigger={surveyData.trigger}
+          propertyId={surveyData.propertyId}
+          propertyTitle={surveyData.propertyTitle}
         />
       )}
     </div>
