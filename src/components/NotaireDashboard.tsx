@@ -119,7 +119,17 @@ export default function NotaireDashboard() {
   function showToast(msg:string,ok=true){ setToast({msg,ok}); setTimeout(()=>setToast(null),3500); }
 
   async function handleDocAction(property:Property,docType:string,newStatus:DocStatus){
-    const key=`${docType}:${property.id}`; setActionLoading(key);
+    const key=`${docType}:${property.id}`; 
+    // Motif de refus obligatoire (CGV Notaire Art. 4d)
+    if (newStatus === 'refuse') {
+      const reason = refusalReasons[key]?.trim();
+      if (!reason) {
+        showToast('Veuillez indiquer le motif du refus avant de refuser.', false);
+        setShowRefusalInput(key);
+        return;
+      }
+    }
+    setActionLoading(key);
     try {
       const reason=refusalReasons[key]||'';
       // Mettre à jour via sous-collection
@@ -143,7 +153,17 @@ export default function NotaireDashboard() {
   }
 
   async function handleTitleAction(property:Property, newStatus:'valide'|'refuse'|'en_attente'){
-    const key=`title:${property.id}`; setActionLoading(key);
+    const key=`title:${property.id}`;
+    // Motif de refus obligatoire (CGV Notaire Art. 4d)
+    if (newStatus === 'refuse') {
+      const reason = refusalReasons[key]?.trim();
+      if (!reason) {
+        showToast('Veuillez indiquer le motif du refus avant de refuser.', false);
+        setShowRefusalInput(key);
+        return;
+      }
+    }
+    setActionLoading(key);
     try {
       const titleStatus = newStatus === 'valide' ? { title_status:'valide', title_validated_at: new Date().toISOString() }
                         : newStatus === 'refuse'  ? { title_status:'refuse',  title_rejection_reason: refusalReasons[key]||'' }
@@ -191,6 +211,11 @@ export default function NotaireDashboard() {
 
   function handleTakeCharge(property: Property) {
     if (!profile?.id) return;
+    // Conflit d'intérêts : le notaire ne peut pas certifier un bien dont il est propriétaire
+    if (property.owner_id === profile.id) {
+      showToast('Conflit d\'intérêts — vous ne pouvez pas certifier votre propre bien.', false);
+      return;
+    }
     // Vérifier si le notaire a déjà accepté la charte
     if (!profile.cgv_notaire_accepted) {
       setPendingTakeChargeProperty(property);
@@ -204,7 +229,10 @@ export default function NotaireDashboard() {
     if (!profile?.id) return;
     setTakingId(property.id);
     try {
-      await propertyService.updateProperty(property.id, { notaire_id: profile.id });
+      await propertyService.updateProperty(property.id, { 
+        notaire_id: profile.id,
+        notaire_taken_at: new Date().toISOString(),
+      });
       const updated = { ...property, notaire_id: profile.id };
       // Retirer des legacy si c'était un bien antérieur
       setLegacyProperties(prev => prev.filter(p => p.id !== property.id));

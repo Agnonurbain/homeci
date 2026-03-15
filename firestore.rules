@@ -93,5 +93,11 @@ service cloud.firestore {
       allow read: if isAuth();
       allow create: if isAuth();
     }
+
+    // REPORTS (signalements d'annonces)
+    match /reports/{reportId} {
+      allow read: if isAdmin();
+      allow create: if isAuth();
+    }
   }
 }

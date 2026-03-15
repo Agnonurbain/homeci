@@ -3,7 +3,7 @@ import {
   X, MapPin, Bed, Bath, Maximize, CheckCircle, Calendar, Eye,
   Star, Hotel, Layers, Lock, AlertTriangle, Clock, Phone,
   ShieldCheck, CreditCard, ChevronLeft, ChevronRight, Home,
-  Building2, Car, ArrowUpDown, FileText, ExternalLink,
+  Building2, Car, ArrowUpDown, FileText, ExternalLink, Flag,
 } from 'lucide-react';
 import { propertyService } from '../services/propertyService';
 import type { Property } from '../services/propertyService';
@@ -16,6 +16,7 @@ import { Property3DViewer } from './Property3DViewer';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { fixDocUrl } from '../utils/fixDocUrl';
+import { reportService, REASON_LABELS } from '../services/reportService';
 
 interface PropertyViewModalProps {
   propertyId: string;
@@ -63,6 +64,11 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
   const [loading, setLoading] = useState(true);
   const [imgIndex, setImgIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<'photos' | 'videos' | '3d' | 'map'>('photos');
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportReason, setReportReason] = useState<string>('');
+  const [reportDetails, setReportDetails] = useState('');
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [reportSubmitted, setReportSubmitted] = useState(false);
 
   useEffect(() => { loadData(); }, [propertyId, user]);
 
@@ -77,6 +83,31 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
       }
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
+  };
+
+  const handleReport = async () => {
+    if (!user || !property || !reportReason) return;
+    setReportSubmitting(true);
+    try {
+      const alreadyReported = await reportService.hasAlreadyReported(user.uid, property.id);
+      if (alreadyReported) {
+        setReportSubmitted(true);
+        return;
+      }
+      await reportService.submitReport({
+        property_id: property.id,
+        property_title: property.title,
+        reporter_id: user.uid,
+        reporter_role: profile?.role || 'locataire',
+        reason: reportReason as any,
+        details: reportDetails.trim(),
+      });
+      setReportSubmitted(true);
+    } catch (e) {
+      console.error('[HOMECI] Erreur signalement:', e);
+    } finally {
+      setReportSubmitting(false);
+    }
   };
 
   if (loading) return (
@@ -452,6 +483,60 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
                   {property.documents?.length > 0 && <RecapRow label="Documents" value={`${property.documents.length} fourni${property.documents.length > 1 ? 's' : ''}`} />}
                   <RecapRow label="Prix" value={formatPrice(property.price)} bold />
                 </div>
+
+                {/* Signaler cette annonce (CGV Locataire Art. 6b) */}
+                {user && property.owner_id !== user.uid && (
+                  <div className="mt-3">
+                    {reportSubmitted ? (
+                      <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs"
+                        style={{ background: HAlpha.green10, border: '1px solid rgba(45,106,79,0.25)', color: HColors.green, fontFamily: 'var(--font-nunito)' }}>
+                        <CheckCircle className="w-3.5 h-3.5 shrink-0" />
+                        Signalement envoyé — nous examinerons cette annonce sous 48h.
+                      </div>
+                    ) : showReportForm ? (
+                      <div className="rounded-2xl p-4 space-y-3"
+                        style={{ background: HColors.white, border: '1px solid rgba(139,29,29,0.2)' }}>
+                        <p className="text-xs font-semibold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                          Pourquoi signalez-vous cette annonce ?
+                        </p>
+                        <select value={reportReason} onChange={e => setReportReason(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl text-xs outline-none"
+                          style={{ background: HAlpha.gold05, border: `1px solid ${HAlpha.gold20}`, color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                          <option value="">Sélectionnez un motif...</option>
+                          {Object.entries(REASON_LABELS).map(([key, label]) => (
+                            <option key={key} value={key}>{label}</option>
+                          ))}
+                        </select>
+                        <textarea value={reportDetails} onChange={e => setReportDetails(e.target.value)}
+                          placeholder="Détails supplémentaires (optionnel)"
+                          rows={2} maxLength={500}
+                          className="w-full px-3 py-2 rounded-xl text-xs outline-none resize-none"
+                          style={{ background: HAlpha.gold05, border: `1px solid ${HAlpha.gold15}`, color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }} />
+                        <div className="flex gap-2">
+                          <button onClick={() => setShowReportForm(false)}
+                            className="flex-1 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80"
+                            style={{ border: `1px solid ${HAlpha.gold20}`, color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                            Annuler
+                          </button>
+                          <button onClick={handleReport} disabled={!reportReason || reportSubmitting}
+                            className="flex-1 px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-all hover:opacity-90 disabled:opacity-40"
+                            style={{ background: HColors.bordeaux, color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
+                            {reportSubmitting
+                              ? <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                              : <Flag className="w-3 h-3" />}
+                            Envoyer
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button onClick={() => setShowReportForm(true)}
+                        className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium transition-all hover:opacity-80"
+                        style={{ border: '1px solid rgba(139,29,29,0.2)', color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
+                        <Flag className="w-3.5 h-3.5" /> Signaler cette annonce
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
