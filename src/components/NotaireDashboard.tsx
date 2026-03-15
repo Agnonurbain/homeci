@@ -12,6 +12,7 @@ import {
   ThumbsUp, ThumbsDown, Loader, BadgeCheck,
 } from 'lucide-react';
 import { KenteLine } from './ui/KenteLine';
+import CGVNotaireModal from './CGVNotaireModal';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { fixDocUrl } from '../utils/fixDocUrl';
 
@@ -70,6 +71,8 @@ export default function NotaireDashboard() {
   const [refusalReasons, setRefusalReasons] = useState<Record<string,string>>({});
   const [showRefusalInput, setShowRefusalInput] = useState<string|null>(null);
   const [toast, setToast] = useState<{msg:string;ok:boolean}|null>(null);
+  const [showCGVNotaire, setShowCGVNotaire] = useState(false);
+  const [pendingTakeChargeProperty, setPendingTakeChargeProperty] = useState<Property|null>(null);
 
   useEffect(() => { loadProperties(); }, []);
 
@@ -186,7 +189,18 @@ export default function NotaireDashboard() {
     finally { setCertifyingId(null); }
   }
 
-  async function handleTakeCharge(property: Property) {
+  function handleTakeCharge(property: Property) {
+    if (!profile?.id) return;
+    // Vérifier si le notaire a déjà accepté la charte
+    if (!profile.cgv_notaire_accepted) {
+      setPendingTakeChargeProperty(property);
+      setShowCGVNotaire(true);
+      return;
+    }
+    doTakeCharge(property);
+  }
+
+  async function doTakeCharge(property: Property) {
     if (!profile?.id) return;
     setTakingId(property.id);
     try {
@@ -835,6 +849,20 @@ export default function NotaireDashboard() {
             <span className="text-sm font-medium" style={{color:HColors.cream,fontFamily:'var(--font-nunito)'}}>{toast.msg}</span>
           </div>
         </div>
+      )}
+
+      {/* CGV Notaire */}
+      {showCGVNotaire && (
+        <CGVNotaireModal
+          onAccept={() => {
+            setShowCGVNotaire(false);
+            if (pendingTakeChargeProperty) {
+              doTakeCharge(pendingTakeChargeProperty);
+              setPendingTakeChargeProperty(null);
+            }
+          }}
+          onClose={() => { setShowCGVNotaire(false); setPendingTakeChargeProperty(null); }}
+        />
       )}
     </div>
   );

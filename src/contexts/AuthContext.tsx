@@ -24,6 +24,8 @@ export interface Profile {
   verified: boolean;
   cgv_accepted?: boolean;
   cgv_accepted_at?: string;
+  cgv_notaire_accepted?: boolean;
+  cgv_notaire_accepted_at?: string;
   created_at: string;
   updated_at: string;
 }
