@@ -195,7 +195,25 @@ export default function OwnerAgentDashboard() {
             ? { ...v, status: 'counter_proposed', counter_date: counterDate, counter_time: counterTime, counter_proposed_by: 'owner' }
             : v
         ));
+      } else if (action === 'accepted' && selectedVisit.status === 'counter_proposed' && selectedVisit.counter_proposed_by === 'tenant' && selectedVisit.counter_date) {
+        // Accepter la contre-proposition du locataire → promouvoir counter_date en preferred_date
+        await visitService.acceptCounterDate(selectedVisit.id);
+        const confirmedDate = new Date(selectedVisit.counter_date).toLocaleDateString('fr-FR');
+        const confirmedTime = selectedVisit.counter_time || selectedVisit.preferred_time;
+        await notificationService.createNotification({
+          user_id: selectedVisit.tenant_id,
+          type: 'visit_accepted',
+          title: 'Visite confirmée ✅',
+          message: `Votre proposition pour "${selectedVisit.property_title}" le ${confirmedDate} à ${confirmedTime} est confirmée.`,
+          property_id: selectedVisit.property_id,
+        });
+        setVisitRequests(prev => prev.map(v =>
+          v.id === selectedVisit.id
+            ? { ...v, status: 'accepted', preferred_date: selectedVisit.counter_date!, preferred_time: confirmedTime, counter_date: undefined, counter_time: undefined, counter_proposed_by: undefined }
+            : v
+        ));
       } else {
+        // Accepter une visite normale (pending) ou rejeter
         await visitService.updateVisitStatus(selectedVisit.id, action);
         await notificationService.createNotification({
           user_id: selectedVisit.tenant_id,
@@ -828,7 +846,10 @@ export default function OwnerAgentDashboard() {
                     className="w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
                     style={{ background: 'linear-gradient(135deg,#D4A017,#C07C3E)', color: HColors.night, fontFamily: 'var(--font-nunito)' }}>
                     {visitActionLoading ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"/> : <CheckCircle className="w-4 h-4"/>}
-                    Confirmer le {new Date(selectedVisit.preferred_date).toLocaleDateString('fr-FR', { day:'2-digit', month:'short' })} à {selectedVisit.preferred_time}
+                    Confirmer le {selectedVisit.status === 'counter_proposed' && selectedVisit.counter_proposed_by === 'tenant' && selectedVisit.counter_date
+                      ? <>{new Date(selectedVisit.counter_date).toLocaleDateString('fr-FR', { day:'2-digit', month:'short' })} à {selectedVisit.counter_time}</>
+                      : <>{new Date(selectedVisit.preferred_date).toLocaleDateString('fr-FR', { day:'2-digit', month:'short' })} à {selectedVisit.preferred_time}</>
+                    }
                   </button>
                 )}
                 <button onClick={() => handleVisitAction('rejected')} disabled={visitActionLoading}

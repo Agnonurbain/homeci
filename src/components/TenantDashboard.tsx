@@ -495,7 +495,10 @@ export default function TenantDashboard() {
                               style={{ fontFamily:'var(--font-nunito)' }}>
                               <Calendar className="w-3.5 h-3.5" style={{ color:HColors.terracotta }}/>
                               <span className="font-medium" style={{ color:HColors.brownDark }}>
-                                {new Date(visit.preferred_date).toLocaleDateString('fr-FR', { weekday:'short', day:'2-digit', month:'long' })} à {visit.preferred_time}
+                                {visit.status === 'counter_proposed' && visit.counter_date
+                                  ? <>{new Date(visit.counter_date).toLocaleDateString('fr-FR', { weekday:'short', day:'2-digit', month:'long' })} à {visit.counter_time}</>
+                                  : <>{new Date(visit.preferred_date).toLocaleDateString('fr-FR', { weekday:'short', day:'2-digit', month:'long' })} à {visit.preferred_time}</>
+                                }
                               </span>
                               <span className="ml-auto" style={{ color:HAlpha.brown50 }}>
                                 Envoyé le {new Date(visit.created_at).toLocaleDateString('fr-FR', { day:'2-digit', month:'short' })}
