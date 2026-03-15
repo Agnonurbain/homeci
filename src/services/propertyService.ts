@@ -221,8 +221,13 @@ export const propertyService = {
     const docSnap = await getDoc(docRef);
     if (!docSnap.exists()) return null;
     const property = docToProperty(docSnap.id, docSnap.data() as Record<string, unknown>);
-    // Charger les documents depuis la sous-collection
-    property.documents = await this.getDocuments(id);
+    // Charger les documents depuis la sous-collection (peut échouer si pas autorisé)
+    try {
+      property.documents = await this.getDocuments(id);
+    } catch {
+      // Locataire n'a pas accès aux documents — c'est normal
+      property.documents = [];
+    }
     return property;
   },
 
@@ -279,7 +284,11 @@ export const propertyService = {
   async getPropertiesWithDocs(filters?: PropertyFilters): Promise<Property[]> {
     const properties = await this.getProperties(filters);
     await Promise.all(properties.map(async (p) => {
-      p.documents = await this.getDocuments(p.id);
+      try {
+        p.documents = await this.getDocuments(p.id);
+      } catch {
+        p.documents = [];
+      }
     }));
     return properties;
   },
