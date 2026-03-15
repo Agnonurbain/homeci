@@ -25,12 +25,15 @@ const DOC_LABELS: Record<string, string> = {
   arrete_lotissement:'Arrêté de lotissement',
   autorisation_exploitation:"Autorisation d'exploitation",
   registre_commerce:'Registre de commerce',
+  cni:'Carte d\'identité (CNI)',
+  registre_commerce_proprio:'Registre de commerce (propriétaire)',
+  carte_sejour:'Carte de séjour / Résidence',
 };
 const REQUIRED_DOCS: Record<string, string[]> = {
   appartement:['titre_foncier','permis_construire'],
   maison:['titre_foncier','permis_construire'],
   villa:['titre_foncier','permis_construire'],
-  terrain:['titre_foncier','plan_cadastral'],
+  terrain:['titre_foncier'],
   hotel:['titre_foncier','autorisation_exploitation','registre_commerce'],
   appart_hotel:['titre_foncier','autorisation_exploitation','registre_commerce'],
 };

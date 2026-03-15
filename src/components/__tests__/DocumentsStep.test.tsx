@@ -51,7 +51,9 @@ describe('DocumentsStep', () => {
 
     expect(screen.getByText('Titre foncier')).toBeInTheDocument();
     expect(screen.getByText("Autorisation d'exploitation")).toBeInTheDocument();
-    expect(screen.getByText('Registre de commerce')).toBeInTheDocument();
+    // "Registre de commerce" apparaît 2 fois : docs du bien + identité propriétaire
+    const registres = screen.getAllByText('Registre de commerce');
+    expect(registres.length).toBeGreaterThanOrEqual(1);
   });
 
   // ── Badges obligatoire/optionnel ──
@@ -129,8 +131,8 @@ describe('DocumentsStep', () => {
     render(<DocumentsStep {...defaultProps} propertyType="maison" documents={[]} />);
 
     const uploadBtns = screen.getAllByText('Téléverser');
-    // 4 documents pour une maison → 4 boutons Téléverser
-    expect(uploadBtns).toHaveLength(4);
+    // 4 documents du bien + 3 documents d'identité = 7 boutons Téléverser
+    expect(uploadBtns).toHaveLength(7);
   });
 
   it('n\'affiche pas Téléverser pour un document déjà uploadé', () => {
@@ -139,9 +141,9 @@ describe('DocumentsStep', () => {
     ];
     render(<DocumentsStep {...defaultProps} propertyType="maison" documents={docs} />);
 
-    // 3 boutons restants (les 3 autres documents)
+    // 3 boutons restants du bien + 3 documents d'identité = 6
     const uploadBtns = screen.getAllByText('Téléverser');
-    expect(uploadBtns).toHaveLength(3);
+    expect(uploadBtns).toHaveLength(6);
   });
 
   // ── Note de confidentialité ──
@@ -159,5 +161,26 @@ describe('DocumentsStep', () => {
 
     expect(screen.getByText('Titre foncier')).toBeInTheDocument();
     expect(screen.getByText('Permis de construire')).toBeInTheDocument();
+  });
+
+  // ── Documents d'identité du propriétaire ──
+
+  it('affiche les 3 documents d\'identité pour tous les types de biens', () => {
+    render(<DocumentsStep {...defaultProps} propertyType="terrain" />);
+
+    expect(screen.getByText('Identité du propriétaire')).toBeInTheDocument();
+    expect(screen.getByText(/Carte d'identité nationale/)).toBeInTheDocument();
+    expect(screen.getByText(/Registre de commerce/)).toBeInTheDocument();
+    expect(screen.getByText(/Carte de séjour/)).toBeInTheDocument();
+  });
+
+  it('plan cadastral est optionnel pour un terrain', () => {
+    render(<DocumentsStep {...defaultProps} propertyType="terrain" />);
+
+    expect(screen.getByText('Plan cadastral')).toBeInTheDocument();
+    // Plan cadastral ne doit PAS être dans les obligatoires
+    const obligatoires = screen.getAllByText('Obligatoire');
+    // Terrain : seul titre_foncier est obligatoire
+    expect(obligatoires).toHaveLength(1);
   });
 });

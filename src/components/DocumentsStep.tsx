@@ -25,7 +25,7 @@ const DOCUMENTS_BY_TYPE: Record<string, { type: string; label: string; required:
   ],
   terrain: [
     { type: 'titre_foncier', label: 'Titre foncier', required: true, hint: 'Document officiel attestant la propriété du terrain' },
-    { type: 'plan_cadastral', label: 'Plan cadastral', required: true, hint: 'Plan délimitant la parcelle' },
+    { type: 'plan_cadastral', label: 'Plan cadastral', required: false, hint: 'Plan délimitant la parcelle (facultatif)' },
     { type: 'arrete_lotissement', label: 'Arrêté de lotissement', required: false, hint: 'Autorisation administrative de lotissement' },
     { type: 'certificat_propriete', label: 'Certificat de propriété', required: false, hint: 'Document notarial confirmant la propriété' },
   ],
@@ -42,6 +42,13 @@ const DOCUMENTS_BY_TYPE: Record<string, { type: string; label: string; required:
     { type: 'permis_construire', label: 'Permis de construire', required: false, hint: 'Autorisation de construction' },
   ],
 };
+
+/** Documents d'identité du propriétaire — communs à tous les types de biens */
+const OWNER_IDENTITY_DOCS: { type: string; label: string; required: boolean; hint: string }[] = [
+  { type: 'cni', label: 'Carte d\'identité nationale (CNI)', required: false, hint: 'Pièce d\'identité si vous êtes citoyen du pays' },
+  { type: 'registre_commerce_proprio', label: 'Registre de commerce', required: false, hint: 'Si le propriétaire est une entreprise ou société' },
+  { type: 'carte_sejour', label: 'Carte de séjour / Certificat de résidence', required: false, hint: 'Si le propriétaire est un étranger résidant dans le pays' },
+];
 
 interface DocumentsStepProps {
   propertyType: string;
@@ -228,6 +235,119 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
         <p className="text-sm text-amber-800">
           <strong>🔒 Confidentialité :</strong> Vos documents sont chiffrés et uniquement accessibles par notre équipe notariale agréée. Ils ne sont jamais partagés avec les visiteurs ou locataires.
         </p>
+      </div>
+
+      {/* ── Documents d'identité du propriétaire ── */}
+      <div className="flex items-center gap-3 mt-8 mb-4">
+        <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+          <FileText className="w-6 h-6 text-amber-600" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">Identité du propriétaire</h3>
+          <p className="text-sm text-gray-600">
+            Fournissez au moins un document selon votre situation (citoyen, entreprise ou étranger)
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {OWNER_IDENTITY_DOCS.map(def => {
+          const doc = getDocument(def.type);
+          const isUploading = uploading[def.type];
+          const error = errors[def.type];
+
+          return (
+            <div
+              key={def.type}
+              className={`border rounded-lg p-4 transition-colors ${
+                doc ? 'border-emerald-300 bg-emerald-50' : 'border-gray-200 bg-white'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-medium text-gray-900">{def.label}</span>
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Selon votre situation</span>
+                  </div>
+                  <p className="text-xs text-gray-500">{def.hint}</p>
+                  {error && (
+                    <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3" /> {error}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {doc ? (
+                    <>
+                      <span className="flex items-center gap-1 text-xs text-emerald-700 bg-emerald-100 px-2 py-1 rounded-full">
+                        <Clock className="w-3 h-3" /> En attente de validation
+                      </span>
+                      <a
+                        href={fixDocUrl(doc.url)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Voir le document"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => removeDocument(def.type)}
+                        className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Supprimer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </>
+                  ) : (
+                    <label className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors ${
+                      isUploading
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                    }`}>
+                      {isUploading ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                          Upload...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          Téléverser
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept=".pdf,.jpg,.jpeg,.png,.webp"
+                        disabled={isUploading}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleUpload(def.type, def.label, file);
+                          e.target.value = '';
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              {/* Statut si uploadé */}
+              {doc && doc.status === 'valide' && (
+                <div className="mt-2 flex items-center gap-1 text-xs text-emerald-700">
+                  <CheckCircle className="w-3 h-3" /> Validé par le notaire
+                </div>
+              )}
+              {doc && doc.status === 'refuse' && (
+                <div className="mt-2 text-xs text-red-700 bg-red-50 rounded p-2">
+                  ❌ Refusé : {doc.rejection_reason || 'Document non conforme'}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
