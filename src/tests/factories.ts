@@ -1,4 +1,5 @@
 import type { Property } from '../services/propertyService';
+import type { VisitRequest } from '../services/visitService';
 
 /**
  * Crée une Property fictive avec des valeurs par défaut pour les tests.
@@ -52,6 +53,30 @@ export function createMockProperty(overrides: Partial<Property> = {}): Property 
     cuisine_par_unite: false,
     created_at: '2026-01-15T10:00:00.000Z',
     updated_at: '2026-03-01T14:30:00.000Z',
+    ...overrides,
+  };
+}
+
+/**
+ * Crée une VisitRequest fictive avec des valeurs par défaut pour les tests.
+ */
+export function createMockVisit(overrides: Partial<VisitRequest> = {}): VisitRequest {
+  return {
+    id: 'visit-test-1',
+    property_id: 'prop-test-1',
+    property_title: 'Belle villa Cocody',
+    property_city: 'Cocody',
+    owner_id: 'owner-1',
+    tenant_id: 'tenant-1',
+    tenant_name: 'Jean Kouamé',
+    tenant_phone: '+225 07 00 00 00',
+    tenant_email: 'jean@test.com',
+    preferred_date: '2026-04-15',
+    preferred_time: '10:00',
+    status: 'pending',
+    owner_notes: '',
+    created_at: '2026-04-01T10:00:00.000Z',
+    updated_at: '2026-04-01T10:00:00.000Z',
     ...overrides,
   };
 }

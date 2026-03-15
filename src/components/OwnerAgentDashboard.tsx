@@ -473,7 +473,10 @@ export default function OwnerAgentDashboard() {
                             </div>
                             <div className="flex items-center gap-1.5">
                               <Calendar className="w-3.5 h-3.5" style={{ color: HColors.terracotta }}/>
-                              {new Date(visit.preferred_date).toLocaleDateString('fr-FR')} à {visit.preferred_time}
+                              {visit.status === 'counter_proposed' && visit.counter_proposed_by === 'tenant' && visit.counter_date
+                                ? <>{new Date(visit.counter_date).toLocaleDateString('fr-FR', { weekday:'short', day:'2-digit', month:'long' })} à {visit.counter_time}</>
+                                : <>{new Date(visit.preferred_date).toLocaleDateString('fr-FR')} à {visit.preferred_time}</>
+                              }
                             </div>
                             <div className="flex items-center gap-1.5">
                               <MapPin className="w-3.5 h-3.5" style={{ color: HColors.terracotta }}/>{visit.property_city}
@@ -489,6 +492,9 @@ export default function OwnerAgentDashboard() {
                               Le locataire propose : <strong className="ml-1">
                                 {new Date(visit.counter_date).toLocaleDateString('fr-FR', { weekday:'short', day:'2-digit', month:'long' })} à {visit.counter_time}
                               </strong>
+                              <span className="ml-2 opacity-60" style={{ textDecoration: 'line-through' }}>
+                                (initial : {new Date(visit.preferred_date).toLocaleDateString('fr-FR')} à {visit.preferred_time})
+                              </span>
                             </div>
                           )}
                           {visit.status === 'counter_proposed' && visit.counter_proposed_by === 'owner' && visit.counter_date && (
@@ -744,18 +750,37 @@ export default function OwnerAgentDashboard() {
                 </div>
               </div>
 
-              {/* Date demandée */}
-              <div className="flex items-center gap-3 p-3 rounded-xl mb-4 text-sm"
-                style={{ background: HAlpha.terra10, border: '1px solid rgba(192,124,62,0.25)' }}>
-                <Calendar className="w-4 h-4 shrink-0" style={{ color: HColors.terracotta }}/>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide mb-0.5"
-                    style={{ color: HColors.terracotta, fontFamily: 'var(--font-nunito)' }}>Date demandée</p>
-                  <p className="font-semibold" style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
-                    {new Date(selectedVisit.preferred_date).toLocaleDateString('fr-FR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' })} à {selectedVisit.preferred_time}
+              {/* Date demandée (ou contre-proposition locataire) */}
+              {selectedVisit.status === 'counter_proposed' && selectedVisit.counter_proposed_by === 'tenant' && selectedVisit.counter_date ? (
+                <>
+                  <div className="flex items-center gap-3 p-3 rounded-xl mb-2 text-sm"
+                    style={{ background: HAlpha.terra10, border: '1px solid rgba(192,124,62,0.25)' }}>
+                    <Calendar className="w-4 h-4 shrink-0" style={{ color: HColors.terracotta }}/>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-0.5"
+                        style={{ color: HColors.terracotta, fontFamily: 'var(--font-nunito)' }}>Contre-proposition du locataire</p>
+                      <p className="font-semibold" style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
+                        {new Date(selectedVisit.counter_date).toLocaleDateString('fr-FR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' })} à {selectedVisit.counter_time}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-xs mb-4 pl-1" style={{ color: 'rgba(245,230,200,0.4)', fontFamily: 'var(--font-nunito)', textDecoration: 'line-through' }}>
+                    Date initiale : {new Date(selectedVisit.preferred_date).toLocaleDateString('fr-FR')} à {selectedVisit.preferred_time}
                   </p>
+                </>
+              ) : (
+                <div className="flex items-center gap-3 p-3 rounded-xl mb-4 text-sm"
+                  style={{ background: HAlpha.terra10, border: '1px solid rgba(192,124,62,0.25)' }}>
+                  <Calendar className="w-4 h-4 shrink-0" style={{ color: HColors.terracotta }}/>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide mb-0.5"
+                      style={{ color: HColors.terracotta, fontFamily: 'var(--font-nunito)' }}>Date demandée</p>
+                    <p className="font-semibold" style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
+                      {new Date(selectedVisit.preferred_date).toLocaleDateString('fr-FR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' })} à {selectedVisit.preferred_time}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Contre-date */}
               <div className="mb-5">
