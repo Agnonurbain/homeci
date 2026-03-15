@@ -26,6 +26,8 @@ const DOC_LABELS: Record<string, string> = {
   autorisation_exploitation:"Autorisation d'exploitation",
   registre_commerce:'Registre de commerce',
   cni:'Carte d\'identité (CNI)',
+  passeport:'Passeport',
+  attestation_residence:'Attestation de résidence',
   registre_commerce_proprio:'Registre de commerce (propriétaire)',
   carte_sejour:'Carte de séjour / Résidence',
 };

@@ -131,8 +131,8 @@ describe('DocumentsStep', () => {
     render(<DocumentsStep {...defaultProps} propertyType="maison" documents={[]} />);
 
     const uploadBtns = screen.getAllByText('Téléverser');
-    // 4 documents du bien + 3 documents d'identité = 7 boutons Téléverser
-    expect(uploadBtns).toHaveLength(7);
+    // 4 documents du bien + 5 documents d'identité = 9 boutons Téléverser
+    expect(uploadBtns).toHaveLength(9);
   });
 
   it('n\'affiche pas Téléverser pour un document déjà uploadé', () => {
@@ -141,9 +141,9 @@ describe('DocumentsStep', () => {
     ];
     render(<DocumentsStep {...defaultProps} propertyType="maison" documents={docs} />);
 
-    // 3 boutons restants du bien + 3 documents d'identité = 6
+    // 3 boutons restants du bien + 5 documents d'identité = 8
     const uploadBtns = screen.getAllByText('Téléverser');
-    expect(uploadBtns).toHaveLength(6);
+    expect(uploadBtns).toHaveLength(8);
   });
 
   // ── Note de confidentialité ──
@@ -165,11 +165,13 @@ describe('DocumentsStep', () => {
 
   // ── Documents d'identité du propriétaire ──
 
-  it('affiche les 3 documents d\'identité pour tous les types de biens', () => {
+  it('affiche les 5 documents d\'identité pour tous les types de biens', () => {
     render(<DocumentsStep {...defaultProps} propertyType="terrain" />);
 
     expect(screen.getByText('Identité du propriétaire')).toBeInTheDocument();
     expect(screen.getByText(/Carte d'identité nationale/)).toBeInTheDocument();
+    expect(screen.getByText(/Passeport/)).toBeInTheDocument();
+    expect(screen.getByText(/Attestation de résidence/)).toBeInTheDocument();
     expect(screen.getByText(/Registre de commerce/)).toBeInTheDocument();
     expect(screen.getByText(/Carte de séjour/)).toBeInTheDocument();
   });

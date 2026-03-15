@@ -46,6 +46,8 @@ const DOCUMENTS_BY_TYPE: Record<string, { type: string; label: string; required:
 /** Documents d'identité du propriétaire — communs à tous les types de biens */
 const OWNER_IDENTITY_DOCS: { type: string; label: string; required: boolean; hint: string }[] = [
   { type: 'cni', label: 'Carte d\'identité nationale (CNI)', required: false, hint: 'Pièce d\'identité si vous êtes citoyen du pays' },
+  { type: 'passeport', label: 'Passeport', required: false, hint: 'Document d\'identité international valide' },
+  { type: 'attestation_residence', label: 'Attestation de résidence', required: false, hint: 'Document justifiant votre domicile actuel' },
   { type: 'registre_commerce_proprio', label: 'Registre de commerce', required: false, hint: 'Si le propriétaire est une entreprise ou société' },
   { type: 'carte_sejour', label: 'Carte de séjour / Certificat de résidence', required: false, hint: 'Si le propriétaire est un étranger résidant dans le pays' },
 ];
