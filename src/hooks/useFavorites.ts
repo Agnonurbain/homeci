@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 export function useFavorites(userId: string | undefined) {
@@ -12,9 +12,10 @@ export function useFavorites(userId: string | undefined) {
       return;
     }
     setLoadingFavorites(true);
-    getDoc(doc(db, 'favorites', userId))
+    // Charger depuis la sous-collection users/{uid}/favorites
+    getDocs(collection(db, 'users', userId, 'favorites'))
       .then(snap => {
-        if (snap.exists()) setFavoriteIds(snap.data().ids || []);
+        setFavoriteIds(snap.docs.map(d => d.id));
       })
       .catch(console.error)
       .finally(() => setLoadingFavorites(false));
@@ -22,11 +23,16 @@ export function useFavorites(userId: string | undefined) {
 
   const toggleFavorite = async (propertyId: string) => {
     if (!userId) return;
-    const updated = favoriteIds.includes(propertyId)
-      ? favoriteIds.filter(id => id !== propertyId)
-      : [...favoriteIds, propertyId];
-    setFavoriteIds(updated);
-    await setDoc(doc(db, 'favorites', userId), { ids: updated });
+    const favRef = doc(db, 'users', userId, 'favorites', propertyId);
+    if (favoriteIds.includes(propertyId)) {
+      // Retirer des favoris
+      setFavoriteIds(prev => prev.filter(id => id !== propertyId));
+      await deleteDoc(favRef);
+    } else {
+      // Ajouter aux favoris
+      setFavoriteIds(prev => [...prev, propertyId]);
+      await setDoc(favRef, { added_at: new Date().toISOString() });
+    }
   };
 
   const isFavorite = (propertyId: string) => favoriteIds.includes(propertyId);

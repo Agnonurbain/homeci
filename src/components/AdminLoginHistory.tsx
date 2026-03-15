@@ -49,7 +49,7 @@ export default function AdminLoginHistory() {
     setLoading(true);
     try {
       // Requête simple sur orderBy uniquement — on filtre côté client pour éviter l'index composite
-      const q = query(collection(db, 'login_attempts'), orderBy('attempted_at', 'desc'), limit(100));
+      const q = query(collection(db, 'admin_logs'), orderBy('attempted_at', 'desc'), limit(100));
       const snap = await getDocs(q);
       let data = snap.docs.map(d => ({ id: d.id, ...d.data() })) as LoginAttempt[];
       if (filter === 'success') data = data.filter(a => a.success);

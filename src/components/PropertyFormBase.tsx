@@ -8,7 +8,7 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   X, ArrowLeft, ArrowRight, Home, MapPin, Image, Check,
-  Upload, Trash2, FileText, AlertCircle,
+  Upload, Trash2, FileText, AlertCircle, Film,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { propertyService } from '../services/propertyService';
@@ -106,11 +106,16 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
   // Médias — Create
   const [images, setImages]             = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [videos, setVideos]             = useState<File[]>([]);
+  const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
 
   // Médias — Edit
   const [existingImages, setExistingImages]       = useState<string[]>([]);
   const [newImages, setNewImages]                 = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews]   = useState<string[]>([]);
+  const [existingVideos, setExistingVideos]       = useState<string[]>([]);
+  const [newVideos, setNewVideos]                 = useState<File[]>([]);
+  const [newVideoPreviews, setNewVideoPreviews]   = useState<string[]>([]);
   const [model3d, setModel3d]                     = useState<Model3D | null>(null);
 
   // Documents (partagé)
@@ -164,6 +169,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
           amenities: data.amenities || [], available_from: data.available_from || '',
         });
         setExistingImages(data.images || []);
+        setExistingVideos(data.videos || []);
         setDocuments(data.documents || []);
         setModel3d((data as any).model3d || null);
       } catch (e) {
@@ -230,6 +236,45 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
     setNewImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
+  /* ── Gestion vidéos ── */
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('video/'));
+    if (!files.length) return;
+    const current = mode === 'create' ? videos.length : existingVideos.length + newVideos.length;
+    if (current + files.length > 3) { setError('Maximum 3 vidéos autorisées'); return; }
+    // Vérifier taille max 100 Mo par fichier
+    const oversized = files.find(f => f.size > 100 * 1024 * 1024);
+    if (oversized) { setError('Chaque vidéo doit faire moins de 100 Mo'); return; }
+    if (mode === 'create') {
+      setVideos(prev => [...prev, ...files]);
+      files.forEach(file => {
+        const url = URL.createObjectURL(file);
+        setVideoPreviews(prev => [...prev, url]);
+      });
+    } else {
+      setNewVideos(prev => [...prev, ...files]);
+      files.forEach(file => {
+        const url = URL.createObjectURL(file);
+        setNewVideoPreviews(prev => [...prev, url]);
+      });
+    }
+    e.target.value = '';
+  };
+
+  const removeVideo = (index: number) => {
+    if (mode === 'create') {
+      URL.revokeObjectURL(videoPreviews[index]);
+      setVideos(prev => prev.filter((_, i) => i !== index));
+      setVideoPreviews(prev => prev.filter((_, i) => i !== index));
+    }
+  };
+  const removeExistingVideo = (index: number) => setExistingVideos(prev => prev.filter((_, i) => i !== index));
+  const removeNewVideo = (index: number) => {
+    URL.revokeObjectURL(newVideoPreviews[index]);
+    setNewVideos(prev => prev.filter((_, i) => i !== index));
+    setNewVideoPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
   /* ── Validation ── */
   const validateStep = (step: number): boolean => {
     setError('');
@@ -272,17 +317,18 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
       if (mode === 'create') {
         const propertyData: PropertyInsert = {
           ...sanitizePropertyData(formData),
-          owner_id: user.uid, status: 'pending', images: [],
-          documents: [], verified_notaire: false, verification_date: null,
+          owner_id: user.uid, status: 'pending', images: [], videos: [],
+          verified_notaire: false, verification_date: null,
           notaire_id: null,
           views_count: 0, featured: false,
         };
         const newId = await propertyService.createProperty(propertyData);
         onSuccess(); onClose();
 
-        const updates: Record<string, unknown> = {};
-        if (documents.length > 0) updates.documents = documents;
-        if (Object.keys(updates).length > 0) propertyService.updateProperty(newId, updates).catch(() => {});
+        // Sauver les documents dans la sous-collection
+        if (documents.length > 0) {
+          Promise.all(documents.map(d => propertyService.setDocument(newId, d))).catch(() => {});
+        }
 
         if (images.length > 0) {
           (async () => {
@@ -300,9 +346,30 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
           })().catch(() => {});
         }
 
+        // Upload vidéos en arrière-plan
+        if (videos.length > 0) {
+          (async () => {
+            const urls: string[] = [];
+            for (const file of videos) {
+              try {
+                const url = await Promise.race([
+                  storageService.uploadVideo(file, `properties/${user.uid}/${newId}`),
+                  new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 120000)),
+                ]);
+                urls.push(url);
+              } catch { /* continue */ }
+            }
+            if (urls.length > 0) await propertyService.updateProperty(newId, { videos: urls });
+          })().catch(() => {});
+        }
+
       } else if (propertyId) {
         const propertyData: PropertyUpdate = sanitizePropertyUpdate(formData);
-        await propertyService.updateProperty(propertyId, { ...propertyData, images: existingImages, documents, model3d } as any);
+        await propertyService.updateProperty(propertyId, { ...propertyData, images: existingImages, videos: existingVideos, model3d } as any);
+        // Sauver les documents dans la sous-collection
+        if (documents.length > 0) {
+          await Promise.all(documents.map(d => propertyService.setDocument(propertyId, d)));
+        }
         onSuccess(); onClose();
 
         if (newImages.length > 0) {
@@ -322,6 +389,25 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
             if (urls.length > 0) await propertyService.updateProperty(propertyId, { images: [...base, ...urls] });
           })().catch(() => {});
         }
+
+        // Upload nouvelles vidéos en arrière-plan
+        if (newVideos.length > 0) {
+          const baseVids = [...existingVideos];
+          const toUploadVids = [...newVideos];
+          (async () => {
+            const urls: string[] = [];
+            for (const file of toUploadVids) {
+              try {
+                const url = await Promise.race([
+                  storageService.uploadVideo(file, `${user.uid}/${propertyId}`),
+                  new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 120000)),
+                ]);
+                urls.push(url);
+              } catch { /* continue */ }
+            }
+            if (urls.length > 0) await propertyService.updateProperty(propertyId, { videos: [...baseVids, ...urls] });
+          })().catch(() => {});
+        }
       }
     } catch (err) {
       console.error('[HOMECI] Erreur publication:', err);
@@ -337,6 +423,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
   const isAppartement  = formData.property_type === 'appartement';
   const isTerrain      = formData.property_type === 'terrain';
   const totalPhotos    = mode === 'create' ? images.length : existingImages.length + newImages.length;
+  const totalVideos    = mode === 'create' ? videos.length : existingVideos.length + newVideos.length;
 
   const regions      = formData.district ? getRegionsByDistrict(formData.district) : [];
   const departements = formData.region   ? getDepartementsByRegion(formData.region) : [];
@@ -873,6 +960,96 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                     <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageChange} />
                   </label>
                 )}
+
+                {/* ── Section Vidéos ── */}
+                <div className="pt-5" style={{ borderTop:'1px solid rgba(212,160,23,0.18)' }}>
+                  <SectionHeader icon={<Film className="w-5 h-5" style={{ color:HColors.green }} />}
+                    iconBg="rgba(34,87,46,0.12)" iconBorder="rgba(34,87,46,0.3)"
+                    title="Vidéos" subtitle={`${totalVideos}/3 vidéos ajoutées (optionnel)`} />
+
+                  {/* Vidéos existantes (edit) */}
+                  {mode === 'edit' && existingVideos.length > 0 && (
+                    <div className="mt-3">
+                      <p className="mb-2 text-xs font-bold uppercase tracking-wider"
+                        style={{ color:'rgba(122,85,0,0.7)', fontFamily:'var(--font-nunito)' }}>
+                        Vidéos actuelles
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {existingVideos.map((url, i) => (
+                          <div key={i} className="relative rounded-xl overflow-hidden group"
+                            style={{ border:'1px solid rgba(212,160,23,0.2)' }}>
+                            <video src={url} className="w-full aspect-video object-cover rounded-xl" controls preload="metadata" />
+                            <button type="button" aria-label="Supprimer cette vidéo"
+                              onClick={() => removeExistingVideo(i)}
+                              className="absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              style={{ background:HColors.bordeaux }}>
+                              <Trash2 className="w-3.5 h-3.5 text-white" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Aperçu vidéos (create) */}
+                  {mode === 'create' && videoPreviews.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                      {videoPreviews.map((src, i) => (
+                        <div key={i} className="relative rounded-xl overflow-hidden group"
+                          style={{ border:'1px solid rgba(212,160,23,0.2)' }}>
+                          <video src={src} className="w-full aspect-video object-cover rounded-xl" controls preload="metadata" />
+                          <button type="button" aria-label="Supprimer cette vidéo"
+                            onClick={() => removeVideo(i)}
+                            className="absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            style={{ background:HColors.bordeaux }}>
+                            <Trash2 className="w-3.5 h-3.5 text-white" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Nouvelles vidéos (edit) */}
+                  {mode === 'edit' && newVideoPreviews.length > 0 && (
+                    <div className="mt-3">
+                      <p className="mb-2 text-xs font-bold uppercase tracking-wider"
+                        style={{ color:'rgba(122,85,0,0.7)', fontFamily:'var(--font-nunito)' }}>
+                        Nouvelles vidéos à ajouter
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {newVideoPreviews.map((src, i) => (
+                          <div key={i} className="relative rounded-xl overflow-hidden group"
+                            style={{ border:'2px solid rgba(212,160,23,0.5)' }}>
+                            <video src={src} className="w-full aspect-video object-cover rounded-xl" controls preload="metadata" />
+                            <button type="button" aria-label="Supprimer cette vidéo"
+                              onClick={() => removeNewVideo(i)}
+                              className="absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              style={{ background:HColors.bordeaux }}>
+                              <Trash2 className="w-3.5 h-3.5 text-white" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Zone d'upload vidéo */}
+                  {totalVideos < 3 && (
+                    <label className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl cursor-pointer transition-all hover:opacity-90 mt-3"
+                      style={{ background:'rgba(34,87,46,0.05)', border:'2px dashed rgba(34,87,46,0.25)' }}>
+                      <Film className="w-7 h-7" style={{ color:'rgba(34,87,46,0.6)' }} />
+                      <div className="text-center">
+                        <p className="text-sm font-semibold" style={{ color:HColors.brownMid, fontFamily:'var(--font-nunito)' }}>
+                          Ajouter des vidéos
+                        </p>
+                        <p className="text-xs mt-0.5" style={{ color:'rgba(139,106,48,0.55)', fontFamily:'var(--font-nunito)' }}>
+                          {totalVideos}/3 — MP4, WebM, MOV — Max 100 Mo
+                        </p>
+                      </div>
+                      <input type="file" accept="video/mp4,video/webm,video/quicktime" multiple className="hidden" onChange={handleVideoChange} />
+                    </label>
+                  )}
+                </div>
 
                 {/* Visionneuse 3D (edit uniquement) */}
                 {mode === 'edit' && model3d && (

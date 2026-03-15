@@ -62,7 +62,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
   const [myVisit, setMyVisit] = useState<VisitRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [imgIndex, setImgIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<'photos' | '3d' | 'map'>('photos');
+  const [activeTab, setActiveTab] = useState<'photos' | 'videos' | '3d' | 'map'>('photos');
 
   useEffect(() => { loadData(); }, [propertyId, user]);
 
@@ -196,6 +196,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
           <div className="flex gap-1.5 mb-3">
             {[
               { key: 'photos', label: `📷 Photos${images.length > 1 ? ` (${images.length})` : ''}` },
+              ...(property.videos?.length ? [{ key: 'videos', label: `🎬 Vidéos (${property.videos.length})` }] : []),
               { key: '3d',     label: '⬡ Vue 3D' },
               { key: 'map',    label: '🗺 Carte' },
             ].map(tab => (
@@ -243,6 +244,23 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
 
           {/* ── Vue 3D ── */}
           {activeTab === '3d' && <div className="mb-5"><Property3DViewer property={property} height={380} /></div>}
+
+          {/* Vidéos */}
+          {activeTab === 'videos' && property.videos?.length > 0 && (
+            <div className="mb-5 space-y-3">
+              {property.videos.map((url, i) => (
+                <div key={i} className="rounded-2xl overflow-hidden" style={{ border:`1px solid ${HAlpha.gold15}` }}>
+                  <video
+                    src={url}
+                    controls
+                    preload="metadata"
+                    className="w-full aspect-video bg-black rounded-2xl"
+                    style={{ maxHeight: 400 }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* ── Carte ── */}
           {activeTab === 'map' && property.latitude && property.longitude && (

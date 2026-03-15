@@ -1,14 +1,15 @@
 /**
- * Fix les URLs Cloudinary de PDFs uploadés avec resource_type 'auto'.
- * Cloudinary stocke les PDFs comme 'image' mais ne peut pas les servir directement → 401.
- * Le flag fl_attachment force le téléchargement du PDF original.
+ * Fix les URLs de documents.
+ * - URLs Firebase Storage : fonctionnent directement, pas de fix nécessaire
+ * - URLs Cloudinary legacy : ajoute fl_attachment pour les PDFs
  */
 export function fixDocUrl(url: string | undefined): string {
   if (!url) return '';
-  // PDFs stockés sous /image/upload/ → ajouter fl_attachment pour forcer le téléchargement
-  if (url.endsWith('.pdf') && url.includes('/image/upload/') && !url.includes('fl_attachment')) {
+  // Firebase Storage URLs → OK directement
+  if (url.includes('firebasestorage.googleapis.com')) return url;
+  // Cloudinary legacy : PDFs sous /image/upload/ → ajouter fl_attachment
+  if (url.includes('cloudinary.com') && url.endsWith('.pdf') && url.includes('/image/upload/') && !url.includes('fl_attachment')) {
     return url.replace('/image/upload/', '/image/upload/fl_attachment/');
   }
-  // PDFs stockés sous /raw/upload/ → fonctionnent directement
   return url;
 }

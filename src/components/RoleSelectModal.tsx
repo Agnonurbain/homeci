@@ -78,7 +78,7 @@ export default function RoleSelectModal({ uid, displayName, photoURL, onDone }: 
     if (!canConfirm) return;
     setLoading(true);
     try {
-      await updateDoc(doc(db, 'profiles', uid), {
+      await updateDoc(doc(db, 'users', uid), {
         role: selected,
         updated_at: serverTimestamp(),
       });

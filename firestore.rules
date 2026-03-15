@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helpers
+    function isAuth() { return request.auth != null; }
+    function isOwner(uid) { return request.auth.uid == uid; }
+    function userRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    function isAdmin() { return isAuth() && userRole() == 'admin'; }
+    function isNotaire() { return isAuth() && userRole() == 'notaire'; }
+
+    // USERS
+    match /users/{uid} {
+      allow read: if isAuth();
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
+
+      match /favorites/{propertyId} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+
+    // PROPERTIES
+    match /properties/{propertyId} {
+      allow read: if true;
+      allow create: if isAuth();
+      allow update: if isAuth() && (
+        resource.data.owner_id == request.auth.uid ||
+        isNotaire() ||
+        isAdmin()
+      );
+      allow delete: if isAuth() && (
+        resource.data.owner_id == request.auth.uid || isAdmin()
+      );
+
+      // Documents légaux (sous-collection)
+      match /documents/{docId} {
+        allow read: if isAuth() && (
+          get(/databases/$(database)/documents/properties/$(propertyId)).data.owner_id == request.auth.uid ||
+          isNotaire() ||
+          isAdmin()
+        );
+        allow create, update: if isAuth() && (
+          get(/databases/$(database)/documents/properties/$(propertyId)).data.owner_id == request.auth.uid ||
+          isNotaire() ||
+          isAdmin()
+        );
+        allow delete: if isAuth() && (
+          get(/databases/$(database)/documents/properties/$(propertyId)).data.owner_id == request.auth.uid ||
+          isAdmin()
+        );
+      }
+    }
+
+    // VISITS
+    match /visits/{visitId} {
+      allow read: if isAuth() && (
+        resource.data.owner_id == request.auth.uid ||
+        resource.data.tenant_id == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuth();
+      allow update: if isAuth() && (
+        resource.data.owner_id == request.auth.uid ||
+        resource.data.tenant_id == request.auth.uid
+      );
+    }
+
+    // NOTIFICATIONS
+    match /notifications/{notifId} {
+      allow read, update: if isAuth() && resource.data.user_id == request.auth.uid;
+      allow create: if isAuth();
+    }
+
+    // NOTAIRE CODES
+    match /notaire_codes/{codeId} {
+      allow read: if isAuth();
+      allow create: if isAdmin();
+      allow update: if isAuth();
+    }
+
+    // ADMIN LOGS
+    match /admin_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuth();
+    }
+  }
+}

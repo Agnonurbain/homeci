@@ -108,7 +108,7 @@ export default function AdminManagement() {
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, newAdminEmail, newAdminPassword);
-      await setDoc(doc(db, 'profiles', userCredential.user.uid), {
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
         id: userCredential.user.uid,
         email: newAdminEmail,
         full_name: newAdminName,

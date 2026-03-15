@@ -1,134 +1,149 @@
+import { storage } from '../lib/firebase';
+import {
+  ref,
+  uploadBytesResumable,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from 'firebase/storage';
+import { compressImage, COMPRESS_PRESETS } from '../utils/compressImage';
+
 export interface UploadProgress {
   progress: number;
   bytesTransferred: number;
   totalBytes: number;
 }
 
-const CLOUD_NAME = 'daip1z5ej';
-const UPLOAD_PRESET = 'homeci_properties';
-const UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
-
 export const storageService = {
-  uploadImage(
+  /**
+   * Upload d'une image de propriété (compressée automatiquement).
+   * Stockée dans : images/{path}/{timestamp}.jpg
+   */
+  async uploadImage(
     file: File,
-    _path: string,
+    path: string,
     onProgress?: (progress: UploadProgress) => void
   ): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', UPLOAD_PRESET);
-      formData.append('folder', 'homeci');
+    // Compresser l'image avant upload
+    const compressed = await compressImage(file, COMPRESS_PRESETS.property);
 
-      const xhr = new XMLHttpRequest();
+    const ext = compressed.name.split('.').pop() || 'jpg';
+    const storagePath = `images/${path}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const storageRef = ref(storage, storagePath);
 
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable && onProgress) {
-          onProgress({
-            progress: (e.loaded / e.total) * 100,
-            bytesTransferred: e.loaded,
-            totalBytes: e.total,
-          });
-        }
+    if (onProgress) {
+      // Upload avec progression
+      return new Promise((resolve, reject) => {
+        const task = uploadBytesResumable(storageRef, compressed);
+        task.on(
+          'state_changed',
+          (snapshot) => {
+            onProgress({
+              progress: (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
+              bytesTransferred: snapshot.bytesTransferred,
+              totalBytes: snapshot.totalBytes,
+            });
+          },
+          (error) => reject(error),
+          async () => {
+            const url = await getDownloadURL(task.snapshot.ref);
+            resolve(url);
+          }
+        );
       });
+    }
 
-      xhr.addEventListener('load', () => {
-        if (xhr.status === 200) {
-          const response = JSON.parse(xhr.responseText);
-          resolve(response.secure_url);
-        } else {
-          reject(new Error(`Upload échoué (${xhr.status}): ${xhr.responseText}`));
-        }
-      });
-
-      xhr.addEventListener('error', () => reject(new Error("Erreur réseau lors de l'upload")));
-      xhr.addEventListener('abort', () => reject(new Error('Upload annulé')));
-
-      xhr.open('POST', UPLOAD_URL);
-      xhr.send(formData);
-    });
+    // Upload simple (sans progression)
+    await uploadBytes(storageRef, compressed);
+    return getDownloadURL(storageRef);
   },
 
-  async deleteFile(_fileUrl: string): Promise<void> {
-    console.info('Suppression Cloudinary non implémentée côté client');
+  /**
+   * Supprime un fichier par URL Firebase Storage.
+   */
+  async deleteFile(fileUrl: string): Promise<void> {
+    try {
+      const storageRef = ref(storage, fileUrl);
+      await deleteObject(storageRef);
+    } catch (err) {
+      console.warn('[HOMECI] Suppression fichier échouée:', err);
+    }
   },
 
-  // Upload de document (PDF, images de documents)
-  uploadDocument(
+  /**
+   * Upload de document légal (PDF, images) — PAS de compression pour les PDFs.
+   * Stocké dans : documents/{propertyId}/{docType}_{timestamp}.{ext}
+   */
+  async uploadDocument(
     file: File,
     propertyId: string,
     documentType: string
   ): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-      const resourceType = isPdf ? 'raw' : 'auto';
+    let fileToUpload = file;
+    if (file.type.startsWith('image/')) {
+      fileToUpload = await compressImage(file, COMPRESS_PRESETS.property);
+    }
 
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', UPLOAD_PRESET);
-      formData.append('folder', `homeci/documents/${propertyId}`);
-      formData.append('public_id', `${documentType}_${Date.now()}`);
-
-      const xhr = new XMLHttpRequest();
-      const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`;
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status === 200) {
-          const response = JSON.parse(xhr.responseText);
-          let url = response.secure_url;
-          // S'assurer que les PDFs utilisent /raw/upload/ pour l'accès direct
-          if (isPdf && url.includes('/image/upload/')) {
-            url = url.replace('/image/upload/', '/raw/upload/');
-          }
-          resolve(url);
-        } else {
-          reject(new Error(`Upload document échoué (${xhr.status})`));
-        }
-      });
-      xhr.addEventListener('error', () => reject(new Error("Erreur réseau")));
-      xhr.open('POST', uploadUrl);
-      xhr.send(formData);
-    });
+    const ext = file.name.split('.').pop() || 'pdf';
+    const path = `documents/${propertyId}/${documentType}_${Date.now()}.${ext}`;
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, fileToUpload);
+    return getDownloadURL(storageRef);
   },
 
-  // Upload fichier 3D (.glb, .gltf)
-  uploadModel3D(
+  /**
+   * Upload de modèle 3D (.glb, .gltf).
+   * Stocké dans : models3d/{propertyId}/{timestamp}.{ext}
+   */
+  async uploadModel3D(
     file: File,
     propertyId: string
   ): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', UPLOAD_PRESET);
-      formData.append('folder', `homeci/models3d/${propertyId}`);
-      formData.append('resource_type', 'raw');
-
-      const xhr = new XMLHttpRequest();
-      const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/raw/upload`;
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status === 200) {
-          const response = JSON.parse(xhr.responseText);
-          resolve(response.secure_url);
-        } else {
-          reject(new Error(`Upload 3D échoué (${xhr.status})`));
-        }
-      });
-      xhr.addEventListener('error', () => reject(new Error("Erreur réseau")));
-      xhr.open('POST', uploadUrl);
-      xhr.send(formData);
-    });
+    const ext = file.name.split('.').pop() || 'glb';
+    const path = `models3d/${propertyId}/${Date.now()}.${ext}`;
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    return getDownloadURL(storageRef);
   },
 
-  // Cloudinary détecte automatiquement les vidéos — même endpoint que les images
+  /**
+   * Upload vidéo avec progression.
+   * Stockée dans : videos/{path}/{timestamp}.{ext}
+   */
   uploadVideo(
     file: File,
     path: string,
     onProgress?: (progress: UploadProgress) => void
   ): Promise<string> {
-    return this.uploadImage(file, path, onProgress);
+    const ext = file.name.split('.').pop() || 'mp4';
+    const storagePath = `videos/${path}/${Date.now()}.${ext}`;
+    const storageRef = ref(storage, storagePath);
+
+    return new Promise((resolve, reject) => {
+      const task = uploadBytesResumable(storageRef, file);
+      task.on(
+        'state_changed',
+        (snapshot) => {
+          if (onProgress) {
+            onProgress({
+              progress: (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
+              bytesTransferred: snapshot.bytesTransferred,
+              totalBytes: snapshot.totalBytes,
+            });
+          }
+        },
+        (error) => reject(error),
+        async () => {
+          const url = await getDownloadURL(task.snapshot.ref);
+          resolve(url);
+        }
+      );
+    });
   },
 
+  /**
+   * Upload multiple images (compressées) avec progression par fichier.
+   */
   async uploadMultipleImages(
     files: File[],
     path: string,
@@ -144,4 +159,3 @@ export const storageService = {
     return urls;
   },
 };
-

@@ -12,7 +12,7 @@ interface AdminLoginProps {
 
 async function logLoginAttempt(email: string, success: boolean) {
   try {
-    await addDoc(collection(db, 'login_attempts'), {
+    await addDoc(collection(db, 'admin_logs'), {
       email,
       success,
       attempted_at: new Date().toISOString(),
@@ -38,7 +38,7 @@ export default function AdminLogin({ onSuccess }: AdminLoginProps) {
     setLoading(true);
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
-      const snap = await getDoc(doc(db, 'profiles', cred.user.uid));
+      const snap = await getDoc(doc(db, 'users', cred.user.uid));
       if (!snap.exists() || snap.data()?.role !== 'admin') {
         await signOut(auth);
         await logLoginAttempt(email, false);

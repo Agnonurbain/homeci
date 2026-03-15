@@ -63,7 +63,7 @@ export default function AdminDashboard() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const usersQuery = query(collection(db,'profiles'), orderBy('created_at','desc'), limit(20));
+      const usersQuery = query(collection(db,'users'), orderBy('created_at','desc'), limit(20));
       const usersSnapshot = await getDocs(usersQuery);
       const profiles = usersSnapshot.docs.map(d => {
         const data = d.data();
@@ -647,10 +647,6 @@ export default function AdminDashboard() {
                               <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Prix : </span>{p.price.toLocaleString('fr-FR')} FCFA</span>
                               <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Soumis : </span>{new Date(p.created_at).toLocaleDateString('fr-FR')}</span>
                             </div>
-                            {p.description && (
-                              <p className="text-xs line-clamp-2"
-                                style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>{p.description}</p>
-                            )}
                           </div>
                           <div className="flex flex-col gap-2 shrink-0">
                             <button onClick={() => setSelectedProperty(p)}
@@ -798,21 +794,6 @@ export default function AdminDashboard() {
                         {a}
                       </span>
                     ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Description */}
-              {selectedProperty.description && (
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider mb-2"
-                    style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-                    Description
-                  </p>
-                  <div className="p-3 rounded-xl text-xs leading-relaxed"
-                    style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}`,
-                             color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                    {selectedProperty.description}
                   </div>
                 </div>
               )}

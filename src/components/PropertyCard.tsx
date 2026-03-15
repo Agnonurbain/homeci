@@ -1,4 +1,4 @@
-import { MapPin, Bed, Bath, Maximize, Heart, CheckCircle, Star, AlertTriangle } from 'lucide-react';
+import { MapPin, Bed, Bath, Maximize, Heart, CheckCircle, Star, AlertTriangle, Film } from 'lucide-react';
 import type { Property } from '../services/propertyService';
 import OptimizedImage from './OptimizedImage';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
@@ -54,6 +54,12 @@ export function PropertyCard({ property, onFavorite, isFavorite, onViewDetails, 
             <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full flex items-center gap-1"
               style={{ background:'rgba(212,160,23,0.9)', color:HColors.night, fontFamily:'var(--font-nunito)' }}>
               <CheckCircle className="w-3 h-3" /> Vérifié
+            </span>
+          )}
+          {property.videos?.length > 0 && (
+            <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full flex items-center gap-1"
+              style={{ background:'rgba(34,87,46,0.85)', color:HColors.cream, fontFamily:'var(--font-nunito)' }}>
+              <Film className="w-3 h-3" /> Vidéo
             </span>
           )}
         </div>

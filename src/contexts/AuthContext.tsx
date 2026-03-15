@@ -108,7 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Lecture Firestore bloquante (première connexion)
   async function loadProfile(userId: string) {
     try {
-      const docRef = doc(db, 'profiles', userId);
+      const docRef = doc(db, 'users', userId);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data() as Profile;
@@ -127,7 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Rafraîchissement en arrière-plan (connexions suivantes)
   async function refreshProfileInBackground(userId: string) {
     try {
-      const docRef = doc(db, 'profiles', userId);
+      const docRef = doc(db, 'users', userId);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data() as Profile;
@@ -170,7 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
 
       // Sauvegarde Firestore en arrière-plan (non bloquant)
-      setDoc(doc(db, 'profiles', newUser.uid), {
+      setDoc(doc(db, 'users', newUser.uid), {
         ...profileData,
         created_at: serverTimestamp(),
         updated_at: serverTimestamp(),
@@ -196,7 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                                 new TwitterAuthProvider();
     const result = await signInWithPopup(auth, authProvider);
     const fbUser = result.user;
-    const profileRef = doc(db, 'profiles', fbUser.uid);
+    const profileRef = doc(db, 'users', fbUser.uid);
     const snap = await getDoc(profileRef);
     if (!snap.exists()) {
       // Nouveau utilisateur — on crée un profil temporaire locataire
@@ -229,7 +229,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function refreshProfile() {
     if (!user) return;
     try {
-      const docRef = doc(db, 'profiles', user.uid);
+      const docRef = doc(db, 'users', user.uid);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data() as Profile;

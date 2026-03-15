@@ -71,7 +71,7 @@ export default function NotaireDashboard() {
   async function loadProperties() {
     setLoading(true);
     try {
-      const all = await propertyService.getProperties();
+      const all = await propertyService.getPropertiesWithDocs();
       // Biens legacy : certifiés ou avec docs validés, sans notaire_id (avant la MAJ)
       const legacy = all.filter(p =>
         !p.notaire_id &&
@@ -98,7 +98,7 @@ export default function NotaireDashboard() {
       const ownerIds = [...new Set(withDocs.map(p => p.owner_id))];
       const entries = await Promise.all(ownerIds.map(async id => {
         try {
-          const snap = await getDoc(doc(db,'profiles',id));
+          const snap = await getDoc(doc(db,'users',id));
           if (snap.exists()) { const d = snap.data(); return [id,{full_name:d.full_name||'Propriétaire',phone:d.phone,email:d.email}] as [string,OwnerProfile]; }
         } catch {}
         return [id,{full_name:'Propriétaire'}] as [string,OwnerProfile];
@@ -114,21 +114,20 @@ export default function NotaireDashboard() {
     const key=`${docType}:${property.id}`; setActionLoading(key);
     try {
       const reason=refusalReasons[key]||'';
-      const updatedDocs:typeof property.documents=property.documents.map(d=>{
-        if(d.type!==docType) return d;
-        const u:typeof d={...d,status:newStatus};
-        if(newStatus==='valide') u.validated_at=new Date().toISOString(); else delete u.validated_at;
-        if(newStatus==='refuse'&&reason) u.rejection_reason=reason; else delete u.rejection_reason;
-        return u;
+      // Mettre à jour via sous-collection
+      await propertyService.updateDocumentStatus(property.id, docType, newStatus, {
+        validated_by: profile?.id,
+        ...(newStatus==='refuse'&&reason ? {rejection_reason:reason} : {}),
       });
-      await propertyService.updateProperty(property.id,{documents:updatedDocs});
       const lbl=DOC_LABELS[docType]||docType;
       const stLbl=newStatus==='valide'?'validé ✅':newStatus==='refuse'?'refusé ❌':'remis en attente';
-      await notificationService.createNotification({user_id:property.owner_id,type:'system',
+      await notificationService.createNotification({user_id:property.owner_id,type:'notaire_approved',
         title:`📄 Document ${newStatus==='valide'?'validé':newStatus==='refuse'?'refusé':'en attente'}`,
         message:`Votre ${lbl} pour "${property.title}" a été ${stLbl}${reason?` : ${reason}`:''}`,
         property_id:property.id,
       });
+      // Recharger les docs de cette propriété
+      const updatedDocs = await propertyService.getDocuments(property.id);
       setProperties(prev=>prev.map(p=>p.id===property.id?{...p,documents:updatedDocs}:p));
       setShowRefusalInput(null); showToast(`${lbl} ${stLbl}`);
     } catch { showToast('Erreur lors de la mise à jour',false); }
