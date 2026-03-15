@@ -33,6 +33,30 @@ function toISO(val: unknown): string {
 }
 
 function docToVisit(id: string, data: Record<string, unknown>): VisitRequest {
+  const status = (data.status as VisitRequest['status']) ?? 'pending';
+  let preferredDate = String(data.preferred_date ?? '');
+  let preferredTime = String(data.preferred_time ?? '');
+  let counterDate = data.counter_date ? String(data.counter_date) : undefined;
+  let counterTime = data.counter_time ? String(data.counter_time) : undefined;
+  let counterProposedBy = data.counter_proposed_by as VisitRequest['counter_proposed_by'] ?? undefined;
+
+  // Auto-fix: visites acceptées avant le fix qui ont encore des champs counter
+  if (status === 'accepted' && counterDate) {
+    preferredDate = counterDate;
+    preferredTime = counterTime || preferredTime;
+    counterDate = undefined;
+    counterTime = undefined;
+    counterProposedBy = undefined;
+    // Corriger en arrière-plan dans Firestore (fire-and-forget)
+    updateDoc(doc(db, 'visits', id), {
+      preferred_date: preferredDate,
+      preferred_time: preferredTime,
+      counter_date: null,
+      counter_time: null,
+      counter_proposed_by: null,
+    }).catch(() => {});
+  }
+
   return {
     id,
     property_id: String(data.property_id ?? ''),
@@ -43,13 +67,13 @@ function docToVisit(id: string, data: Record<string, unknown>): VisitRequest {
     tenant_name: String(data.tenant_name ?? ''),
     tenant_phone: String(data.tenant_phone ?? ''),
     tenant_email: String(data.tenant_email ?? ''),
-    preferred_date: String(data.preferred_date ?? ''),
-    preferred_time: String(data.preferred_time ?? ''),
-    status: (data.status as VisitRequest['status']) ?? 'pending',
+    preferred_date: preferredDate,
+    preferred_time: preferredTime,
+    status,
     owner_notes: String(data.owner_notes ?? ''),
-    counter_date: data.counter_date ? String(data.counter_date) : undefined,
-    counter_time: data.counter_time ? String(data.counter_time) : undefined,
-    counter_proposed_by: data.counter_proposed_by as VisitRequest['counter_proposed_by'] ?? undefined,
+    counter_date: counterDate,
+    counter_time: counterTime,
+    counter_proposed_by: counterProposedBy,
     created_at: toISO(data.created_at),
     updated_at: toISO(data.updated_at),
   };
