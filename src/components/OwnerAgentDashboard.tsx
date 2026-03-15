@@ -21,6 +21,8 @@ import EditPropertyForm from './EditPropertyForm';
 import PropertyViewModal from './PropertyViewModal';
 import ScrollTimePicker from './ScrollTimePicker';
 import CGVModal from './CGVModal';
+import PaymentModal from './PaymentModal';
+import type { PaymentConfig } from './PaymentModal';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
 
 /* ── Constants ─────────────────────────────────────────────────────────── */
@@ -88,6 +90,7 @@ export default function OwnerAgentDashboard() {
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showCGV, setShowCGV] = useState(false);
+  const [showPublicationPayment, setShowPublicationPayment] = useState(false);
   const [editingPropertyId, setEditingPropertyId] = useState<string | null>(null);
   const [viewingPropertyId, setViewingPropertyId] = useState<string | null>(null);
   const [selectedVisit, setSelectedVisit] = useState<VisitRequest | null>(null);
@@ -117,7 +120,7 @@ export default function OwnerAgentDashboard() {
   /** Vérifie les CGV avant d'ouvrir le formulaire d'ajout */
   const handleAddProperty = () => {
     if (profile?.cgv_accepted) {
-      setShowAddForm(true);
+      setShowPublicationPayment(true);
     } else {
       setShowCGV(true);
     }
@@ -684,8 +687,19 @@ export default function OwnerAgentDashboard() {
       {/* ── Modals ──────────────────────────────────────────────────────────── */}
       {showCGV && (
         <CGVModal
-          onAccept={() => { setShowCGV(false); setShowAddForm(true); }}
+          onAccept={() => { setShowCGV(false); setShowPublicationPayment(true); }}
           onClose={() => setShowCGV(false)}
+        />
+      )}
+      {showPublicationPayment && (
+        <PaymentModal
+          config={{
+            title: 'Frais de publication',
+            description: 'Publication de votre annonce sur HOMECI',
+            amount: 1000,
+          }}
+          onSuccess={() => { setShowPublicationPayment(false); setShowAddForm(true); }}
+          onClose={() => setShowPublicationPayment(false)}
         />
       )}
       {showAddForm && <AddPropertyForm onClose={() => setShowAddForm(false)} onSuccess={loadAll}/>}

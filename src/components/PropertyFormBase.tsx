@@ -23,6 +23,7 @@ import {
 } from '../data/coteIvoireGeo';
 import { DocumentsStep } from './DocumentsStep';
 import { Property3DViewer } from './Property3DViewer';
+import PaymentModal from './PaymentModal';
 import { KenteLine } from './ui/KenteLine';
 import type { PropertyInsert, PropertyUpdate, PropertyDocument, Model3D } from '../services/propertyService';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
@@ -102,6 +103,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
   const [loading, setLoading] = useState(mode === 'edit');
   // État sauvegarde finale
   const [saving, setSaving] = useState(false);
+  const [showNotairePayment, setShowNotairePayment] = useState(false);
 
   // Médias — Create
   const [images, setImages]             = useState<File[]>([]);
@@ -432,6 +434,27 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
   const quartiers    = formData.commune  ? getQuartiersByCommune(formData.commune) : formData.city ? getQuartiersByVille(formData.city) : [];
 
   const isSubmitting  = saving;
+
+  /** En mode create, ouvre le paiement notaire avant de soumettre */
+  const handlePublishClick = (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    if (!user) return;
+    if (mode === 'create' && currentStep === totalSteps) {
+      // Valider le formulaire avant de demander le paiement
+      if (!validateStep(currentStep)) return;
+      setShowNotairePayment(true);
+    } else {
+      handleSubmit(e);
+    }
+  };
+
+  /** Appelé après paiement notaire réussi → soumet le bien */
+  const handlePostPaymentSubmit = () => {
+    setShowNotairePayment(false);
+    // Créer un faux event pour handleSubmit
+    const fakeEvent = { preventDefault: () => {}, stopPropagation: () => {} } as React.FormEvent;
+    handleSubmit(fakeEvent);
+  };
   const isInitLoading = loading;
 
   /* ── Écran de chargement initial (edit) ── */
@@ -1116,7 +1139,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
             </button>
           ) : (
             <button type="button" aria-label={mode === 'create' ? 'Publier le bien' : 'Sauvegarder'}
-              onClick={handleSubmit} disabled={isSubmitting}
+              onClick={mode === 'create' ? handlePublishClick : handleSubmit} disabled={isSubmitting}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
               style={{ background:'linear-gradient(135deg,#D4A017,#C07C3E)', color:HColors.night,
                        fontFamily:'var(--font-nunito)' }}>
@@ -1129,6 +1152,19 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
           </div>
         </div>
       </div>
+
+      {/* Modal paiement frais notaire (création uniquement) */}
+      {showNotairePayment && (
+        <PaymentModal
+          config={{
+            title: 'Frais de vérification notariale',
+            description: 'Vérification de vos documents par un notaire agréé',
+            amount: 75000,
+          }}
+          onSuccess={handlePostPaymentSubmit}
+          onClose={() => setShowNotairePayment(false)}
+        />
+      )}
     </div>
   );
 }

@@ -19,6 +19,8 @@ import { useFavorites } from '../hooks/useFavorites';
 import type { Property } from '../services/propertyService';
 import type { FilterValues } from './PropertyFilters';
 import { KenteLine } from './ui/KenteLine';
+import CGVLocataireModal from './CGVLocataireModal';
+import PaymentModal from './PaymentModal';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
 
 const PER_PAGE = 9;
@@ -76,6 +78,9 @@ export default function TenantDashboard() {
   const [counterForm, setCounterForm] = useState<{ visitId: string; date: string; time: string } | null>(null);
   const [counterLoading, setCounterLoading] = useState(false);
   const visitSuccessTimer = useRef<ReturnType<typeof setTimeout>>();
+  const [showCGVLocataire, setShowCGVLocataire] = useState(false);
+  const [showVisitPayment, setShowVisitPayment] = useState(false);
+  const [pendingVisitProperty, setPendingVisitProperty] = useState<Property | null>(null);
 
   useEffect(() => {
     propertyService.getProperties({ status: 'published' }).then(data => {
@@ -103,12 +108,23 @@ export default function TenantDashboard() {
   useEffect(() => {
     if (visitRequestPropertyId) {
       const prop = allProperties.find(p => p.id === visitRequestPropertyId);
-      if (prop) { setVisitModalProperty(prop); setViewingPropertyId(null); setVisitRequestPropertyId(null); }
+      if (prop) { handleRequestVisit(prop); setViewingPropertyId(null); setVisitRequestPropertyId(null); }
     }
   }, [visitRequestPropertyId, allProperties]);
 
   // Cleanup timer on unmount
   useEffect(() => () => { clearTimeout(visitSuccessTimer.current); }, []);
+
+  /** Flux : CGV (1ère fois) → Paiement 500 FCFA → Formulaire visite */
+  const handleRequestVisit = (property: Property) => {
+    if (!profile?.cgv_accepted) {
+      setPendingVisitProperty(property);
+      setShowCGVLocataire(true);
+    } else {
+      setPendingVisitProperty(property);
+      setShowVisitPayment(true);
+    }
+  };
 
   const handleFilterChange = (filters: FilterValues) => {
     let r = [...allProperties];
@@ -595,7 +611,7 @@ export default function TenantDashboard() {
                           {visit.status === 'rejected' && (
                             <button onClick={() => {
                               const p = allProperties.find(pr => pr.id === visit.property_id);
-                              if (p) setVisitModalProperty(p);
+                              if (p) handleRequestVisit(p);
                             }}
                               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80"
                               style={{ background:HAlpha.navy08, border:'1px solid rgba(26,58,107,0.25)',
@@ -823,6 +839,31 @@ export default function TenantDashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* CGV Locataire (1ère demande) */}
+      {showCGVLocataire && (
+        <CGVLocataireModal
+          onAccept={() => { setShowCGVLocataire(false); setShowVisitPayment(true); }}
+          onClose={() => { setShowCGVLocataire(false); setPendingVisitProperty(null); }}
+        />
+      )}
+
+      {/* Paiement visite 500 FCFA */}
+      {showVisitPayment && pendingVisitProperty && (
+        <PaymentModal
+          config={{
+            title: 'Frais de visite',
+            description: `Visite de « ${pendingVisitProperty.title} »`,
+            amount: 500,
+          }}
+          onSuccess={() => {
+            setShowVisitPayment(false);
+            setVisitModalProperty(pendingVisitProperty);
+            setPendingVisitProperty(null);
+          }}
+          onClose={() => { setShowVisitPayment(false); setPendingVisitProperty(null); }}
+        />
       )}
     </div>
   );
