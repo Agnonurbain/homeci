@@ -25,13 +25,12 @@ interface HeroFilters {
 }
 
 function AppContent() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, pendingNewUser, clearPendingNewUser } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [isAdminRoute, setIsAdminRoute] = useState(false);
   const [accessCodeValidated, setAccessCodeValidated] = useState(false);
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
-  const [pendingRoleUser, setPendingRoleUser] = useState<{uid:string;displayName:string;photoURL:string|null}|null>(null);
   const [heroFilters, setHeroFilters] = useState<HeroFilters>({ propertyType: '', propertyTypes: [], verifiedNotaire: false, transactionType: '', district: '', region: '', departement: '', city: '', commune: '', quartier: '' });
 
   useEffect(() => {
@@ -158,14 +157,13 @@ function AppContent() {
           isOpen={showAuthModal}
           onClose={() => setShowAuthModal(false)}
           initialMode={authMode}
-          onNewGoogleUser={(data) => setPendingRoleUser(data)}
         />
-        {pendingRoleUser && (
+        {pendingNewUser && (
           <RoleSelectModal
-            uid={pendingRoleUser.uid}
-            displayName={pendingRoleUser.displayName}
-            photoURL={pendingRoleUser.photoURL}
-            onDone={() => setPendingRoleUser(null)}
+            uid={pendingNewUser.uid}
+            displayName={pendingNewUser.displayName}
+            photoURL={pendingNewUser.photoURL}
+            onDone={() => clearPendingNewUser()}
           />
         )}
       </>
@@ -175,7 +173,7 @@ function AppContent() {
   // ── DASHBOARDS CONNECTÉS ──
   const renderDashboard = () => {
     // Bloquer le dashboard pendant la sélection de rôle
-    if (pendingRoleUser) return (
+    if (pendingNewUser) return (
       <div className="min-h-screen flex items-center justify-center"
         style={{ background: 'linear-gradient(160deg, #0D1F12 0%, #1A0E00 100%)' }}>
         <div className="flex flex-col items-center gap-4">
@@ -218,14 +216,13 @@ function AppContent() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         initialMode={authMode}
-        onNewGoogleUser={(data) => setPendingRoleUser(data)}
       />
-      {pendingRoleUser && (
+      {pendingNewUser && (
         <RoleSelectModal
-          uid={pendingRoleUser.uid}
-          displayName={pendingRoleUser.displayName}
-          photoURL={pendingRoleUser.photoURL}
-          onDone={() => setPendingRoleUser(null)}
+          uid={pendingNewUser.uid}
+          displayName={pendingNewUser.displayName}
+          photoURL={pendingNewUser.photoURL}
+          onDone={() => clearPendingNewUser()}
         />
       )}
     </div>

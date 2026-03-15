@@ -8,7 +8,8 @@ import {
   GoogleAuthProvider,
   FacebookAuthProvider,
   TwitterAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
@@ -26,13 +27,23 @@ export interface Profile {
   updated_at: string;
 }
 
+/** Données d'un nouvel utilisateur Google en attente de sélection de rôle */
+export interface PendingNewUser {
+  uid: string;
+  displayName: string;
+  photoURL: string | null;
+}
+
 interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
+  /** Nouvel utilisateur Google en attente de sélection de rôle */
+  pendingNewUser: PendingNewUser | null;
+  clearPendingNewUser: () => void;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string, role: Profile['role']) => Promise<void>;
-  signInWithProvider: (provider: 'google' | 'facebook' | 'twitter') => Promise<{ isNewUser: boolean; uid: string; displayName: string; email: string; photoURL: string | null }>;
+  signInWithProvider: (provider: 'google' | 'facebook' | 'twitter') => void;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -68,31 +79,79 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  // Ref pour éviter le double chargement du profil après signUp
+  const [pendingNewUser, setPendingNewUser] = useState<PendingNewUser | null>(null);
   const skipNextProfileLoad = useRef(false);
+  const redirectHandled = useRef(false);
 
+  // ── Gestion du retour de redirect Google/Facebook/Twitter ──
+  useEffect(() => {
+    if (redirectHandled.current) return;
+    redirectHandled.current = true;
+
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (!result) return; // Pas de redirect en cours
+
+        const fbUser = result.user;
+        const profileRef = doc(db, 'users', fbUser.uid);
+        const snap = await getDoc(profileRef);
+
+        if (!snap.exists()) {
+          // Nouvel utilisateur → créer profil temporaire + afficher RoleSelectModal
+          const now = new Date().toISOString();
+          const profileData: Profile = {
+            id: fbUser.uid,
+            email: fbUser.email || '',
+            full_name: fbUser.displayName || 'Utilisateur',
+            role: 'locataire',
+            phone: null,
+            avatar_url: fbUser.photoURL || null,
+            company_name: null,
+            verified: false,
+            created_at: now,
+            updated_at: now,
+          };
+          await setDoc(profileRef, {
+            ...profileData,
+            created_at: serverTimestamp(),
+            updated_at: serverTimestamp(),
+          });
+          setCachedProfile(profileData);
+          setProfile(profileData);
+
+          // Déclencher le modal de sélection de rôle
+          setPendingNewUser({
+            uid: fbUser.uid,
+            displayName: fbUser.displayName || '',
+            photoURL: fbUser.photoURL,
+          });
+        }
+        // Si l'utilisateur existe déjà, onAuthStateChanged s'en charge
+      })
+      .catch((err) => {
+        console.error('[HOMECI] Erreur redirect auth:', err);
+      });
+  }, []);
+
+  // ── Listener auth standard ──
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       (async () => {
         setUser(firebaseUser);
 
         if (firebaseUser) {
-          // Cas signUp : profil déjà en mémoire, on skip le getDoc
           if (skipNextProfileLoad.current) {
             skipNextProfileLoad.current = false;
             setLoading(false);
             return;
           }
 
-          // Cas signIn : on charge d'abord le cache pour affichage instantané
           const cached = getCachedProfile(firebaseUser.uid);
           if (cached) {
             setProfile(cached);
             setLoading(false);
-            // Puis on rafraîchit le profil en arrière-plan (rôle, vérification, etc.)
             refreshProfileInBackground(firebaseUser.uid);
           } else {
-            // Première connexion : pas de cache, on lit Firestore normalement
             await loadProfile(firebaseUser.uid);
           }
         } else {
@@ -105,7 +164,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  // Lecture Firestore bloquante (première connexion)
   async function loadProfile(userId: string) {
     try {
       const docRef = doc(db, 'users', userId);
@@ -113,7 +171,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (docSnap.exists()) {
         const data = docSnap.data() as Profile;
         setProfile(data);
-        setCachedProfile(data); // mise en cache pour les prochaines connexions
+        setCachedProfile(data);
       } else {
         setProfile(null);
       }
@@ -124,7 +182,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // Rafraîchissement en arrière-plan (connexions suivantes)
   async function refreshProfileInBackground(userId: string) {
     try {
       const docRef = doc(db, 'users', userId);
@@ -132,54 +189,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (docSnap.exists()) {
         const data = docSnap.data() as Profile;
         setProfile(data);
-        setCachedProfile(data); // mise à jour du cache
+        setCachedProfile(data);
       }
-    } catch {
-      // Silencieux — le cache est déjà affiché
-    }
+    } catch {}
   }
 
   async function signIn(email: string, password: string) {
-    // Ne pas setLoading(true) ici — évite de masquer le modal d'erreur
-    // onAuthStateChanged prend le relais en cas de succès
     await signInWithEmailAndPassword(auth, email, password);
   }
 
-  async function signUp(
-    email: string,
-    password: string,
-    fullName: string,
-    role: Profile['role']
-  ) {
-    // Ne pas setLoading(true) ici — évite de masquer le modal d'erreur
+  async function signUp(email: string, password: string, fullName: string, role: Profile['role']) {
     try {
       const { user: newUser } = await createUserWithEmailAndPassword(auth, email, password);
 
       const now = new Date().toISOString();
       const profileData: Profile = {
-        id: newUser.uid,
-        email,
-        full_name: fullName,
-        role,
-        phone: null,
-        avatar_url: null,
-        company_name: null,
-        verified: false,
-        created_at: now,
-        updated_at: now,
+        id: newUser.uid, email, full_name: fullName, role,
+        phone: null, avatar_url: null, company_name: null,
+        verified: false, created_at: now, updated_at: now,
       };
 
-      // Sauvegarde Firestore en arrière-plan (non bloquant)
       setDoc(doc(db, 'users', newUser.uid), {
         ...profileData,
         created_at: serverTimestamp(),
         updated_at: serverTimestamp(),
       }).catch(console.error);
 
-      // Mise en cache immédiate
       setCachedProfile(profileData);
-
-      // Injection directe en mémoire → dashboard instantané
       skipNextProfileLoad.current = true;
       setUser(newUser);
       setProfile(profileData);
@@ -189,41 +225,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  async function signInWithProvider(provider: 'google' | 'facebook' | 'twitter'): Promise<{ isNewUser: boolean; uid: string; displayName: string; email: string; photoURL: string | null }> {
+  /** Lance la redirection vers le fournisseur OAuth (Google, Facebook, Twitter) */
+  function signInWithProvider(provider: 'google' | 'facebook' | 'twitter') {
     const authProvider =
       provider === 'google'   ? new GoogleAuthProvider()   :
       provider === 'facebook' ? new FacebookAuthProvider() :
                                 new TwitterAuthProvider();
-    const result = await signInWithPopup(auth, authProvider);
-    const fbUser = result.user;
-    const profileRef = doc(db, 'users', fbUser.uid);
-    const snap = await getDoc(profileRef);
-    if (!snap.exists()) {
-      // Nouveau utilisateur — on crée un profil temporaire locataire
-      // Le rôle sera mis à jour par le modal de sélection
-      const now = new Date().toISOString();
-      const profileData: Profile = {
-        id: fbUser.uid,
-        email: fbUser.email || '',
-        full_name: fbUser.displayName || 'Utilisateur',
-        role: 'locataire',
-        phone: null,
-        avatar_url: fbUser.photoURL || null,
-        company_name: null,
-        verified: false,
-        created_at: now,
-        updated_at: now,
-      };
-      await setDoc(profileRef, {
-        ...profileData,
-        created_at: serverTimestamp(),
-        updated_at: serverTimestamp(),
-      });
-      setCachedProfile(profileData);
-      setProfile(profileData);
-      return { isNewUser: true, uid: fbUser.uid, displayName: fbUser.displayName || '', email: fbUser.email || '', photoURL: fbUser.photoURL };
-    }
-    return { isNewUser: false, uid: fbUser.uid, displayName: fbUser.displayName || '', email: fbUser.email || '', photoURL: fbUser.photoURL };
+    signInWithRedirect(auth, authProvider);
+  }
+
+  function clearPendingNewUser() {
+    setPendingNewUser(null);
   }
 
   async function refreshProfile() {
@@ -249,7 +261,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signInWithProvider, refreshProfile, signOut }}>
+    <AuthContext.Provider value={{
+      user, profile, loading, pendingNewUser, clearPendingNewUser,
+      signIn, signUp, signInWithProvider, refreshProfile, signOut,
+    }}>
       {children}
     </AuthContext.Provider>
   );

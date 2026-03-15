@@ -11,7 +11,6 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialMode?: 'login' | 'signup';
-  onNewGoogleUser?: (data: {uid:string;displayName:string;photoURL:string|null}) => void;
 }
 
 // Rôles publics — Notaire retiré délibérément
@@ -41,7 +40,7 @@ async function markNotaireCodeUsed(docId: string) {
   await updateDoc(doc(db, 'notaire_codes', docId), { used: true, used_at: new Date().toISOString() });
 }
 
-export function AuthModal({ isOpen, onClose, initialMode = 'login', onNewGoogleUser }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
   const { signIn, signUp, signInWithProvider } = useAuth();
   useBodyScrollLock(isOpen);
   const [socialLoading, setSocialLoading] = useState<string|null>(null);
@@ -455,35 +454,16 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onNewGoogleU
               )},
             ] as {id:string;label:string;icon:React.ReactNode}[]).map(p => (
               <button key={p.id} type="button"
-                onClick={async () => {
+                onClick={() => {
                   setSocialLoading(p.id);
                   setError('');
                   try {
-                    const result = await signInWithProvider(p.id as 'google'|'facebook'|'twitter');
-                    if (result.isNewUser && onNewGoogleUser) {
-                      onNewGoogleUser({ uid: result.uid, displayName: result.displayName, photoURL: result.photoURL });
-                    }
-                    onClose();
+                    signInWithProvider(p.id as 'google'|'facebook'|'twitter');
+                    // La page redirige vers le fournisseur OAuth
+                    // Au retour, getRedirectResult() dans AuthContext gère tout
                   } catch (err: any) {
-                    const code = err?.code || '';
-                    console.error('[Google Auth] code:', code, '| message:', err?.message);
-                    if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
-                      // Utilisateur a fermé le popup — pas d'erreur à afficher
-                    } else if (code === 'auth/unauthorized-domain') {
-                      setError('Domaine non autorisé. Ajoutez ce domaine dans Firebase Console → Authentication → Domaines autorisés.');
-                    } else if (code === 'auth/operation-not-allowed') {
-                      setError('Connexion Google non activée. Activez-la dans Firebase Console → Authentication → Sign-in method.');
-                    } else if (code === 'auth/account-exists-with-different-credential') {
-                      setError('Un compte existe déjà avec cet email. Connectez-vous avec email/mot de passe.');
-                    } else if (code === 'auth/popup-blocked') {
-                      setError('Popup bloquée. Autorisez les popups pour ce site dans votre navigateur.');
-                    } else if (code === 'auth/network-request-failed') {
-                      setError('Erreur réseau. Vérifiez votre connexion internet.');
-                    } else {
-                      setError(`Erreur Google (${code || err?.message || 'inconnue'}). Vérifiez la console du navigateur.`);
-                    }
-                  } finally {
                     setSocialLoading(null);
+                    setError('Erreur lors de la connexion. Réessayez.');
                   }
                 }}
                 disabled={!!socialLoading}
