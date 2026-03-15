@@ -22,6 +22,8 @@ export interface Profile {
   avatar_url: string | null;
   company_name: string | null;
   verified: boolean;
+  cgv_accepted?: boolean;
+  cgv_accepted_at?: string;
   created_at: string;
   updated_at: string;
 }

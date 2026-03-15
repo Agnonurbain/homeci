@@ -20,6 +20,7 @@ import AddPropertyForm from './AddPropertyForm';
 import EditPropertyForm from './EditPropertyForm';
 import PropertyViewModal from './PropertyViewModal';
 import ScrollTimePicker from './ScrollTimePicker';
+import CGVModal from './CGVModal';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
 
 /* ── Constants ─────────────────────────────────────────────────────────── */
@@ -86,6 +87,7 @@ export default function OwnerAgentDashboard() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showCGV, setShowCGV] = useState(false);
   const [editingPropertyId, setEditingPropertyId] = useState<string | null>(null);
   const [viewingPropertyId, setViewingPropertyId] = useState<string | null>(null);
   const [selectedVisit, setSelectedVisit] = useState<VisitRequest | null>(null);
@@ -110,6 +112,15 @@ export default function OwnerAgentDashboard() {
       setNotifications(notifs);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
+  };
+
+  /** Vérifie les CGV avant d'ouvrir le formulaire d'ajout */
+  const handleAddProperty = () => {
+    if (profile?.cgv_accepted) {
+      setShowAddForm(true);
+    } else {
+      setShowCGV(true);
+    }
   };
 
   const stats = {
@@ -262,7 +273,7 @@ export default function OwnerAgentDashboard() {
                   {stats.total} bien(s) enregistré(s)
                 </p>
               </div>
-              <button onClick={() => setShowAddForm(true)}
+              <button onClick={handleAddProperty}
                 className="px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-sm"
                 style={{ background: 'linear-gradient(135deg,#D4A017,#C07C3E)', color: HColors.night,
                          fontFamily: 'var(--font-nunito)' }}>
@@ -292,7 +303,7 @@ export default function OwnerAgentDashboard() {
                 <p className="text-sm mb-6" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
                   Commencez par ajouter votre premier bien
                 </p>
-                <button onClick={() => setShowAddForm(true)}
+                <button onClick={handleAddProperty}
                   className="px-5 py-2.5 rounded-xl text-sm font-semibold inline-flex items-center gap-2 transition-all hover:opacity-90"
                   style={{ background: 'linear-gradient(135deg,#D4A017,#C07C3E)', color: HColors.night, fontFamily: 'var(--font-nunito)' }}>
                   <Plus className="w-4 h-4" /> Ajouter un bien
@@ -671,6 +682,12 @@ export default function OwnerAgentDashboard() {
       </div>
 
       {/* ── Modals ──────────────────────────────────────────────────────────── */}
+      {showCGV && (
+        <CGVModal
+          onAccept={() => { setShowCGV(false); setShowAddForm(true); }}
+          onClose={() => setShowCGV(false)}
+        />
+      )}
       {showAddForm && <AddPropertyForm onClose={() => setShowAddForm(false)} onSuccess={loadAll}/>}
       {editingPropertyId && <EditPropertyForm propertyId={editingPropertyId} onClose={() => setEditingPropertyId(null)} onSuccess={loadAll}/>}
       {viewingPropertyId && <PropertyViewModal propertyId={viewingPropertyId} onClose={() => setViewingPropertyId(null)}/>}
