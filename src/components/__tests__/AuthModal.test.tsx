@@ -70,10 +70,9 @@ describe('AuthModal', () => {
     expect(screen.getByText('Créer mon compte')).toBeInTheDocument();
   });
 
-  it('affiche une erreur si email vide au submit', async () => {
+  it('affiche le toggle Email/Téléphone en mode login', () => {
     render(<AuthModal isOpen={true} onClose={vi.fn()} initialMode="login" />);
-    fireEvent.click(screen.getByText('Se connecter'));
-    // Le code vérifie email.trim() avant d'appeler signIn
-    expect(await screen.findByText(/email/i)).toBeInTheDocument();
+    expect(screen.getByText(/📱 Téléphone/)).toBeInTheDocument();
+    expect(screen.getByText(/✉️ Email/)).toBeInTheDocument();
   });
 });

@@ -9,6 +9,9 @@ import {
   FacebookAuthProvider,
   TwitterAuthProvider,
   signInWithPopup,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  ConfirmationResult,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
@@ -45,6 +48,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string, role: Profile['role']) => Promise<void>;
   signInWithProvider: (provider: 'google' | 'facebook' | 'twitter') => Promise<void>;
+  sendPhoneOTP: (phoneNumber: string, recaptchaContainerId: string) => Promise<void>;
+  verifyPhoneOTP: (code: string, fullName: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -76,6 +81,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [pendingNewUser, setPendingNewUser] = useState<PendingNewUser | null>(null);
   const skipNextProfileLoad = useRef(false);
+  const phoneConfirmation = useRef<ConfirmationResult | null>(null);
+  const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -231,6 +238,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function sendPhoneOTP(phoneNumber: string, recaptchaContainerId: string) {
+    // Nettoyer l'ancien verifier si existant
+    if (recaptchaVerifier.current) {
+      try { recaptchaVerifier.current.clear(); } catch {}
+    }
+    recaptchaVerifier.current = new RecaptchaVerifier(auth, recaptchaContainerId, {
+      size: 'invisible',
+    });
+    const formatted = phoneNumber.startsWith('+') ? phoneNumber : `+225${phoneNumber}`;
+    const confirmation = await signInWithPhoneNumber(auth, formatted, recaptchaVerifier.current);
+    phoneConfirmation.current = confirmation;
+  }
+
+  async function verifyPhoneOTP(code: string, fullName: string) {
+    if (!phoneConfirmation.current) throw new Error('Aucun OTP en attente');
+    const result = await phoneConfirmation.current.confirm(code);
+    const fbUser = result.user;
+    phoneConfirmation.current = null;
+
+    // Vérifier si le profil existe déjà
+    const profileRef = doc(db, 'users', fbUser.uid);
+    const snap = await getDoc(profileRef);
+    if (!snap.exists()) {
+      const now = new Date().toISOString();
+      const profileData: Profile = {
+        id: fbUser.uid,
+        email: '',
+        full_name: fullName || 'Utilisateur',
+        role: 'locataire',
+        phone: fbUser.phoneNumber || null,
+        avatar_url: null,
+        company_name: null,
+        verified: false,
+        created_at: now,
+        updated_at: now,
+      };
+      await setDoc(profileRef, {
+        ...profileData,
+        created_at: serverTimestamp(),
+        updated_at: serverTimestamp(),
+      });
+      setCachedProfile(profileData);
+      setProfile(profileData);
+    }
+  }
+
   async function signOut() {
     if (user) clearCachedProfile(user.uid);
     setUser(null);
@@ -241,7 +294,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user, profile, loading, pendingNewUser, clearPendingNewUser,
-      signIn, signUp, signInWithProvider, refreshProfile, signOut,
+      signIn, signUp, signInWithProvider, sendPhoneOTP, verifyPhoneOTP, refreshProfile, signOut,
     }}>
       {children}
     </AuthContext.Provider>

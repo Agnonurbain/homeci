@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Eye, EyeOff, Building2, User, Home, Briefcase, Award, Key, Loader, AlertCircle } from 'lucide-react';
+import { X, Eye, EyeOff, Building2, User, Home, Briefcase, Award, Key, Loader, AlertCircle, Phone } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
@@ -41,7 +41,7 @@ async function markNotaireCodeUsed(docId: string) {
 }
 
 export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
-  const { signIn, signUp, signInWithProvider } = useAuth();
+  const { signIn, signUp, signInWithProvider, sendPhoneOTP, verifyPhoneOTP } = useAuth();
   useBodyScrollLock(isOpen);
   const [socialLoading, setSocialLoading] = useState<string|null>(null);
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
@@ -52,6 +52,13 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Phone auth (locataire uniquement)
+  const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneOTP, setPhoneOTP] = useState('');
+  const [phoneStep, setPhoneStep] = useState<'number' | 'otp'>('number');
+  const [phoneName, setPhoneName] = useState('');
 
   // Notaire invite code flow
   const [showNotaireCode, setShowNotaireCode] = useState(false);
@@ -66,6 +73,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
       setMode(initialMode); setError('');
       setShowNotaireCode(false); setNotaireCode(''); setNotaireCodeError('');
       setNotaireCodeValid(false); setValidatedCodeDocId(null);
+      setAuthMethod('email'); setPhoneNumber(''); setPhoneOTP('');
+      setPhoneStep('number'); setPhoneName('');
     }
   }, [isOpen, initialMode]);
 
@@ -75,6 +84,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
     setShowNotaireCode(false); setNotaireCode(''); setNotaireCodeError('');
     setNotaireCodeValid(false); setValidatedCodeDocId(null);
     setRole('locataire');
+    setAuthMethod('email'); setPhoneNumber(''); setPhoneOTP('');
+    setPhoneStep('number'); setPhoneName('');
   };
 
   const handleCheckNotaireCode = async () => {
@@ -91,6 +102,46 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
       setNotaireCodeValid(false);
     }
     setCheckingCode(false);
+  };
+
+  // ── Phone auth handlers ──
+  const handleSendPhoneOTP = async () => {
+    setError('');
+    const cleaned = phoneNumber.replace(/\s/g, '');
+    if (!/^(0[1579])\d{8}$/.test(cleaned)) {
+      setError('Numéro ivoirien invalide (ex: 07 00 00 00 00).');
+      return;
+    }
+    if (!phoneName.trim() && mode === 'signup') {
+      setError('Veuillez entrer votre nom complet.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await sendPhoneOTP(cleaned, 'recaptcha-container');
+      setPhoneStep('otp');
+    } catch (err: any) {
+      const code = err?.code || '';
+      if (code === 'auth/invalid-phone-number') setError('Numéro de téléphone invalide.');
+      else if (code === 'auth/too-many-requests') setError('Trop de tentatives. Réessayez dans quelques minutes.');
+      else setError('Erreur d\'envoi du code. Vérifiez le numéro et réessayez.');
+    } finally { setLoading(false); }
+  };
+
+  const handleVerifyPhoneOTP = async () => {
+    setError('');
+    if (phoneOTP.length < 6) { setError('Saisissez le code à 6 chiffres.'); return; }
+    setLoading(true);
+    try {
+      await verifyPhoneOTP(phoneOTP, phoneName.trim() || 'Utilisateur');
+      onClose();
+      setPhoneNumber(''); setPhoneOTP(''); setPhoneName(''); setPhoneStep('number');
+    } catch (err: any) {
+      const code = err?.code || '';
+      if (code === 'auth/invalid-verification-code') setError('Code invalide. Vérifiez et réessayez.');
+      else if (code === 'auth/code-expired') setError('Code expiré. Renvoyez un nouveau code.');
+      else setError('Erreur de vérification. Réessayez.');
+    } finally { setLoading(false); }
   };
 
   if (!isOpen) return null;
@@ -387,6 +438,105 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               </>
             )}
 
+            {/* ── Toggle Email / Téléphone (locataire uniquement) ── */}
+            {(role === 'locataire' && !showNotaireCode) && (
+              <div className="flex gap-2 mb-1">
+                {(['email', 'phone'] as const).map(m => (
+                  <button key={m} type="button" onClick={() => { setAuthMethod(m); setError(''); }}
+                    className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
+                    style={authMethod === m
+                      ? { background: HAlpha.orange15, border: `2px solid ${HColors.orangeCI}`, color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }
+                      : { background: 'rgba(13,31,18,0.5)', border: '1px solid rgba(245,230,200,0.1)', color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
+                    {m === 'email' ? '✉️ Email' : '📱 Téléphone'}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* ── Formulaire TÉLÉPHONE (locataire uniquement) ── */}
+            {authMethod === 'phone' && role === 'locataire' ? (
+              <div className="space-y-3">
+                {phoneStep === 'number' ? (
+                  <>
+                    {mode === 'signup' && (
+                      <div>
+                        <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                          style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
+                          Nom complet
+                        </label>
+                        <input type="text" value={phoneName} onChange={e => setPhoneName(e.target.value)}
+                          placeholder="Votre nom complet" className={inputCls} style={inputStyle} />
+                      </div>
+                    )}
+                    <div>
+                      <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                        style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
+                        Numéro de téléphone
+                      </label>
+                      <div className="flex gap-2">
+                        <span className="flex items-center px-3 rounded-xl text-sm font-medium shrink-0"
+                          style={{ background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.2)',
+                                   color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
+                          +225
+                        </span>
+                        <input type="tel" value={phoneNumber}
+                          onChange={e => setPhoneNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                          placeholder="07 00 00 00 00" maxLength={10}
+                          className={`flex-1 ${inputCls}`} style={inputStyle} />
+                      </div>
+                    </div>
+                    <button type="button" onClick={handleSendPhoneOTP} disabled={loading}
+                      className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-50"
+                      style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #D4A017 100%)',
+                               color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+                      {loading
+                        ? <span className="flex items-center justify-center gap-2">
+                            <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"/>
+                            Envoi du code...
+                          </span>
+                        : 'Recevoir le code SMS'}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs"
+                      style={{ background: HAlpha.vertCI10, border: `1px solid ${HAlpha.vertCI25}`,
+                               color: HColors.vertCI, fontFamily: 'var(--font-nunito)' }}>
+                      ✅ Code envoyé au +225 {phoneNumber}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                        style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
+                        Code de vérification
+                      </label>
+                      <input type="text" value={phoneOTP}
+                        onChange={e => setPhoneOTP(e.target.value.replace(/[^0-9]/g, ''))}
+                        placeholder="000000" maxLength={6}
+                        className={`${inputCls} text-center text-lg tracking-[0.3em] font-mono`} style={inputStyle} />
+                    </div>
+                    <button type="button" onClick={handleVerifyPhoneOTP} disabled={loading}
+                      className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-50"
+                      style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #D4A017 100%)',
+                               color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+                      {loading
+                        ? <span className="flex items-center justify-center gap-2">
+                            <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"/>
+                            Vérification...
+                          </span>
+                        : 'Vérifier et se connecter'}
+                    </button>
+                    <button type="button" onClick={() => { setPhoneStep('number'); setPhoneOTP(''); setError(''); }}
+                      className="w-full text-xs text-center transition-all hover:opacity-80"
+                      style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
+                      ← Modifier le numéro
+                    </button>
+                  </>
+                )}
+              </div>
+            ) : (
+            <>
+            {/* ── Formulaire EMAIL (tous les rôles) ── */}
+
             {/* Email */}
             <div>
               <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
@@ -422,7 +572,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
             <button type="submit" disabled={loading || (mode === 'signup' && showNotaireCode && !notaireCodeValid)}
               className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-50 mt-2"
               style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #D4A017 100%)',
-                       color: HColors.night, fontFamily: 'var(--font-nunito)' }}>
+                       color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
               {loading
                 ? <span className="flex items-center justify-center gap-2">
                     <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"/>
@@ -430,6 +580,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                   </span>
                 : mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
             </button>
+            </>
+            )}
           </form>
 
           {/* ── Séparateur ── */}
@@ -502,6 +654,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
           </p>
         </div>
       </div>
+      {/* Recaptcha invisible pour auth téléphone */}
+      <div id="recaptcha-container" />
     </div>
   );
 }

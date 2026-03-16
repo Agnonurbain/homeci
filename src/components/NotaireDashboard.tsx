@@ -4,6 +4,7 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { propertyService } from '../services/propertyService';
 import { notificationService } from '../services/notificationService';
+import { visitService } from '../services/visitService';
 import type { Property } from '../services/propertyService';
 import {
   FileCheck, CheckCircle, XCircle, Clock, FileText, Building2,
@@ -73,6 +74,12 @@ export default function NotaireDashboard() {
   const [toast, setToast] = useState<{msg:string;ok:boolean}|null>(null);
   const [showCGVNotaire, setShowCGVNotaire] = useState(false);
   const [pendingTakeChargeProperty, setPendingTakeChargeProperty] = useState<Property|null>(null);
+  const [revokeModal, setRevokeModal] = useState<{
+    property: Property;
+    reason: string;
+    hasActiveVisit: boolean;
+    loading: boolean;
+  } | null>(null);
 
   useEffect(() => { loadProperties(); }, []);
 
@@ -199,14 +206,71 @@ export default function NotaireDashboard() {
   }
 
   async function handleRevoke(property:Property){
-    if(!confirm(`Retirer la certification "Vérifié Notaire" de "${property.title}" ?`)) return;
+    // Ouvrir le modal de décertification — vérifier s'il y a une visite active
     setCertifyingId(property.id);
     try {
-      await propertyService.updateProperty(property.id,{verified_notaire:false,verification_date:null});
-      setProperties(prev=>prev.map(p=>p.id===property.id?{...p,verified_notaire:false}:p));
-      showToast('Certification retirée.');
-    } catch { showToast('Erreur',false); }
+      const hasActive = await visitService.hasActiveVisit(property.id);
+      setRevokeModal({ property, reason: '', hasActiveVisit: hasActive, loading: false });
+    } catch { setRevokeModal({ property, reason: '', hasActiveVisit: false, loading: false }); }
     finally { setCertifyingId(null); }
+  }
+
+  async function confirmRevoke(){
+    if (!revokeModal || !revokeModal.reason.trim()) {
+      showToast('Veuillez indiquer le motif de la décertification.', false);
+      return;
+    }
+    setRevokeModal(prev => prev ? { ...prev, loading: true } : null);
+    try {
+      const { property, reason, hasActiveVisit } = revokeModal;
+
+      // 1. Retirer la certification + repasser en pending
+      await propertyService.updateProperty(property.id, {
+        verified_notaire: false,
+        verification_date: null,
+        status: 'pending',
+        decertified_at: new Date().toISOString(),
+        decertification_reason: reason.trim(),
+        decertified_by: profile?.id,
+      });
+
+      // 2. Notifier le propriétaire
+      await notificationService.createNotification({
+        user_id: property.owner_id,
+        type: 'system',
+        title: '⚠️ Certification retirée',
+        message: `La certification "Vérifié Notaire" de votre bien "${property.title}" a été retirée. Motif : ${reason.trim()}. Votre annonce est repassée en attente de vérification.`,
+        property_id: property.id,
+      });
+
+      // 3. Si visite active → annuler les visites + notifier le locataire
+      if (hasActiveVisit) {
+        const ownerVisits = await visitService.getVisitRequestsByOwner(property.owner_id);
+        const activeVisits = ownerVisits.filter(
+          v => v.property_id === property.id && (v.status === 'accepted' || v.status === 'completed')
+        );
+        for (const visit of activeVisits) {
+          await visitService.updateVisitStatus(visit.id, 'rejected');
+          await notificationService.createNotification({
+            user_id: visit.tenant_id,
+            type: 'visit_rejected',
+            title: '⚠️ Visite annulée — Certification retirée',
+            message: `La visite de "${property.title}" a été annulée car la certification du bien a été retirée par le notaire. Motif : ${reason.trim()}. Vous serez recrédité si des frais ont été prélevés.`,
+            property_id: property.id,
+          });
+        }
+      }
+
+      // 4. Mettre à jour l'état local
+      setProperties(prev => prev.map(p =>
+        p.id === property.id ? { ...p, verified_notaire: false, status: 'pending' } : p
+      ));
+      setRevokeModal(null);
+      showToast('Certification retirée. Le propriétaire et les locataires concernés ont été notifiés.');
+    } catch {
+      showToast('Erreur lors de la décertification', false);
+      setRevokeModal(prev => prev ? { ...prev, loading: false } : null);
+    }
   }
 
   function handleTakeCharge(property: Property) {
@@ -875,6 +939,101 @@ export default function NotaireDashboard() {
             {toast.ok?<CheckCircle className="w-4 h-4 shrink-0" style={{color:HColors.gold}}/>
                      :<XCircle className="w-4 h-4 shrink-0" style={{color:HColors.cream}}/>}
             <span className="text-sm font-medium" style={{color:HColors.cream,fontFamily:'var(--font-nunito)'}}>{toast.msg}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de décertification */}
+      {revokeModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center px-4"
+          style={{ background: 'rgba(10,61,31,0.7)', backdropFilter: 'blur(6px)' }}>
+          <div className="w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl"
+            style={{ background: HColors.night, border: `1px solid ${HAlpha.bord25}` }}>
+            <KenteLine height={3} />
+            <div className="px-6 pt-5 pb-6">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-full flex items-center justify-center"
+                style={{ background: HAlpha.bord10, border: `2px solid ${HAlpha.bord25}` }}>
+                <XCircle className="w-7 h-7" style={{ color: HColors.bordeaux }} />
+              </div>
+              <h2 className="text-center text-lg font-bold mb-3"
+                style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: '1.4rem' }}>
+                Retirer la certification
+              </h2>
+              <p className="text-center text-sm mb-4" style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
+                Bien : <strong style={{ color: HColors.orangeCI }}>« {revokeModal.property.title} »</strong>
+              </p>
+
+              {/* Avertissement visite active */}
+              {revokeModal.hasActiveVisit && (
+                <div className="p-3 rounded-xl mb-4"
+                  style={{ background: 'rgba(255,107,0,0.08)', border: `1px solid ${HAlpha.orange20}` }}>
+                  <p className="text-xs font-semibold mb-1" style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>
+                    ⚠️ Visite en cours détectée
+                  </p>
+                  <p className="text-xs leading-relaxed" style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
+                    Ce bien a une visite confirmée. Si vous retirez la certification :
+                  </p>
+                  <ul className="text-xs mt-1.5 space-y-1" style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
+                    <li className="flex items-start gap-1.5">
+                      <span style={{ color: HColors.bordeaux }}>•</span>
+                      La visite sera <strong style={{ color: HColors.bordeaux }}>automatiquement annulée</strong>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <span style={{ color: HColors.orangeCI }}>•</span>
+                      Le <strong>locataire sera notifié</strong> de l'annulation et du motif
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <span style={{ color: HColors.orangeCI }}>•</span>
+                      Les frais de visite éventuels seront <strong>recrédités</strong> au locataire
+                    </li>
+                  </ul>
+                </div>
+              )}
+
+              {/* Conséquences */}
+              <div className="p-3 rounded-xl mb-4" style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}` }}>
+                <p className="text-xs leading-relaxed" style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
+                  Le badge "Vérifié Notaire" sera retiré. L'annonce repassera en <strong style={{ color: HColors.cream }}>attente de vérification</strong> et
+                  ne sera plus visible par les locataires tant qu'elle n'aura pas été re-certifiée.
+                  Le propriétaire sera notifié.
+                </p>
+              </div>
+
+              {/* Motif obligatoire */}
+              <div className="mb-4">
+                <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                  style={{ color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
+                  Motif de la décertification *
+                </label>
+                <textarea value={revokeModal.reason}
+                  onChange={e => setRevokeModal(prev => prev ? { ...prev, reason: e.target.value } : null)}
+                  placeholder="Expliquez la raison du retrait de certification..."
+                  rows={3} maxLength={500}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none"
+                  style={{ background: 'rgba(10,61,31,0.6)', border: `1px solid ${HAlpha.bord20}`,
+                           color: HColors.cream, fontFamily: 'var(--font-nunito)' }} />
+                <p className="text-right text-xs mt-1" style={{ color: HAlpha.cream40 }}>
+                  {revokeModal.reason.length}/500
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button onClick={() => setRevokeModal(null)}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80"
+                  style={{ border: `1px solid ${HAlpha.gold20}`, color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
+                  Annuler
+                </button>
+                <button onClick={confirmRevoke}
+                  disabled={!revokeModal.reason.trim() || revokeModal.loading}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center gap-1.5"
+                  style={{ background: HColors.bordeaux, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+                  {revokeModal.loading
+                    ? <Loader className="w-4 h-4 animate-spin" />
+                    : <XCircle className="w-4 h-4" />}
+                  Retirer la certification
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
