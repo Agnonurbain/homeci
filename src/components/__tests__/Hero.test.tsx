@@ -8,13 +8,13 @@ describe('Hero', () => {
 
   it('affiche le titre principal', () => {
     render(<Hero />);
-    expect(screen.getByText('Votre bien idéal,')).toBeInTheDocument();
-    expect(screen.getByText(/au cœur de l'Afrique/)).toBeInTheDocument();
+    expect(screen.getByText(/immobilier ivoirien/)).toBeInTheDocument();
+    expect(screen.getByText(/certifié & sécurisé/)).toBeInTheDocument();
   });
 
   it('affiche le sous-titre', () => {
     render(<Hero />);
-    expect(screen.getByText(/sélection exclusive/)).toBeInTheDocument();
+    expect(screen.getByText(/vérifié par notaire/)).toBeInTheDocument();
   });
 
   it('affiche le select Type de bien', () => {

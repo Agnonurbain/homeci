@@ -30,7 +30,7 @@ describe('Header (non connecté)', () => {
   it('affiche Connexion et Inscription', () => {
     render(<Header />);
     expect(screen.getByText('Connexion')).toBeInTheDocument();
-    expect(screen.getByText('Inscription')).toBeInTheDocument();
+    expect(screen.getByText("S'inscrire")).toBeInTheDocument();
   });
 
   it('appelle onLoginClick au clic sur Connexion', () => {
@@ -43,7 +43,7 @@ describe('Header (non connecté)', () => {
   it('appelle onSignupClick au clic sur Inscription', () => {
     const onSignupClick = vi.fn();
     render(<Header onSignupClick={onSignupClick} />);
-    fireEvent.click(screen.getByText('Inscription'));
+    fireEvent.click(screen.getByText("S'inscrire"));
     expect(onSignupClick).toHaveBeenCalledTimes(1);
   });
 });

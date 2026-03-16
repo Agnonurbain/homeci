@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { ChevronDown, MapPin, Search } from 'lucide-react';
-import { HColors, HAlpha } from '../styles/homeci-tokens';
+import { HColors, HAlpha, HGradients } from '../styles/homeci-tokens';
+import { KenteLine } from './ui/KenteLine';
+import { HomeCIEmblem } from './HomeCIEmblem';
 import {
   ALL_DISTRICTS, getRegionsByDistrict, getDepartementsByRegion,
   getVillesByDepartement, getCommunesByVille, getQuartiersByCommune, getQuartiersByVille,
@@ -19,66 +21,13 @@ const EMPTY: HeroSearchValues = {
   district:'', region:'', departement:'', city:'', commune:'', quartier:'',
 };
 
-function KenteStripe({ flip = false }: { flip?: boolean }) {
-  const bands = [HColors.gold,HColors.green,HColors.terracotta,'#7B1D1D',HColors.gold,HColors.green,HColors.terracotta,'#7B1D1D',
-                 HColors.gold,HColors.green,HColors.terracotta,'#7B1D1D',HColors.gold,HColors.green,HColors.terracotta,'#7B1D1D',
-                 HColors.gold,HColors.green,HColors.terracotta,'#7B1D1D',HColors.gold,HColors.green,HColors.terracotta,'#7B1D1D',
-                 HColors.gold,HColors.green,HColors.terracotta,'#7B1D1D'];
+/* ── Motif losange Baoulé ─────────────────────────────────────────────────── */
+function BaoulePattern() {
   return (
-    <div className="w-full flex" style={{ height:10, transform: flip ? 'scaleY(-1)' : undefined }}>
-      {bands.map((c,i) => <div key={i} style={{ flex:1, backgroundColor:c }} />)}
-    </div>
-  );
-}
-
-function AdinkraPattern() {
-  return (
-    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity:0.045 }}
-      xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="adinkra" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
-          <circle cx="40" cy="40" r="28" fill="none" stroke="#D4A017" strokeWidth="1"/>
-          <circle cx="40" cy="40" r="18" fill="none" stroke="#D4A017" strokeWidth="0.8"/>
-          <circle cx="40" cy="40" r="6"  fill="none" stroke="#D4A017" strokeWidth="1"/>
-          <line x1="40" y1="12" x2="40" y2="68" stroke="#D4A017" strokeWidth="0.7"/>
-          <line x1="12" y1="40" x2="68" y2="40" stroke="#D4A017" strokeWidth="0.7"/>
-          <line x1="20" y1="20" x2="60" y2="60" stroke="#D4A017" strokeWidth="0.4"/>
-          <line x1="60" y1="20" x2="20" y2="60" stroke="#D4A017" strokeWidth="0.4"/>
-          <circle cx="40" cy="14" r="2" fill="#D4A017"/>
-          <circle cx="40" cy="66" r="2" fill="#D4A017"/>
-          <circle cx="14" cy="40" r="2" fill="#D4A017"/>
-          <circle cx="66" cy="40" r="2" fill="#D4A017"/>
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#adinkra)"/>
-    </svg>
-  );
-}
-
-function FloatingShapes() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div className="homeci-float absolute"  style={{ top:'10%', right:'8%',  width:180,height:180, border:'1.5px solid #D4A017', borderRadius:'50%', opacity:0.18 }}/>
-      <div className="homeci-float3 absolute" style={{ top:'14%', right:'12%', width:100,height:100, border:'1px solid #D4A017',   borderRadius:'50%', opacity:0.14 }}/>
-      <div className="homeci-float2 absolute" style={{ top:'30%', right:'5%',  width:90, height:90,  border:'1.2px solid #C07C3E', transform:'rotate(45deg)', opacity:0.2 }}/>
-      <div className="homeci-float2 absolute" style={{ bottom:'18%',left:'4%', width:140,height:140, border:'1.5px solid #D4A017', borderRadius:'50%', opacity:0.12 }}/>
-      <div className="homeci-float absolute"  style={{ top:'50%', left:'7%',   width:60, height:60,  border:'1px solid #D4A017',   transform:'rotate(45deg)', opacity:0.22 }}/>
-      <div className="homeci-float3 absolute" style={{ top:'65%', left:'18%',  width:50, height:50,  border:'1px solid #C07C3E',   borderRadius:'50%', opacity:0.15 }}/>
-      <div className="homeci-float2 absolute" style={{ top:'8%',  left:'12%',  width:70, height:70,  border:'1px solid #D4A017',   transform:'rotate(45deg)', opacity:0.14 }}/>
-    </div>
-  );
-}
-
-function StatCard({ value, label, delay }: { value:string; label:string; delay:string }) {
-  return (
-    <div className="homeci-reveal-6 flex flex-col items-center gap-1 px-6 py-4 rounded-2xl"
-      style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(212,160,23,0.2)',
-               backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', animationDelay:delay }}>
-      <span className="text-3xl font-bold leading-none"
-        style={{ color:HColors.gold, fontFamily:'var(--font-cormorant)' }}>{value}</span>
-      <span className="text-xs tracking-wide text-center"
-        style={{ color:HColors.cream, opacity:0.7, fontFamily:'var(--font-nunito)' }}>{label}</span>
-    </div>
+    <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
+      backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L45 15L30 30L15 15Z' fill='%23D4A017'/%3E%3Cpath d='M0 30L15 45L0 60' fill='%23D4A017'/%3E%3Cpath d='M60 30L45 45L60 60' fill='%23D4A017'/%3E%3C/svg%3E")`,
+      backgroundSize: '60px 60px',
+    }} />
   );
 }
 
@@ -104,163 +53,173 @@ export function Hero({ onSearch }: HeroProps) {
 
   const locSummary  = [f.quartier,f.commune,f.city,f.departement,f.region,f.district].find(Boolean);
   const activeCount = [
-    f.propertyTypes.length > 0,
-    f.verifiedNotaire,
-    !!f.transactionType,
-    !!f.district, !!f.region, !!f.departement,
-    !!f.city, !!f.commune, !!f.quartier,
+    f.propertyTypes.length > 0, f.verifiedNotaire, !!f.transactionType,
+    !!f.district, !!f.region, !!f.departement, !!f.city, !!f.commune, !!f.quartier,
   ].filter(Boolean).length;
 
   const darkSel = {
-    background:'rgba(13,31,18,0.75)', border:'1px solid rgba(212,160,23,0.22)',
-    color:HColors.cream, fontFamily:'var(--font-nunito)',
+    background: 'rgba(10,61,31,0.75)', border: '1px solid rgba(255,255,255,0.12)',
+    color: HColors.white, fontFamily: 'var(--font-nunito)',
   } as React.CSSProperties;
 
   return (
     <section className="relative w-full flex flex-col overflow-hidden"
-      style={{ background:'linear-gradient(160deg,#0D1F12 0%,#0D1F12 40%,#1A0E00 100%)', minHeight:'95vh' }}>
+      style={{ background: HGradients.hero, minHeight: '95vh' }}>
 
-      <AdinkraPattern />
-      <FloatingShapes />
-      <KenteStripe />
+      <BaoulePattern />
 
-      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-6 pt-14 pb-12 text-center">
+      {/* Éléphant watermark */}
+      <HomeCIEmblem variant="watermark"
+        className="absolute right-[-5%] top-1/2 -translate-y-1/2 w-[450px] h-[450px]" />
 
-        {/* Badge */}
-        <div className="homeci-reveal-1 inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-8 text-xs font-semibold"
-          style={{ background:HAlpha.gold12, border:'1px solid rgba(212,160,23,0.35)',
-                   color:HColors.gold, fontFamily:'var(--font-nunito)', letterSpacing:'0.15em' }}>
-          <MapPin size={12} /> CÔTE D'IVOIRE · WEST AFRICA
-        </div>
+      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-6 pt-14 pb-12">
 
-        {/* Title */}
-        <h1 className="homeci-reveal-2 leading-tight mb-1"
-          style={{ fontFamily:'var(--font-cormorant)', fontSize:'clamp(2.6rem,6vw,5rem)',
-                   fontWeight:600, color:HColors.cream, lineHeight:1.15 }}>
-          Votre bien idéal,
-        </h1>
-        <h1 className="homeci-reveal-2 mb-8"
-          style={{ fontFamily:'var(--font-cormorant)', fontSize:'clamp(2.6rem,6vw,5rem)',
-                   fontWeight:400, fontStyle:'italic', color:HColors.gold,
-                   lineHeight:1.15, animationDelay:'0.15s' }}>
-          au cœur de l'Afrique
-        </h1>
+        <div className="w-full max-w-3xl">
+          {/* Devise */}
+          <p className="text-center tracking-[0.2em] text-sm mb-6 italic"
+            style={{ color: HColors.gold, fontFamily: 'var(--font-cormorant)' }}>
+            Union, Discipline, Travail
+          </p>
 
-        {/* Subtitle */}
-        <p className="homeci-reveal-3 mb-10 max-w-xl leading-relaxed"
-          style={{ fontFamily:'var(--font-nunito)', fontSize:'1rem', color:HColors.cream, opacity:0.65 }}>
-          Découvrez une sélection exclusive de biens immobiliers vérifiés à travers toute la Côte d'Ivoire
-          — sécurisés, certifiés, et adaptés à votre projet de vie.
-        </p>
+          {/* Titre */}
+          <h1 className="text-center leading-tight mb-6"
+            style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(2.4rem,6vw,4.5rem)',
+                     fontWeight: 700, color: HColors.white, lineHeight: 1.1 }}>
+            L'immobilier ivoirien,{' '}
+            <br className="hidden md:block" />
+            <span style={{ color: HColors.gold }}>certifié & sécurisé.</span>
+          </h1>
 
-        {/* ── Search panel ── */}
-        <div className="homeci-reveal-4 w-full max-w-2xl rounded-2xl p-6 mb-4"
-          style={{ background:'rgba(212,160,23,0.07)', border:'1px solid rgba(212,160,23,0.22)',
-                   backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)' }}>
+          {/* Sous-titre */}
+          <p className="text-center mb-10 max-w-xl mx-auto leading-relaxed"
+            style={{ fontFamily: 'var(--font-nunito)', fontSize: '1rem', color: HAlpha.white70 }}>
+            Trouvez votre bien vérifié par notaire dans les 14 districts de Côte d'Ivoire.
+            La solidité d'un éléphant au service de vos projets.
+          </p>
 
-          {/* Row: dropdowns + button */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
-            <div className="relative flex-1">
-              <select value={f.propertyType} onChange={e => upd('propertyType', e.target.value)}
-                className="w-full appearance-none rounded-xl px-4 py-3 text-sm pr-9 cursor-pointer focus:outline-none"
-                style={{ ...darkSel, color: f.propertyType ? HColors.cream : 'rgba(245,230,200,0.45)' }}>
-                <option value="" style={{ background:HColors.night }}>Type de bien</option>
-                <option value="appartement"  style={{ background:HColors.night }}>Appartement</option>
-                <option value="maison"       style={{ background:HColors.night }}>Maison</option>
-                <option value="villa"        style={{ background:HColors.night }}>Villa</option>
-                <option value="terrain"      style={{ background:HColors.night }}>Terrain</option>
-                <option value="hotel"        style={{ background:HColors.night }}>Hôtel</option>
-                <option value="appart_hotel" style={{ background:HColors.night }}>Appart-Hôtel</option>
-              </select>
-              <ChevronDown size={15} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color:HColors.gold, opacity:0.7 }}/>
+          {/* ── Barre de recherche glassmorphism ── */}
+          <div className="w-full rounded-2xl p-2 mb-4"
+            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+                     backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+              {/* Type de bien */}
+              <div className="rounded-xl p-3" style={{ background: HAlpha.white05 }}>
+                <label className="block text-[10px] uppercase font-bold mb-1 tracking-wider"
+                  style={{ color: HColors.gold, fontFamily: 'var(--font-nunito)' }}>Type de bien</label>
+                <div className="relative">
+                  <select value={f.propertyType} onChange={e => upd('propertyType', e.target.value)}
+                    className="w-full bg-transparent outline-none text-sm appearance-none pr-6 cursor-pointer"
+                    style={{ color: f.propertyType ? HColors.white : HAlpha.white50, fontFamily: 'var(--font-nunito)' }}>
+                    <option value="" style={{ background: HColors.night }}>Tous</option>
+                    <option value="appartement"  style={{ background: HColors.night }}>Appartement</option>
+                    <option value="maison"       style={{ background: HColors.night }}>Maison</option>
+                    <option value="villa"        style={{ background: HColors.night }}>Villa</option>
+                    <option value="terrain"      style={{ background: HColors.night }}>Terrain</option>
+                    <option value="hotel"        style={{ background: HColors.night }}>Hôtel</option>
+                    <option value="appart_hotel" style={{ background: HColors.night }}>Appart-Hôtel</option>
+                  </select>
+                  <ChevronDown size={12} className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: HColors.gold }} />
+                </div>
+              </div>
+
+              {/* Transaction */}
+              <div className="rounded-xl p-3" style={{ background: HAlpha.white05 }}>
+                <label className="block text-[10px] uppercase font-bold mb-1 tracking-wider"
+                  style={{ color: HColors.gold, fontFamily: 'var(--font-nunito)' }}>Transaction</label>
+                <div className="relative">
+                  <select value={f.transactionType} onChange={e => upd('transactionType', e.target.value)}
+                    className="w-full bg-transparent outline-none text-sm appearance-none pr-6 cursor-pointer"
+                    style={{ color: f.transactionType ? HColors.white : HAlpha.white50, fontFamily: 'var(--font-nunito)' }}>
+                    <option value="" style={{ background: HColors.night }}>Tous</option>
+                    <option value="location" style={{ background: HColors.night }}>Location</option>
+                    <option value="vente"    style={{ background: HColors.night }}>Vente</option>
+                  </select>
+                  <ChevronDown size={12} className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: HColors.gold }} />
+                </div>
+              </div>
+
+              {/* Localisation */}
+              <div className="rounded-xl p-3 md:col-span-2 cursor-pointer" onClick={() => setShowGeo(!showGeo)}
+                style={{ background: HAlpha.white05 }}>
+                <label className="block text-[10px] uppercase font-bold mb-1 tracking-wider"
+                  style={{ color: HColors.gold, fontFamily: 'var(--font-nunito)' }}>Localisation</label>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm flex items-center gap-1.5"
+                    style={{ color: locSummary ? HColors.white : HAlpha.white50, fontFamily: 'var(--font-nunito)' }}>
+                    <MapPin size={13} style={{ color: HColors.orangeCI }} />
+                    {locSummary || "Toute la Côte d'Ivoire"}
+                  </span>
+                  <ChevronDown size={12} className={`transition-transform ${showGeo ? 'rotate-180' : ''}`} style={{ color: HColors.gold }} />
+                </div>
+              </div>
+
+              {/* Bouton recherche */}
+              <button onClick={handleSearch}
+                className="flex items-center justify-center gap-2 rounded-xl py-3 md:py-0 text-sm font-bold transition-all hover:scale-[1.02] active:scale-95"
+                style={{ background: HGradients.cta, color: HColors.white, fontFamily: 'var(--font-nunito)' }}>
+                <Search size={18} />
+                Rechercher
+                {activeCount > 0 && (
+                  <span className="text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center"
+                    style={{ background: HColors.white, color: HColors.orangeCI }}>{activeCount}</span>
+                )}
+              </button>
             </div>
-
-            <div className="relative flex-1">
-              <select value={f.transactionType} onChange={e => upd('transactionType', e.target.value)}
-                className="w-full appearance-none rounded-xl px-4 py-3 text-sm pr-9 cursor-pointer focus:outline-none"
-                style={{ ...darkSel, color: f.transactionType ? HColors.cream : 'rgba(245,230,200,0.45)' }}>
-                <option value="" style={{ background:HColors.night }}>Location / Vente</option>
-                <option value="location" style={{ background:HColors.night }}>À louer</option>
-                <option value="vente"    style={{ background:HColors.night }}>À vendre</option>
-              </select>
-              <ChevronDown size={15} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color:HColors.gold, opacity:0.7 }}/>
-            </div>
-
-            <button onClick={handleSearch}
-              className="flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all hover:opacity-90 active:scale-95 whitespace-nowrap"
-              style={{ background:HColors.green, color:HColors.cream, fontFamily:'var(--font-nunito)', minWidth:130 }}>
-              <Search size={15} /> Rechercher
-              {activeCount > 0 && (
-                <span className="text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center"
-                  style={{ background:HColors.gold, color:HColors.night }}>{activeCount}</span>
-              )}
-            </button>
           </div>
 
-          {/* Location toggle */}
-          <button type="button" onClick={() => setShowGeo(!showGeo)}
-            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm mb-3 transition-all"
-            style={{ background:HAlpha.gold08, border:'1px solid rgba(212,160,23,0.2)' }}>
-            <span className="flex items-center gap-2">
-              <MapPin size={14} style={{ color:HColors.gold }}/>
-              <span style={{ color:HColors.gold, fontFamily:'var(--font-nunito)', opacity:0.9 }}>
-                {locSummary || "Toute la Côte d'Ivoire"}
-              </span>
-              {locSummary && <span className="text-xs" style={{ color:'rgba(212,160,23,0.7)' }}>— affinée</span>}
-            </span>
-            <ChevronDown size={14} className={`transition-transform ${showGeo ? 'rotate-180':''}`} style={{ color:HColors.gold }}/>
-          </button>
-
-          {/* Geo cascade */}
+          {/* ── Geo cascade (dropdown) ── */}
           {showGeo && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3 p-4 rounded-xl"
-              style={{ background:'rgba(13,31,18,0.5)', border:'1px solid rgba(212,160,23,0.15)' }}>
-              {[
-                { label:'District',    val:f.district,    opts:ALL_DISTRICTS, disabled:false,
-                  onChange:(v:string) => upd('district',v,['region','departement','city','commune','quartier']) },
-                { label:'Région',      val:f.region,      opts:regions,  disabled:!regions.length,
-                  onChange:(v:string) => upd('region',v,['departement','city','commune','quartier']) },
-                { label:'Département', val:f.departement, opts:depts,    disabled:!depts.length,
-                  onChange:(v:string) => upd('departement',v,['city','commune','quartier']) },
-                { label:'Ville',       val:f.city,        opts:villes,   disabled:!villes.length,
-                  onChange:(v:string) => upd('city',v,['commune','quartier']) },
-                { label:'Commune',     val:f.commune,     opts:communes, disabled:!communes.length,
-                  onChange:(v:string) => upd('commune',v,['quartier']) },
-                { label:'Quartier',    val:f.quartier,    opts:quartiers,disabled:!quartiers.length,
-                  onChange:(v:string) => upd('quartier',v) },
-              ].map(({ label, val, opts, disabled, onChange }) => (
-                <div key={label}>
-                  <label className="block text-xs font-semibold mb-1 uppercase tracking-wider"
-                    style={{ color:'rgba(212,160,23,0.7)', fontFamily:'var(--font-nunito)' }}>{label}</label>
-                  <div className="relative">
-                    <select value={val} disabled={disabled} onChange={e => onChange(e.target.value)}
-                      className="w-full appearance-none rounded-xl px-3 py-2.5 text-sm pr-8 focus:outline-none disabled:opacity-40"
-                      style={darkSel}>
-                      <option value="" style={{ background:HColors.night }}>Tous</option>
-                      {opts.map(o => <option key={o} value={o} style={{ background:HColors.night }}>{o}</option>)}
-                    </select>
-                    <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"
-                      style={{ color:HColors.gold, opacity:0.6 }}/>
+            <div className="w-full rounded-2xl p-4 mb-4"
+              style={{ background: 'rgba(10,61,31,0.85)', border: '1px solid rgba(255,255,255,0.1)',
+                       backdropFilter: 'blur(12px)' }}>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {[
+                  { label:'District',    val:f.district,    opts:ALL_DISTRICTS, disabled:false,
+                    onChange:(v:string) => upd('district',v,['region','departement','city','commune','quartier']) },
+                  { label:'Région',      val:f.region,      opts:regions,  disabled:!regions.length,
+                    onChange:(v:string) => upd('region',v,['departement','city','commune','quartier']) },
+                  { label:'Département', val:f.departement, opts:depts,    disabled:!depts.length,
+                    onChange:(v:string) => upd('departement',v,['city','commune','quartier']) },
+                  { label:'Ville',       val:f.city,        opts:villes,   disabled:!villes.length,
+                    onChange:(v:string) => upd('city',v,['commune','quartier']) },
+                  { label:'Commune',     val:f.commune,     opts:communes, disabled:!communes.length,
+                    onChange:(v:string) => upd('commune',v,['quartier']) },
+                  { label:'Quartier',    val:f.quartier,    opts:quartiers,disabled:!quartiers.length,
+                    onChange:(v:string) => upd('quartier',v) },
+                ].map(({ label, val, opts, disabled, onChange }) => (
+                  <div key={label}>
+                    <label className="block text-xs font-semibold mb-1 uppercase tracking-wider"
+                      style={{ color: HAlpha.gold50, fontFamily: 'var(--font-nunito)' }}>{label}</label>
+                    <div className="relative">
+                      <select value={val} disabled={disabled} onChange={e => onChange(e.target.value)}
+                        className="w-full appearance-none rounded-xl px-3 py-2.5 text-sm pr-8 focus:outline-none disabled:opacity-30"
+                        style={darkSel}>
+                        <option value="" style={{ background: HColors.night }}>Tous</option>
+                        {opts.map(o => <option key={o} value={o} style={{ background: HColors.night }}>{o}</option>)}
+                      </select>
+                      <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"
+                        style={{ color: HColors.gold, opacity: 0.6 }} />
+                    </div>
                   </div>
-                </div>
-              ))}
-              {locSummary && (
-                <div className="col-span-2 md:col-span-3 text-right">
-                  <button type="button" onClick={() => setF(p => ({ ...p, district:'', region:'', departement:'', city:'', commune:'', quartier:'' }))}
-                    className="text-xs font-medium" style={{ color:HColors.terracotta, fontFamily:'var(--font-nunito)' }}>
-                    ✕ Réinitialiser la localisation
-                  </button>
-                </div>
-              )}
+                ))}
+                {locSummary && (
+                  <div className="col-span-2 md:col-span-3 text-right">
+                    <button type="button" onClick={() => setF(p => ({ ...p, district:'', region:'', departement:'', city:'', commune:'', quartier:'' }))}
+                      className="text-xs font-medium hover:opacity-80"
+                      style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>
+                      ✕ Réinitialiser la localisation
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Quick filters — multi-sélection */}
-          <div className="flex flex-wrap gap-2">
+          {/* ── Quick filters ── */}
+          <div className="flex flex-wrap justify-center gap-2 mb-8">
             {([
               { label:'✦ Vérifié Notaire', kind:'notaire', value:'notaire'      },
-              { label:'Maisons',           kind:'type',    value:'maison'       },
-              { label:'Appartements',      kind:'type',    value:'appartement'  },
               { label:'Villas',            kind:'type',    value:'villa'        },
               { label:'Terrains',          kind:'type',    value:'terrain'      },
               { label:'Hôtels',            kind:'type',    value:'hotel'        },
@@ -286,16 +245,15 @@ export function Hero({ onSearch }: HeroProps) {
                   next.transactionType = f.transactionType === tag.value ? '' : tag.value;
                 }
                 setF(next);
-                // Filtres mis à jour — scroll déclenché uniquement par le bouton Rechercher
               };
               return (
                 <button key={tag.label} onClick={toggle}
-                  className="px-4 py-1.5 rounded-full text-xs font-medium transition-all"
+                  className="px-4 py-2 rounded-full text-xs font-bold transition-all"
                   style={isActive
-                    ? { background:'rgba(212,160,23,0.30)', border:'2px solid rgba(212,160,23,0.80)',
-                        color:HColors.cream, fontFamily:'var(--font-nunito)', fontWeight:700 }
-                    : { background:'rgba(212,160,23,0.07)', border:'1px solid rgba(212,160,23,0.25)',
-                        color:HColors.cream, opacity:0.80, fontFamily:'var(--font-nunito)' }}>
+                    ? { background: HAlpha.orange25, border: '2px solid ' + HColors.orangeCI,
+                        color: HColors.white, fontFamily: 'var(--font-nunito)' }
+                    : { background: HAlpha.white05, border: '1px solid rgba(255,255,255,0.15)',
+                        color: HAlpha.white70, fontFamily: 'var(--font-nunito)' }}>
                   {tag.label}
                 </button>
               );
@@ -303,30 +261,37 @@ export function Hero({ onSearch }: HeroProps) {
             {(f.propertyTypes.length > 0 || f.verifiedNotaire || f.transactionType) && (
               <button onClick={() => {
                   const next = { ...f, propertyTypes:[], propertyType:'', verifiedNotaire:false, transactionType:'' };
-                  setF(next);
-                  onSearch?.(next);
+                  setF(next); onSearch?.(next);
                 }}
-                className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
-                style={{ background:'rgba(192,60,60,0.15)', border:'1px solid rgba(192,60,60,0.40)',
-                         color:'#ffaaaa', fontFamily:'var(--font-nunito)' }}>
+                className="px-3 py-2 rounded-full text-xs font-medium transition-all"
+                style={{ background: HAlpha.bord15, border: '1px solid rgba(139,29,29,0.40)',
+                         color: HColors.errorText, fontFamily: 'var(--font-nunito)' }}>
                 ✕ Effacer
               </button>
             )}
           </div>
-        </div>
 
-        {/* Stats */}
-        <div className="w-full max-w-3xl grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-          {[
-            { value:'500+', label:'Biens disponibles' },
-            { value:'100%', label:'Sécurisé' },
-            { value:'14',   label:'Districts couverts' },
-            { value:'24/7', label:'Support client' },
-          ].map((s,i) => <StatCard key={s.label} value={s.value} label={s.label} delay={`${1.0+i*0.1}s`}/>)}
+          {/* ── Stats ── */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+            {[
+              { value: '500+', label: 'Biens disponibles' },
+              { value: '100%', label: 'Sécurisé' },
+              { value: '14',   label: 'Districts couverts' },
+              { value: '24/7', label: 'Support client' },
+            ].map(s => (
+              <div key={s.label} className="flex flex-col items-center gap-1 px-4 py-4 rounded-2xl"
+                style={{ background: HAlpha.white05, border: '1px solid rgba(255,255,255,0.1)' }}>
+                <span className="text-3xl font-bold leading-none"
+                  style={{ color: HColors.gold, fontFamily: 'var(--font-cormorant)' }}>{s.value}</span>
+                <span className="text-xs text-center"
+                  style={{ color: HAlpha.white50, fontFamily: 'var(--font-nunito)' }}>{s.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      <KenteStripe flip />
+      <KenteLine height={4} />
     </section>
   );
 }
