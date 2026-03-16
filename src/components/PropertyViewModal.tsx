@@ -177,7 +177,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
         {user ? (
           <button onClick={onRequestVisit}
             className="w-full py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 text-sm transition-all hover:opacity-90 active:scale-95"
-            style={{ background:'linear-gradient(135deg,#D4A017,#C07C3E)', color:HColors.night, fontFamily:'var(--font-nunito)' }}>
+            style={{ background:'linear-gradient(135deg,#FF6B00,#D4A017)', color:'#FFFFFF', fontFamily:'var(--font-nunito)' }}>
             <Calendar className="w-4 h-4" /> Demander une visite
           </button>
         ) : (
@@ -208,9 +208,9 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background:HAlpha.gold15, color:HColors.gold, fontFamily:'var(--font-nunito)' }}>{TYPE_LABELS[property.property_type]}</span>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background:HAlpha.terra20, color:HColors.terracotta, fontFamily:'var(--font-nunito)' }}>{TRANSACTION_LABELS[property.transaction_type]}</span>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background:HAlpha.orange15, color:HColors.orangeCI, fontFamily:'var(--font-nunito)' }}>{TRANSACTION_LABELS[property.transaction_type]}</span>
               {property.verified_notaire
-                ? <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background:HAlpha.green25, color:HColors.green, fontFamily:'var(--font-nunito)' }}><ShieldCheck className="w-3 h-3" />Vérifié</span>
+                ? <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background:HAlpha.vertCI20, color:HColors.vertCI, fontFamily:'var(--font-nunito)' }}><ShieldCheck className="w-3 h-3" />Vérifié</span>
                 : <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background:HAlpha.gold15, color:HColors.brownMid, fontFamily:'var(--font-nunito)' }}><AlertTriangle className="w-3 h-3" />Non vérifié</span>
               }
             </div>
@@ -314,10 +314,10 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
                 <div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold" style={{ color:HColors.terracotta, fontFamily:'var(--font-cormorant)' }}>{formatPrice(property.price)}</span>
+                    <span className="text-2xl font-bold" style={{ color:HColors.orangeCI, fontFamily:'var(--font-cormorant)' }}>{formatPrice(property.price)}</span>
                     {property.transaction_type !== 'vente' && <span className="text-sm" style={{ color:HAlpha.brown60, fontFamily:'var(--font-nunito)' }}>/mois</span>}
                   </div>
-                  <div className="flex items-center gap-1.5 text-sm mt-1" style={{ color:HColors.terracotta, fontFamily:'var(--font-nunito)' }}>
+                  <div className="flex items-center gap-1.5 text-sm mt-1" style={{ color:HColors.orangeCI, fontFamily:'var(--font-nunito)' }}>
                     <MapPin className="w-3.5 h-3.5 shrink-0" />
                     {[property.quartier, property.commune, property.city, (p.departement || ''), (p.region || '')].filter(Boolean).join(' · ')}
                   </div>
@@ -394,7 +394,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
                 canSeeDocs(property) ? (
                   <div>
                     <h3 className="text-sm font-bold mb-2 flex items-center gap-2" style={{ color:HColors.darkBrown, fontFamily:'var(--font-cormorant)', fontSize:'1rem' }}>
-                      <FileText className="w-4 h-4" style={{ color:HColors.terracotta }} />
+                      <FileText className="w-4 h-4" style={{ color:HColors.orangeCI }} />
                       Documents officiels
                     </h3>
                     <div className="space-y-2">
@@ -405,7 +405,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
                           <div key={i} className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl"
                             style={doc.status === 'valide' ? { background:'rgba(45,106,79,0.08)', border:'1px solid rgba(45,106,79,0.3)' } : doc.status === 'refuse' ? { background:'rgba(139,29,29,0.08)', border:'1px solid rgba(139,29,29,0.25)' } : { background:HAlpha.gold08, border:'1px solid rgba(212,160,23,0.25)' }}>
                             <div className="flex items-center gap-2 min-w-0">
-                              <FileText className="w-4 h-4 shrink-0 opacity-70" style={{ color:HColors.terracotta }} />
+                              <FileText className="w-4 h-4 shrink-0 opacity-70" style={{ color:HColors.orangeCI }} />
                               <span className="text-sm font-medium truncate" style={{ color:HColors.darkBrown, fontFamily:'var(--font-nunito)' }}>{doc.label || doc.type}</span>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
@@ -448,7 +448,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
               {/* Vérification notaire */}
               <div className="flex items-center gap-3 p-3 rounded-xl text-sm"
               style={property.verified_notaire
-                ? { background:HAlpha.green10, border:'1px solid rgba(45,106,79,0.3)', color:HColors.green }
+                ? { background:HAlpha.vertCI10, border:'1px solid rgba(0,158,73,0.3)', color:HColors.vertCI }
                 : { background:HAlpha.gold10, border:'1px solid rgba(212,160,23,0.3)', color:HColors.brownMid }}>
                 {property.verified_notaire
                   ? <><ShieldCheck className="w-5 h-5 shrink-0"/><div><p className="font-semibold">Bien vérifié par notaire</p><p className="text-xs opacity-80">Documents officiels validés par HOMECI</p></div></>
@@ -551,7 +551,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
 function InfoChip({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background:'rgba(255,255,255,0.7)', border:`1px solid ${HAlpha.gold15}` }}>
-      <span className="shrink-0" style={{ color:HColors.terracotta }}>{icon}</span>
+      <span className="shrink-0" style={{ color:HColors.orangeCI }}>{icon}</span>
       <div className="min-w-0">
         <p className="text-xs leading-none" style={{ color:HAlpha.brown60, fontFamily:'var(--font-nunito)' }}>{label}</p>
         <p className="text-sm font-semibold truncate" style={{ color:HColors.darkBrown, fontFamily:'var(--font-nunito)' }}>{value}</p>

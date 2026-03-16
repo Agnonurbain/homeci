@@ -108,8 +108,8 @@ export default function SatisfactionModal({
           /* ── Confirmation ── */
           <div className="px-6 pb-8 text-center">
             <div className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center"
-              style={{ background: HAlpha.green10, border: `2px solid ${HAlpha.green25}` }}>
-              <CheckCircle className="w-8 h-8" style={{ color: HColors.green }} />
+              style={{ background: HAlpha.vertCI10, border: `2px solid ${HAlpha.vertCI25}` }}>
+              <CheckCircle className="w-8 h-8" style={{ color: HColors.vertCI }} />
             </div>
             <div className="flex justify-center gap-1 mb-2">
               {[1, 2, 3, 4, 5].map(i => (
@@ -173,7 +173,7 @@ export default function SatisfactionModal({
               <button onClick={handleSubmit}
                 disabled={rating === 0 || submitting}
                 className="w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-40"
-                style={{ background: 'linear-gradient(135deg,#D4A017,#C07C3E)', color: HColors.night, fontFamily: 'var(--font-nunito)' }}>
+                style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
                 {submitting
                   ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
                   : <Send className="w-4 h-4" />

@@ -251,8 +251,8 @@ export default function CGVLocataireModal({ onAccept, onClose }: CGVLocataireMod
             <button onClick={handleAccept} disabled={!checked || !hasScrolledToBottom || saving}
               className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center gap-2"
               style={{
-                background: checked && hasScrolledToBottom ? HColors.gold : 'rgba(212,160,23,0.2)',
-                color: checked && hasScrolledToBottom ? HColors.night : 'rgba(245,230,200,0.3)',
+                background: checked && hasScrolledToBottom ? HColors.orangeCI : 'rgba(255,107,0,0.2)',
+                color: checked && hasScrolledToBottom ? '#FFFFFF' : 'rgba(245,230,200,0.3)',
                 fontFamily: 'var(--font-nunito)',
               }}>
               {saving ? <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />

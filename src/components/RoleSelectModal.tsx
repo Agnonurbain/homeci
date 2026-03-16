@@ -121,7 +121,7 @@ export default function RoleSelectModal({ uid, displayName, photoURL, onDone }: 
             ) : (
               <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
                 style={{ background: HAlpha.gold15, border: `2px solid ${HAlpha.gold30}` }}>
-                <span className="text-xl font-bold" style={{ color: HColors.gold }}>
+                <span className="text-xl font-bold" style={{ color: HColors.orangeCI }}>
                   {displayName?.[0]?.toUpperCase() || '?'}
                 </span>
               </div>
@@ -145,15 +145,15 @@ export default function RoleSelectModal({ uid, displayName, photoURL, onDone }: 
                   <button onClick={() => handleSelectRole(role.id)}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all"
                     style={isActive
-                      ? { background: HAlpha.gold15, border: `2px solid ${HColors.gold}` }
+                      ? { background: HAlpha.orange15, border: `2px solid ${HColors.orangeCI}` }
                       : { background: 'rgba(255,255,255,0.04)', border: `1px solid ${HAlpha.gold15}` }}>
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
                       style={{ background: isActive ? HAlpha.gold20 : HAlpha.gold08,
-                               color: isActive ? HColors.gold : 'rgba(245,230,200,0.4)' }}>
+                               color: isActive ? HColors.orangeCI : 'rgba(245,230,200,0.4)' }}>
                       {role.icon}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm" style={{ color: isActive ? HColors.gold : HColors.cream, fontFamily: 'var(--font-nunito)' }}>
+                      <p className="font-semibold text-sm" style={{ color: isActive ? HColors.orangeCI : HColors.cream, fontFamily: 'var(--font-nunito)' }}>
                         {role.label}
                       </p>
                       <p className="text-xs mt-0.5" style={{ color: 'rgba(245,230,200,0.4)', fontFamily: 'var(--font-nunito)' }}>
@@ -162,7 +162,7 @@ export default function RoleSelectModal({ uid, displayName, photoURL, onDone }: 
                     </div>
                     {isActive && (
                       <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
-                        style={{ background: HColors.gold }}>
+                        style={{ background: HColors.orangeCI }}>
                         <svg viewBox="0 0 12 12" className="w-3 h-3" fill="none">
                           <path d="M2 6l3 3 5-5" stroke={HColors.night} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
@@ -220,7 +220,7 @@ export default function RoleSelectModal({ uid, displayName, photoURL, onDone }: 
           <button onClick={handleConfirm} disabled={loading || !canConfirm}
             className="w-full py-3.5 rounded-xl font-bold text-sm transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
             style={{ background: canConfirm
-                       ? 'linear-gradient(135deg, #D4A017 0%, #C07C3E 100%)'
+                       ? 'linear-gradient(135deg, #FF6B00 0%, #D4A017 100%)'
                        : 'rgba(212,160,23,0.25)',
                      color: canConfirm ? HColors.night : HAlpha.cream45,
                      fontFamily: 'var(--font-nunito)' }}>

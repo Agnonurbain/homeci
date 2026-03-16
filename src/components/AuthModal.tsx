@@ -238,7 +238,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               <button key={m} type="button" onClick={() => { setMode(m); setError(''); }}
                 className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
                 style={mode === m
-                  ? { background: HColors.gold, color: HColors.night, fontFamily: 'var(--font-nunito)' }
+                  ? { background: HColors.orangeCI, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }
                   : { color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
                 {m === 'login' ? 'Connexion' : 'Inscription'}
               </button>
@@ -292,7 +292,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                             ? { background: HAlpha.gold20, border: '1px solid rgba(212,160,23,0.6)' }
                             : { background: 'rgba(13,31,18,0.5)', border: '1px solid rgba(212,160,23,0.12)' }}>
                           <Icon className="w-4 h-4 shrink-0"
-                            style={{ color: active ? HColors.gold : 'rgba(245,230,200,0.4)' }} />
+                            style={{ color: active ? HColors.orangeCI : 'rgba(245,230,200,0.4)' }} />
                           <div>
                             <p className="text-xs font-semibold leading-tight"
                               style={{ color: active ? HColors.cream : HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
@@ -366,7 +366,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                             <button type="button" onClick={handleCheckNotaireCode}
                               disabled={checkingCode || notaireCode.length < 6}
                               className="px-3 py-2 rounded-lg text-xs font-semibold transition-all hover:opacity-90 disabled:opacity-40 flex items-center gap-1.5"
-                              style={{ background: 'linear-gradient(135deg,#D4A017,#C07C3E)', color: HColors.night,
+                              style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF',
                                        fontFamily: 'var(--font-nunito)' }}>
                               {checkingCode ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <Key className="w-3.5 h-3.5" />}
                               Valider
@@ -421,7 +421,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
             {/* Submit */}
             <button type="submit" disabled={loading || (mode === 'signup' && showNotaireCode && !notaireCodeValid)}
               className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-50 mt-2"
-              style={{ background: 'linear-gradient(135deg, #D4A017 0%, #C07C3E 100%)',
+              style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #D4A017 100%)',
                        color: HColors.night, fontFamily: 'var(--font-nunito)' }}>
               {loading
                 ? <span className="flex items-center justify-center gap-2">
@@ -496,7 +496,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
             {' '}
             <button type="button" onClick={handleModeSwitch}
               className="font-semibold transition-colors hover:opacity-100"
-              style={{ color: HColors.gold }}>
+              style={{ color: HColors.orangeCI }}>
               {mode === 'login' ? "S'inscrire" : 'Se connecter'}
             </button>
           </p>

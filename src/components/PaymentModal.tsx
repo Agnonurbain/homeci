@@ -311,7 +311,7 @@ export default function PaymentModal({ config, onSuccess, onClose }: PaymentModa
             <div className="text-center py-6">
               <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4"
                 style={{ background: 'rgba(34,87,46,0.2)', border: '2px solid rgba(34,87,46,0.4)' }}>
-                <CheckCircle className="w-8 h-8" style={{ color: HColors.green }} />
+                <CheckCircle className="w-8 h-8" style={{ color: HColors.vertCI }} />
               </div>
               <p className="text-lg font-bold mb-1"
                 style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>
@@ -324,7 +324,7 @@ export default function PaymentModal({ config, onSuccess, onClose }: PaymentModa
                 Référence : HMCI-{Date.now().toString(36).toUpperCase()}
               </p>
               <div className="mt-3 px-3 py-1.5 rounded-full inline-flex items-center gap-1 text-xs"
-                style={{ background: 'rgba(34,87,46,0.15)', color: HColors.green, fontFamily: 'var(--font-nunito)' }}>
+                style={{ background: HAlpha.vertCI15, color: HColors.vertCI, fontFamily: 'var(--font-nunito)' }}>
                 <Shield className="w-3 h-3" /> Mode test — Aucun débit réel
               </div>
             </div>
