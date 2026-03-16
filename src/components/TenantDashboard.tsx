@@ -137,7 +137,19 @@ export default function TenantDashboard() {
   useEffect(() => () => { clearTimeout(visitSuccessTimer.current); }, []);
 
   /** Flux : CGV (1ère fois) → Paiement 500 FCFA → Formulaire visite */
-  const handleRequestVisit = (property: Property) => {
+  const [propertyInTransaction, setPropertyInTransaction] = useState(false);
+
+  const handleRequestVisit = async (property: Property) => {
+    // Vérifier si le bien est déjà en cours de transaction
+    try {
+      const active = await visitService.hasActiveVisit(property.id);
+      if (active) {
+        setPropertyInTransaction(true);
+        setPendingVisitProperty(property);
+        return;
+      }
+    } catch (e) { console.error(e); }
+
     if (!profile?.cgv_accepted) {
       setPendingVisitProperty(property);
       setShowCGVLocataire(true);
@@ -888,6 +900,39 @@ export default function TenantDashboard() {
           }}
           onClose={() => { setShowVisitPayment(false); setPendingVisitProperty(null); }}
         />
+      )}
+
+      {/* Modal — Bien en cours de transaction */}
+      {propertyInTransaction && pendingVisitProperty && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center px-4"
+          style={{ background: 'rgba(10,61,31,0.7)', backdropFilter: 'blur(6px)' }}>
+          <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
+            style={{ background: HColors.night, border: `1px solid ${HAlpha.orange20}` }}>
+            <div className="px-6 pt-6 pb-5 text-center">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-full flex items-center justify-center"
+                style={{ background: HAlpha.orange10, border: `2px solid ${HAlpha.orange25}` }}>
+                <AlertCircle className="w-7 h-7" style={{ color: HColors.orangeCI }} />
+              </div>
+              <h2 className="text-lg font-bold mb-2"
+                style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: '1.4rem' }}>
+                Bien en cours de transaction
+              </h2>
+              <p className="text-sm mb-1" style={{ color: HAlpha.cream70, fontFamily: 'var(--font-nunito)' }}>
+                Le bien <strong style={{ color: HColors.orangeCI }}>« {pendingVisitProperty.title} »</strong> fait
+                actuellement l'objet d'une visite confirmée avec un autre utilisateur.
+              </p>
+              <p className="text-sm mb-5" style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
+                Il n'est pas possible de demander une visite pour le moment.
+                Ce bien redeviendra disponible si la transaction n'aboutit pas.
+              </p>
+              <button onClick={() => { setPropertyInTransaction(false); setPendingVisitProperty(null); }}
+                className="w-full py-3 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
+                style={{ background: HColors.orangeCI, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+                J'ai compris
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Enquête de satisfaction */}

@@ -107,6 +107,16 @@ export const visitService = {
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   },
 
+  /** Vérifie si un bien a une visite active (accepted/completed) — bloque les nouvelles demandes */
+  async hasActiveVisit(propertyId: string): Promise<boolean> {
+    const q = query(collection(db, 'visits'), where('property_id', '==', propertyId));
+    const snap = await getDocs(q);
+    return snap.docs.some(d => {
+      const status = d.data().status;
+      return status === 'accepted' || status === 'completed';
+    });
+  },
+
   async updateVisitStatus(visitId: string, status: 'accepted' | 'rejected' | 'completed', notes?: string): Promise<void> {
     await updateDoc(doc(db, 'visits', visitId), {
       status,
