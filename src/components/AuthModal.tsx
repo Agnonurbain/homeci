@@ -41,10 +41,11 @@ async function markNotaireCodeUsed(docId: string) {
 }
 
 export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
-  const { signIn, signUp, signInWithProvider, sendPhoneOTP, verifyPhoneOTP } = useAuth();
+  const { signIn, signUp, signInWithProvider, sendPhoneOTP, verifyPhoneOTP, resetPassword } = useAuth();
   useBodyScrollLock(isOpen);
   const [socialLoading, setSocialLoading] = useState<string|null>(null);
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
+  const [view, setView] = useState<'form' | 'forgotPassword' | 'resetSent'>('form');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -70,7 +71,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
 
   useEffect(() => {
     if (isOpen) {
-      setMode(initialMode); setError('');
+      setMode(initialMode); setError(''); setView('form');
       setShowNotaireCode(false); setNotaireCode(''); setNotaireCodeError('');
       setNotaireCodeValid(false); setValidatedCodeDocId(null);
       setAuthMethod('email'); setPhoneNumber(''); setPhoneOTP('');
@@ -80,7 +81,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
 
   const handleModeSwitch = () => {
     setMode(m => m === 'login' ? 'signup' : 'login');
-    setError(''); setEmail(''); setPassword(''); setFullName('');
+    setError(''); setEmail(''); setPassword(''); setFullName(''); setView('form');
     setShowNotaireCode(false); setNotaireCode(''); setNotaireCodeError('');
     setNotaireCodeValid(false); setValidatedCodeDocId(null);
     setRole('locataire');
@@ -102,6 +103,30 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
       setNotaireCodeValid(false);
     }
     setCheckingCode(false);
+  };
+
+  // ── Forgot password handler ──
+  const handleResetPassword = async () => {
+    setError('');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim()) { setError('Veuillez saisir votre adresse email.'); return; }
+    if (!emailRegex.test(email.trim())) { setError('Adresse email invalide.'); return; }
+    setLoading(true);
+    try {
+      await resetPassword(email.trim());
+      setView('resetSent');
+    } catch (err: any) {
+      const code = err?.code || '';
+      if (code === 'auth/user-not-found') {
+        setError('Aucun compte trouvé avec cet email. Vérifiez l\'adresse ou créez un compte.');
+      } else if (code === 'auth/too-many-requests') {
+        setError('Trop de tentatives. Réessayez dans quelques minutes.');
+      } else if (code === 'auth/invalid-email') {
+        setError('Adresse email invalide.');
+      } else {
+        setError('Erreur lors de l\'envoi. Vérifiez votre email et réessayez.');
+      }
+    } finally { setLoading(false); }
   };
 
   // ── Phone auth handlers ──
@@ -306,6 +331,88 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
             </div>
           )}
 
+          {/* ══════ VUE : MOT DE PASSE OUBLIÉ ══════ */}
+          {view === 'forgotPassword' && (
+            <div className="space-y-4">
+              <div className="text-center mb-2">
+                <p className="text-sm" style={{ color: HAlpha.cream70, fontFamily: 'var(--font-nunito)' }}>
+                  Saisissez l'email associé à votre compte. Vous recevrez un lien pour réinitialiser votre mot de passe.
+                </p>
+              </div>
+
+              {/* Info par rôle */}
+              <div className="p-3 rounded-xl text-xs leading-relaxed"
+                style={{ background: HAlpha.orange08, border: `1px solid ${HAlpha.orange15}`,
+                         color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
+                <strong style={{ color: HColors.orangeCI }}>Locataire :</strong> Si vous vous êtes inscrit par téléphone,
+                vous n'avez pas de mot de passe — reconnectez-vous avec votre numéro.<br />
+                <strong style={{ color: HColors.orangeCI }}>Propriétaire / Notaire :</strong> Utilisez l'email
+                avec lequel vous avez créé votre compte ou connectez-vous avec Google.
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                  style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
+                  Email
+                </label>
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                  placeholder="votre@email.com"
+                  className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
+                  style={{ background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.25)',
+                           color: HColors.cream, fontFamily: 'var(--font-nunito)' }} />
+              </div>
+
+              <button type="button" onClick={handleResetPassword} disabled={loading}
+                className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-50"
+                style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #D4A017 100%)',
+                         color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+                {loading
+                  ? <span className="flex items-center justify-center gap-2">
+                      <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"/>
+                      Envoi en cours...
+                    </span>
+                  : 'Envoyer le lien de réinitialisation'}
+              </button>
+
+              <button type="button" onClick={() => { setView('form'); setError(''); }}
+                className="w-full text-xs text-center transition-all hover:opacity-80"
+                style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
+                ← Retour à la connexion
+              </button>
+            </div>
+          )}
+
+          {/* ══════ VUE : EMAIL ENVOYÉ ══════ */}
+          {view === 'resetSent' && (
+            <div className="text-center space-y-4 py-4">
+              <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center"
+                style={{ background: HAlpha.vertCI10, border: `2px solid ${HAlpha.vertCI25}` }}>
+                <svg className="w-8 h-8" style={{ color: HColors.vertCI }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold"
+                style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>
+                Email envoyé !
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
+                Un lien de réinitialisation a été envoyé à <strong style={{ color: HColors.orangeCI }}>{email}</strong>.
+                Vérifiez votre boîte de réception (et vos spams).
+              </p>
+              <p className="text-xs" style={{ color: HAlpha.cream40, fontFamily: 'var(--font-nunito)' }}>
+                Le lien expire dans 1 heure.
+              </p>
+              <button type="button" onClick={() => { setView('form'); setError(''); setEmail(''); }}
+                className="w-full py-3 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
+                style={{ background: HColors.orangeCI, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+                Retour à la connexion
+              </button>
+            </div>
+          )}
+
+          {/* ══════ VUE : FORMULAIRE PRINCIPAL ══════ */}
+          {view === 'form' && (
+          <>
           <form onSubmit={handleSubmit} className="space-y-4">
 
             {/* Signup only fields */}
@@ -566,6 +673,13 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                     : <Eye className="w-4 h-4" style={{ color: HColors.gold }} />}
                 </button>
               </div>
+              {mode === 'login' && (
+                <button type="button" onClick={() => setView('forgotPassword')}
+                  className="mt-1.5 text-xs transition-all hover:opacity-100"
+                  style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)', opacity: 0.8 }}>
+                  Mot de passe oublié ?
+                </button>
+              )}
             </div>
 
             {/* Submit */}
@@ -652,6 +766,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               {mode === 'login' ? "S'inscrire" : 'Se connecter'}
             </button>
           </p>
+          </>
+          )}
         </div>
       </div>
       {/* Recaptcha invisible pour auth téléphone */}

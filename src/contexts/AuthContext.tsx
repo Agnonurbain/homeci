@@ -12,6 +12,7 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
   ConfirmationResult,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
@@ -50,6 +51,7 @@ interface AuthContextType {
   signInWithProvider: (provider: 'google' | 'facebook' | 'twitter') => Promise<void>;
   sendPhoneOTP: (phoneNumber: string, recaptchaContainerId: string) => Promise<void>;
   verifyPhoneOTP: (code: string, fullName: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -284,6 +286,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function resetPassword(email: string) {
+    await sendPasswordResetEmail(auth, email);
+  }
+
   async function signOut() {
     if (user) clearCachedProfile(user.uid);
     setUser(null);
@@ -294,7 +300,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user, profile, loading, pendingNewUser, clearPendingNewUser,
-      signIn, signUp, signInWithProvider, sendPhoneOTP, verifyPhoneOTP, refreshProfile, signOut,
+      signIn, signUp, signInWithProvider, sendPhoneOTP, verifyPhoneOTP, resetPassword, refreshProfile, signOut,
     }}>
       {children}
     </AuthContext.Provider>
