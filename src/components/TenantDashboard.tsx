@@ -22,6 +22,7 @@ import { KenteLine } from './ui/KenteLine';
 import CGVLocataireModal from './CGVLocataireModal';
 import PaymentModal from './PaymentModal';
 import SatisfactionModal from './SatisfactionModal';
+import { surveyService } from '../services/surveyService';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
 
 const PER_PAGE = 9;
@@ -81,7 +82,7 @@ export default function TenantDashboard() {
   const visitSuccessTimer = useRef<ReturnType<typeof setTimeout>>();
   const [showCGVLocataire, setShowCGVLocataire] = useState(false);
   const [showVisitPayment, setShowVisitPayment] = useState(false);
-  const [surveyData, setSurveyData] = useState<{ trigger: 'visit_accepted'; propertyId?: string; propertyTitle?: string } | null>(null);
+  const [surveyData, setSurveyData] = useState<{ trigger: 'visit_accepted' | 'visit_completed'; propertyId?: string; propertyTitle?: string } | null>(null);
   const [pendingVisitProperty, setPendingVisitProperty] = useState<Property | null>(null);
 
   useEffect(() => {
@@ -101,6 +102,24 @@ export default function TenantDashboard() {
       notificationService.getNotifications(user.uid).then(setNotifications).catch(console.error);
     }
   }, [user]);
+
+  // Déclencher l'enquête quand une visite est marquée "effectuée" par le propriétaire
+  useEffect(() => {
+    if (!user || surveyData) return;
+    const completedVisit = visitRequests.find(v => v.status === 'completed');
+    if (!completedVisit) return;
+    surveyService.hasAlreadyResponded(user.uid, 'visit_completed', completedVisit.property_id)
+      .then(already => {
+        if (!already) {
+          setSurveyData({
+            trigger: 'visit_completed',
+            propertyId: completedVisit.property_id,
+            propertyTitle: completedVisit.property_title,
+          });
+        }
+      })
+      .catch(console.error);
+  }, [visitRequests, user, surveyData]);
 
   useEffect(() => {
     if (favoriteIds.length === 0) { setFavoriteProperties([]); return; }
@@ -189,7 +208,6 @@ export default function TenantDashboard() {
       });
       const updated = await visitService.getVisitRequestsByTenant(user!.uid);
       setVisitRequests(updated);
-      setSurveyData({ trigger: 'visit_accepted', propertyId: visit.property_id, propertyTitle: visit.property_title });
     } catch (e) { console.error(e); }
   };
 

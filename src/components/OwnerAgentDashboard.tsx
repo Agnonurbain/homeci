@@ -100,7 +100,7 @@ export default function OwnerAgentDashboard() {
   const [visitActionLoading, setVisitActionLoading] = useState(false);
   const [visitFilter, setVisitFilter] = useState<'all' | 'pending' | 'accepted' | 'rejected'>('all');
   const [submittingVerif, setSubmittingVerif] = useState<string | null>(null);
-  const [surveyData, setSurveyData] = useState<{ trigger: 'visit_accepted'; propertyId?: string; propertyTitle?: string } | null>(null);
+  const [surveyData, setSurveyData] = useState<{ trigger: 'visit_accepted' | 'visit_completed'; propertyId?: string; propertyTitle?: string } | null>(null);
 
   useEffect(() => { loadAll(); }, []);
 
@@ -230,17 +230,32 @@ export default function OwnerAgentDashboard() {
       }
       setSelectedVisit(null);
       setCounterDate(''); setCounterTime('');
-      // Déclencher l'enquête de satisfaction après acceptation
-      if (action === 'accepted') {
-        setSurveyData({
-          trigger: 'visit_accepted',
-          propertyId: selectedVisit.property_id,
-          propertyTitle: selectedVisit.property_title,
-        });
-      }
     } catch (e: any) {
       console.error('[HOMECI] Erreur visite:', e);
       alert(`Erreur : ${e?.message || 'Impossible de traiter la demande. Vérifiez votre connexion.'}`);
+    } finally { setVisitActionLoading(false); }
+  };
+
+  const handleMarkCompleted = async (visit: VisitRequest) => {
+    setVisitActionLoading(true);
+    try {
+      await visitService.updateVisitStatus(visit.id, 'completed');
+      await notificationService.createNotification({
+        user_id: visit.tenant_id,
+        type: 'visit_completed',
+        title: 'Visite effectuée ✅',
+        message: `Votre visite de "${visit.property_title}" a été marquée comme effectuée. Merci de partager votre avis !`,
+        property_id: visit.property_id,
+      });
+      setVisitRequests(prev => prev.map(v => v.id === visit.id ? { ...v, status: 'completed' } : v));
+      // Déclencher l'enquête de satisfaction APRÈS la visite
+      setSurveyData({
+        trigger: 'visit_completed',
+        propertyId: visit.property_id,
+        propertyTitle: visit.property_title,
+      });
+    } catch (e) {
+      console.error('[HOMECI] Erreur marquage visite:', e);
     } finally { setVisitActionLoading(false); }
   };
 
@@ -250,7 +265,9 @@ export default function OwnerAgentDashboard() {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
-  const filteredVisits = visitFilter === 'all' ? visitRequests : visitRequests.filter(v => v.status === visitFilter);
+  const filteredVisits = visitFilter === 'all'
+    ? visitRequests
+    : visitRequests.filter(v => v.status === visitFilter || (visitFilter === 'accepted' && v.status === 'completed'));
 
   /* ── RENDER ──────────────────────────────────────────────────────────────── */
   return (
@@ -545,6 +562,14 @@ export default function OwnerAgentDashboard() {
                               : { background: HAlpha.gold12, color: HColors.brownMid,
                                   border: '1px solid rgba(212,160,23,0.3)', fontFamily: 'var(--font-nunito)' }}>
                             {visit.status === 'counter_proposed' ? 'Répondre' : 'Répondre'}
+                          </button>
+                        )}
+                        {visit.status === 'accepted' && (
+                          <button onClick={() => handleMarkCompleted(visit)}
+                            disabled={visitActionLoading}
+                            className="px-4 py-2 rounded-xl text-sm font-semibold shrink-0 transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
+                            style={{ background: HColors.vertCI, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+                            <CheckCircle className="w-3.5 h-3.5" /> Visite effectuée
                           </button>
                         )}
                       </div>
