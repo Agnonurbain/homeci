@@ -4,7 +4,7 @@ import { HColors, HAlpha } from '../styles/homeci-tokens';
 const features = [
   { icon: ShieldCheck, title: 'Vérification Notaire',   desc: 'Chaque bien est vérifié par un notaire agréé inscrit au tableau de l\'Ordre', color: HColors.vertCI },
   { icon: FileText,    title: 'Annonces Certifiées',    desc: 'Documents légaux contrôlés et authentifiés — zéro arnaque', color: HColors.orangeCI },
-  { icon: Smartphone,  title: 'Paiements Mobile Money', desc: 'Orange Money, MTN MoMo, Wave et Flooz via notre partenaire Movapay', color: HColors.vertCI },
+  { icon: Smartphone,  title: 'Paiements Mobile Money', desc: 'Orange Money, MTN MoMo, Wave, Flooz et Djamo via notre partenaire Movapay', color: HColors.vertCI },
   { icon: MapPin,      title: '14 Districts Couverts',  desc: 'Toute la Côte d\'Ivoire à portée de main, d\'Abidjan à Korhogo', color: HColors.orangeCI },
   { icon: Clock,       title: 'Support 24/7',           desc: 'Notre équipe est disponible pour vous accompagner à tout moment', color: HColors.vertCI },
   { icon: Users,       title: 'Contrats Automatiques',  desc: 'Génération automatique de contrats de bail et promesses de vente conformes', color: HColors.orangeCI },

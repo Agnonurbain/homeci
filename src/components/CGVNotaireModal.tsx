@@ -234,7 +234,7 @@ export default function CGVNotaireModal({ onAccept, onClose }: CGVNotaireModalPr
             <P>
               Les frais de certification notariale sont fixés à 75 000 FCFA par dossier, payés
               par le propriétaire via les moyens de paiement Mobile Money de la plateforme
-              (Orange Money, MTN MoMo, Wave, Moov Flooz). La rémunération du notaire est versée
+              (Orange Money, MTN MoMo, Wave, Moov Flooz, Djamo). La rémunération du notaire est versée
               selon les modalités et le pourcentage convenus par contrat distinct entre le notaire
               et l'administration HOMECI. Ces montants sont conformes au barème des honoraires
               de la profession et à la réglementation de la BCEAO relative à la monnaie électronique.

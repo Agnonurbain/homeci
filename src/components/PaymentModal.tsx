@@ -20,6 +20,7 @@ const PROVIDERS: MoMoProvider[] = [
   { id: 'mtn',    name: 'MTN MoMo',    color: '#FFCC00', bg: 'rgba(255,204,0,0.12)', prefix: '05', logo: '🟡' },
   { id: 'wave',   name: 'Wave',         color: '#1DC3E2', bg: 'rgba(29,195,226,0.12)', prefix: '01', logo: '🔵' },
   { id: 'flooz',  name: 'Moov Flooz',   color: '#00A651', bg: 'rgba(0,166,81,0.12)', prefix: '01', logo: '🟢' },
+  { id: 'djamo',  name: 'Djamo',        color: '#6C3BF5', bg: 'rgba(108,59,245,0.12)', prefix: '01', logo: '🟣' },
 ];
 
 // ─── Types ──────────────────────────────────────────────────────────────────

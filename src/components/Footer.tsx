@@ -89,7 +89,7 @@ export function Footer() {
               <p className="text-[10px] uppercase tracking-wider font-bold mb-2"
                 style={{ color: HAlpha.gold50, fontFamily: 'var(--font-nunito)' }}>Paiements acceptés</p>
               <div className="flex gap-2 flex-wrap">
-                {['Orange Money', 'MTN MoMo', 'Wave', 'Flooz'].map(op => (
+                {['Orange Money', 'MTN MoMo', 'Wave', 'Flooz', 'Djamo'].map(op => (
                   <span key={op} className="px-2 py-1 rounded text-[10px] font-bold"
                     style={{ background: HAlpha.white05, border: '1px solid rgba(255,255,255,0.08)',
                              color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>

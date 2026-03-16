@@ -123,7 +123,7 @@ export default function CGVLocataireModal({ onAccept, onClose }: CGVLocataireMod
             <H3>Article 3 — Demandes de visite et tarification</H3>
             <P>
               Chaque demande de visite est soumise à des frais de service de 500 FCFA, payables via
-              les moyens de paiement Mobile Money disponibles (Orange Money, MTN MoMo, Wave, Moov Flooz).
+              les moyens de paiement Mobile Money disponibles (Orange Money, MTN MoMo, Wave, Moov Flooz, Djamo).
               Ces paiements sont régis par la réglementation de la BCEAO relative à la monnaie électronique.
               Les frais couvrent la mise en relation avec le propriétaire et la coordination de la visite.
               Les frais ne sont pas remboursables en cas d'annulation par le demandeur. En cas d'annulation

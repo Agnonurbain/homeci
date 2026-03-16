@@ -185,7 +185,7 @@ export default function CGVModal({ onAccept, onClose }: CGVModalProps) {
             <P>
               Les frais de publication sont fixés à 1 000 FCFA par annonce et les frais de certification
               notariale à 75 000 FCFA par dossier, payables via les moyens de paiement Mobile Money
-              disponibles sur la plateforme (Orange Money, MTN MoMo, Wave, Moov Flooz). Les paiements
+              disponibles sur la plateforme (Orange Money, MTN MoMo, Wave, Moov Flooz, Djamo). Les paiements
               sont régis par la réglementation de la Banque Centrale des États de l'Afrique de l'Ouest (BCEAO)
               relative à la monnaie électronique. HOMECI se réserve le droit de modifier ses tarifs
               avec notification préalable de 30 jours aux utilisateurs.

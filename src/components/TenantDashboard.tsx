@@ -642,7 +642,7 @@ export default function TenantDashboard() {
                     💳 Paiements mobiles — Bientôt disponibles
                   </h3>
                   <p className="text-sm" style={{ color:HAlpha.cream60, fontFamily:'var(--font-nunito)' }}>
-                    Payez cautions et loyers via Orange Money, MTN MoMo, Wave et Flooz.
+                    Payez cautions et loyers via Orange Money, MTN MoMo, Wave, Flooz et Djamo.
                   </p>
                 </div>
                 <span className="px-4 py-1.5 rounded-full text-sm font-semibold shrink-0"

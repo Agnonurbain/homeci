@@ -143,7 +143,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
         </div>
         <div className="p-3 rounded-xl text-xs" style={{ background:HAlpha.terra10, border:'1px solid rgba(192,124,62,0.28)', color:HColors.brownDeep, fontFamily:'var(--font-nunito)' }}>
           <div className="flex items-center gap-1.5 mb-1 font-semibold"><CreditCard className="w-3.5 h-3.5" /> Paiement caution requis</div>
-          <p>Règlement via Orange Money, MTN MoMo, Wave ou Flooz</p>
+          <p>Règlement via Orange Money, MTN MoMo, Wave, Flooz ou Djamo</p>
           <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full font-medium" style={{ background:HAlpha.terra15 }}>🚀 Prochainement</span>
         </div>
       </div>
