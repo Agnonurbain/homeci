@@ -30,14 +30,14 @@ describe('PropertyCard', () => {
 
   it('affiche le nombre de chambres', () => {
     render(<PropertyCard property={createMockProperty({ bedrooms: 4 })} />);
-    // Rendu : "4 ch"
-    expect(screen.getByText(/4 ch/)).toBeInTheDocument();
+    // Rendu : icône Bed + "4" en bold
+    expect(screen.getByText('4')).toBeInTheDocument();
   });
 
   it('affiche le nombre de salles de bain', () => {
     render(<PropertyCard property={createMockProperty({ bathrooms: 3 })} />);
-    // Rendu : "3 sdb"
-    expect(screen.getByText(/3 sdb/)).toBeInTheDocument();
+    // Rendu : icône Bath + "3" en bold
+    expect(screen.getByText('3')).toBeInTheDocument();
   });
 
   it('affiche la surface', () => {

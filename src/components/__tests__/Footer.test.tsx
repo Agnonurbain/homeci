@@ -6,7 +6,7 @@ describe('Footer', () => {
 
   it('affiche le logo HOMECI', () => {
     render(<Footer />);
-    expect(screen.getByText('HOMECI')).toBeInTheDocument();
+    expect(screen.getByAltText(/HOMECI/)).toBeInTheDocument();
   });
 
   it('affiche le copyright 2026', () => {
@@ -25,5 +25,10 @@ describe('Footer', () => {
     expect(screen.getByText("Conditions d'utilisation")).toBeInTheDocument();
     expect(screen.getByText('Politique de confidentialité')).toBeInTheDocument();
     expect(screen.getByText('Mentions légales')).toBeInTheDocument();
+  });
+
+  it('affiche la devise nationale', () => {
+    render(<Footer />);
+    expect(screen.getByText(/Union, Discipline, Travail/)).toBeInTheDocument();
   });
 });
