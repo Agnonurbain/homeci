@@ -21,7 +21,7 @@ export function HomeCIEmblem({ variant = 'full', className = '' }: HomeCIEmblemP
     return (
       <div className={`flex items-center gap-2.5 ${className}`}>
         <img src="/logo_homeci.jpg" alt="HOMECI"
-          className="h-10 w-auto rounded-md" draggable={false} />
+          className="h-14 w-auto rounded-md" draggable={false} />
         <span className="font-bold text-xl tracking-widest hidden sm:inline"
           style={{ color: '#D4A017', fontFamily: 'var(--font-cormorant)', letterSpacing: '0.15em' }}>
           HOMECI

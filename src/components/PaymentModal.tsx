@@ -16,11 +16,11 @@ interface MoMoProvider {
 }
 
 const PROVIDERS: MoMoProvider[] = [
-  { id: 'orange', name: 'Orange Money', color: '#FF6600', bg: 'rgba(255,102,0,0.12)', prefix: '07', logo: '🟠' },
-  { id: 'mtn',    name: 'MTN MoMo',    color: '#FFCC00', bg: 'rgba(255,204,0,0.12)', prefix: '05', logo: '🟡' },
-  { id: 'wave',   name: 'Wave',         color: '#1DC3E2', bg: 'rgba(29,195,226,0.12)', prefix: '01', logo: '🔵' },
-  { id: 'flooz',  name: 'Moov Flooz',   color: '#00A651', bg: 'rgba(0,166,81,0.12)', prefix: '01', logo: '🟢' },
-  { id: 'djamo',  name: 'Djamo',        color: '#6C3BF5', bg: 'rgba(108,59,245,0.12)', prefix: '01', logo: '🟣' },
+  { id: 'orange', name: 'Orange Money', color: '#FF6600', bg: 'rgba(255,102,0,0.12)', prefix: '07', logo: '/logos/orange-money.svg' },
+  { id: 'mtn',    name: 'MTN MoMo',    color: '#FFCC00', bg: 'rgba(255,204,0,0.12)', prefix: '05', logo: '/logos/mtn-momo.svg' },
+  { id: 'wave',   name: 'Wave',         color: '#1DC3E2', bg: 'rgba(29,195,226,0.12)', prefix: '01', logo: '/logos/wave.svg' },
+  { id: 'flooz',  name: 'Moov Flooz',   color: '#00A651', bg: 'rgba(0,166,81,0.12)', prefix: '01', logo: '/logos/flooz.svg' },
+  { id: 'djamo',  name: 'Djamo',        color: '#6C3BF5', bg: 'rgba(108,59,245,0.12)', prefix: '01', logo: '/logos/djamo.svg' },
 ];
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -157,7 +157,7 @@ export default function PaymentModal({ config, onSuccess, onClose }: PaymentModa
                 <button key={p.id} onClick={() => handleSelectProvider(p)}
                   className="w-full flex items-center gap-3 p-3.5 rounded-xl transition-all hover:opacity-90"
                   style={{ background: p.bg, border: `1px solid ${p.color}33` }}>
-                  <span className="text-2xl">{p.logo}</span>
+                  <img src={p.logo} alt={p.name} className="w-9 h-9 rounded-lg" />
                   <div className="flex-1 text-left">
                     <p className="text-sm font-semibold" style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
                       {p.name}
@@ -191,7 +191,7 @@ export default function PaymentModal({ config, onSuccess, onClose }: PaymentModa
 
               <div className="flex items-center gap-2 p-2.5 rounded-xl"
                 style={{ background: provider.bg, border: `1px solid ${provider.color}33` }}>
-                <span className="text-lg">{provider.logo}</span>
+                <img src={provider.logo} alt={provider.name} className="w-7 h-7 rounded-lg" />
                 <span className="text-sm font-semibold" style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
                   {provider.name}
                 </span>

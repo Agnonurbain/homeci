@@ -33,7 +33,7 @@ export function Header({ onLoginClick, onSignupClick }: HeaderProps) {
       <nav style={{ background: 'rgba(10,61,31,0.96)', backdropFilter: 'blur(12px)',
                     borderBottom: '1px solid rgba(212,160,23,0.15)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-[72px]">
 
             {/* Logo */}
             <HomeCIEmblem variant="header" />
