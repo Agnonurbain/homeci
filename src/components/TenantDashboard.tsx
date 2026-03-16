@@ -34,11 +34,11 @@ function formatPrice(p: number) {
 const VISIT_STATUS: Record<string, {
   bg: string; border: string; text: string; label: string; icon: React.ReactNode;
 }> = {
-  pending:          { bg: HAlpha.gold10,  border: HAlpha.gold35,  text: HColors.brownMid, label: 'Demande envoyée',        icon: <Clock className="w-3.5 h-3.5"/> },
-  accepted:         { bg: HAlpha.green10,   border: HAlpha.green30,   text: HColors.green, label: 'Confirmée',              icon: <CheckCircle className="w-3.5 h-3.5"/> },
+  pending:          { bg: HAlpha.orange10,  border: HAlpha.orange25,  text: HColors.orangeCI, label: 'Demande envoyée',        icon: <Clock className="w-3.5 h-3.5"/> },
+  accepted:         { bg: HAlpha.vertCI10,  border: HAlpha.vertCI25,  text: HColors.vertCI, label: 'Confirmée',              icon: <CheckCircle className="w-3.5 h-3.5"/> },
   rejected:         { bg: HAlpha.bord10,   border: HAlpha.bord30,    text: HColors.bordeaux, label: 'Refusée',                icon: <XCircle className="w-3.5 h-3.5"/> },
   completed:        { bg: HAlpha.navy08,   border: HAlpha.navy30,    text: HColors.navy, label: 'Effectuée',              icon: <CheckCircle className="w-3.5 h-3.5"/> },
-  counter_proposed: { bg: HAlpha.terra10, border: HAlpha.terra35,   text: HColors.brownDeep, label: 'Nouvelle date proposée', icon: <Calendar className="w-3.5 h-3.5"/> },
+  counter_proposed: { bg: HAlpha.orange10, border: HAlpha.orange25,  text: HColors.orangeCI, label: 'Nouvelle date proposée', icon: <Calendar className="w-3.5 h-3.5"/> },
   counter_waiting:  { bg: HAlpha.navy08,  border: HAlpha.navy25,   text: HColors.navy, label: 'En attente de réponse',  icon: <Clock className="w-3.5 h-3.5"/> },
 };
 
@@ -243,9 +243,9 @@ export default function TenantDashboard() {
               </p>
             </div>
             <div className="flex gap-2 flex-wrap">
-              <StatBadge icon={<Heart className="w-3.5 h-3.5"/>}        label="Favoris"    value={favoriteIds.length}  accent="#C07C3E" onClick={() => setActiveTab('favorites')} />
+              <StatBadge icon={<Heart className="w-3.5 h-3.5"/>}        label="Favoris"    value={favoriteIds.length}  accent="#FF6B00" onClick={() => setActiveTab('favorites')} />
               <StatBadge icon={<Clock className="w-3.5 h-3.5"/>}        label="En attente" value={pendingVisits}        accent="#D4A017" onClick={() => setActiveTab('visits')} />
-              {acceptedVisits > 0 && <StatBadge icon={<CheckCircle className="w-3.5 h-3.5"/>} label="Acceptées" value={acceptedVisits} accent="#2D6A4F" onClick={() => setActiveTab('visits')} />}
+              {acceptedVisits > 0 && <StatBadge icon={<CheckCircle className="w-3.5 h-3.5"/>} label="Acceptées" value={acceptedVisits} accent="#009E49" onClick={() => setActiveTab('visits')} />}
               {unreadCount > 0    && <StatBadge icon={<Bell className="w-3.5 h-3.5"/>}         label="Notifs"    value={unreadCount}    accent="#8B1D1D" onClick={() => setActiveTab('notifications')} />}
             </div>
           </div>
@@ -367,7 +367,7 @@ export default function TenantDashboard() {
                 </p>
                 <button onClick={() => setActiveTab('search')}
                   className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
-                  style={{ background:'linear-gradient(135deg,#D4A017,#C07C3E)', color:HColors.night, fontFamily:'var(--font-nunito)' }}>
+                  style={{ background:'linear-gradient(135deg,#FF6B00,#D4A017)', color:'#FFFFFF', fontFamily:'var(--font-nunito)' }}>
                   Découvrir les biens
                 </button>
               </div>
@@ -424,7 +424,7 @@ export default function TenantDashboard() {
                 </p>
                 <button onClick={() => setActiveTab('search')}
                   className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
-                  style={{ background:'linear-gradient(135deg,#D4A017,#C07C3E)', color:HColors.night, fontFamily:'var(--font-nunito)' }}>
+                  style={{ background:'linear-gradient(135deg,#FF6B00,#D4A017)', color:'#FFFFFF', fontFamily:'var(--font-nunito)' }}>
                   Rechercher un bien
                 </button>
               </div>
@@ -567,7 +567,7 @@ export default function TenantDashboard() {
                               <div className="flex gap-2">
                                 <button onClick={() => handleAcceptCounter(visit)}
                                   className="flex-1 px-3 py-2.5 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all hover:opacity-90"
-                                  style={{ background:'linear-gradient(135deg,#D4A017,#C07C3E)', color:HColors.night, fontFamily:'var(--font-nunito)' }}>
+                                  style={{ background:'linear-gradient(135deg,#FF6B00,#D4A017)', color:'#FFFFFF', fontFamily:'var(--font-nunito)' }}>
                                   <CheckCircle className="w-3.5 h-3.5"/> Confirmer cette date
                                 </button>
                                 <button onClick={() => setCounterForm({ visitId:visit.id, date:'', time:'' })}
@@ -832,7 +832,7 @@ export default function TenantDashboard() {
                     <button onClick={handleSubmitVisit}
                       disabled={!visitForm.preferred_date || !visitForm.preferred_time || submittingVisit}
                       className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
-                      style={{ background:'linear-gradient(135deg,#D4A017,#C07C3E)', color:HColors.night,
+                      style={{ background:'linear-gradient(135deg,#FF6B00,#D4A017)', color:'#FFFFFF',
                                fontFamily:'var(--font-nunito)' }}>
                       {submittingVisit
                         ? <div className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent"/>

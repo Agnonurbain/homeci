@@ -33,7 +33,7 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; border: string; label: string }> = {
-  published: { bg: HAlpha.green10,  text: HColors.green, border: HAlpha.green30,  label: 'Publié' },
+  published: { bg: HAlpha.vertCI10, text: HColors.vertCI, border: HAlpha.vertCI25,  label: 'Publié' },
   pending:   { bg: HAlpha.gold12, text: HColors.brownMid, border: HAlpha.gold30, label: 'En attente' },
   draft:     { bg: 'rgba(90,64,0,0.08)',    text: HColors.brown, border: 'rgba(90,64,0,0.2)',    label: 'Brouillon' },
   rented:    { bg: HAlpha.navy18,  text: HColors.navy, border: HAlpha.navy30,  label: 'Loué' },
@@ -42,15 +42,15 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; border: string; 
 };
 
 const VISIT_STATUS_STYLES: Record<string, { bg: string; text: string; border: string; label: string; icon: React.ReactNode }> = {
-  pending:          { bg: HAlpha.gold12, text: HColors.brownMid, border: HAlpha.gold30, label: 'En attente',   icon: <Clock className="w-3.5 h-3.5"/> },
-  accepted:         { bg: HAlpha.green10,  text: HColors.green, border: HAlpha.green30, label: 'Acceptée',      icon: <CheckCircle className="w-3.5 h-3.5"/> },
+  pending:          { bg: HAlpha.orange10, text: HColors.orangeCI, border: HAlpha.orange25, label: 'En attente',   icon: <Clock className="w-3.5 h-3.5"/> },
+  accepted:         { bg: HAlpha.vertCI10, text: HColors.vertCI, border: HAlpha.vertCI25, label: 'Acceptée',      icon: <CheckCircle className="w-3.5 h-3.5"/> },
   rejected:         { bg: HAlpha.bord10,  text: HColors.bordeaux, border: HAlpha.bord30, label: 'Refusée',       icon: <XCircle className="w-3.5 h-3.5"/> },
   completed:        { bg: HAlpha.navy18,  text: HColors.navy, border: HAlpha.navy30, label: 'Effectuée',     icon: <CheckCircle className="w-3.5 h-3.5"/> },
-  counter_proposed: { bg: HAlpha.terra10, text: HColors.brownDeep, border: HAlpha.terra30, label: 'Date proposée', icon: <Calendar className="w-3.5 h-3.5"/> },
+  counter_proposed: { bg: HAlpha.orange10, text: HColors.orangeCI, border: HAlpha.orange25, label: 'Date proposée', icon: <Calendar className="w-3.5 h-3.5"/> },
 };
 const VISIT_STATUS_FALLBACK = { bg: 'rgba(90,64,0,0.08)', text: HColors.brown, border: 'rgba(90,64,0,0.2)', label: 'Inconnu', icon: <Clock className="w-3.5 h-3.5"/> };
 
-const PIE_COLORS = [HColors.gold, HColors.green, HColors.terracotta, HColors.bordeaux, HColors.navy];
+const PIE_COLORS = [HColors.gold, HColors.green, HColors.orangeCI, HColors.bordeaux, HColors.navy];
 
 
 /* ── Stat Card ────────────────────────────────────────────────────────────── */
@@ -273,7 +273,7 @@ export default function OwnerAgentDashboard() {
                 aria-current={activeTab === tab.id ? 'page' : undefined}
                 className="py-4 px-4 border-b-2 text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2"
                 style={activeTab === tab.id
-                  ? { borderColor: HColors.gold, color: HColors.gold, fontFamily: 'var(--font-nunito)' }
+                  ? { borderColor: HColors.orangeCI, color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }
                   : { borderColor: 'transparent', color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
@@ -281,7 +281,7 @@ export default function OwnerAgentDashboard() {
                   <span className="px-1.5 py-0.5 rounded-full text-xs font-bold"
                     style={tab.id === 'notifications'
                       ? { background: HColors.bordeaux, color: HColors.cream }
-                      : { background: HAlpha.gold25, color: HColors.gold }}>
+                      : { background: HAlpha.orange20, color: HColors.orangeCI }}>
                     {tab.count}
                   </span>
                 )}
@@ -308,7 +308,7 @@ export default function OwnerAgentDashboard() {
               </div>
               <button onClick={handleAddProperty}
                 className="px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-sm"
-                style={{ background: 'linear-gradient(135deg,#D4A017,#C07C3E)', color: HColors.night,
+                style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF',
                          fontFamily: 'var(--font-nunito)' }}>
                 <Plus className="w-4 h-4" /> Ajouter un bien
               </button>
@@ -316,10 +316,10 @@ export default function OwnerAgentDashboard() {
 
             {/* Quick stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <StatCard icon={CheckCircle} label="Publiés"       value={stats.published}   accent="#2D6A4F" />
+              <StatCard icon={CheckCircle} label="Publiés"       value={stats.published}   accent="#009E49" />
               <StatCard icon={Clock}       label="En attente"    value={stats.pending}     accent="#D4A017" />
               <StatCard icon={Home}        label="Loués/Vendus"  value={stats.rented_sold} accent="#1A3A6B" />
-              <StatCard icon={Star}        label="Vérifiés ✓"   value={stats.verified}    accent="#C07C3E" />
+              <StatCard icon={Star}        label="Vérifiés ✓"   value={stats.verified}    accent="#FF6B00" />
             </div>
 
             {loading ? (
@@ -338,7 +338,7 @@ export default function OwnerAgentDashboard() {
                 </p>
                 <button onClick={handleAddProperty}
                   className="px-5 py-2.5 rounded-xl text-sm font-semibold inline-flex items-center gap-2 transition-all hover:opacity-90"
-                  style={{ background: 'linear-gradient(135deg,#D4A017,#C07C3E)', color: HColors.night, fontFamily: 'var(--font-nunito)' }}>
+                  style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
                   <Plus className="w-4 h-4" /> Ajouter un bien
                 </button>
               </div>
@@ -571,9 +571,9 @@ export default function OwnerAgentDashboard() {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               <StatCard icon={Home}        label="Total biens"       value={stats.total}              accent="#D4A017" />
-              <StatCard icon={Eye}         label="Vues totales"      value={stats.views}              accent="#C07C3E" />
+              <StatCard icon={Eye}         label="Vues totales"      value={stats.views}              accent="#FF6B00" />
               <StatCard icon={Calendar}    label="Visites demandées" value={visitRequests.length}     accent="#1A3A6B" />
-              <StatCard icon={CheckCircle} label="Biens vérifiés"    value={stats.verified}           accent="#2D6A4F" />
+              <StatCard icon={CheckCircle} label="Biens vérifiés"    value={stats.verified}           accent="#009E49" />
             </div>
 
             <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -854,7 +854,7 @@ export default function OwnerAgentDashboard() {
                 ) : (
                   <button onClick={() => handleVisitAction('accepted')} disabled={visitActionLoading}
                     className="w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
-                    style={{ background: 'linear-gradient(135deg,#D4A017,#C07C3E)', color: HColors.night, fontFamily: 'var(--font-nunito)' }}>
+                    style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
                     {visitActionLoading ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"/> : <CheckCircle className="w-4 h-4"/>}
                     Confirmer le {selectedVisit.status === 'counter_proposed' && selectedVisit.counter_proposed_by === 'tenant' && selectedVisit.counter_date
                       ? <>{new Date(selectedVisit.counter_date).toLocaleDateString('fr-FR', { day:'2-digit', month:'short' })} à {selectedVisit.counter_time}</>

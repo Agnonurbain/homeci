@@ -354,10 +354,10 @@ export default function NotaireDashboard() {
           {/* Tabs */}
           <nav className="flex gap-1 homeci-tabs-scroll">
             {([
-              {id:'disponible',label:'Disponibles',     count:stats.disponible,accent:HColors.terracotta,bg:HAlpha.terra10, bd:HAlpha.terra28},
-              {id:'en_cours',label:'En cours',          count:stats.enCours,  accent:HColors.brownMid, bg:HAlpha.gold10,  bd:HAlpha.gold25 },
+              {id:'disponible',label:'Disponibles',     count:stats.disponible,accent:HColors.orangeCI, bg:HAlpha.orange10, bd:HAlpha.orange25},
+              {id:'en_cours',label:'En cours',          count:stats.enCours,  accent:HColors.gold,     bg:HAlpha.gold10,  bd:HAlpha.gold25 },
               {id:'pret',     label:'Prêts à certifier',count:stats.pret,     accent:HColors.navy,     bg:HAlpha.navy08,  bd:HAlpha.navy20 },
-              {id:'certifie', label:'Certifiés',        count:stats.certifie, accent:HColors.green,    bg:HAlpha.green10, bd:HAlpha.green25},
+              {id:'certifie', label:'Certifiés',        count:stats.certifie, accent:HColors.vertCI,   bg:HAlpha.vertCI10, bd:HAlpha.vertCI25},
             ] as const).map(tab=>(
               <button key={tab.id} onClick={()=>setActiveTab(tab.id)}
                 aria-label={tab.label} aria-current={activeTab===tab.id?'page':undefined}
@@ -506,7 +506,7 @@ export default function NotaireDashboard() {
                       <button onClick={()=>handleTakeCharge(property)}
                         disabled={takingId===property.id}
                         className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl shrink-0 self-start transition-all hover:opacity-90 disabled:opacity-50"
-                        style={{background:'linear-gradient(135deg,#D4A017,#C07C3E)',color:HColors.night,fontFamily:'var(--font-nunito)'}}>
+                        style={{background:'linear-gradient(135deg,#FF6B00,#D4A017)',color:HColors.night,fontFamily:'var(--font-nunito)'}}>
                         {takingId===property.id?<Loader className="w-3.5 h-3.5 animate-spin"/>:<FileCheck className="w-3.5 h-3.5"/>}
                         Prendre en charge
                       </button>
@@ -782,7 +782,7 @@ export default function NotaireDashboard() {
                         ):(
                           <button onClick={()=>handleCertify(property)} disabled={!ready||certifyingId===property.id}
                             className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-                            style={{background:ready?'linear-gradient(135deg,#D4A017,#C07C3E)':HAlpha.gold10,
+                            style={{background:ready?'linear-gradient(135deg,#FF6B00,#D4A017)':HAlpha.gold10,
                                     color:ready?HColors.night:HColors.brown,fontFamily:'var(--font-nunito)'}}>
                             {certifyingId===property.id?<Loader className="w-4 h-4 animate-spin"/>:<Stamp className="w-4 h-4"/>}
                             Certifier ce bien
@@ -851,7 +851,7 @@ export default function NotaireDashboard() {
                     <button onClick={()=>handleTakeCharge(p)}
                       disabled={takingId===p.id}
                       className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl shrink-0 transition-all hover:opacity-90 disabled:opacity-50"
-                      style={{background:'linear-gradient(135deg,#D4A017,#C07C3E)',
+                      style={{background:'linear-gradient(135deg,#FF6B00,#D4A017)',
                               color:HColors.night,fontFamily:'var(--font-nunito)'}}>
                       {takingId===p.id
                         ? <Loader className="w-3.5 h-3.5 animate-spin"/>
@@ -898,9 +898,9 @@ export default function NotaireDashboard() {
 
 function DocStatusBadgeFull({status}:{status:'aucun'|'partiel'|'complet'|'certifie'}){
   const cfg={
-    certifie:{bg:HAlpha.green10,bd:HAlpha.green25,text:HColors.green,   label:'Certifié',        icon:<Stamp className="w-3 h-3"/>},
+    certifie:{bg:HAlpha.vertCI10,bd:HAlpha.vertCI25,text:HColors.vertCI, label:'Certifié',        icon:<Stamp className="w-3 h-3"/>},
     complet: {bg:HAlpha.navy08, bd:HAlpha.navy20, text:HColors.navy,    label:'Prêt à certifier',icon:<CheckCircle className="w-3 h-3"/>},
-    partiel: {bg:HAlpha.gold10, bd:HAlpha.gold25, text:HColors.brownMid,label:'En cours',         icon:<Clock className="w-3 h-3"/>},
+    partiel: {bg:HAlpha.orange10, bd:HAlpha.orange20, text:HColors.orangeCI,label:'En cours',     icon:<Clock className="w-3 h-3"/>},
     aucun:   {bg:HAlpha.gold08, bd:HAlpha.gold15, text:HColors.brown,   label:'En attente',       icon:<Clock className="w-3 h-3"/>},
   }[status];
   return(
@@ -913,8 +913,8 @@ function DocStatusBadgeFull({status}:{status:'aucun'|'partiel'|'complet'|'certif
 
 function DocStatusBadge({status}:{status:DocStatus}){
   const cfg:Record<DocStatus,{bg:string;bd:string;text:string;label:string}>={
-    en_attente:{bg:HAlpha.gold10, bd:HAlpha.gold25, text:HColors.brownMid, label:'En attente'},
-    valide:    {bg:HAlpha.green10,bd:HAlpha.green25,text:HColors.green,    label:'Validé'},
+    en_attente:{bg:HAlpha.orange10, bd:HAlpha.orange20, text:HColors.orangeCI, label:'En attente'},
+    valide:    {bg:HAlpha.vertCI10,bd:HAlpha.vertCI25,text:HColors.vertCI,   label:'Validé'},
     refuse:    {bg:HAlpha.bord10, bd:HAlpha.bord25, text:HColors.bordeaux, label:'Refusé'},
   };
   const {bg,bd,text,label}=cfg[status]||cfg.en_attente;
