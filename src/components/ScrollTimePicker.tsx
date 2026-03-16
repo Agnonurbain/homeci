@@ -112,12 +112,12 @@ export default function ScrollTimePicker({ value, onChange, className = '', vari
           </p>
           <div className="flex items-center justify-center gap-1">
             <ScrollColumn items={HOURS}   selected={hh || '08'} onSelect={setHour}   variant={variant} />
-            <span className="text-xl font-bold pb-1" style={{ color: variant === 'dark' ? HColors.gold : HColors.terracotta }}>:</span>
+            <span className="text-xl font-bold pb-1" style={{ color: variant === 'dark' ? HColors.gold : HColors.orangeCI }}>:</span>
             <ScrollColumn items={MINUTES} selected={mm || '00'} onSelect={setMinute} variant={variant} />
           </div>
           <button onClick={() => setOpen(false)}
             className="mt-2.5 w-full py-1.5 rounded-xl text-xs font-bold transition-all hover:opacity-90"
-            style={{ background:'linear-gradient(135deg,#D4A017,#C07C3E)', color:HColors.night, fontFamily:'var(--font-nunito)' }}>
+            style={{ background:'linear-gradient(135deg,#FF6B00,#D4A017)', color:'#FFFFFF', fontFamily:'var(--font-nunito)' }}>
             Confirmer
           </button>
         </div>

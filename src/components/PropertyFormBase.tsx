@@ -517,21 +517,21 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                   <div className="flex flex-col items-center gap-1 flex-shrink-0">
                     <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all"
                       style={isActive
-                        ? { background:HColors.gold, color:HColors.night }
+                        ? { background:HColors.orangeCI, color:'#FFFFFF' }
                         : isCompleted
-                          ? { background:HAlpha.gold18, color:HColors.gold, border:'1px solid rgba(212,160,23,0.4)' }
+                          ? { background:HAlpha.vertCI15, color:HColors.vertCI, border:'1px solid rgba(0,158,73,0.4)' }
                           : { background:'rgba(245,230,200,0.07)', color:'rgba(245,230,200,0.3)', border:'1px solid rgba(245,230,200,0.1)' }}>
                       {isCompleted ? <Check className="w-3.5 h-3.5" /> : n}
                     </div>
                     <span className="hidden sm:block text-center transition-colors"
                       style={{ fontSize:'0.6rem', fontFamily:'var(--font-nunito)', fontWeight:600,
-                               color: isActive ? HColors.gold : isCompleted ? 'rgba(212,160,23,0.6)' : 'rgba(245,230,200,0.25)' }}>
+                               color: isActive ? HColors.orangeCI : isCompleted ? HColors.vertCI : 'rgba(245,230,200,0.25)' }}>
                       {step.label}
                     </span>
                   </div>
                   {idx < STEPS.length - 1 && (
                     <div className="flex-1 h-px mx-1.5"
-                      style={{ background: currentStep > n ? HColors.gold : 'rgba(245,230,200,0.1)' }} />
+                      style={{ background: currentStep > n ? HColors.vertCI : 'rgba(245,230,200,0.1)' }} />
                   )}
                 </div>
               );
@@ -612,14 +612,14 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
             {/* ══════════ ÉTAPE 2 : Caractéristiques ══════════ */}
             {currentStep === 2 && (
               <div className="space-y-5">
-                <SectionHeader icon={<Home className="w-5 h-5" style={{ color:HColors.terracotta }} />}
+                <SectionHeader icon={<Home className="w-5 h-5" style={{ color:HColors.orangeCI }} />}
                   iconBg="rgba(192,124,62,0.12)" iconBorder="rgba(192,124,62,0.3)"
                   title="Caractéristiques" subtitle="Surface, pièces et équipements" />
 
                 {/* Résidentiel */}
                 {isResidential && (
                   <div className="space-y-4">
-                    <SubSection title="L'appartement / le logement" color="green">
+                    <SubSection title="L'appartement / le logement" color="vert">
                       <div className="grid md:grid-cols-2 gap-3">
                         <FieldGroup label="Surface habitable (m²) *">
                           <input type="number" name="surface_area" value={formData.surface_area}
@@ -676,7 +676,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
 
                 {/* Terrain */}
                 {isTerrain && (
-                  <SubSection title="Le terrain" color="terracotta">
+                  <SubSection title="Le terrain" color="orange">
                     <FieldGroup label="Superficie du terrain (m²) *">
                       <input type="number" name="land_area" value={formData.land_area}
                         onChange={handleChange} className={inputCls} style={S.input} min="0" />
@@ -705,7 +705,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                             onClick={() => setFormData(prev => ({ ...prev, hotel_stars: star.toString() }))}
                             className="w-10 h-10 rounded-xl font-bold text-sm transition-all"
                             style={parseInt(formData.hotel_stars) === star
-                              ? { background:HColors.gold, color:HColors.night, border:'2px solid #D4A017' }
+                              ? { background:HColors.gold, color:'#FFFFFF', border:'2px solid #D4A017' }
                               : { background:'rgba(255,255,255,0.6)', color:HColors.brown, border:'1px solid rgba(212,160,23,0.25)' }}>
                             {star}★
                           </button>
@@ -718,7 +718,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                 {/* Appart-Hôtel */}
                 {isAppartHotel && (
                   <div className="space-y-4">
-                    <SubSection title="La résidence" color="terracotta">
+                    <SubSection title="La résidence" color="orange">
                       <div className="grid md:grid-cols-2 gap-3">
                         <FieldGroup label="Nombre total d'unités *">
                           <input type="number" name="rooms_count" value={formData.rooms_count}
@@ -767,7 +767,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
 
                 {/* Équipements (tous sauf terrain) */}
                 {!isTerrain && (
-                  <SubSection title="Équipements & Services" color="green">
+                  <SubSection title="Équipements & Services" color="vert">
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                       {AMENITIES_OPTIONS.map(amenity => (
                         <button key={amenity} type="button"
@@ -803,7 +803,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
             {/* ══════════ ÉTAPE 3 : Localisation ══════════ */}
             {currentStep === 3 && (
               <div className="space-y-5">
-                <SectionHeader icon={<MapPin className="w-5 h-5" style={{ color:HColors.green }} />}
+                <SectionHeader icon={<MapPin className="w-5 h-5" style={{ color:HColors.vertCI }} />}
                   iconBg="rgba(45,106,79,0.12)" iconBorder="rgba(45,106,79,0.3)"
                   title="Localisation" subtitle="Positionnez le bien sur la carte" />
 
@@ -886,7 +886,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
             {/* ══════════ ÉTAPE 4 : Médias ══════════ */}
             {currentStep === 4 && (
               <div className="space-y-5">
-                <SectionHeader icon={<Image className="w-5 h-5" style={{ color:HColors.terracotta }} />}
+                <SectionHeader icon={<Image className="w-5 h-5" style={{ color:HColors.orangeCI }} />}
                   iconBg="rgba(192,124,62,0.12)" iconBorder="rgba(192,124,62,0.3)"
                   title="Photos" subtitle={`${totalPhotos}/15 photos ajoutées`} />
 
@@ -904,7 +904,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                           <img src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
                           {i === 0 && (
                             <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md text-xs font-bold"
-                              style={{ background:HColors.gold, color:HColors.night, fontFamily:'var(--font-nunito)' }}>
+                              style={{ background:HColors.gold, color:'#FFFFFF', fontFamily:'var(--font-nunito)' }}>
                               Principal
                             </span>
                           )}
@@ -929,7 +929,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                         <img src={src} alt={`Aperçu ${i + 1}`} className="w-full h-full object-cover" />
                         {i === 0 && (
                           <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md text-xs font-bold"
-                            style={{ background:HColors.gold, color:HColors.night, fontFamily:'var(--font-nunito)' }}>
+                            style={{ background:HColors.gold, color:'#FFFFFF', fontFamily:'var(--font-nunito)' }}>
                             Principal
                           </span>
                         )}
@@ -986,7 +986,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
 
                 {/* ── Section Vidéos ── */}
                 <div className="pt-5" style={{ borderTop:'1px solid rgba(212,160,23,0.18)' }}>
-                  <SectionHeader icon={<Film className="w-5 h-5" style={{ color:HColors.green }} />}
+                  <SectionHeader icon={<Film className="w-5 h-5" style={{ color:HColors.vertCI }} />}
                     iconBg="rgba(34,87,46,0.12)" iconBorder="rgba(34,87,46,0.3)"
                     title="Vidéos" subtitle={`${totalVideos}/3 vidéos ajoutées (optionnel)`} />
 
@@ -1133,7 +1133,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
           {currentStep < totalSteps ? (
             <button type="button" aria-label="Étape suivante" onClick={handleNext}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-95"
-              style={{ background:'linear-gradient(135deg,#D4A017,#C07C3E)', color:HColors.night,
+              style={{ background:'linear-gradient(135deg,#FF6B00,#D4A017)', color:'#FFFFFF',
                        fontFamily:'var(--font-nunito)' }}>
               Suivant <ArrowRight className="w-4 h-4" />
             </button>
@@ -1141,7 +1141,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
             <button type="button" aria-label={mode === 'create' ? 'Publier le bien' : 'Sauvegarder'}
               onClick={mode === 'create' ? handlePublishClick : handleSubmit} disabled={isSubmitting}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
-              style={{ background:'linear-gradient(135deg,#D4A017,#C07C3E)', color:HColors.night,
+              style={{ background:'linear-gradient(135deg,#FF6B00,#D4A017)', color:'#FFFFFF',
                        fontFamily:'var(--font-nunito)' }}>
               {isSubmitting
                 ? <div className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
@@ -1190,13 +1190,13 @@ function SectionHeader({ icon, iconBg, iconBorder, title, subtitle }: {
 }
 
 function SubSection({ title, color, children }: {
-  title: string; color: 'green' | 'gold' | 'terracotta' | 'navy'; children: React.ReactNode;
+  title: string; color: 'vert' | 'gold' | 'orange' | 'navy'; children: React.ReactNode;
 }) {
   const colors = {
-    green:      { bg:'rgba(45,106,79,0.06)',    border:HAlpha.green20,    text:HColors.green },
-    gold:       { bg:HAlpha.gold05,   border:HAlpha.gold15, text:HColors.brownMid },
-    terracotta: { bg:HAlpha.terra08,   border:'rgba(192,124,62,0.22)', text:HColors.brownDeep },
-    navy:       { bg:HAlpha.navy06,    border:HAlpha.navy18, text:HColors.navy },
+    vert:   { bg:'rgba(0,158,73,0.06)',  border:HAlpha.vertCI20,  text:HColors.vertCI },
+    gold:   { bg:HAlpha.gold05,          border:HAlpha.gold15,    text:HColors.brownMid },
+    orange: { bg:HAlpha.orange08,        border:HAlpha.orange20,  text:HColors.orangeCI },
+    navy:   { bg:HAlpha.navy06,          border:HAlpha.navy18,    text:HColors.navy },
   };
   const c = colors[color];
   return (
