@@ -1,7 +1,8 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Images de propriétés : lecture publique, écriture authentifiée
+
+    // ── Images de propriétés : lecture publique, écriture authentifiée ──
     match /images/{allPaths=**} {
       allow read: if true;
       allow write: if request.auth != null
@@ -9,21 +10,45 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
 
-    // Documents légaux : lecture et écriture authentifiées
+    // ── Documents légaux de propriétés (titre foncier, permis, etc.) ──
+    // Lecture : tout utilisateur authentifié (les notaires doivent y accéder)
+    // Écriture : utilisateur authentifié, PDF ou images uniquement, max 10 Mo
     match /documents/{propertyId}/{allPaths=**} {
       allow read: if request.auth != null;
       allow write: if request.auth != null
-        && request.resource.size < 10 * 1024 * 1024;
+        && request.resource.size < 10 * 1024 * 1024
+        && (request.resource.contentType.matches('application/pdf')
+            || request.resource.contentType.matches('image/.*'));
     }
 
-    // Modèles 3D : lecture publique, écriture authentifiée
+    // ── Pièces d'identité du propriétaire (CNI, passeport, carte de séjour, attestation) ──
+    // SENSIBLE : écriture UNIQUEMENT par le propriétaire du fichier
+    // Lecture : le propriétaire OU tout utilisateur authentifié (le notaire doit vérifier les pièces)
+    // Les URLs Firestore avec tokens gèrent l'accès fin — seuls ceux qui ont l'URL y accèdent
+    match /identity/{userId}/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId
+        && request.resource.size < 5 * 1024 * 1024
+        && (request.resource.contentType.matches('application/pdf')
+            || request.resource.contentType.matches('image/.*'));
+    }
+
+    // ── Avatars (photos de profil) : lecture publique, écriture par le propriétaire ──
+    match /avatars/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // ── Modèles 3D : lecture publique, écriture authentifiée ──
     match /models3d/{propertyId}/{allPaths=**} {
       allow read: if true;
       allow write: if request.auth != null
         && request.resource.size < 50 * 1024 * 1024;
     }
 
-    // Vidéos : lecture publique, écriture authentifiée
+    // ── Vidéos : lecture publique, écriture authentifiée ──
     match /videos/{allPaths=**} {
       allow read: if true;
       allow write: if request.auth != null

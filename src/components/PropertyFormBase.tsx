@@ -1092,7 +1092,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                 <SectionHeader icon={<FileText className="w-5 h-5" style={{ color:HColors.navy }} />}
                   iconBg="rgba(26,58,107,0.12)" iconBorder="rgba(26,58,107,0.25)"
                   title="Documents" subtitle="Titres fonciers, permis et pièces officielles" />
-                <DocumentsStep documents={documents} onChange={setDocuments} />
+                <DocumentsStep propertyType={formData.property_type} propertyId={propertyId || 'temp'} documents={documents} onChange={setDocuments} />
               </div>
             )}
 

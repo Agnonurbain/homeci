@@ -92,6 +92,28 @@ export const storageService = {
   },
 
   /**
+   * Upload de pièce d'identité (CNI, passeport, carte de séjour, etc.)
+   * Stockée dans : identity/{userId}/{documentType}_{timestamp}.{ext}
+   * Séparé des documents de propriété pour des raisons de sécurité.
+   */
+  async uploadIdentityDocument(
+    file: File,
+    userId: string,
+    documentType: string
+  ): Promise<string> {
+    let fileToUpload = file;
+    if (file.type.startsWith('image/')) {
+      fileToUpload = await compressImage(file, COMPRESS_PRESETS.property);
+    }
+
+    const ext = file.name.split('.').pop() || 'pdf';
+    const path = `identity/${userId}/${documentType}_${Date.now()}.${ext}`;
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, fileToUpload);
+    return getDownloadURL(storageRef);
+  },
+
+  /**
    * Upload de modèle 3D (.glb, .gltf).
    * Stocké dans : models3d/{propertyId}/{timestamp}.{ext}
    */

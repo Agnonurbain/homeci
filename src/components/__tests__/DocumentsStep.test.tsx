@@ -3,10 +3,18 @@ import { render, screen } from '@testing-library/react';
 import { DocumentsStep } from '../DocumentsStep';
 import type { PropertyDocument } from '../../services/propertyService';
 
+// Mock useAuth
+vi.mock('../../contexts/AuthContext', () => ({
+  useAuth: () => ({
+    user: { uid: 'test-user-123' },
+  }),
+}));
+
 // Mock storageService
 vi.mock('../../services/storageService', () => ({
   storageService: {
     uploadDocument: vi.fn(async () => 'https://firebasestorage.googleapis.com/mock-doc.pdf'),
+    uploadIdentityDocument: vi.fn(async () => 'https://firebasestorage.googleapis.com/mock-identity.pdf'),
   },
 }));
 

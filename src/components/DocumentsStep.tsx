@@ -3,6 +3,10 @@ import { FileText, Upload, CheckCircle, Clock, X, Eye, AlertTriangle } from 'luc
 import { storageService } from '../services/storageService';
 import type { PropertyDocument } from '../services/propertyService';
 import { fixDocUrl } from '../utils/fixDocUrl';
+import { useAuth } from '../contexts/AuthContext';
+
+/** Types de pièces d'identité → uploadés dans identity/{userId}/ */
+const IDENTITY_DOC_TYPES = ['cni', 'passeport', 'attestation_residence', 'carte_sejour'];
 
 const DOCUMENTS_BY_TYPE: Record<string, { type: string; label: string; required: boolean; hint: string }[]> = {
   appartement: [
@@ -60,6 +64,7 @@ interface DocumentsStepProps {
 }
 
 export function DocumentsStep({ propertyType, propertyId, documents, onChange }: DocumentsStepProps) {
+  const { user } = useAuth();
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -72,7 +77,12 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
     setErrors(prev => ({ ...prev, [type]: '' }));
 
     try {
-      const url = await storageService.uploadDocument(file, propertyId || 'temp', type);
+      // Pièces d'identité → chemin sécurisé identity/{userId}/
+      // Documents de propriété → chemin documents/{propertyId}/
+      const isIdentity = IDENTITY_DOC_TYPES.includes(type);
+      const url = isIdentity
+        ? await storageService.uploadIdentityDocument(file, user?.uid || 'unknown', type)
+        : await storageService.uploadDocument(file, propertyId || 'temp', type);
       const newDoc: PropertyDocument = {
         type,
         label,
