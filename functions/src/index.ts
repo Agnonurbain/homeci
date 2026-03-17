@@ -1,30 +1,30 @@
 /**
- * HOMECI — Cloud Functions
+ * HOMECI — Cloud Functions (v2)
  *
  * autoResetPropertyStatus :
  *   Tourne toutes les heures via Cloud Scheduler.
  *   Vérifie les visites "completed" dont la date de visite + 3 jours est dépassée.
- *   Si le propriétaire n'a pas mis à jour le statut du bien → remet en "published".
- *   Notifie le propriétaire que le bien a été automatiquement remis en disponible.
+ *   Si le propriétaire n'a pas mis à jour le statut du bien → libère les visites.
+ *   Notifie le propriétaire et les locataires concernés.
  */
 
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { initializeApp } from "firebase-admin/app";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { logger } from "firebase-functions";
 
-admin.initializeApp();
+initializeApp();
 
-const db = admin.firestore();
 const DELAY_DAYS = 3;
 
-/**
- * Scheduled: toutes les heures
- * Région: europe-west1 (même que le projet)
- */
-export const autoResetPropertyStatus = functions
-  .region("europe-west1")
-  .pubsub.schedule("every 1 hours")
-  .timeZone("Africa/Abidjan")
-  .onRun(async () => {
+export const autoResetPropertyStatus = onSchedule(
+  {
+    schedule: "every 1 hours",
+    timeZone: "Africa/Abidjan",
+    region: "europe-west1",
+  },
+  async () => {
+    const db = getFirestore();
     const now = new Date();
     const cutoff = new Date(now.getTime() - DELAY_DAYS * 24 * 60 * 60 * 1000);
 
@@ -35,8 +35,8 @@ export const autoResetPropertyStatus = functions
       .get();
 
     if (visitsSnap.empty) {
-      functions.logger.info("Aucune visite complétée à vérifier.");
-      return null;
+      logger.info("Aucune visite complétée à vérifier.");
+      return;
     }
 
     // 2. Grouper par property_id et trouver la date de visite
@@ -51,12 +51,10 @@ export const autoResetPropertyStatus = functions
       const preferredDate = data.preferred_date as string;
       const updatedAt = data.updated_at?.toDate?.() || new Date(preferredDate);
 
-      // On prend la date la plus récente entre preferred_date et updated_at
       const visitDate = new Date(
         Math.max(new Date(preferredDate).getTime(), updatedAt.getTime())
       );
 
-      // Garder la visite la plus récente par propriété
       const existing = propertyVisits.get(propertyId);
       if (!existing || visitDate > existing.visitDate) {
         propertyVisits.set(propertyId, {
@@ -71,25 +69,20 @@ export const autoResetPropertyStatus = functions
     let resetCount = 0;
 
     for (const [propertyId, info] of propertyVisits) {
-      // Le délai de 3 jours est-il dépassé ?
       if (info.visitDate > cutoff) continue;
 
-      // Vérifier le statut actuel du bien
       const propDoc = await db.collection("properties").doc(propertyId).get();
       if (!propDoc.exists) continue;
 
       const propData = propDoc.data();
       if (!propData) continue;
 
-      // Si le bien est déjà loué, vendu, ou en pending → ne rien faire
-      // On ne reset que les biens encore "published" (le propriétaire n'a rien fait)
+      // Ne reset que les biens encore "published"
       if (propData.status !== "published") continue;
 
-      // 4. Remettre en published (il l'est déjà) mais marquer comme auto-reset
-      //    et remettre les visites completed en "rejected" pour libérer le bien
       const batch = db.batch();
 
-      // Rejeter les visites completed de cette propriété pour débloquer
+      // Rejeter les visites completed expirées
       const completedVisits = visitsSnap.docs.filter(
         (d) =>
           d.data().property_id === propertyId &&
@@ -99,15 +92,16 @@ export const autoResetPropertyStatus = functions
       for (const visitDoc of completedVisits) {
         batch.update(visitDoc.ref, {
           status: "rejected",
-          owner_notes: "Délai de 3 jours dépassé — visite expirée automatiquement.",
-          updated_at: admin.firestore.FieldValue.serverTimestamp(),
+          owner_notes:
+            "Délai de 3 jours dépassé — visite expirée automatiquement.",
+          updated_at: FieldValue.serverTimestamp(),
         });
       }
 
-      // Marquer le bien comme auto-reset (pour traçabilité)
+      // Marquer le bien comme auto-reset
       batch.update(propDoc.ref, {
-        auto_reset_at: admin.firestore.FieldValue.serverTimestamp(),
-        updated_at: admin.firestore.FieldValue.serverTimestamp(),
+        auto_reset_at: FieldValue.serverTimestamp(),
+        updated_at: FieldValue.serverTimestamp(),
       });
 
       // Notifier le propriétaire
@@ -118,7 +112,7 @@ export const autoResetPropertyStatus = functions
         message: `Le délai de 3 jours pour mettre à jour le statut de "${info.propertyTitle}" est expiré. Le bien a été automatiquement remis en disponible.`,
         property_id: propertyId,
         read: false,
-        created_at: admin.firestore.FieldValue.serverTimestamp(),
+        created_at: FieldValue.serverTimestamp(),
       });
 
       // Notifier les locataires concernés
@@ -131,21 +125,21 @@ export const autoResetPropertyStatus = functions
           message: `Le bien "${info.propertyTitle}" est à nouveau disponible. Vous pouvez refaire une demande de visite si vous êtes toujours intéressé.`,
           property_id: propertyId,
           read: false,
-          created_at: admin.firestore.FieldValue.serverTimestamp(),
+          created_at: FieldValue.serverTimestamp(),
         });
       }
 
       await batch.commit();
       resetCount++;
 
-      functions.logger.info(
+      logger.info(
         `Auto-reset: "${info.propertyTitle}" (${propertyId}) — ` +
-          `${completedVisits.length} visite(s) expirée(s), propriétaire ${info.ownerId} notifié.`
+          `${completedVisits.length} visite(s) expirée(s).`
       );
     }
 
-    functions.logger.info(
+    logger.info(
       `Auto-reset terminé: ${resetCount} bien(s) remis en disponible.`
     );
-    return null;
-  });
+  }
+);
