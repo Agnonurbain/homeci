@@ -11,19 +11,28 @@ service cloud.firestore {
     function isAdmin() { return isAuth() && userRole() == 'admin'; }
     function isNotaire() { return isAuth() && userRole() == 'notaire'; }
 
-    // USERS
+    // ── USERS ──
+    // Lecture : tout utilisateur authentifié (pour afficher noms, rôles)
+    // Création : uniquement le propriétaire du document (inscription)
+    // Mise à jour : le propriétaire OU un admin
+    // Suppression : admin uniquement
     match /users/{uid} {
       allow read: if isAuth();
       allow create: if isOwner(uid);
       allow update: if isOwner(uid) || isAdmin();
       allow delete: if isAdmin();
 
+      // Sous-collection favoris — privée au propriétaire
       match /favorites/{propertyId} {
         allow read, write: if isOwner(uid);
       }
     }
 
-    // PROPERTIES
+    // ── PROPERTIES ──
+    // Lecture : publique (les annonces sont visibles par tous)
+    // Création : tout utilisateur authentifié
+    // Mise à jour : le propriétaire du bien, un notaire (certification), ou un admin
+    // Suppression : le propriétaire du bien ou un admin
     match /properties/{propertyId} {
       allow read: if true;
       allow create: if isAuth();
@@ -36,7 +45,8 @@ service cloud.firestore {
         resource.data.owner_id == request.auth.uid || isAdmin()
       );
 
-      // Documents légaux (sous-collection)
+      // Documents légaux (titre foncier, permis, etc.) — sous-collection
+      // Lecture/écriture : le propriétaire du bien, un notaire, ou un admin
       match /documents/{docId} {
         allow read: if isAuth() && (
           get(/databases/$(database)/documents/properties/$(propertyId)).data.owner_id == request.auth.uid ||
@@ -55,48 +65,74 @@ service cloud.firestore {
       }
     }
 
-    // VISITS
+    // ── VISITS ──
+    // Lecture : tout utilisateur authentifié
+    //   → Le locataire A doit pouvoir vérifier si un bien a une visite active (hasActiveVisit)
+    //   → Le notaire doit pouvoir lire les visites pour la décertification
+    //   → Les données de visite ne contiennent pas d'informations hautement sensibles
+    // Création : tout utilisateur authentifié
+    // Mise à jour : le propriétaire, le locataire concerné, un notaire (annulation décertification), ou un admin
     match /visits/{visitId} {
-      allow read: if isAuth() && (
-        resource.data.owner_id == request.auth.uid ||
-        resource.data.tenant_id == request.auth.uid ||
-        isAdmin()
-      );
+      allow read: if isAuth();
       allow create: if isAuth();
       allow update: if isAuth() && (
         resource.data.owner_id == request.auth.uid ||
-        resource.data.tenant_id == request.auth.uid
+        resource.data.tenant_id == request.auth.uid ||
+        isNotaire() ||
+        isAdmin()
       );
     }
 
-    // NOTIFICATIONS
+    // ── NOTIFICATIONS ──
+    // Lecture/mise à jour : uniquement le destinataire de la notification
+    // Création : tout utilisateur authentifié (le système crée des notifs pour d'autres utilisateurs)
     match /notifications/{notifId} {
       allow read, update: if isAuth() && resource.data.user_id == request.auth.uid;
       allow create: if isAuth();
     }
 
-    // NOTAIRE CODES
+    // ── NOTAIRE CODES ──
+    // Lecture : tout utilisateur authentifié (pour valider un code lors de l'inscription)
+    // Création : admin uniquement
+    // Mise à jour : uniquement pour marquer un code comme utilisé (used: false → true)
+    //   → Vérifie que le code n'est pas déjà utilisé
+    //   → Seuls les champs 'used' et 'used_at' peuvent être modifiés
     match /notaire_codes/{codeId} {
       allow read: if isAuth();
       allow create: if isAdmin();
-      allow update: if isAuth();
+      allow update: if isAuth()
+        && resource.data.used == false
+        && request.resource.data.used == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used', 'used_at']);
     }
 
-    // ADMIN LOGS
+    // ── ADMIN LOGS ──
+    // Lecture : admin uniquement
+    // Création : tout utilisateur authentifié (pour traçabilité des actions)
     match /admin_logs/{logId} {
       allow read: if isAdmin();
       allow create: if isAuth();
     }
 
-    // SURVEYS (enquêtes de satisfaction)
+    // ── SURVEYS (enquêtes de satisfaction) ──
+    // Lecture : l'auteur de l'enquête (pour hasAlreadyResponded) ou un admin
+    // Création : tout utilisateur authentifié
     match /surveys/{surveyId} {
-      allow read: if isAuth();
+      allow read: if isAuth() && (
+        resource.data.user_id == request.auth.uid ||
+        isAdmin()
+      );
       allow create: if isAuth();
     }
 
-    // REPORTS (signalements d'annonces)
+    // ── REPORTS (signalements d'annonces) ──
+    // Lecture : l'auteur du signalement (pour hasAlreadyReported) ou un admin
+    // Création : tout utilisateur authentifié
     match /reports/{reportId} {
-      allow read: if isAdmin();
+      allow read: if isAuth() && (
+        resource.data.reporter_id == request.auth.uid ||
+        isAdmin()
+      );
       allow create: if isAuth();
     }
   }
