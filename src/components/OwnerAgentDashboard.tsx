@@ -102,6 +102,7 @@ export default function OwnerAgentDashboard() {
   const [submittingVerif, setSubmittingVerif] = useState<string | null>(null);
   const [surveyData, setSurveyData] = useState<{ trigger: 'visit_accepted' | 'visit_completed'; propertyId?: string; propertyTitle?: string } | null>(null);
   const [disclaimerVisit, setDisclaimerVisit] = useState<{ propertyTitle: string; visitDate: string } | null>(null);
+  const [statusModal, setStatusModal] = useState<{ property: Property; loading: boolean } | null>(null);
 
   useEffect(() => { loadAll(); }, []);
 
@@ -268,6 +269,42 @@ export default function OwnerAgentDashboard() {
     } catch (e) {
       console.error('[HOMECI] Erreur marquage visite:', e);
     } finally { setVisitActionLoading(false); }
+  };
+
+  const handleUpdatePropertyStatus = async (status: 'rented' | 'sold' | 'published') => {
+    if (!statusModal) return;
+    setStatusModal(prev => prev ? { ...prev, loading: true } : null);
+    try {
+      const { property } = statusModal;
+      const updates: Record<string, any> = { status };
+      if (status === 'rented' || status === 'sold') {
+        updates.status_updated_at = new Date().toISOString();
+      }
+      await propertyService.updateProperty(property.id, updates);
+
+      // Notifier les locataires qui avaient des visites en cours
+      const visits = visitRequests.filter(v => v.property_id === property.id && (v.status === 'accepted' || v.status === 'completed'));
+      if (status === 'rented' || status === 'sold') {
+        const statusLabel = status === 'rented' ? 'loué' : 'vendu';
+        for (const visit of visits) {
+          await notificationService.createNotification({
+            user_id: visit.tenant_id,
+            type: 'system',
+            title: `Bien ${statusLabel}`,
+            message: `Le bien "${property.title}" a été ${statusLabel}. Merci pour votre intérêt.`,
+            property_id: property.id,
+          });
+        }
+      }
+
+      // Mettre à jour l'état local
+      setProperties(prev => prev.map(p => p.id === property.id ? { ...p, status } : p));
+      setStatusModal(null);
+    } catch (e) {
+      console.error('[HOMECI] Erreur mise à jour statut:', e);
+    } finally {
+      setStatusModal(prev => prev ? { ...prev, loading: false } : null);
+    }
   };
 
   const handleMarkAllRead = async () => {
@@ -451,6 +488,15 @@ export default function OwnerAgentDashboard() {
                                 style={{ color: HColors.green, background: HAlpha.green10 }} title="Modifier">
                                 <Edit className="w-4 h-4"/>
                               </button>
+                              {(property.status === 'published' && visitRequests.some(v => v.property_id === property.id && v.status === 'completed')) && (
+                                <button onClick={() => setStatusModal({ property, loading: false })}
+                                  aria-label={`Statut ${property.title}`}
+                                  className="px-2 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all hover:opacity-80 animate-pulse"
+                                  style={{ background: HAlpha.orange10, color: HColors.orangeCI, border: `1px solid ${HAlpha.orange25}`,
+                                           fontFamily: 'var(--font-nunito)' }} title="Mettre à jour le statut">
+                                  <AlertTriangle className="w-3.5 h-3.5"/> Statut
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -910,6 +956,100 @@ export default function OwnerAgentDashboard() {
         </div>
       )}
 
+      {/* Modal mise à jour du statut du bien */}
+      {statusModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center px-4"
+          style={{ background: 'rgba(10,61,31,0.7)', backdropFilter: 'blur(6px)' }}>
+          <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
+            style={{ background: HColors.night, border: `1px solid ${HAlpha.gold20}` }}>
+            <KenteLine height={3} />
+            <div className="px-6 pt-5 pb-6">
+              <h2 className="text-center text-lg font-bold mb-2"
+                style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: '1.4rem' }}>
+                Quel est le résultat de la visite ?
+              </h2>
+              <p className="text-center text-sm mb-5" style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
+                Bien : <strong style={{ color: HColors.orangeCI }}>« {statusModal.property.title} »</strong>
+              </p>
+
+              <div className="space-y-3 mb-5">
+                {/* Loué */}
+                <button onClick={() => handleUpdatePropertyStatus('rented')}
+                  disabled={statusModal.loading}
+                  className="w-full flex items-center gap-4 p-4 rounded-xl transition-all hover:opacity-90 disabled:opacity-50"
+                  style={{ background: HAlpha.vertCI10, border: `1px solid ${HAlpha.vertCI25}` }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                    style={{ background: HColors.vertCI }}>
+                    <Home className="w-5 h-5" style={{ color: '#FFFFFF' }} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-bold" style={{ color: HColors.vertCI, fontFamily: 'var(--font-nunito)' }}>
+                      Le bien a été loué
+                    </p>
+                    <p className="text-xs" style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
+                      Le bien sera retiré des annonces
+                    </p>
+                  </div>
+                </button>
+
+                {/* Vendu */}
+                <button onClick={() => handleUpdatePropertyStatus('sold')}
+                  disabled={statusModal.loading}
+                  className="w-full flex items-center gap-4 p-4 rounded-xl transition-all hover:opacity-90 disabled:opacity-50"
+                  style={{ background: HAlpha.navy08, border: `1px solid ${HAlpha.navy18}` }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                    style={{ background: HColors.navy }}>
+                    <CheckCircle className="w-5 h-5" style={{ color: '#FFFFFF' }} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-bold" style={{ color: HColors.navy, fontFamily: 'var(--font-nunito)' }}>
+                      Le bien a été vendu
+                    </p>
+                    <p className="text-xs" style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
+                      Le bien sera retiré des annonces
+                    </p>
+                  </div>
+                </button>
+
+                {/* Transaction non aboutie */}
+                <button onClick={() => handleUpdatePropertyStatus('published')}
+                  disabled={statusModal.loading}
+                  className="w-full flex items-center gap-4 p-4 rounded-xl transition-all hover:opacity-90 disabled:opacity-50"
+                  style={{ background: HAlpha.orange08, border: `1px solid ${HAlpha.orange15}` }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                    style={{ background: HColors.orangeCI }}>
+                    <RefreshCw className="w-5 h-5" style={{ color: '#FFFFFF' }} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-bold" style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>
+                      Transaction non aboutie
+                    </p>
+                    <p className="text-xs" style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
+                      Le bien redevient disponible pour d'autres visites
+                    </p>
+                  </div>
+                </button>
+              </div>
+
+              <div className="p-3 rounded-xl mb-4"
+                style={{ background: 'rgba(139,29,29,0.08)', border: '1px solid rgba(139,29,29,0.2)' }}>
+                <p className="text-xs leading-relaxed" style={{ color: HColors.errorText, fontFamily: 'var(--font-nunito)' }}>
+                  <strong>⚠️ Rappel :</strong> Conformément aux CGU (Art. 4a), toute déclaration mensongère
+                  engage votre responsabilité civile. Passé le délai de 3 jours, le bien sera automatiquement
+                  remis en disponible.
+                </p>
+              </div>
+
+              <button onClick={() => setStatusModal(null)}
+                className="w-full py-2 text-xs text-center transition-all hover:opacity-80"
+                style={{ color: HAlpha.cream40, fontFamily: 'var(--font-nunito)' }}>
+                Je mettrai à jour plus tard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Disclaimer responsabilité propriétaire — après acceptation de visite */}
       {disclaimerVisit && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center px-4"
@@ -984,7 +1124,17 @@ export default function OwnerAgentDashboard() {
       {surveyData && user && (
         <SatisfactionModal
           isOpen={true}
-          onClose={() => setSurveyData(null)}
+          onClose={() => {
+            const { trigger, propertyId } = surveyData;
+            setSurveyData(null);
+            // Après l'enquête d'une visite complétée → proposer la mise à jour du statut
+            if (trigger === 'visit_completed' && propertyId) {
+              const prop = properties.find(p => p.id === propertyId);
+              if (prop && prop.status === 'published') {
+                setStatusModal({ property: prop, loading: false });
+              }
+            }
+          }}
           userId={user.uid}
           userRole={profile?.role || 'proprietaire'}
           trigger={surveyData.trigger}
