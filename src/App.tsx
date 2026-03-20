@@ -14,6 +14,9 @@ import AdminAccessCode, { clearSessionCode } from './components/AdminAccessCode'
 import AdminLogin from './components/AdminLogin';
 import AdminSessionManager from './components/AdminSessionManager';
 import RoleSelectModal from './components/RoleSelectModal';
+import ErrorBoundary from './components/ErrorBoundary';
+import NotFoundPage from './components/NotFoundPage';
+import ProfileModal from './components/ProfileModal';
 
 interface HeroFilters {
   propertyType: string;
@@ -32,11 +35,17 @@ function AppContent() {
   const [accessCodeValidated, setAccessCodeValidated] = useState(false);
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
   const [heroFilters, setHeroFilters] = useState<HeroFilters>({ propertyType: '', propertyTypes: [], verifiedNotaire: false, transactionType: '', district: '', region: '', departement: '', city: '', commune: '', quartier: '' });
+  const [showProfile, setShowProfile] = useState(false);
+
+  // Routes connues
+  const KNOWN_ROUTES = ['/', '/portail-securise', '/admin'];
+  const [isNotFound, setIsNotFound] = useState(false);
 
   useEffect(() => {
     const checkRoute = () => {
       const path = window.location.pathname;
       setIsAdminRoute(path === '/portail-securise' || path === '/admin');
+      setIsNotFound(!KNOWN_ROUTES.includes(path));
     };
     checkRoute();
     window.addEventListener('popstate', checkRoute);
@@ -70,10 +79,15 @@ function AppContent() {
     setShowAuthModal(true);
   };
 
-  // ── PORTAIL ADMIN ──
+  // ── PAGE 404 ──
   const currentPath = window.location.pathname;
   const isCurrentlyAdminPath = currentPath === '/portail-securise' || currentPath === '/admin';
 
+  if (isNotFound && !isCurrentlyAdminPath) {
+    return <NotFoundPage />;
+  }
+
+  // ── PORTAIL ADMIN ──
   if (isAdminRoute && isCurrentlyAdminPath) {
     if (loading) {
       return (
@@ -95,7 +109,7 @@ function AppContent() {
         }}
       >
         <div className="min-h-screen bg-white">
-          <Header onLoginClick={() => handleAuthClick('login')} onSignupClick={() => handleAuthClick('signup')} />
+          <Header onLoginClick={() => handleAuthClick('login')} onSignupClick={() => handleAuthClick('signup')} onProfileClick={() => setShowProfile(true)} />
           <main><AdminDashboard /></main>
         </div>
       </AdminSessionManager>
@@ -143,6 +157,7 @@ function AppContent() {
         <Header
           onLoginClick={() => handleAuthClick('login')}
           onSignupClick={() => handleAuthClick('signup')}
+          onProfileClick={() => setShowProfile(true)}
         />
         <main>
           <Hero onSearch={filters => setHeroFilters(filters)} />
@@ -210,7 +225,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header onLoginClick={() => handleAuthClick('login')} onSignupClick={() => handleAuthClick('signup')} />
+      <Header onLoginClick={() => handleAuthClick('login')} onSignupClick={() => handleAuthClick('signup')} onProfileClick={() => setShowProfile(true)} />
       <main>{renderDashboard()}</main>
       <AuthModal
         isOpen={showAuthModal}
@@ -225,15 +240,18 @@ function AppContent() {
           onDone={() => clearPendingNewUser()}
         />
       )}
+      <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} />
     </div>
   );
 }
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -1,4 +1,4 @@
-import { Heart, User, LogOut, Menu, X } from 'lucide-react';
+import { Heart, User, LogOut, Menu, X, Settings } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { HomeCIEmblem } from './HomeCIEmblem';
@@ -8,9 +8,10 @@ import { HColors, HAlpha, HGradients } from '../styles/homeci-tokens';
 interface HeaderProps {
   onLoginClick?: () => void;
   onSignupClick?: () => void;
+  onProfileClick?: () => void;
 }
 
-export function Header({ onLoginClick, onSignupClick }: HeaderProps) {
+export function Header({ onLoginClick, onSignupClick, onProfileClick }: HeaderProps) {
   const { user, profile, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -74,7 +75,8 @@ export function Header({ onLoginClick, onSignupClick }: HeaderProps) {
             <div className="hidden md:flex items-center gap-3">
               {user ? (
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+                  <button onClick={onProfileClick}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
                     style={{ background: HAlpha.orange08, border: `1px solid ${HAlpha.orange20}` }}>
                     <User className="w-3.5 h-3.5" style={{ color: HColors.orangeCI }} />
                     <span className="text-sm font-medium"
@@ -84,7 +86,7 @@ export function Header({ onLoginClick, onSignupClick }: HeaderProps) {
                     <span className="text-xs capitalize" style={{ color: HAlpha.gold50 }}>
                       ({profile?.role})
                     </span>
-                  </div>
+                  </button>
                   <button onClick={() => setShowLogoutConfirm(true)}
                     className="flex items-center gap-1.5 text-sm transition-colors hover:opacity-80"
                     style={{ color: HAlpha.white50, fontFamily: 'var(--font-nunito)' }}>
@@ -132,8 +134,14 @@ export function Header({ onLoginClick, onSignupClick }: HeaderProps) {
                     <div className="pt-2" style={{ borderTop: '1px solid rgba(212,160,23,0.15)' }}>
                       <p className="text-sm font-medium" style={{ color: HColors.white }}>{profile?.full_name}</p>
                       <p className="text-xs capitalize mt-0.5" style={{ color: HAlpha.gold50 }}>{profile?.role}</p>
-                      <button onClick={() => { setShowLogoutConfirm(true); setMobileMenuOpen(false); }}
-                        className="mt-2 text-sm" style={{ color: HColors.orangeCI }}>Déconnexion</button>
+                      <div className="flex gap-4 mt-2">
+                        <button onClick={() => { onProfileClick?.(); setMobileMenuOpen(false); }}
+                          className="text-sm flex items-center gap-1" style={{ color: HColors.gold }}>
+                          <Settings className="w-3.5 h-3.5" /> Mon profil
+                        </button>
+                        <button onClick={() => { setShowLogoutConfirm(true); setMobileMenuOpen(false); }}
+                          className="text-sm" style={{ color: HColors.orangeCI }}>Déconnexion</button>
+                      </div>
                     </div>
                   </>
                 ) : (
