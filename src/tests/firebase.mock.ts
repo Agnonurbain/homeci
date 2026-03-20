@@ -90,11 +90,18 @@ vi.mock('firebase/analytics', () => ({
   setUserId: vi.fn(),
   setUserProperties: vi.fn(),
 }));
+vi.mock('firebase/messaging', () => ({
+  getMessaging: vi.fn(() => ({})),
+  isSupported: vi.fn(async () => false),
+  getToken: vi.fn(),
+  onMessage: vi.fn(),
+}));
 vi.mock('../lib/firebase', () => ({
   db: {},
   auth: {},
   storage: {},
   analyticsPromise: Promise.resolve(null),
+  messagingPromise: Promise.resolve(null),
 }));
 // Alias pour les services dans des sous-dossiers
 vi.mock('../../lib/firebase', () => ({
@@ -102,4 +109,5 @@ vi.mock('../../lib/firebase', () => ({
   auth: {},
   storage: {},
   analyticsPromise: Promise.resolve(null),
+  messagingPromise: Promise.resolve(null),
 }));

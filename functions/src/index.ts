@@ -4,13 +4,17 @@
  * autoResetPropertyStatus :
  *   Tourne toutes les heures via Cloud Scheduler.
  *   Vérifie les visites "completed" dont la date de visite + 3 jours est dépassée.
- *   Si le propriétaire n'a pas mis à jour le statut du bien → libère les visites.
- *   Notifie le propriétaire et les locataires concernés.
+ *
+ * sendPushNotification :
+ *   Déclenché quand une notification est créée dans Firestore.
+ *   Envoie un push FCM à tous les tokens du destinataire.
  */
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
+import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { getMessaging } from "firebase-admin/messaging";
 import { logger } from "firebase-functions";
 
 initializeApp();
@@ -140,6 +144,111 @@ export const autoResetPropertyStatus = onSchedule(
 
     logger.info(
       `Auto-reset terminé: ${resetCount} bien(s) remis en disponible.`
+    );
+  }
+);
+
+/**
+ * sendPushNotification
+ * Déclenché automatiquement quand un document est créé dans /notifications/{notifId}.
+ * Récupère les tokens FCM du destinataire et envoie un push.
+ */
+export const sendPushNotification = onDocumentCreated(
+  {
+    document: "notifications/{notifId}",
+    region: "europe-west1",
+  },
+  async (event) => {
+    const data = event.data?.data();
+    if (!data) return;
+
+    const userId = data.user_id as string;
+    const title = (data.title as string) || "HOMECI";
+    const body = (data.message as string) || "";
+    const propertyId = (data.property_id as string) || "";
+
+    if (!userId) {
+      logger.warn("sendPushNotification: pas de user_id dans la notification.");
+      return;
+    }
+
+    const db = getFirestore();
+
+    // Récupérer tous les tokens FCM du destinataire
+    const tokensSnap = await db
+      .collection("users")
+      .doc(userId)
+      .collection("fcm_tokens")
+      .get();
+
+    if (tokensSnap.empty) {
+      logger.info(`Aucun token FCM pour l'utilisateur ${userId}.`);
+      return;
+    }
+
+    const tokens = tokensSnap.docs.map((d) => d.data().token as string);
+
+    // Construire le message FCM
+    const message = {
+      notification: {
+        title,
+        body,
+      },
+      data: {
+        property_id: propertyId,
+        notification_id: event.params.notifId,
+      },
+      webpush: {
+        fcmOptions: {
+          link: propertyId ? `/?property=${propertyId}` : "/",
+        },
+        notification: {
+          icon: "/favicon-192x192.png",
+          badge: "/favicon-192x192.png",
+          vibrate: [100, 50, 100] as unknown as number[],
+        },
+      },
+    };
+
+    const messaging = getMessaging();
+
+    // Envoyer à chaque token
+    const results = await Promise.allSettled(
+      tokens.map((token) =>
+        messaging.send({ ...message, token })
+      )
+    );
+
+    // Nettoyer les tokens expirés/invalides
+    const invalidTokens: string[] = [];
+    results.forEach((result, idx) => {
+      if (result.status === "rejected") {
+        const errorCode = (result.reason as any)?.code || "";
+        if (
+          errorCode === "messaging/invalid-registration-token" ||
+          errorCode === "messaging/registration-token-not-registered"
+        ) {
+          invalidTokens.push(tokens[idx]);
+        }
+      }
+    });
+
+    // Supprimer les tokens invalides de Firestore
+    if (invalidTokens.length > 0) {
+      const batch = db.batch();
+      for (const token of invalidTokens) {
+        const tokenDoc = tokensSnap.docs.find((d) => d.data().token === token);
+        if (tokenDoc) batch.delete(tokenDoc.ref);
+      }
+      await batch.commit();
+      logger.info(
+        `Nettoyé ${invalidTokens.length} token(s) FCM invalide(s) pour ${userId}.`
+      );
+    }
+
+    const sent = results.filter((r) => r.status === "fulfilled").length;
+    logger.info(
+      `Push envoyé à ${userId}: ${sent}/${tokens.length} token(s) atteint(s).`
     );
   }
 );

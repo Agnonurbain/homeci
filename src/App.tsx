@@ -13,6 +13,7 @@ import RoleSelectModal from './components/RoleSelectModal';
 import ErrorBoundary from './components/ErrorBoundary';
 import NotFoundPage from './components/NotFoundPage';
 import ProfileModal from './components/ProfileModal';
+import { pushService } from './services/pushNotificationService';
 import { HColors, HAlpha } from './styles/homeci-tokens';
 
 // ── Lazy-loaded dashboards (4700+ lignes chargées à la demande) ──
@@ -79,6 +80,23 @@ function AppContent() {
   useEffect(() => {
     if (user && !isAdminRoute) setShowAuthModal(false);
   }, [user, isAdminRoute]);
+
+  // ── FCM : demander la permission push après connexion ──
+  const [pushToast, setPushToast] = useState<{ title: string; body: string } | null>(null);
+
+  useEffect(() => {
+    if (!user || !profile) return;
+    // Demander la permission après un court délai (ne pas bloquer le rendu)
+    const timer = setTimeout(() => {
+      pushService.requestPermissionAndRegister(user.uid).catch(() => {});
+    }, 3000);
+    // Écouter les messages en premier plan
+    pushService.onForegroundMessage((payload) => {
+      setPushToast({ title: payload.title, body: payload.body });
+      setTimeout(() => setPushToast(null), 5000);
+    });
+    return () => clearTimeout(timer);
+  }, [user, profile]);
 
   const handleAuthClick = (mode: 'login' | 'signup') => {
     setAuthMode(mode);
@@ -275,6 +293,35 @@ function AppContent() {
         />
       )}
       <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} />
+
+      {/* Push notification toast (foreground) */}
+      {pushToast && (
+        <div className="fixed top-4 right-4 z-[100] max-w-sm animate-slide-in-right"
+          style={{ animation: 'slideInRight 0.3s ease-out' }}>
+          <div className="rounded-xl p-4 shadow-2xl flex items-start gap-3"
+            style={{ background: HColors.night, border: `1px solid ${HAlpha.orange25}` }}
+            onClick={() => setPushToast(null)}>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+              style={{ background: HAlpha.orange10 }}>
+              <img src="/favicon-192x192.png" alt="" className="w-6 h-6" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold truncate" style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
+                {pushToast.title}
+              </p>
+              <p className="text-xs mt-0.5 line-clamp-2" style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
+                {pushToast.body}
+              </p>
+            </div>
+          </div>
+          <style>{`
+            @keyframes slideInRight {
+              from { transform: translateX(100%); opacity: 0; }
+              to { transform: translateX(0); opacity: 1; }
+            }
+          `}</style>
+        </div>
+      )}
     </div>
   );
 }

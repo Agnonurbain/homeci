@@ -26,6 +26,11 @@ service cloud.firestore {
       match /favorites/{propertyId} {
         allow read, write: if isOwner(uid);
       }
+
+      // Sous-collection tokens FCM — écriture par le propriétaire, lecture par les Cloud Functions
+      match /fcm_tokens/{tokenId} {
+        allow read, write: if isOwner(uid);
+      }
     }
 
     // ── PROPERTIES ──

@@ -2,7 +2,8 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import { getAnalytics, isSupported } from 'firebase/analytics';
+import { getAnalytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
+import { getMessaging, isSupported as isMessagingSupported } from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBfRcYmFNc1HAZPASHq2na3WqpwT9HJTfM",
@@ -20,6 +21,9 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 
 // Analytics — initialisé uniquement si le navigateur le supporte (pas en SSR/test)
-export const analyticsPromise = isSupported().then(yes => yes ? getAnalytics(app) : null);
+export const analyticsPromise = isAnalyticsSupported().then(yes => yes ? getAnalytics(app) : null);
+
+// FCM Messaging — initialisé uniquement si le navigateur supporte les notifications
+export const messagingPromise = isMessagingSupported().then(yes => yes ? getMessaging(app) : null);
 
 export default app;

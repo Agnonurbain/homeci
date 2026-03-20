@@ -77,3 +77,63 @@ self.addEventListener('fetch', (event) => {
     );
   }
 });
+
+// ══════════════════════════════════════════════════════════════════════════
+// FCM Push Notifications — Background message handling
+// ══════════════════════════════════════════════════════════════════════════
+
+// Réception d'un push en arrière-plan
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+
+  let data;
+  try {
+    data = event.data.json();
+  } catch {
+    data = { notification: { title: 'HOMECI', body: event.data.text() } };
+  }
+
+  const notif = data.notification || {};
+  const title = notif.title || 'HOMECI';
+  const options = {
+    body: notif.body || '',
+    icon: '/favicon-192x192.png',
+    badge: '/favicon-192x192.png',
+    tag: data.data?.property_id || 'homeci-general',
+    data: {
+      url: data.data?.property_id ? `/?property=${data.data.property_id}` : '/',
+      property_id: data.data?.property_id || null,
+    },
+    vibrate: [100, 50, 100],
+    actions: [
+      { action: 'open', title: 'Voir' },
+      { action: 'close', title: 'Fermer' },
+    ],
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Clic sur une notification
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  if (event.action === 'close') return;
+
+  const url = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      // Si un onglet HOMECI est déjà ouvert, on le focus
+      for (const client of clients) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.focus();
+          client.navigate(url);
+          return;
+        }
+      }
+      // Sinon on ouvre un nouvel onglet
+      return self.clients.openWindow(url);
+    })
+  );
+});
