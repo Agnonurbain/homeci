@@ -24,6 +24,7 @@ import CGVModal from './CGVModal';
 import PaymentModal from './PaymentModal';
 import type { PaymentConfig } from './PaymentModal';
 import SatisfactionModal from './SatisfactionModal';
+import { StatGridSkeleton, PropertyTableSkeleton } from './Skeletons';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
 
 /* ── Constants ─────────────────────────────────────────────────────────── */
@@ -379,6 +380,15 @@ export default function OwnerAgentDashboard() {
               </button>
             </div>
 
+            {loading ? (
+              <>
+                <StatGridSkeleton />
+                <div className="mt-8">
+                  <PropertyTableSkeleton rows={4} />
+                </div>
+              </>
+            ) : (
+            <>
             {/* Quick stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               <StatCard icon={CheckCircle} label="Publiés"       value={stats.published}   accent="#009E49" />
@@ -387,12 +397,7 @@ export default function OwnerAgentDashboard() {
               <StatCard icon={Star}        label="Vérifiés ✓"   value={stats.verified}    accent="#FF6B00" />
             </div>
 
-            {loading ? (
-              <div className="text-center py-16">
-                <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2"
-                  style={{ borderColor: HColors.gold }} />
-              </div>
-            ) : properties.length === 0 ? (
+            {properties.length === 0 ? (
               <div className="rounded-2xl p-14 text-center"
                 style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
                 <Home className="w-14 h-14 mx-auto mb-4" style={{ color: HAlpha.gold30 }} />
@@ -505,6 +510,8 @@ export default function OwnerAgentDashboard() {
                   </table>
                 </div>
               </div>
+            )}
+            </>
             )}
           </div>
         )}

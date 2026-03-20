@@ -12,6 +12,7 @@ import type { VisitRequest } from '../services/visitService';
 import type { Notification } from '../services/notificationService';
 import { PropertyCard } from './PropertyCard';
 import { PropertyFilters } from './PropertyFilters';
+import { PropertyGridSkeleton } from './Skeletons';
 import MapDisplay from './MapDisplay';
 import PropertyViewModal from './PropertyViewModal';
 import { useAuth } from '../contexts/AuthContext';
@@ -341,10 +342,7 @@ export default function TenantDashboard() {
             <PropertyFilters onFilterChange={handleFilterChange}/>
 
             {loading ? (
-              <div className="text-center py-16">
-                <div className="inline-block w-10 h-10 rounded-full border-[3px] border-t-transparent animate-spin"
-                  style={{ borderColor:HAlpha.gold20, borderTopColor:HColors.gold }}/>
-              </div>
+              <PropertyGridSkeleton count={6} />
             ) : viewMode === 'map' ? (
               <MapDisplay mode="multi" properties={filtered}/>
             ) : filtered.length === 0 ? (

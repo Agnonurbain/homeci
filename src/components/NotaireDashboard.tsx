@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { propertyService } from '../services/propertyService';
 import { notificationService } from '../services/notificationService';
 import { visitService } from '../services/visitService';
+import { NotaireListSkeleton, StatGridSkeleton } from './Skeletons';
 import type { Property } from '../services/propertyService';
 import {
   FileCheck, CheckCircle, XCircle, Clock, FileText, Building2,
@@ -350,11 +351,10 @@ export default function NotaireDashboard() {
   },[disponible,enCours,pret,certifie,profile?.id]);
 
   if(loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{background:HColors.creamBg}}>
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-14 h-14 rounded-full border-4 border-t-transparent animate-spin"
-          style={{borderColor:HAlpha.gold20,borderTopColor:HColors.gold}}/>
-        <p style={{color:HColors.brown,fontFamily:'var(--font-nunito)',fontSize:'0.875rem'}}>Chargement des dossiers…</p>
+    <div className="min-h-screen" style={{background:HColors.creamBg}}>
+      <div className="max-w-6xl mx-auto px-4 py-10 space-y-8">
+        <StatGridSkeleton count={4} />
+        <NotaireListSkeleton count={4} />
       </div>
     </div>
   );

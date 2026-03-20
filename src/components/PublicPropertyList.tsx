@@ -3,6 +3,7 @@ import { Lock, SlidersHorizontal } from 'lucide-react';
 import { propertyService } from '../services/propertyService';
 import { PropertyCard } from './PropertyCard';
 import { PropertyFilters } from './PropertyFilters';
+import { PropertyGridSkeleton } from './Skeletons';
 import type { Property } from '../services/propertyService';
 import type { FilterValues } from './PropertyFilters';
 import PropertyViewModal from './PropertyViewModal';
@@ -107,13 +108,7 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
 
         {/* ── Content ── */}
         {loading ? (
-          <div className="text-center py-20">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2"
-              style={{ borderColor:HColors.gold }} />
-            <p className="mt-4 text-sm" style={{ color:HColors.brown, fontFamily:'var(--font-nunito)' }}>
-              Chargement des biens...
-            </p>
-          </div>
+          <PropertyGridSkeleton count={6} />
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 rounded-2xl"
             style={{ background:'rgba(212,160,23,0.06)', border:'1px solid rgba(212,160,23,0.15)' }}>
