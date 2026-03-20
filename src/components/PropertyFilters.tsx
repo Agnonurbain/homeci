@@ -93,7 +93,7 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
           Filtres
           {activeCount > 0 && (
             <span className="px-1.5 py-0.5 rounded-full text-xs font-bold"
-              style={{ background:HColors.gold, color:HColors.night }}>
+              style={{ background:HColors.gold, color:'#FFFFFF' }}>
               {activeCount}
             </span>
           )}
@@ -106,7 +106,7 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
           {filters.transactionType && <FilterChip label={filters.transactionType} onRemove={() => update('transactionType', '')} />}
           {geoPath.length > 0 && (
             <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
-              style={{ background:HAlpha.green10, border:'1px solid rgba(45,106,79,0.25)', color:HColors.green }}>
+              style={{ background:HAlpha.vertCI10, border:'1px solid rgba(45,106,79,0.25)', color:HColors.vertCI }}>
               <MapPin className="w-3 h-3" />
               {geoPath.join(' › ')}
               <button onClick={() => update('district', '', ['region','departement','city','commune','quartier'])}
@@ -264,7 +264,7 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
 
 function FilterChip({ label, color = 'gold', onRemove }: { label: string; color?: 'gold' | 'green'; onRemove: () => void }) {
   const styles = color === 'green'
-    ? { background:HAlpha.green10, border:'1px solid rgba(45,106,79,0.25)', color:HColors.green }
+    ? { background:HAlpha.vertCI10, border:'1px solid rgba(45,106,79,0.25)', color:HColors.vertCI }
     : { background:HAlpha.gold10, border:'1px solid rgba(212,160,23,0.25)', color:HColors.brownMid };
   return (
     <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"

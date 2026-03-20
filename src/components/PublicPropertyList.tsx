@@ -91,14 +91,14 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
               Biens disponibles
             </h2>
             <div className="flex items-center gap-2">
-              <div className="h-0.5 w-8 rounded-full" style={{ background:'linear-gradient(90deg,#D4A017,#C07C3E)' }}/>
+              <div className="h-0.5 w-8 rounded-full" style={{ background:'linear-gradient(90deg,#FF6B00,#D4A017)' }}/>
               <p className="text-sm" style={{ color:HColors.brown, fontFamily:'var(--font-nunito)' }}>
                 {loading ? 'Chargement...' : `${filtered.length} bien${filtered.length > 1 ? 's' : ''} trouvé${filtered.length > 1 ? 's' : ''}`}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-sm font-medium"
-            style={{ color:HColors.terracotta, fontFamily:'var(--font-nunito)' }}>
+            style={{ color:HColors.orangeCI, fontFamily:'var(--font-nunito)' }}>
             <SlidersHorizontal className="w-4 h-4" />
             <span>Filtres avancés ci-dessous</span>
           </div>
@@ -177,9 +177,9 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
                    border:'1px solid rgba(212,160,23,0.25)' }}>
           {/* Kente stripe top */}
           <div className="absolute top-0 left-0 right-0 flex" style={{ height:5 }}>
-            {[HColors.gold,HColors.green,HColors.terracotta,'#7B1D1D',HColors.gold,HColors.green,HColors.terracotta,'#7B1D1D',
-              HColors.gold,HColors.green,HColors.terracotta,'#7B1D1D',HColors.gold,HColors.green,HColors.terracotta,'#7B1D1D',
-              HColors.gold,HColors.green,HColors.terracotta,'#7B1D1D',HColors.gold,HColors.green].map((c,i) => (
+            {[HColors.gold,HColors.vertCI,HColors.orangeCI,'#7B1D1D',HColors.gold,HColors.vertCI,HColors.orangeCI,'#7B1D1D',
+              HColors.gold,HColors.vertCI,HColors.orangeCI,'#7B1D1D',HColors.gold,HColors.vertCI,HColors.orangeCI,'#7B1D1D',
+              HColors.gold,HColors.vertCI,HColors.orangeCI,'#7B1D1D',HColors.gold,HColors.vertCI].map((c,i) => (
               <div key={i} style={{ flex:1, backgroundColor:c }}/>
             ))}
           </div>
@@ -217,7 +217,7 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button onClick={() => onShowAuth?.('signup')}
                 className="px-7 py-3 rounded-xl font-semibold text-sm transition-all hover:opacity-90 active:scale-95"
-                style={{ background:HColors.gold, color:HColors.night, fontFamily:'var(--font-nunito)' }}>
+                style={{ background:HColors.gold, color:'#FFFFFF', fontFamily:'var(--font-nunito)' }}>
                 Créer un compte gratuit
               </button>
               <button onClick={() => onShowAuth?.('login')}
@@ -251,7 +251,7 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
             <div className="flex gap-3">
               <button onClick={() => { setShowLoginPrompt(false); onShowAuth?.('signup'); }}
                 className="flex-1 px-4 py-3 rounded-xl font-semibold transition-all hover:opacity-90"
-                style={{ background:HColors.gold, color:HColors.night, fontFamily:'var(--font-nunito)' }}>
+                style={{ background:HColors.gold, color:'#FFFFFF', fontFamily:'var(--font-nunito)' }}>
                 S'inscrire
               </button>
               <button onClick={() => { setShowLoginPrompt(false); onShowAuth?.('login'); }}

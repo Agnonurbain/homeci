@@ -52,7 +52,7 @@ const VISIT_STATUS_STYLES: Record<string, { bg: string; text: string; border: st
 };
 const VISIT_STATUS_FALLBACK = { bg: 'rgba(90,64,0,0.08)', text: HColors.brown, border: 'rgba(90,64,0,0.2)', label: 'Inconnu', icon: <Clock className="w-3.5 h-3.5"/> };
 
-const PIE_COLORS = [HColors.gold, HColors.green, HColors.orangeCI, HColors.bordeaux, HColors.navy];
+const PIE_COLORS = [HColors.gold, HColors.vertCI, HColors.orangeCI, HColors.bordeaux, HColors.navy];
 
 
 /* ── Stat Card ────────────────────────────────────────────────────────────── */
@@ -439,7 +439,7 @@ export default function OwnerAgentDashboard() {
                             <div className="text-sm font-semibold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1rem' }}>
                               {property.title}
                             </div>
-                            <div className="flex items-center gap-1 mt-0.5 text-xs" style={{ color: HColors.terracotta }}>
+                            <div className="flex items-center gap-1 mt-0.5 text-xs" style={{ color: HColors.orangeCI }}>
                               <MapPin className="w-3 h-3"/>{property.city}
                             </div>
                           </td>
@@ -447,7 +447,7 @@ export default function OwnerAgentDashboard() {
                             {TYPE_LABELS[property.property_type]}
                           </td>
                           <td className="px-5 py-4">
-                            <div className="text-sm font-bold" style={{ color: HColors.terracotta, fontFamily: 'var(--font-cormorant)' }}>
+                            <div className="text-sm font-bold" style={{ color: HColors.orangeCI, fontFamily: 'var(--font-cormorant)' }}>
                               {property.price.toLocaleString()} FCFA
                             </div>
                             <div className="text-xs" style={{ color: HAlpha.brown60, fontFamily: 'var(--font-nunito)' }}>
@@ -457,7 +457,7 @@ export default function OwnerAgentDashboard() {
                           <td className="px-5 py-4"><StatusBadge status={property.status} /></td>
                           <td className="px-5 py-4">
                             {property.verified_notaire ? (
-                              <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: HColors.green, fontFamily: 'var(--font-nunito)' }}>
+                              <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: HColors.vertCI, fontFamily: 'var(--font-nunito)' }}>
                                 <CheckCircle className="w-4 h-4"/> Vérifié
                               </span>
                             ) : property.status === 'pending' ? (
@@ -493,7 +493,7 @@ export default function OwnerAgentDashboard() {
                               <button onClick={() => setEditingPropertyId(property.id)}
                                 aria-label={`Modifier ${property.title}`}
                                 className="p-1.5 rounded-lg transition-all hover:opacity-80"
-                                style={{ color: HColors.green, background: HAlpha.green10 }} title="Modifier">
+                                style={{ color: HColors.vertCI, background: HAlpha.vertCI10 }} title="Modifier">
                                 <Edit className="w-4 h-4"/>
                               </button>
                               {(property.status === 'published' && visitRequests.some(v => v.property_id === property.id && v.status === 'completed')) && (
@@ -581,24 +581,24 @@ export default function OwnerAgentDashboard() {
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm"
                             style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
                             <div className="flex items-center gap-1.5">
-                              <Users className="w-3.5 h-3.5" style={{ color: HColors.terracotta }}/>{visit.tenant_name}
+                              <Users className="w-3.5 h-3.5" style={{ color: HColors.orangeCI }}/>{visit.tenant_name}
                             </div>
                             <div className="flex items-center gap-1.5">
-                              <Calendar className="w-3.5 h-3.5" style={{ color: HColors.terracotta }}/>
+                              <Calendar className="w-3.5 h-3.5" style={{ color: HColors.orangeCI }}/>
                               {visit.status === 'counter_proposed' && visit.counter_proposed_by === 'tenant' && visit.counter_date
                                 ? <>{new Date(visit.counter_date).toLocaleDateString('fr-FR', { weekday:'short', day:'2-digit', month:'long' })} à {visit.counter_time}</>
                                 : <>{new Date(visit.preferred_date).toLocaleDateString('fr-FR')} à {visit.preferred_time}</>
                               }
                             </div>
                             <div className="flex items-center gap-1.5">
-                              <MapPin className="w-3.5 h-3.5" style={{ color: HColors.terracotta }}/>{visit.property_city}
+                              <MapPin className="w-3.5 h-3.5" style={{ color: HColors.orangeCI }}/>{visit.property_city}
                             </div>
                           </div>
 
                           {/* Counter proposals */}
                           {visit.status === 'counter_proposed' && visit.counter_proposed_by === 'tenant' && visit.counter_date && (
                             <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl text-xs"
-                              style={{ background: HAlpha.terra10, border: '1px solid rgba(192,124,62,0.25)',
+                              style={{ background: HAlpha.orange10, border: '1px solid rgba(192,124,62,0.25)',
                                        color: HColors.brownDeep, fontFamily: 'var(--font-nunito)' }}>
                               <Calendar className="w-3.5 h-3.5 shrink-0"/>
                               Le locataire propose : <strong className="ml-1">
@@ -700,7 +700,7 @@ export default function OwnerAgentDashboard() {
                          boxShadow: '0 2px 12px rgba(26,14,0,0.05)' }}>
                 <h3 className="font-bold mb-5 flex items-center gap-2"
                   style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
-                  <BarChart3 className="w-5 h-5" style={{ color: HColors.terracotta }}/> Répartition par type
+                  <BarChart3 className="w-5 h-5" style={{ color: HColors.orangeCI }}/> Répartition par type
                 </h3>
                 {typeData.length === 0 ? (
                   <div className="text-center py-10 text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
@@ -726,7 +726,7 @@ export default function OwnerAgentDashboard() {
                        boxShadow: '0 2px 12px rgba(26,14,0,0.05)' }}>
               <h3 className="font-bold mb-5 flex items-center gap-2"
                 style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
-                <TrendingUp className="w-5 h-5" style={{ color: HColors.green }}/> Biens ajoutés (6 derniers mois)
+                <TrendingUp className="w-5 h-5" style={{ color: HColors.vertCI }}/> Biens ajoutés (6 derniers mois)
               </h3>
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={monthlyData} margin={{ top:5, right:20, left:0, bottom:5 }}>
@@ -734,7 +734,7 @@ export default function OwnerAgentDashboard() {
                   <XAxis dataKey="mois" tick={{ fontSize:12, fill:HColors.brown }}/>
                   <YAxis tick={{ fontSize:12, fill:HColors.brown }} allowDecimals={false}/>
                   <Tooltip contentStyle={{ borderRadius:12, border:'1px solid rgba(212,160,23,0.2)', fontFamily:'var(--font-nunito)' }}/>
-                  <Line type="monotone" dataKey="biens" stroke="#2D6A4F" strokeWidth={2.5} dot={{ fill:HColors.green, r:5 }}/>
+                  <Line type="monotone" dataKey="biens" stroke="#2D6A4F" strokeWidth={2.5} dot={{ fill:HColors.vertCI, r:5 }}/>
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -874,11 +874,11 @@ export default function OwnerAgentDashboard() {
               {selectedVisit.status === 'counter_proposed' && selectedVisit.counter_proposed_by === 'tenant' && selectedVisit.counter_date ? (
                 <>
                   <div className="flex items-center gap-3 p-3 rounded-xl mb-2 text-sm"
-                    style={{ background: HAlpha.terra10, border: '1px solid rgba(192,124,62,0.25)' }}>
-                    <Calendar className="w-4 h-4 shrink-0" style={{ color: HColors.terracotta }}/>
+                    style={{ background: HAlpha.orange10, border: '1px solid rgba(192,124,62,0.25)' }}>
+                    <Calendar className="w-4 h-4 shrink-0" style={{ color: HColors.orangeCI }}/>
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wide mb-0.5"
-                        style={{ color: HColors.terracotta, fontFamily: 'var(--font-nunito)' }}>Contre-proposition du locataire</p>
+                        style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>Contre-proposition du locataire</p>
                       <p className="font-semibold" style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
                         {new Date(selectedVisit.counter_date).toLocaleDateString('fr-FR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' })} à {selectedVisit.counter_time}
                       </p>
@@ -890,11 +890,11 @@ export default function OwnerAgentDashboard() {
                 </>
               ) : (
                 <div className="flex items-center gap-3 p-3 rounded-xl mb-4 text-sm"
-                  style={{ background: HAlpha.terra10, border: '1px solid rgba(192,124,62,0.25)' }}>
-                  <Calendar className="w-4 h-4 shrink-0" style={{ color: HColors.terracotta }}/>
+                  style={{ background: HAlpha.orange10, border: '1px solid rgba(192,124,62,0.25)' }}>
+                  <Calendar className="w-4 h-4 shrink-0" style={{ color: HColors.orangeCI }}/>
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide mb-0.5"
-                      style={{ color: HColors.terracotta, fontFamily: 'var(--font-nunito)' }}>Date demandée</p>
+                      style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>Date demandée</p>
                     <p className="font-semibold" style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
                       {new Date(selectedVisit.preferred_date).toLocaleDateString('fr-FR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' })} à {selectedVisit.preferred_time}
                     </p>

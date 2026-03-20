@@ -129,22 +129,22 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
     const visitStatus = myVisit?.status;
     if (visitStatus === 'accepted') return (
       <div className="space-y-3">
-        <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background:HAlpha.green10, border:'1px solid rgba(45,106,79,0.3)' }}>
-          <CheckCircle className="w-4 h-4 shrink-0" style={{ color:HColors.green }} />
+        <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background:HAlpha.vertCI10, border:'1px solid rgba(45,106,79,0.3)' }}>
+          <CheckCircle className="w-4 h-4 shrink-0" style={{ color:HColors.vertCI }} />
           <div>
-            <p className="text-sm font-semibold" style={{ color:HColors.green, fontFamily:'var(--font-nunito)' }}>Visite confirmée</p>
+            <p className="text-sm font-semibold" style={{ color:HColors.vertCI, fontFamily:'var(--font-nunito)' }}>Visite confirmée</p>
             <p className="text-xs" style={{ color:'rgba(45,106,79,0.75)', fontFamily:'var(--font-nunito)' }}>{new Date(myVisit!.preferred_date).toLocaleDateString('fr-FR')} à {myVisit!.preferred_time}</p>
           </div>
         </div>
 
         <div className="p-3 rounded-xl" style={{ background:'rgba(45,106,79,0.08)', border:'1px solid rgba(45,106,79,0.25)' }}>
-          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color:HColors.green, fontFamily:'var(--font-nunito)' }}>Contact débloqué</p>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color:HColors.vertCI, fontFamily:'var(--font-nunito)' }}>Contact débloqué</p>
           <div className="flex items-center gap-2">
-            <Phone className="w-4 h-4" style={{ color:HColors.green }} />
-            <span className="text-sm font-bold" style={{ color:HColors.green, fontFamily:'var(--font-nunito)' }}>Disponible après caution</span>
+            <Phone className="w-4 h-4" style={{ color:HColors.vertCI }} />
+            <span className="text-sm font-bold" style={{ color:HColors.vertCI, fontFamily:'var(--font-nunito)' }}>Disponible après caution</span>
           </div>
         </div>
-        <div className="p-3 rounded-xl text-xs" style={{ background:HAlpha.terra10, border:'1px solid rgba(192,124,62,0.28)', color:HColors.brownDeep, fontFamily:'var(--font-nunito)' }}>
+        <div className="p-3 rounded-xl text-xs" style={{ background:HAlpha.orange10, border:'1px solid rgba(192,124,62,0.28)', color:HColors.brownDeep, fontFamily:'var(--font-nunito)' }}>
           <div className="flex items-center gap-1.5 mb-1 font-semibold"><CreditCard className="w-3.5 h-3.5" /> Paiement caution requis</div>
           <p>Règlement via Orange Money, MTN MoMo, Wave, Flooz ou Djamo</p>
           <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full font-medium" style={{ background:HAlpha.terra15 }}>🚀 Prochainement</span>
@@ -188,7 +188,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
             <p className="text-sm" style={{ color:HColors.brownMid, fontFamily:'var(--font-nunito)' }}>Connectez-vous pour demander une visite</p>
             <div className="flex gap-2">
               <button onClick={() => onShowAuth?.('signup')}
-                className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90" style={{ background:HColors.gold, color:HColors.night, fontFamily:'var(--font-nunito)' }}>
+                className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90" style={{ background:HColors.gold, color:'#FFFFFF', fontFamily:'var(--font-nunito)' }}>
                 S'inscrire
               </button>
               <button onClick={() => onShowAuth?.('login')}
@@ -384,7 +384,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
                   <h3 className="text-sm font-bold mb-2" style={{ color:HColors.darkBrown, fontFamily:'var(--font-cormorant)', fontSize:'1rem' }}>Équipements</h3>
                   <div className="flex flex-wrap gap-1.5">
                     {amenitiesList.map((a: string, i: number) => (
-                      <span key={i} className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs" style={{ background:HAlpha.green10, color:HColors.green, fontFamily:'var(--font-nunito)', border:'1px solid rgba(45,106,79,0.2)' }}>
+                      <span key={i} className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs" style={{ background:HAlpha.vertCI10, color:HColors.vertCI, fontFamily:'var(--font-nunito)', border:'1px solid rgba(45,106,79,0.2)' }}>
                         <CheckCircle className="w-3 h-3" />{a}
                       </span>
                     ))}
@@ -417,7 +417,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
                               </span>
                               {isValidated && doc.url && (
                                 <a href={fixDocUrl(doc.url)} target="_blank" rel="noopener noreferrer"
-                                  className="flex items-center gap-1 text-xs font-medium hover:underline" style={{ color:HColors.green, fontFamily:'var(--font-nunito)' }}>
+                                  className="flex items-center gap-1 text-xs font-medium hover:underline" style={{ color:HColors.vertCI, fontFamily:'var(--font-nunito)' }}>
                                   <ExternalLink className="w-3.5 h-3.5" /> Voir
                                 </a>
                               )}
@@ -492,7 +492,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
                   <div className="mt-3">
                     {reportSubmitted ? (
                       <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs"
-                        style={{ background: HAlpha.green10, border: '1px solid rgba(45,106,79,0.25)', color: HColors.green, fontFamily: 'var(--font-nunito)' }}>
+                        style={{ background: HAlpha.vertCI10, border: '1px solid rgba(45,106,79,0.25)', color: HColors.vertCI, fontFamily: 'var(--font-nunito)' }}>
                         <CheckCircle className="w-3.5 h-3.5 shrink-0" />
                         Signalement envoyé — nous examinerons cette annonce sous 48h.
                       </div>

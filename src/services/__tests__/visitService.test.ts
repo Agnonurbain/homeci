@@ -166,4 +166,52 @@ describe('visitService', () => {
       expect(visits[1].id).toBe('v1');
     });
   });
+
+  // ── hasActiveVisit ──
+
+  describe('hasActiveVisit', () => {
+    it('retourne true si une visite accepted existe pour la propriété', async () => {
+      firestoreMocks.getDocs.mockResolvedValueOnce({
+        docs: [
+          { id: 'v1', data: () => ({ status: 'pending' }) },
+          { id: 'v2', data: () => ({ status: 'accepted' }) },
+        ],
+      });
+
+      const result = await visitService.hasActiveVisit('prop-1');
+      expect(result).toBe(true);
+    });
+
+    it('retourne true si une visite completed existe', async () => {
+      firestoreMocks.getDocs.mockResolvedValueOnce({
+        docs: [
+          { id: 'v1', data: () => ({ status: 'completed' }) },
+        ],
+      });
+
+      const result = await visitService.hasActiveVisit('prop-1');
+      expect(result).toBe(true);
+    });
+
+    it('retourne false si toutes les visites sont pending ou rejected', async () => {
+      firestoreMocks.getDocs.mockResolvedValueOnce({
+        docs: [
+          { id: 'v1', data: () => ({ status: 'pending' }) },
+          { id: 'v2', data: () => ({ status: 'rejected' }) },
+        ],
+      });
+
+      const result = await visitService.hasActiveVisit('prop-1');
+      expect(result).toBe(false);
+    });
+
+    it('retourne false si aucune visite n\'existe', async () => {
+      firestoreMocks.getDocs.mockResolvedValueOnce({
+        docs: [],
+      });
+
+      const result = await visitService.hasActiveVisit('prop-1');
+      expect(result).toBe(false);
+    });
+  });
 });

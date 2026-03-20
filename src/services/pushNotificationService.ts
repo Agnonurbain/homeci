@@ -17,7 +17,7 @@ import { db, messagingPromise } from '../lib/firebase';
 
 // ⚠️ REMPLACER par votre clé VAPID générée dans Firebase Console
 // Project Settings → Cloud Messaging → Web Push certificates → Generate key pair
-const VAPID_KEY = 'yQoVhdcAJO44CZTt_EBA4A0a9WQF-eEHoRM_WS0ivcE';
+const VAPID_KEY = 'VOTRE_VAPID_KEY_ICI';
 
 let messaging: Messaging | null = null;
 messagingPromise.then(m => { messaging = m; }).catch(() => {});

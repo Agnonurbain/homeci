@@ -74,7 +74,7 @@ export default function AdminLogin({ onSuccess }: AdminLoginProps) {
         {/* Card */}
         <div className="rounded-3xl overflow-hidden shadow-2xl"
           style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}>
-          <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#D4A017,#C07C3E,#2D6A4F,#D4A017)', backgroundSize: '200%' }} />
+          <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#FF6B00,#009E49,#FFFFFF,#D4A017)', backgroundSize: '200%' }} />
 
           <div className="p-8">
             {/* Header */}
@@ -145,7 +145,7 @@ export default function AdminLogin({ onSuccess }: AdminLoginProps) {
 
               <button type="submit" disabled={loading}
                 className="w-full py-3.5 rounded-xl font-bold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
-                style={{ background: 'linear-gradient(135deg,#D4A017,#C07C3E)', color: HColors.night,
+                style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF',
                          fontFamily: 'var(--font-nunito)', fontSize: '0.95rem' }}>
                 {loading ? <Loader className="w-5 h-5 animate-spin" /> : <Shield className="w-5 h-5" />}
                 {loading ? 'Vérification…' : 'Connexion Sécurisée'}
@@ -157,7 +157,7 @@ export default function AdminLogin({ onSuccess }: AdminLoginProps) {
               {['Chiffrement SSL/TLS end-to-end', 'Protection brute force active', 'Code de session dynamique généré à la connexion'].map(txt => (
                 <div key={txt} className="flex items-center gap-2 text-xs"
                   style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                  <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: HColors.green }} />
+                  <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: HColors.vertCI }} />
                   {txt}
                 </div>
               ))}

@@ -48,7 +48,7 @@ const VISIT_STATUS: Record<string, {
 /* ── Icônes notifications ─────────────────────────────────────────────────── */
 const NOTIF_ICON: Record<string, React.ReactNode> = {
   visit_request:   <Calendar className="w-4 h-4" style={{ color:HColors.navy }}/>,
-  visit_accepted:  <CheckCircle className="w-4 h-4" style={{ color:HColors.green }}/>,
+  visit_accepted:  <CheckCircle className="w-4 h-4" style={{ color:HColors.vertCI }}/>,
   visit_rejected:  <XCircle className="w-4 h-4" style={{ color:HColors.bordeaux }}/>,
   visit_completed: <Star className="w-4 h-4" style={{ color:HColors.gold }}/>,
   system:          <Bell className="w-4 h-4" style={{ color:HAlpha.brown50 }}/>,
@@ -437,7 +437,7 @@ export default function TenantDashboard() {
                   </span>
                   {acceptedVisits > 0 && (
                     <span className="px-2.5 py-1 rounded-full font-semibold"
-                      style={{ background:HAlpha.green10, color:HColors.green, border:'1px solid rgba(45,106,79,0.3)', fontFamily:'var(--font-nunito)' }}>
+                      style={{ background:HAlpha.vertCI10, color:HColors.vertCI, border:'1px solid rgba(45,106,79,0.3)', fontFamily:'var(--font-nunito)' }}>
                       {acceptedVisits} acceptée{acceptedVisits > 1 ? 's' : ''}
                     </span>
                   )}
@@ -507,10 +507,10 @@ export default function TenantDashboard() {
                             <div className="flex items-center gap-3 text-xs mb-1.5 flex-wrap"
                               style={{ color:HColors.brown, fontFamily:'var(--font-nunito)' }}>
                               <span className="flex items-center gap-1">
-                                <MapPin className="w-3 h-3" style={{ color:HColors.terracotta }}/>{visit.property_city}
+                                <MapPin className="w-3 h-3" style={{ color:HColors.orangeCI }}/>{visit.property_city}
                               </span>
                               {prop?.price && (
-                                <span className="font-bold" style={{ color:HColors.terracotta }}>
+                                <span className="font-bold" style={{ color:HColors.orangeCI }}>
                                   {formatPrice(prop.price)}{prop.transaction_type !== 'vente' ? '/mois' : ''}
                                 </span>
                               )}
@@ -528,7 +528,7 @@ export default function TenantDashboard() {
 
                             <div className="flex items-center gap-1.5 text-xs"
                               style={{ fontFamily:'var(--font-nunito)' }}>
-                              <Calendar className="w-3.5 h-3.5" style={{ color:HColors.terracotta }}/>
+                              <Calendar className="w-3.5 h-3.5" style={{ color:HColors.orangeCI }}/>
                               <span className="font-medium" style={{ color:HColors.brownDark }}>
                                 {visit.status === 'counter_proposed' && visit.counter_date
                                   ? <>{new Date(visit.counter_date).toLocaleDateString('fr-FR', { weekday:'short', day:'2-digit', month:'long' })} à {visit.counter_time}</>
@@ -641,7 +641,7 @@ export default function TenantDashboard() {
                           {visit.status === 'accepted' && (
                             <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg"
                               style={{ background:'rgba(45,106,79,0.08)', border:'1px solid rgba(45,106,79,0.25)',
-                                       color:HColors.green, fontFamily:'var(--font-nunito)' }}>
+                                       color:HColors.vertCI, fontFamily:'var(--font-nunito)' }}>
                               <Phone className="w-3.5 h-3.5"/> Contact révélé après paiement caution
                             </div>
                           )}
@@ -790,8 +790,8 @@ export default function TenantDashboard() {
               {visitSuccess ? (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                    style={{ background:HAlpha.green20, border:'2px solid rgba(45,106,79,0.5)' }}>
-                    <CheckCircle className="w-8 h-8" style={{ color:HColors.green }}/>
+                    style={{ background:HAlpha.vertCI20, border:'2px solid rgba(45,106,79,0.5)' }}>
+                    <CheckCircle className="w-8 h-8" style={{ color:HColors.vertCI }}/>
                   </div>
                   <h3 className="font-bold mb-2"
                     style={{ color:HColors.cream, fontFamily:'var(--font-cormorant)', fontSize:'1.4rem' }}>

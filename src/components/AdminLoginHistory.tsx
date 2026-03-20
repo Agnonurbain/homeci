@@ -68,7 +68,7 @@ export default function AdminLoginHistory() {
 
   const FILTERS: { key: typeof filter; label: string; color: string; bg: string; border: string }[] = [
     { key: 'all',     label: 'Toutes',   color: HColors.darkBrown, bg: HAlpha.gold10,  border: HAlpha.gold25  },
-    { key: 'success', label: 'Réussies', color: HColors.green,     bg: HAlpha.green10, border: HAlpha.green25 },
+    { key: 'success', label: 'Réussies', color: HColors.vertCI,     bg: HAlpha.vertCI10, border: HAlpha.vertCI25 },
     { key: 'failed',  label: 'Échouées', color: HColors.bordeaux,  bg: HAlpha.bord10,  border: HAlpha.bord25  },
   ];
 
@@ -97,7 +97,7 @@ export default function AdminLoginHistory() {
       <div className="grid grid-cols-3 gap-3 mb-5">
         {[
           { label: 'Total',    value: attempts.length, bg: HAlpha.gold08,  border: HAlpha.gold20,  color: HColors.darkBrown },
-          { label: 'Réussies', value: successCount,    bg: HAlpha.green10, border: HAlpha.green20, color: HColors.green     },
+          { label: 'Réussies', value: successCount,    bg: HAlpha.vertCI10, border: HAlpha.vertCI20, color: HColors.vertCI     },
           { label: 'Échouées', value: failedCount,     bg: HAlpha.bord10,  border: HAlpha.bord20,  color: HColors.bordeaux  },
         ].map(s => (
           <div key={s.label} className="rounded-2xl p-4 text-center"
@@ -162,7 +162,7 @@ export default function AdminLoginHistory() {
                     <td className="px-5 py-3.5">
                       {a.success ? (
                         <span className="flex items-center gap-1.5 text-xs font-semibold"
-                          style={{ color: HColors.green }}>
+                          style={{ color: HColors.vertCI }}>
                           <CheckCircle className="w-4 h-4" /> Réussie
                         </span>
                       ) : (
@@ -179,7 +179,7 @@ export default function AdminLoginHistory() {
                     <td className="px-5 py-3.5">
                       <span className="flex items-center gap-1.5 text-xs"
                         style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                        <Clock className="w-3.5 h-3.5" style={{ color: HColors.terracotta }} />
+                        <Clock className="w-3.5 h-3.5" style={{ color: HColors.orangeCI }} />
                         {formatDate(a.attempted_at)}
                       </span>
                     </td>

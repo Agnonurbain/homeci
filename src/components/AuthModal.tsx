@@ -506,9 +506,9 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
 
                       {notaireCodeValid ? (
                         <div className="flex items-center gap-2 px-3 py-2 rounded-lg"
-                          style={{ background: HAlpha.green10, border: `1px solid ${HAlpha.green25}` }}>
-                          <Award className="w-4 h-4" style={{ color: HColors.green }} />
-                          <span className="text-xs font-semibold" style={{ color: HColors.green, fontFamily: 'var(--font-nunito)' }}>
+                          style={{ background: HAlpha.vertCI10, border: `1px solid ${HAlpha.vertCI25}` }}>
+                          <Award className="w-4 h-4" style={{ color: HColors.vertCI }} />
+                          <span className="text-xs font-semibold" style={{ color: HColors.vertCI, fontFamily: 'var(--font-nunito)' }}>
                             Code validé — compte Notaire Agréé activé
                           </span>
                         </div>

@@ -106,16 +106,16 @@ export default function AdminAccessCode({ onSuccess }: AdminAccessCodeProps) {
       <div className="max-w-md w-full">
         <div className="rounded-3xl overflow-hidden shadow-2xl"
           style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}>
-          <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#D4A017,#C07C3E,#2D6A4F,#D4A017)', backgroundSize: '200%' }} />
+          <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#FF6B00,#009E49,#FFFFFF,#D4A017)', backgroundSize: '200%' }} />
 
           <div className="p-8">
             {/* Header */}
             <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
-                style={{ background: confirmed ? HAlpha.green10 : HAlpha.gold10,
-                         border: `2px solid ${confirmed ? HAlpha.green25 : HAlpha.gold30}` }}>
+                style={{ background: confirmed ? HAlpha.vertCI10 : HAlpha.gold10,
+                         border: `2px solid ${confirmed ? HAlpha.vertCI25 : HAlpha.gold30}` }}>
                 {confirmed
-                  ? <CheckCircle className="w-8 h-8" style={{ color: HColors.green }} />
+                  ? <CheckCircle className="w-8 h-8" style={{ color: HColors.vertCI }} />
                   : <Key className="w-8 h-8" style={{ color: HColors.gold }} />}
               </div>
               <h1 className="font-bold mb-1"
@@ -127,8 +127,8 @@ export default function AdminAccessCode({ onSuccess }: AdminAccessCodeProps) {
               </p>
               {/* Stepper */}
               <div className="flex items-center justify-center gap-2 mt-3">
-                <div className="w-8 h-1.5 rounded-full" style={{ background: HColors.green }} />
-                <div className="w-8 h-1.5 rounded-full" style={{ background: confirmed ? HColors.green : HColors.gold }} />
+                <div className="w-8 h-1.5 rounded-full" style={{ background: HColors.vertCI }} />
+                <div className="w-8 h-1.5 rounded-full" style={{ background: confirmed ? HColors.vertCI : HColors.gold }} />
               </div>
             </div>
 
@@ -157,7 +157,7 @@ export default function AdminAccessCode({ onSuccess }: AdminAccessCodeProps) {
                     <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: HAlpha.gold10 }}>
                       <div className="h-full rounded-full transition-all duration-1000"
                         style={{ width: `${progressPct}%`,
-                                 background: progressPct > 50 ? HColors.green : progressPct > 20 ? HColors.gold : HColors.bordeaux }} />
+                                 background: progressPct > 50 ? HColors.vertCI : progressPct > 20 ? HColors.gold : HColors.bordeaux }} />
                     </div>
                     <span className="text-xs font-mono shrink-0"
                       style={{ color: progressPct > 20 ? HColors.brownMid : HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
@@ -171,7 +171,7 @@ export default function AdminAccessCode({ onSuccess }: AdminAccessCodeProps) {
                   <button onClick={handleCopy}
                     className="mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg mx-auto text-xs font-medium transition-all hover:opacity-80"
                     style={{ background: HAlpha.gold10, border: `1px solid ${HAlpha.gold25}`,
-                             color: copied ? HColors.green : HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                             color: copied ? HColors.vertCI : HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
                     {copied ? <CheckCircle className="w-3.5 h-3.5" /> : <RefreshCw className="w-3.5 h-3.5" />}
                     {copied ? 'Copié !' : 'Copier'}
                   </button>
@@ -215,7 +215,7 @@ export default function AdminAccessCode({ onSuccess }: AdminAccessCodeProps) {
                   />
                   <button type="submit" disabled={loading || input.length < 8}
                     className="w-full py-3.5 rounded-xl font-bold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    style={{ background: 'linear-gradient(135deg,#D4A017,#C07C3E)', color: HColors.night,
+                    style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF',
                              fontFamily: 'var(--font-nunito)' }}>
                     {loading ? <Loader className="w-5 h-5 animate-spin" /> : <Shield className="w-5 h-5" />}
                     {loading ? 'Vérification…' : 'Accéder au Dashboard'}

@@ -402,7 +402,7 @@ export default function NotaireDashboard() {
                   {stats.docsAttente} doc{stats.docsAttente>1?'s':''} en attente
                 </span>
                 <span className="px-2.5 py-1 rounded-full font-semibold"
-                  style={{background:HAlpha.green10,color:HColors.green,border:`1px solid ${HAlpha.green25}`}}>
+                  style={{background:HAlpha.vertCI10,color:HColors.vertCI,border:`1px solid ${HAlpha.vertCI25}`}}>
                   {stats.pret} prêt{stats.pret>1?'s':''} à certifier
                 </span>
                 <span className="px-2.5 py-1 rounded-full font-semibold"
@@ -477,9 +477,9 @@ export default function NotaireDashboard() {
         {/* Banner disponibles */}
         {activeTab==='disponible'&&filtered.length>0&&(
           <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl"
-            style={{background:HAlpha.terra10,border:`1px solid ${HAlpha.terra28}`}}>
-            <FileCheck className="w-4 h-4 shrink-0" style={{color:HColors.terracotta}}/>
-            <span className="text-sm" style={{color:HColors.terracotta,fontFamily:'var(--font-nunito)'}}>
+            style={{background:HAlpha.orange10,border:`1px solid ${HAlpha.terra28}`}}>
+            <FileCheck className="w-4 h-4 shrink-0" style={{color:HColors.orangeCI}}/>
+            <span className="text-sm" style={{color:HColors.orangeCI,fontFamily:'var(--font-nunito)'}}>
               Ces dossiers sont disponibles — cliquez <strong>Prendre en charge</strong> pour les assigner à votre espace.
             </span>
           </div>
@@ -516,7 +516,7 @@ export default function NotaireDashboard() {
               const validatedReq=required.filter(r=>property.documents?.find(d=>d.type===r)?.status==='valide').length;
               const pct=required.length>0?Math.round((validatedReq/required.length)*100):0;
               const stColors={
-                certifie:{border:HAlpha.green30, bar:HColors.green},
+                certifie:{border:HAlpha.vertCI30, bar:HColors.vertCI},
                 complet: {border:HAlpha.navy20,  bar:HColors.navy},
                 partiel: {border:HAlpha.gold35,  bar:HColors.gold},
                 aucun:   {border:HAlpha.gold15,  bar:HAlpha.gold20},
@@ -549,7 +549,7 @@ export default function NotaireDashboard() {
                           <div className="flex items-center gap-2 mt-0.5 flex-wrap text-xs"
                             style={{color:HColors.brown,fontFamily:'var(--font-nunito)'}}>
                             <span className="flex items-center gap-1"><Building2 className="w-3 h-3"/>{TYPE_LABELS[property.property_type]}</span>
-                            <span className="flex items-center gap-1"><MapPin className="w-3 h-3" style={{color:HColors.terracotta}}/>{[property.city,property.commune,property.quartier].filter(Boolean).join(', ')}</span>
+                            <span className="flex items-center gap-1"><MapPin className="w-3 h-3" style={{color:HColors.orangeCI}}/>{[property.city,property.commune,property.quartier].filter(Boolean).join(', ')}</span>
                             {owner&&<span className="flex items-center gap-1"><User className="w-3 h-3"/>{owner.full_name}</span>}
                           </div>
                         </div>
@@ -558,7 +558,7 @@ export default function NotaireDashboard() {
                       <div className="flex items-center gap-2 mt-2">
                         <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{background:HAlpha.gold08}}>
                           <div className="h-full rounded-full transition-all"
-                            style={{width:`${pct}%`,background:pct===100?HColors.green:pct>0?HColors.gold:HAlpha.gold20}}/>
+                            style={{width:`${pct}%`,background:pct===100?HColors.vertCI:pct>0?HColors.gold:HAlpha.gold20}}/>
                         </div>
                         <span className="text-xs shrink-0" style={{color:HColors.brown,fontFamily:'var(--font-nunito)'}}>
                           {validatedReq}/{required.length} requis
@@ -573,7 +573,7 @@ export default function NotaireDashboard() {
                       <button onClick={()=>handleTakeCharge(property)}
                         disabled={takingId===property.id}
                         className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl shrink-0 self-start transition-all hover:opacity-90 disabled:opacity-50"
-                        style={{background:'linear-gradient(135deg,#FF6B00,#D4A017)',color:HColors.night,fontFamily:'var(--font-nunito)'}}>
+                        style={{background:'linear-gradient(135deg,#FF6B00,#D4A017)',color:'#FFFFFF',fontFamily:'var(--font-nunito)'}}>
                         {takingId===property.id?<Loader className="w-3.5 h-3.5 animate-spin"/>:<FileCheck className="w-3.5 h-3.5"/>}
                         Prendre en charge
                       </button>
@@ -583,7 +583,7 @@ export default function NotaireDashboard() {
                       aria-expanded={isExpanded}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl shrink-0 self-start transition-all hover:opacity-80"
                       style={isExpanded
-                        ?{background:HAlpha.green10,border:`1px solid ${HAlpha.green25}`,color:HColors.green,fontFamily:'var(--font-nunito)'}
+                        ?{background:HAlpha.vertCI10,border:`1px solid ${HAlpha.vertCI25}`,color:HColors.vertCI,fontFamily:'var(--font-nunito)'}
                         :{background:HAlpha.gold08,border:`1px solid ${HAlpha.gold20}`,color:HColors.brownMid,fontFamily:'var(--font-nunito)'}}>
                       <Eye className="w-3.5 h-3.5"/>
                       {isExpanded?'Fermer':'Examiner'}
@@ -600,18 +600,18 @@ export default function NotaireDashboard() {
                         <div className="flex items-center gap-3 p-3 rounded-xl"
                           style={{background:HColors.white,border:`1px solid ${HAlpha.gold15}`}}>
                           <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                            style={{background:HAlpha.green10,border:`1px solid ${HAlpha.green20}`}}>
-                            <User className="w-4 h-4" style={{color:HColors.green}}/>
+                            style={{background:HAlpha.vertCI10,border:`1px solid ${HAlpha.vertCI20}`}}>
+                            <User className="w-4 h-4" style={{color:HColors.vertCI}}/>
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold" style={{color:HColors.darkBrown,fontFamily:'var(--font-nunito)'}}>{owner.full_name}</p>
                             <div className="flex gap-3 text-xs flex-wrap" style={{color:HColors.brown,fontFamily:'var(--font-nunito)'}}>
-                              {owner.phone&&<span className="flex items-center gap-1"><Phone className="w-3 h-3" style={{color:HColors.terracotta}}/>{owner.phone}</span>}
+                              {owner.phone&&<span className="flex items-center gap-1"><Phone className="w-3 h-3" style={{color:HColors.orangeCI}}/>{owner.phone}</span>}
                               {owner.email&&<span>{owner.email}</span>}
                             </div>
                           </div>
                           {property.verification_date&&(
-                            <div className="text-xs flex items-center gap-1 shrink-0" style={{color:HColors.green,fontFamily:'var(--font-nunito)'}}>
+                            <div className="text-xs flex items-center gap-1 shrink-0" style={{color:HColors.vertCI,fontFamily:'var(--font-nunito)'}}>
                               <Calendar className="w-3 h-3"/>
                               Certifié le {new Date(property.verification_date).toLocaleDateString('fr-FR')}
                             </div>
@@ -626,7 +626,7 @@ export default function NotaireDashboard() {
                         const isLoadingTitle=actionLoading===titleKey;
                         const isShowingTitleRefusal=showRefusalInput===titleKey;
                         const titleSt = titleStatus==='valide'
-                          ? {bg:'rgba(45,106,79,0.08)',bd:'rgba(45,106,79,0.3)',text:HColors.green,label:'Validé'}
+                          ? {bg:'rgba(45,106,79,0.08)',bd:'rgba(45,106,79,0.3)',text:HColors.vertCI,label:'Validé'}
                           : titleStatus==='refuse'
                           ? {bg:'rgba(139,29,29,0.08)',bd:'rgba(139,29,29,0.25)',text:HColors.bordeaux,label:'Refusé'}
                           : {bg:HAlpha.gold08,bd:HAlpha.gold20,text:HColors.brownMid,label:'En attente'};
@@ -665,7 +665,7 @@ export default function NotaireDashboard() {
                                     <button onClick={()=>handleTitleAction(property,'valide')}
                                       disabled={isLoadingTitle}
                                       className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80 disabled:opacity-50"
-                                      style={{background:HAlpha.green10,border:`1px solid ${HAlpha.green25}`,color:HColors.green}}>
+                                      style={{background:HAlpha.vertCI10,border:`1px solid ${HAlpha.vertCI25}`,color:HColors.vertCI}}>
                                       {isLoadingTitle?<Loader className="w-3 h-3 animate-spin"/>:<ThumbsUp className="w-3 h-3"/>}
                                       Valider
                                     </button>
@@ -759,7 +759,7 @@ export default function NotaireDashboard() {
                                           <button onClick={()=>handleDocAction(property,docItem.type,'valide')}
                                             disabled={isLoadingDoc}
                                             className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80 disabled:opacity-50"
-                                            style={{background:HAlpha.green10,border:`1px solid ${HAlpha.green25}`,color:HColors.green}}>
+                                            style={{background:HAlpha.vertCI10,border:`1px solid ${HAlpha.vertCI25}`,color:HColors.vertCI}}>
                                             {isLoadingDoc?<Loader className="w-3 h-3 animate-spin"/>:<ThumbsUp className="w-3 h-3"/>}
                                             Valider
                                           </button>
@@ -833,7 +833,7 @@ export default function NotaireDashboard() {
                           :{background:HAlpha.gold05,border:`1px solid ${HAlpha.gold15}`}}>
                         <div className="text-xs flex items-center gap-1.5" style={{color:HColors.brown,fontFamily:'var(--font-nunito)'}}>
                           {property.verified_notaire?(
-                            <><BadgeCheck className="w-4 h-4" style={{color:HColors.green}}/> Badge "Vérifié Notaire" accordé</>
+                            <><BadgeCheck className="w-4 h-4" style={{color:HColors.vertCI}}/> Badge "Vérifié Notaire" accordé</>
                           ):ready?(
                             <><CheckCircle className="w-4 h-4 shrink-0" style={{color:HColors.navy}}/> Tous les documents requis validés — prêt à certifier</>
                           ):(
@@ -906,7 +906,7 @@ export default function NotaireDashboard() {
                           <Building2 className="w-3 h-3"/>{TYPE_LABELS[p.property_type]||p.property_type}
                         </span>
                         <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" style={{color:HColors.terracotta}}/>{p.city}
+                          <MapPin className="w-3 h-3" style={{color:HColors.orangeCI}}/>{p.city}
                         </span>
                         <span className="px-2 py-0.5 rounded-full font-medium"
                           style={{background:HAlpha.gold08,border:`1px solid ${HAlpha.gold20}`,color:HColors.brownMid}}>
@@ -919,7 +919,7 @@ export default function NotaireDashboard() {
                       disabled={takingId===p.id}
                       className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl shrink-0 transition-all hover:opacity-90 disabled:opacity-50"
                       style={{background:'linear-gradient(135deg,#FF6B00,#D4A017)',
-                              color:HColors.night,fontFamily:'var(--font-nunito)'}}>
+                              color:'#FFFFFF',fontFamily:'var(--font-nunito)'}}>
                       {takingId===p.id
                         ? <Loader className="w-3.5 h-3.5 animate-spin"/>
                         : <FileCheck className="w-3.5 h-3.5"/>}

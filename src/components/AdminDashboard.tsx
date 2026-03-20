@@ -24,9 +24,9 @@ interface Stats {
 
 const ROLE_CFG: Record<string, { label: string; bg: string; bd: string; text: string }> = {
   locataire:    { label: 'Locataire',     bg: HAlpha.navy08,  bd: HAlpha.navy20,  text: HColors.navy     },
-  proprietaire: { label: 'Propriétaire',  bg: HAlpha.green10, bd: HAlpha.green25, text: HColors.green    },
+  proprietaire: { label: 'Propriétaire',  bg: HAlpha.vertCI10, bd: HAlpha.vertCI25, text: HColors.vertCI    },
   agent:        { label: 'Agent',         bg: HAlpha.gold10,  bd: HAlpha.gold25,  text: HColors.brownMid },
-  notaire:      { label: 'Notaire',       bg: HAlpha.terra10, bd: HAlpha.terra20, text: HColors.brownDeep},
+  notaire:      { label: 'Notaire',       bg: HAlpha.orange10, bd: HAlpha.terra20, text: HColors.brownDeep},
   admin:        { label: 'Admin',         bg: HAlpha.bord10,  bd: HAlpha.bord25,  text: HColors.bordeaux },
 };
 
@@ -179,7 +179,7 @@ export default function AdminDashboard() {
                   {stats.total_users} utilisateurs
                 </span>
                 <span className="px-2.5 py-1 rounded-full font-semibold"
-                  style={{ background: HAlpha.green10, color: HColors.green, border: `1px solid ${HAlpha.green25}` }}>
+                  style={{ background: HAlpha.vertCI10, color: HColors.vertCI, border: `1px solid ${HAlpha.vertCI25}` }}>
                   {stats.verified_properties} certifiés
                 </span>
                 {stats.pending_properties > 0 && (
@@ -240,9 +240,9 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                   {[
                     { icon: Users,     label: 'Utilisateurs inscrits',    value: stats.total_users,        accent: HColors.navy,      bg: HAlpha.navy08  },
-                    { icon: Home,      label: 'Biens immobiliers',         value: stats.total_properties,   accent: HColors.green,     bg: HAlpha.green10 },
+                    { icon: Home,      label: 'Biens immobiliers',         value: stats.total_properties,   accent: HColors.vertCI,     bg: HAlpha.vertCI10 },
                     { icon: AlertCircle, label: 'En attente de modération',value: stats.pending_properties, accent: HColors.gold,      bg: HAlpha.gold10  },
-                    { icon: FileCheck, label: 'Biens vérifiés Notaire',    value: stats.verified_properties,accent: HColors.terracotta,bg: HAlpha.terra10 },
+                    { icon: FileCheck, label: 'Biens vérifiés Notaire',    value: stats.verified_properties,accent: HColors.orangeCI,bg: HAlpha.orange10 },
                   ].map(({ icon: Icon, label, value, accent, bg }) => (
                     <div key={label} className="rounded-2xl p-5"
                       style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}`, boxShadow: '0 2px 12px rgba(26,14,0,0.05)' }}>
@@ -287,7 +287,7 @@ export default function AdminDashboard() {
                             style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>{p.title}</p>
                           <p className="text-xs flex items-center gap-1"
                             style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                            <MapPin className="w-3 h-3" style={{ color: HColors.terracotta }} />
+                            <MapPin className="w-3 h-3" style={{ color: HColors.orangeCI }} />
                             {p.city} · {TYPE_LABELS[p.property_type] || p.property_type}
                           </p>
                         </div>
@@ -327,7 +327,7 @@ export default function AdminDashboard() {
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80"
                   style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
                            color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-                  <Calendar className="w-3.5 h-3.5" style={{ color: HColors.terracotta }}/>
+                  <Calendar className="w-3.5 h-3.5" style={{ color: HColors.orangeCI }}/>
                   {filterDate === 'desc' ? '↓ Plus récent' : '↑ Plus ancien'}
                 </button>
 
@@ -390,14 +390,14 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-5 py-3.5">
                           <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                            style={{ background: HAlpha.green10, color: HColors.green,
-                                     border: `1px solid ${HAlpha.green20}`, fontFamily: 'var(--font-nunito)' }}>
+                            style={{ background: HAlpha.vertCI10, color: HColors.vertCI,
+                                     border: `1px solid ${HAlpha.vertCI20}`, fontFamily: 'var(--font-nunito)' }}>
                             Actif
                           </span>
                         </td>
                         <td className="px-5 py-3.5 text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
                           <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" style={{ color: HColors.terracotta }} />
+                            <Calendar className="w-3 h-3" style={{ color: HColors.orangeCI }} />
                             {new Date(user.created_at).toLocaleDateString('fr-FR')}
                           </span>
                         </td>
@@ -457,7 +457,7 @@ export default function AdminDashboard() {
                 {/* Ville */}
                 <div className="relative">
                   <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3"
-                    style={{ color: HColors.terracotta }} />
+                    style={{ color: HColors.orangeCI }} />
                   <input type="text" value={filterPropCity}
                     onChange={e => setFilterPropCity(e.target.value)}
                     placeholder="Ville…"
@@ -534,10 +534,10 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-5 py-3 text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
                           <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" style={{ color: HColors.terracotta }} />{p.city}
+                            <MapPin className="w-3 h-3" style={{ color: HColors.orangeCI }} />{p.city}
                           </span>
                         </td>
-                        <td className="px-5 py-3 text-xs font-semibold" style={{ color: HColors.terracotta, fontFamily: 'var(--font-nunito)' }}>
+                        <td className="px-5 py-3 text-xs font-semibold" style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>
                           {p.price.toLocaleString('fr-FR')} FCFA
                         </td>
                         <td className="px-5 py-3"><PropertyStatusBadge status={p.status} /></td>
@@ -562,7 +562,7 @@ export default function AdminDashboard() {
             {pendingProperties.length === 0 ? (
               <div className="rounded-2xl p-16 text-center"
                 style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
-                <CheckCircle className="w-14 h-14 mx-auto mb-4" style={{ color: HAlpha.green15 }} />
+                <CheckCircle className="w-14 h-14 mx-auto mb-4" style={{ color: HAlpha.vertCI15 }} />
                 <h3 className="font-bold mb-1"
                   style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.3rem' }}>
                   File vide
@@ -624,7 +624,7 @@ export default function AdminDashboard() {
                       <div key={p.id} className="rounded-2xl overflow-hidden"
                         style={{ background: HColors.white, border: `1px solid ${HAlpha.gold25}`,
                                  boxShadow: '0 2px 12px rgba(26,14,0,0.05)' }}>
-                        <div className="h-1" style={{ background: 'linear-gradient(90deg,#D4A017,#C07C3E)', opacity: 0.5 }} />
+                        <div className="h-1" style={{ background: 'linear-gradient(90deg,#FF6B00,#D4A017)', opacity: 0.5 }} />
                         <div className="flex items-start gap-4 p-5">
                           {p.images?.[0] ? (
                             <img src={p.images[0]} alt={p.title} className="w-20 h-20 rounded-xl object-cover shrink-0"
@@ -643,7 +643,7 @@ export default function AdminDashboard() {
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs mb-3"
                               style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
                               <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Type : </span>{TYPE_LABELS[p.property_type] || p.property_type}</span>
-                              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" style={{ color: HColors.terracotta }} />{p.city}</span>
+                              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" style={{ color: HColors.orangeCI }} />{p.city}</span>
                               <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Prix : </span>{p.price.toLocaleString('fr-FR')} FCFA</span>
                               <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Soumis : </span>{new Date(p.created_at).toLocaleDateString('fr-FR')}</span>
                             </div>
@@ -690,7 +690,7 @@ export default function AdminDashboard() {
           <div className="w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
             style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}
             onClick={e => e.stopPropagation()}>
-            <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#D4A017,#C07C3E,#2D6A4F,#D4A017)' }}/>
+            <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#FF6B00,#009E49,#FFFFFF,#D4A017)' }}/>
 
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4"
@@ -853,7 +853,7 @@ export default function AdminDashboard() {
           <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
             style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}
             onClick={e => e.stopPropagation()}>
-            <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#D4A017,#C07C3E,#2D6A4F,#D4A017)' }}/>
+            <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#FF6B00,#009E49,#FFFFFF,#D4A017)' }}/>
             <div className="p-6">
               {/* Header */}
               <div className="flex items-start justify-between mb-5">
@@ -959,12 +959,12 @@ function RoleBadge({ role }: { role: string }) {
 
 function PropertyStatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { bg: string; bd: string; text: string; label: string }> = {
-    published: { bg: HAlpha.green10, bd: HAlpha.green25, text: HColors.green,     label: 'Publié'      },
+    published: { bg: HAlpha.vertCI10, bd: HAlpha.vertCI25, text: HColors.vertCI,     label: 'Publié'      },
     pending:   { bg: HAlpha.gold10,  bd: HAlpha.gold25,  text: HColors.brownMid,  label: 'En attente'  },
     draft:     { bg: HAlpha.gold08,  bd: HAlpha.gold15,  text: HColors.brown,     label: 'Brouillon'   },
     rejected:  { bg: HAlpha.bord10,  bd: HAlpha.bord25,  text: HColors.bordeaux,  label: 'Rejeté'      },
     rented:    { bg: HAlpha.navy08,  bd: HAlpha.navy20,  text: HColors.navy,      label: 'Loué'        },
-    sold:      { bg: HAlpha.terra10, bd: HAlpha.terra20, text: HColors.brownDeep, label: 'Vendu'       },
+    sold:      { bg: HAlpha.orange10, bd: HAlpha.terra20, text: HColors.brownDeep, label: 'Vendu'       },
   };
   const c = cfg[status] || cfg.draft;
   return (
@@ -1089,7 +1089,7 @@ function NotairesTab({ showToast }: { showToast: (msg: string, ok?: boolean) => 
           </div>
           <button onClick={handleGenerate} disabled={generating}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:opacity-90 disabled:opacity-50"
-            style={{ background: 'linear-gradient(135deg,#D4A017,#C07C3E)', color: HColors.night,
+            style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF',
                      fontFamily: 'var(--font-nunito)' }}>
             {generating ? <LoaderIcon className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             Générer un code
@@ -1146,7 +1146,7 @@ function NotairesTab({ showToast }: { showToast: (msg: string, ok?: boolean) => 
                       {/* Badge statut */}
                       {c.used ? (
                         <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                          style={{ background: HAlpha.green10, color: HColors.green, border: `1px solid ${HAlpha.green20}`, fontFamily: 'var(--font-nunito)' }}>
+                          style={{ background: HAlpha.vertCI10, color: HColors.vertCI, border: `1px solid ${HAlpha.vertCI20}`, fontFamily: 'var(--font-nunito)' }}>
                           Utilisé
                         </span>
                       ) : expired ? (
@@ -1163,7 +1163,7 @@ function NotairesTab({ showToast }: { showToast: (msg: string, ok?: boolean) => 
                     </div>
                     <div className="flex gap-3 text-xs mt-0.5" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
                       <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" style={{ color: HColors.terracotta }} />
+                        <Calendar className="w-3 h-3" style={{ color: HColors.orangeCI }} />
                         Créé le {new Date(c.created_at).toLocaleDateString('fr-FR')}
                       </span>
                       {c.expires_at && (
@@ -1182,7 +1182,7 @@ function NotairesTab({ showToast }: { showToast: (msg: string, ok?: boolean) => 
                         <button onClick={() => handleCopy(c.code, c.id)}
                           className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80"
                           style={{ background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}`,
-                                   color: copiedId === c.id ? HColors.green : HColors.navy, fontFamily: 'var(--font-nunito)' }}>
+                                   color: copiedId === c.id ? HColors.vertCI : HColors.navy, fontFamily: 'var(--font-nunito)' }}>
                           <Copy className="w-3 h-3" />
                           {copiedId === c.id ? 'Copié !' : 'Copier'}
                         </button>
