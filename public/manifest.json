@@ -1,0 +1,32 @@
+{
+  "name": "HOMECI — Immobilier Vérifié en Côte d'Ivoire",
+  "short_name": "HOMECI",
+  "description": "Plateforme immobilière certifiée par notaire. Location, vente et achat de biens en Côte d'Ivoire.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0D1F12",
+  "theme_color": "#0D1F12",
+  "orientation": "portrait-primary",
+  "lang": "fr",
+  "categories": ["business", "lifestyle"],
+  "icons": [
+    {
+      "src": "/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

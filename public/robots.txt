@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /portail-securise
+Disallow: /admin
+
+Sitemap: https://homeci.ci/sitemap.xml
