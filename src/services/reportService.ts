@@ -1,5 +1,5 @@
 import {
-  collection, addDoc, getDocs, query, where, serverTimestamp, Timestamp,
+  collection, doc, addDoc, updateDoc, getDocs, query, where, serverTimestamp, Timestamp,
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
@@ -86,6 +86,14 @@ export const reportService = {
         status: (data.status as PropertyReport['status']) ?? 'pending',
         created_at: toISO(data.created_at),
       };
+    });
+  },
+
+  /** Met à jour le statut d'un signalement (admin) */
+  async updateReportStatus(reportId: string, status: 'reviewed' | 'dismissed'): Promise<void> {
+    await updateDoc(doc(db, 'reports', reportId), {
+      status,
+      reviewed_at: serverTimestamp(),
     });
   },
 };

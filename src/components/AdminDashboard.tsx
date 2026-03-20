@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import {
   Users, Home, Shield, FileCheck, AlertCircle, TrendingUp,
   CheckCircle, XCircle, Activity, UserCog, RotateCcw,
   MapPin, Calendar, Building2, Eye, Award, Copy, Plus, Loader as LoaderIcon,
+  Flag, Star, CalendarCheck, UserSearch,
 } from 'lucide-react';
 import { collection, getDocs, orderBy, query, limit, Timestamp, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -12,6 +13,12 @@ import type { Property } from '../types/property';
 import type { Profile } from '../contexts/AuthContext';
 import AdminLoginHistory from './AdminLoginHistory';
 import AdminManagement from './AdminManagement';
+
+// ── Lazy-loaded admin tabs ──
+const AdminReportsTab = lazy(() => import('./AdminReportsTab'));
+const AdminSurveysTab = lazy(() => import('./AdminSurveysTab'));
+const AdminVisitsTab = lazy(() => import('./AdminVisitsTab'));
+const AdminUsersSearchTab = lazy(() => import('./AdminUsersSearchTab'));
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 
@@ -37,7 +44,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 export default function AdminDashboard() {
   const { profile } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview'|'users'|'properties'|'verification'|'notaires'|'security'|'admin-management'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview'|'users'|'properties'|'verification'|'notaires'|'reports'|'surveys'|'visits'|'user-search'|'security'|'admin-management'>('overview');
   const [properties, setProperties] = useState<Property[]>([]);
   const [users, setUsers] = useState<Profile[]>([]);
   const [stats, setStats] = useState<Stats>({ total_users:0, total_properties:0, pending_properties:0, verified_properties:0 });
@@ -140,13 +147,17 @@ export default function AdminDashboard() {
   const firstName = profile?.full_name?.split(' ')[0] || 'Admin';
 
   const TABS = [
-    { id: 'overview',          icon: TrendingUp, label: 'Vue d\'ensemble', count: undefined           },
-    { id: 'users',             icon: Users,      label: 'Utilisateurs',    count: stats.total_users   },
-    { id: 'properties',        icon: Home,       label: 'Biens',           count: stats.total_properties },
-    { id: 'verification',      icon: FileCheck,  label: 'Modération',      count: stats.pending_properties || undefined },
-    { id: 'notaires',          icon: Award,      label: 'Notaires',        count: undefined           },
-    { id: 'security',          icon: Activity,   label: 'Sécurité',        count: undefined           },
-    { id: 'admin-management',  icon: UserCog,    label: 'Admins',          count: undefined           },
+    { id: 'overview',          icon: TrendingUp,    label: 'Vue d\'ensemble', count: undefined           },
+    { id: 'users',             icon: Users,         label: 'Utilisateurs',    count: stats.total_users   },
+    { id: 'user-search',       icon: UserSearch,    label: 'Recherche & Suspension', count: undefined    },
+    { id: 'properties',        icon: Home,          label: 'Biens',           count: stats.total_properties },
+    { id: 'verification',      icon: FileCheck,     label: 'Modération',      count: stats.pending_properties || undefined },
+    { id: 'reports',           icon: Flag,          label: 'Signalements',    count: undefined           },
+    { id: 'visits',            icon: CalendarCheck, label: 'Visites',         count: undefined           },
+    { id: 'surveys',           icon: Star,          label: 'Satisfaction',    count: undefined           },
+    { id: 'notaires',          icon: Award,         label: 'Notaires',        count: undefined           },
+    { id: 'security',          icon: Activity,      label: 'Sécurité',        count: undefined           },
+    { id: 'admin-management',  icon: UserCog,       label: 'Admins',          count: undefined           },
   ] as const;
 
   return (
@@ -677,6 +688,26 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {activeTab === 'reports' && (
+          <Suspense fallback={<div className="flex justify-center py-16"><div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: HAlpha.gold20, borderTopColor: HColors.gold }} /></div>}>
+            <AdminReportsTab showToast={showToast} />
+          </Suspense>
+        )}
+        {activeTab === 'surveys' && (
+          <Suspense fallback={<div className="flex justify-center py-16"><div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: HAlpha.gold20, borderTopColor: HColors.gold }} /></div>}>
+            <AdminSurveysTab />
+          </Suspense>
+        )}
+        {activeTab === 'visits' && (
+          <Suspense fallback={<div className="flex justify-center py-16"><div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: HAlpha.gold20, borderTopColor: HColors.gold }} /></div>}>
+            <AdminVisitsTab />
+          </Suspense>
+        )}
+        {activeTab === 'user-search' && (
+          <Suspense fallback={<div className="flex justify-center py-16"><div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: HAlpha.gold20, borderTopColor: HColors.gold }} /></div>}>
+            <AdminUsersSearchTab showToast={showToast} />
+          </Suspense>
+        )}
         {activeTab === 'notaires' && <NotairesTab showToast={showToast} />}
         {activeTab === 'security' && <AdminLoginHistory />}
         {activeTab === 'admin-management' && <AdminManagement />}

@@ -154,4 +154,12 @@ export const visitService = {
       updated_at: serverTimestamp(),
     });
   },
+
+  /** Récupère toutes les visites (admin) */
+  async getAllVisits(): Promise<VisitRequest[]> {
+    const snap = await getDocs(collection(db, 'visits'));
+    return snap.docs
+      .map(d => docToVisit(d.id, d.data() as Record<string, unknown>))
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  },
 };

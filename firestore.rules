@@ -139,6 +139,7 @@ service cloud.firestore {
         isAdmin()
       );
       allow create: if isAuth();
+      allow update: if isAdmin();
     }
   }
 }
