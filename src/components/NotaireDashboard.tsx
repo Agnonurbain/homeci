@@ -6,6 +6,7 @@ import { propertyService } from '../services/propertyService';
 import { notificationService } from '../services/notificationService';
 import { visitService } from '../services/visitService';
 import { NotaireListSkeleton, StatGridSkeleton } from './Skeletons';
+import { analyticsService } from '../services/analyticsService';
 import type { Property } from '../services/propertyService';
 import {
   FileCheck, CheckCircle, XCircle, Clock, FileText, Building2,
@@ -201,6 +202,7 @@ export default function NotaireDashboard() {
       });
       setProperties(prev=>prev.map(p=>p.id===property.id?{...p,verified_notaire:true,status:'published'}:p));
       setExpandedId(null); setActiveTab('certifie');
+      analyticsService.certifyProperty(property.id);
       showToast('✅ Bien certifié ! Badge "Vérifié Notaire" accordé.');
     } catch { showToast('Erreur lors de la certification',false); }
     finally { setCertifyingId(null); }
@@ -267,6 +269,7 @@ export default function NotaireDashboard() {
         p.id === property.id ? { ...p, verified_notaire: false, status: 'pending' } : p
       ));
       setRevokeModal(null);
+      analyticsService.decertifyProperty(property.id, reason.trim());
       showToast('Certification retirée. Le propriétaire et les locataires concernés ont été notifiés.');
     } catch {
       showToast('Erreur lors de la décertification', false);

@@ -25,6 +25,8 @@ import PaymentModal from './PaymentModal';
 import SatisfactionModal from './SatisfactionModal';
 import { surveyService } from '../services/surveyService';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
+import { analyticsService } from '../services/analyticsService';
+import { analyticsService } from '../services/analyticsService';
 
 const PER_PAGE = 9;
 
@@ -141,6 +143,7 @@ export default function TenantDashboard() {
   const [propertyInTransaction, setPropertyInTransaction] = useState(false);
 
   const handleRequestVisit = async (property: Property) => {
+    analyticsService.requestVisit(property.id);
     // Vérifier si le bien est déjà en cours de transaction
     try {
       const active = await visitService.hasActiveVisit(property.id);
@@ -177,6 +180,7 @@ export default function TenantDashboard() {
     if (filters.parking)         r = r.filter(p => p.parking);
     if (filters.verifiedOnly)    r = r.filter(p => p.verified_notaire);
     setFiltered(r); setPage(1);
+    if (Object.values(filters).some(v => v)) analyticsService.search('filter', r.length);
   };
 
   const handleSubmitVisit = async () => {
@@ -200,6 +204,7 @@ export default function TenantDashboard() {
       });
       const updated = await visitService.getVisitRequestsByTenant(user.uid);
       setVisitRequests(updated);
+      analyticsService.requestVisit(visitModalProperty.id);
       setVisitSuccess(true);
       visitSuccessTimer.current = setTimeout(() => {
         setVisitModalProperty(null); setVisitSuccess(false);

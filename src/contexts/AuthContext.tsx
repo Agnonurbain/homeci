@@ -16,6 +16,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
+import { analyticsService } from '../services/analyticsService';
 
 export interface Profile {
   id: string;
@@ -124,6 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const data = docSnap.data() as Profile;
         setProfile(data);
         setCachedProfile(data);
+        analyticsService.setUser(data.id, data.role);
       } else {
         setProfile(null);
       }
@@ -292,6 +294,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signOut() {
     if (user) clearCachedProfile(user.uid);
+    analyticsService.logout();
+    analyticsService.clearUser();
     setUser(null);
     setProfile(null);
     await firebaseSignOut(auth);

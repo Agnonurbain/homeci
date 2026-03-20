@@ -25,6 +25,7 @@ import PaymentModal from './PaymentModal';
 import type { PaymentConfig } from './PaymentModal';
 import SatisfactionModal from './SatisfactionModal';
 import { StatGridSkeleton, PropertyTableSkeleton } from './Skeletons';
+import { analyticsService } from '../services/analyticsService';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
 
 /* ── Constants ─────────────────────────────────────────────────────────── */
@@ -261,6 +262,7 @@ export default function OwnerAgentDashboard() {
         property_id: visit.property_id,
       });
       setVisitRequests(prev => prev.map(v => v.id === visit.id ? { ...v, status: 'completed' } : v));
+      analyticsService.completeVisit(visit.id);
       // Déclencher l'enquête de satisfaction APRÈS la visite
       setSurveyData({
         trigger: 'visit_completed',
@@ -300,6 +302,7 @@ export default function OwnerAgentDashboard() {
 
       // Mettre à jour l'état local
       setProperties(prev => prev.map(p => p.id === property.id ? { ...p, status } : p));
+      analyticsService.updatePropertyStatus(property.id, status);
       setStatusModal(null);
     } catch (e) {
       console.error('[HOMECI] Erreur mise à jour statut:', e);

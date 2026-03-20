@@ -83,14 +83,23 @@ export const storageMocks = {
 
 vi.mock('firebase/firestore', () => firestoreMocks);
 vi.mock('firebase/storage', () => storageMocks);
+vi.mock('firebase/analytics', () => ({
+  getAnalytics: vi.fn(() => ({})),
+  isSupported: vi.fn(async () => false),
+  logEvent: vi.fn(),
+  setUserId: vi.fn(),
+  setUserProperties: vi.fn(),
+}));
 vi.mock('../lib/firebase', () => ({
   db: {},
   auth: {},
   storage: {},
+  analyticsPromise: Promise.resolve(null),
 }));
 // Alias pour les services dans des sous-dossiers
 vi.mock('../../lib/firebase', () => ({
   db: {},
   auth: {},
   storage: {},
+  analyticsPromise: Promise.resolve(null),
 }));

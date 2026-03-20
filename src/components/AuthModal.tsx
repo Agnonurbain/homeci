@@ -3,6 +3,7 @@ import { X, Eye, EyeOff, Building2, User, Home, Briefcase, Award, Key, Loader, A
 import { useAuth } from '../contexts/AuthContext';
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
+import { analyticsService } from '../services/analyticsService';
 import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -159,6 +160,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
     setLoading(true);
     try {
       await verifyPhoneOTP(phoneOTP, phoneName.trim() || 'Utilisateur');
+      analyticsService.login('phone');
       onClose();
       setPhoneNumber(''); setPhoneOTP(''); setPhoneName(''); setPhoneStep('number');
     } catch (err: any) {
@@ -202,6 +204,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
     try {
       if (mode === 'login') {
         await signIn(email, password);
+        analyticsService.login('email');
       } else {
         // Sécurité double : si panneau notaire ouvert sans code validé → bloquer
         if (showNotaireCode && !notaireCodeValid) {
@@ -209,6 +212,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
         }
         const finalRole = (showNotaireCode && notaireCodeValid) ? 'notaire' : role;
         await signUp(email, password, fullName, finalRole);
+        analyticsService.signup('email', finalRole);
         // Marquer le code comme utilisé
         if (showNotaireCode && notaireCodeValid && validatedCodeDocId) {
           await markNotaireCodeUsed(validatedCodeDocId);
@@ -725,6 +729,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                   setError('');
                   try {
                     await signInWithProvider(p.id as 'google'|'facebook'|'twitter');
+                    analyticsService.login('google');
                     onClose();
                   } catch (err: any) {
                     const code = err?.code || '';

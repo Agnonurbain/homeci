@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Star, Send, CheckCircle } from 'lucide-react';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
+import { analyticsService } from '../services/analyticsService';
 import { surveyService } from '../services/surveyService';
 
 interface SatisfactionModalProps {
@@ -46,6 +47,7 @@ export default function SatisfactionModal({
         property_id: propertyId,
         property_title: propertyTitle,
       });
+      analyticsService.submitSurvey(rating, trigger);
       setSubmitted(true);
       setTimeout(() => {
         onClose();

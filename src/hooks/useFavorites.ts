@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, doc, getDoc, getDocs, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { analyticsService } from '../services/analyticsService';
 
 export function useFavorites(userId: string | undefined) {
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
@@ -28,10 +29,12 @@ export function useFavorites(userId: string | undefined) {
       // Retirer des favoris
       setFavoriteIds(prev => prev.filter(id => id !== propertyId));
       await deleteDoc(favRef);
+      analyticsService.favoriteProperty(propertyId, 'remove');
     } else {
       // Ajouter aux favoris
       setFavoriteIds(prev => [...prev, propertyId]);
       await setDoc(favRef, { added_at: new Date().toISOString() });
+      analyticsService.favoriteProperty(propertyId, 'add');
     }
   };
 

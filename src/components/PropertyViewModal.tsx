@@ -14,6 +14,7 @@ import OptimizedImage from './OptimizedImage';
 import MapDisplay from './MapDisplay';
 import { Property3DViewer } from './Property3DViewer';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
+import { analyticsService } from '../services/analyticsService';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { fixDocUrl } from '../utils/fixDocUrl';
 import { reportService, REASON_LABELS } from '../services/reportService';
@@ -76,6 +77,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
     try {
       const data = await propertyService.getProperty(propertyId);
       setProperty(data);
+      if (data) analyticsService.viewProperty(data.id, data.property_type, data.city);
       if (user) {
         const visits = await visitService.getVisitRequestsByTenant(user.uid);
         const mine = visits.find((v: VisitRequest) => v.property_id === propertyId);
@@ -102,6 +104,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
         reason: reportReason as any,
         details: reportDetails.trim(),
       });
+      analyticsService.submitReport(property.id, reportReason);
       setReportSubmitted(true);
     } catch (e) {
       console.error('[HOMECI] Erreur signalement:', e);

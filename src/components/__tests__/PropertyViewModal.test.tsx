@@ -20,6 +20,13 @@ vi.mock('../Property3DViewer', () => ({
   Property3DViewer: () => <div data-testid="3d-viewer" />,
 }));
 
+vi.mock('../../services/analyticsService', () => ({
+  analyticsService: {
+    viewProperty: vi.fn(),
+    submitReport: vi.fn(),
+  },
+}));
+
 import PropertyViewModal from '../PropertyViewModal';
 
 function mockPropertyDoc(overrides: Record<string, unknown> = {}) {
