@@ -26,7 +26,6 @@ import SatisfactionModal from './SatisfactionModal';
 import { surveyService } from '../services/surveyService';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
 import { analyticsService } from '../services/analyticsService';
-import { analyticsService } from '../services/analyticsService';
 
 const PER_PAGE = 9;
 
