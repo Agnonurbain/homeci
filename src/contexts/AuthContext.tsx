@@ -247,9 +247,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (recaptchaVerifier.current) {
       try { recaptchaVerifier.current.clear(); } catch {}
     }
+
+    // Créer le verifier en mode normal (visible) — fiable sur connexions lentes
     recaptchaVerifier.current = new RecaptchaVerifier(auth, recaptchaContainerId, {
-      size: 'invisible',
+      size: 'normal',
+      callback: () => {
+        // reCAPTCHA résolu
+      },
+      'expired-callback': () => {
+        if (recaptchaVerifier.current) {
+          try { recaptchaVerifier.current.clear(); } catch {}
+        }
+      },
     });
+
+    // Pré-rendre le widget pour forcer le chargement du script Google
+    await recaptchaVerifier.current.render();
+
     const formatted = phoneNumber.startsWith('+') ? phoneNumber : `+225${phoneNumber}`;
     const confirmation = await signInWithPhoneNumber(auth, formatted, recaptchaVerifier.current);
     phoneConfirmation.current = confirmation;

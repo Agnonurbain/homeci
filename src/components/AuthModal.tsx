@@ -148,9 +148,17 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
       setPhoneStep('otp');
     } catch (err: any) {
       const code = err?.code || '';
+      const msg = err?.message || '';
       if (code === 'auth/invalid-phone-number') setError('Numéro de téléphone invalide.');
       else if (code === 'auth/too-many-requests') setError('Trop de tentatives. Réessayez dans quelques minutes.');
-      else setError('Erreur d\'envoi du code. Vérifiez le numéro et réessayez.');
+      else if (code === 'auth/quota-exceeded') setError('Quota SMS dépassé. Réessayez demain.');
+      else if (code === 'auth/captcha-check-failed') setError('Vérification anti-robot échouée. Rechargez la page et réessayez.');
+      else if (msg.includes('reCAPTCHA') || msg.includes('Timeout')) setError('Connexion lente — le captcha a expiré. Rechargez la page et réessayez.');
+      else if (code === 'auth/network-request-failed') setError('Pas de connexion internet. Vérifiez votre réseau.');
+      else setError('Erreur d\'envoi du code. Rechargez la page et réessayez.');
+      // Nettoyer le reCAPTCHA corrompu pour permettre un retry propre
+      const container = document.getElementById('recaptcha-container');
+      if (container) container.innerHTML = '';
     } finally { setLoading(false); }
   };
 
@@ -422,7 +430,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
             {/* Signup only fields */}
             {mode === 'signup' && (
               <>
-                {/* Nom */}
+                {/* Nom — masqué quand mode téléphone car il a son propre champ */}
+                {!(authMethod === 'phone' && role === 'locataire') && (
                 <div>
                   <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
                     style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
@@ -435,6 +444,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                       className={`${inputCls} pl-10`} style={inputStyle} required />
                   </div>
                 </div>
+                )}
 
                 {/* Type de compte */}
                 <div>
@@ -596,6 +606,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                           className={`flex-1 ${inputCls}`} style={inputStyle} />
                       </div>
                     </div>
+                    {/* reCAPTCHA visible — vérification anti-robot */}
+                    <div id="recaptcha-container" className="flex justify-center" />
                     <button type="button" onClick={handleSendPhoneOTP} disabled={loading}
                       className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-50"
                       style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #D4A017 100%)',
@@ -775,8 +787,6 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
           )}
         </div>
       </div>
-      {/* Recaptcha invisible pour auth téléphone */}
-      <div id="recaptcha-container" />
     </div>
   );
 }
