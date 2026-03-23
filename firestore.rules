@@ -2,56 +2,67 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helpers
+    // Helpers globaux
     function isAuth() { return request.auth != null; }
     function isOwner(uid) { return request.auth.uid == uid; }
+    
+    // Récupération sécurisée du rôle (gère le fait que l'utilisateur peut ne pas exister encore)
     function userRole() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
+      return userDoc != null ? userDoc.data.role : null;
     }
     function isAdmin() { return isAuth() && userRole() == 'admin'; }
     function isNotaire() { return isAuth() && userRole() == 'notaire'; }
 
     // ── USERS ──
-    // Lecture : tout utilisateur authentifié (pour afficher noms, rôles)
-    // Création : uniquement le propriétaire du document (inscription)
-    // Mise à jour : le propriétaire OU un admin
-    // Suppression : admin uniquement
     match /users/{uid} {
-      allow read: if isOwner(uid) || isAdmin() || isNotaire();
-      allow create: if isOwner(uid);
-      allow update: if isOwner(uid) || isAdmin();
+      // Lecture : tout utilisateur authentifié (nécessaire pour voir le profil des auteurs/locataires)
+      allow read: if isAuth();
+      
+      // Création : L'utilisateur ne peut s'attribuer un rôle d'Admin lui-même
+      allow create: if isOwner(uid) && request.resource.data.role != 'admin';
+      
+      // Modification : Le propriétaire modifie son profil mais JAMAIS son champ 'role' (seul un admin le peut)
+      allow update: if isAdmin() || (isOwner(uid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']));
+      
+      // Suppression
       allow delete: if isAdmin();
 
-      // Sous-collection favoris — privée au propriétaire
       match /favorites/{propertyId} {
         allow read, write: if isOwner(uid);
       }
-
-      // Sous-collection tokens FCM — écriture par le propriétaire, lecture par les Cloud Functions
       match /fcm_tokens/{tokenId} {
         allow read, write: if isOwner(uid);
       }
     }
 
     // ── PROPERTIES ──
-    // Lecture : publique (les annonces sont visibles par tous)
-    // Création : tout utilisateur authentifié
-    // Mise à jour : le propriétaire du bien, un notaire (certification), ou un admin
-    // Suppression : le propriétaire du bien ou un admin
     match /properties/{propertyId} {
+      // Lecture : publique
       allow read: if true;
-      allow create: if isAuth();
+      
+      // Création : obligation d'être authentifié, d'être le owner, et le statut = 'pending'
+      allow create: if isAuth() 
+        && request.resource.data.owner_id == request.auth.uid
+        && (isAdmin() || (request.resource.data.status == 'pending' && request.resource.data.verified_notaire == false));
+      
+      // Modification : 
+      // - Admin / Notaire = liberté totale
+      // - Propriétaire = pas le droit de modifier le statut, la certification, etc.
       allow update: if isAuth() && (
-        resource.data.owner_id == request.auth.uid ||
+        isAdmin() || 
         isNotaire() ||
-        isAdmin()
+        (
+          resource.data.owner_id == request.auth.uid 
+          && request.resource.data.owner_id == request.auth.uid 
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'verified_notaire', 'notaire_id', 'verification_date'])
+        )
       );
-      allow delete: if isAuth() && (
-        resource.data.owner_id == request.auth.uid || isAdmin()
-      );
+      
+      // Suppression : Admin ou Propriétaire unique
+      allow delete: if isAdmin() || (isAuth() && resource.data.owner_id == request.auth.uid);
 
-      // Documents légaux (titre foncier, permis, etc.) — sous-collection
-      // Lecture/écriture : le propriétaire du bien, un notaire, ou un admin
+      // Sous-col Documents Légaux
       match /documents/{docId} {
         allow read: if isAuth() && (
           get(/databases/$(database)/documents/properties/$(propertyId)).data.owner_id == request.auth.uid ||
@@ -71,12 +82,6 @@ service cloud.firestore {
     }
 
     // ── VISITS ──
-    // Lecture : tout utilisateur authentifié
-    //   → Le locataire A doit pouvoir vérifier si un bien a une visite active (hasActiveVisit)
-    //   → Le notaire doit pouvoir lire les visites pour la décertification
-    //   → Les données de visite ne contiennent pas d'informations hautement sensibles
-    // Création : tout utilisateur authentifié
-    // Mise à jour : le propriétaire, le locataire concerné, un notaire (annulation décertification), ou un admin
     match /visits/{visitId} {
       allow read: if isAuth() && (
         resource.data.owner_id == request.auth.uid ||
@@ -84,7 +89,9 @@ service cloud.firestore {
         isNotaire() ||
         isAdmin()
       );
-      allow create: if isAuth();
+      // Faille résolue : Impossible de créer une visite sous une fausse identité
+      allow create: if isAuth() && request.resource.data.tenant_id == request.auth.uid;
+      
       allow update: if isAuth() && (
         resource.data.owner_id == request.auth.uid ||
         resource.data.tenant_id == request.auth.uid ||
@@ -94,19 +101,15 @@ service cloud.firestore {
     }
 
     // ── NOTIFICATIONS ──
-    // Lecture/mise à jour : uniquement le destinataire de la notification
-    // Création : tout utilisateur authentifié (le système crée des notifs pour d'autres utilisateurs)
     match /notifications/{notifId} {
+      // On lit/modifie (pour isRead) uniquement ses propres notifications
       allow read, update: if isAuth() && resource.data.user_id == request.auth.uid;
+      
+      // N'importe qui peut créer des notifs destinées à d'autres via le système
       allow create: if isAuth();
     }
 
     // ── NOTAIRE CODES ──
-    // Lecture : tout utilisateur authentifié (pour valider un code lors de l'inscription)
-    // Création : admin uniquement
-    // Mise à jour : uniquement pour marquer un code comme utilisé (used: false → true)
-    //   → Vérifie que le code n'est pas déjà utilisé
-    //   → Seuls les champs 'used' et 'used_at' peuvent être modifiés
     match /notaire_codes/{codeId} {
       allow read: if isAuth();
       allow create: if isAdmin();
@@ -117,34 +120,31 @@ service cloud.firestore {
     }
 
     // ── ADMIN LOGS ──
-    // Lecture : admin uniquement
-    // Création : tout utilisateur authentifié (pour traçabilité des actions)
     match /admin_logs/{logId} {
       allow read: if isAdmin();
-      allow create: if isAuth();
+      allow create: if isAuth(); // Permis globalement car le frontend génère parfois des logs
     }
 
-    // ── SURVEYS (enquêtes de satisfaction) ──
-    // Lecture : l'auteur de l'enquête (pour hasAlreadyResponded) ou un admin
-    // Création : tout utilisateur authentifié
+    // ── SURVEYS ──
     match /surveys/{surveyId} {
       allow read: if isAuth() && (
         resource.data.user_id == request.auth.uid ||
         isAdmin()
       );
-      allow create: if isAuth();
+      // Impossible de soumettre un sondage au nom de quelqu'un d'autre
+      allow create: if isAuth() && request.resource.data.user_id == request.auth.uid;
     }
 
-    // ── REPORTS (signalements d'annonces) ──
-    // Lecture : l'auteur du signalement (pour hasAlreadyReported) ou un admin
-    // Création : tout utilisateur authentifié
+    // ── REPORTS ──
     match /reports/{reportId} {
       allow read: if isAuth() && (
         resource.data.reporter_id == request.auth.uid ||
         isAdmin()
       );
-      allow create: if isAuth();
+      // Impossible de signaler au nom de quelqu'un d'autre
+      allow create: if isAuth() && request.resource.data.reporter_id == request.auth.uid;
       allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
   }
 }
