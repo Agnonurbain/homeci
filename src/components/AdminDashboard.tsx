@@ -3,7 +3,7 @@ import {
   Users, Home, Shield, FileCheck, AlertCircle, TrendingUp,
   CheckCircle, XCircle, Activity, UserCog, RotateCcw,
   MapPin, Calendar, Building2, Eye, Award, Copy, Plus, Loader as LoaderIcon,
-  Flag, Star, CalendarCheck, UserSearch,
+  Flag, Star, CalendarCheck, UserSearch, FileText,
 } from 'lucide-react';
 import { collection, getDocs, orderBy, query, limit, Timestamp, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -19,8 +19,10 @@ const AdminReportsTab = lazy(() => import('./AdminReportsTab'));
 const AdminSurveysTab = lazy(() => import('./AdminSurveysTab'));
 const AdminVisitsTab = lazy(() => import('./AdminVisitsTab'));
 const AdminUsersSearchTab = lazy(() => import('./AdminUsersSearchTab'));
+const AdminCGVTab = lazy(() => import('./AdminCGVTab'));
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
+import { TYPE_LABELS, ROLE_CFG } from '../constants/labels';
 
 interface Stats {
   total_users: number;
@@ -29,36 +31,25 @@ interface Stats {
   verified_properties: number;
 }
 
-const ROLE_CFG: Record<string, { label: string; bg: string; bd: string; text: string }> = {
-  locataire:    { label: 'Locataire',     bg: HAlpha.navy08,  bd: HAlpha.navy20,  text: HColors.navy     },
-  proprietaire: { label: 'Propriétaire',  bg: HAlpha.vertCI10, bd: HAlpha.vertCI25, text: HColors.vertCI    },
-  agent:        { label: 'Agent',         bg: HAlpha.gold10,  bd: HAlpha.gold25,  text: HColors.brownMid },
-  notaire:      { label: 'Notaire',       bg: HAlpha.orange10, bd: HAlpha.terra20, text: HColors.brownDeep},
-  admin:        { label: 'Admin',         bg: HAlpha.bord10,  bd: HAlpha.bord25,  text: HColors.bordeaux },
-};
 
-const TYPE_LABELS: Record<string, string> = {
-  appartement:'Appartement', maison:'Maison', villa:'Villa',
-  terrain:'Terrain', hotel:'Hôtel', appart_hotel:'Appart-Hôtel',
-};
 
 export default function AdminDashboard() {
   const { profile } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview'|'users'|'properties'|'verification'|'notaires'|'reports'|'surveys'|'visits'|'user-search'|'security'|'admin-management'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'properties' | 'verification' | 'notaires' | 'reports' | 'surveys' | 'visits' | 'user-search' | 'security' | 'admin-management' | 'cgv'>('overview');
   const [properties, setProperties] = useState<Property[]>([]);
   const [users, setUsers] = useState<Profile[]>([]);
-  const [stats, setStats] = useState<Stats>({ total_users:0, total_properties:0, pending_properties:0, verified_properties:0 });
+  const [stats, setStats] = useState<Stats>({ total_users: 0, total_properties: 0, pending_properties: 0, verified_properties: 0 });
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const [filterRole, setFilterRole] = useState('');
-  const [filterDate, setFilterDate] = useState<'asc'|'desc'>('desc');
+  const [filterDate, setFilterDate] = useState<'asc' | 'desc'>('desc');
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [filterPropType, setFilterPropType] = useState('');
   const [filterPropStatus, setFilterPropStatus] = useState('');
   const [filterPropCity, setFilterPropCity] = useState('');
-  const [sortProp, setSortProp] = useState<'date_desc'|'date_asc'|'price_asc'|'price_desc'>('date_desc');
+  const [sortProp, setSortProp] = useState<'date_desc' | 'date_asc' | 'price_asc' | 'price_desc'>('date_desc');
   const [filterModType, setFilterModType] = useState('');
-  const [sortMod, setSortMod] = useState<'date_desc'|'date_asc'|'price_asc'|'price_desc'>('date_desc');
+  const [sortMod, setSortMod] = useState<'date_desc' | 'date_asc' | 'price_asc' | 'price_desc'>('date_desc');
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
   useEffect(() => { loadData(); }, []);
@@ -70,7 +61,7 @@ export default function AdminDashboard() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const usersQuery = query(collection(db,'users'), orderBy('created_at','desc'), limit(20));
+      const usersQuery = query(collection(db, 'users'), orderBy('created_at', 'desc'), limit(20));
       const usersSnapshot = await getDocs(usersQuery);
       const profiles = usersSnapshot.docs.map(d => {
         const data = d.data();
@@ -97,10 +88,6 @@ export default function AdminDashboard() {
     finally { setLoading(false); }
   };
 
-  const approveProperty = async (propertyId: string) => {
-    try { await propertyService.updateProperty(propertyId, { status: 'published' }); loadData(); showToast('Bien approuvé ✅'); }
-    catch { showToast('Erreur', false); }
-  };
 
   const rejectProperty = async (propertyId: string) => {
     try { await propertyService.updateProperty(propertyId, { status: 'rejected' }); loadData(); showToast('Bien rejeté'); }
@@ -119,13 +106,13 @@ export default function AdminDashboard() {
 
   const filteredProperties = useMemo(() => {
     let list = [...properties];
-    if (filterPropType)   list = list.filter(p => p.property_type === filterPropType);
+    if (filterPropType) list = list.filter(p => p.property_type === filterPropType);
     if (filterPropStatus) list = list.filter(p => p.status === filterPropStatus);
-    if (filterPropCity)   list = list.filter(p => p.city?.toLowerCase().includes(filterPropCity.toLowerCase()));
+    if (filterPropCity) list = list.filter(p => p.city?.toLowerCase().includes(filterPropCity.toLowerCase()));
     list.sort((a, b) => {
-      if (sortProp === 'price_asc')  return a.price - b.price;
+      if (sortProp === 'price_asc') return a.price - b.price;
       if (sortProp === 'price_desc') return b.price - a.price;
-      if (sortProp === 'date_asc')   return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      if (sortProp === 'date_asc') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
     return list;
@@ -137,9 +124,9 @@ export default function AdminDashboard() {
     let list = [...pendingProperties];
     if (filterModType) list = list.filter(p => p.property_type === filterModType);
     list.sort((a, b) => {
-      if (sortMod === 'price_asc')  return a.price - b.price;
+      if (sortMod === 'price_asc') return a.price - b.price;
       if (sortMod === 'price_desc') return b.price - a.price;
-      if (sortMod === 'date_asc')   return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      if (sortMod === 'date_asc') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
     return list;
@@ -147,17 +134,18 @@ export default function AdminDashboard() {
   const firstName = profile?.full_name?.split(' ')[0] || 'Admin';
 
   const TABS = [
-    { id: 'overview',          icon: TrendingUp,    label: 'Vue d\'ensemble', count: undefined           },
-    { id: 'users',             icon: Users,         label: 'Utilisateurs',    count: stats.total_users   },
-    { id: 'user-search',       icon: UserSearch,    label: 'Recherche & Suspension', count: undefined    },
-    { id: 'properties',        icon: Home,          label: 'Biens',           count: stats.total_properties },
-    { id: 'verification',      icon: FileCheck,     label: 'Modération',      count: stats.pending_properties || undefined },
-    { id: 'reports',           icon: Flag,          label: 'Signalements',    count: undefined           },
-    { id: 'visits',            icon: CalendarCheck, label: 'Visites',         count: undefined           },
-    { id: 'surveys',           icon: Star,          label: 'Satisfaction',    count: undefined           },
-    { id: 'notaires',          icon: Award,         label: 'Notaires',        count: undefined           },
-    { id: 'security',          icon: Activity,      label: 'Sécurité',        count: undefined           },
-    { id: 'admin-management',  icon: UserCog,       label: 'Admins',          count: undefined           },
+    { id: 'overview', icon: TrendingUp, label: 'Vue d\'ensemble', count: undefined },
+    { id: 'users', icon: Users, label: 'Utilisateurs', count: stats.total_users },
+    { id: 'user-search', icon: UserSearch, label: 'Recherche & Suspension', count: undefined },
+    { id: 'properties', icon: Home, label: 'Biens', count: stats.total_properties },
+    { id: 'verification', icon: FileCheck, label: 'Modération', count: stats.pending_properties || undefined },
+    { id: 'reports', icon: Flag, label: 'Signalements', count: undefined },
+    { id: 'visits', icon: CalendarCheck, label: 'Visites', count: undefined },
+    { id: 'surveys', icon: Star, label: 'Satisfaction', count: undefined },
+    { id: 'notaires', icon: Award, label: 'Notaires', count: undefined },
+    { id: 'cgv', icon: FileText, label: 'Docs Légaux', count: undefined },
+    { id: 'security', icon: Activity, label: 'Sécurité', count: undefined },
+    { id: 'admin-management', icon: UserCog, label: 'Admins', count: undefined },
   ] as const;
 
   return (
@@ -250,10 +238,10 @@ export default function AdminDashboard() {
                 {/* Stat cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                   {[
-                    { icon: Users,     label: 'Utilisateurs inscrits',    value: stats.total_users,        accent: HColors.navy,      bg: HAlpha.navy08  },
-                    { icon: Home,      label: 'Biens immobiliers',         value: stats.total_properties,   accent: HColors.vertCI,     bg: HAlpha.vertCI10 },
-                    { icon: AlertCircle, label: 'En attente de modération',value: stats.pending_properties, accent: HColors.gold,      bg: HAlpha.gold10  },
-                    { icon: FileCheck, label: 'Biens vérifiés Notaire',    value: stats.verified_properties,accent: HColors.orangeCI,bg: HAlpha.orange10 },
+                    { icon: Users, label: 'Utilisateurs inscrits', value: stats.total_users, accent: HColors.navy, bg: HAlpha.navy08 },
+                    { icon: Home, label: 'Biens immobiliers', value: stats.total_properties, accent: HColors.vertCI, bg: HAlpha.vertCI10 },
+                    { icon: AlertCircle, label: 'En attente de modération', value: stats.pending_properties, accent: HColors.gold, bg: HAlpha.gold10 },
+                    { icon: FileCheck, label: 'Biens vérifiés Notaire', value: stats.verified_properties, accent: HColors.orangeCI, bg: HAlpha.orange10 },
                   ].map(({ icon: Icon, label, value, accent, bg }) => (
                     <div key={label} className="rounded-2xl p-5"
                       style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}`, boxShadow: '0 2px 12px rgba(26,14,0,0.05)' }}>
@@ -324,8 +312,10 @@ export default function AdminDashboard() {
                 style={{ borderBottom: `1px solid ${HAlpha.gold10}`, background: 'rgba(249,243,232,0.5)' }}>
                 <select value={filterRole} onChange={e => setFilterRole(e.target.value)}
                   className="px-3 py-2 rounded-xl text-xs outline-none"
-                  style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
-                           color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                  style={{
+                    background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
+                    color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
+                  }}>
                   <option value="">Tous les rôles</option>
                   <option value="locataire">Locataire</option>
                   <option value="proprietaire">Propriétaire</option>
@@ -336,18 +326,22 @@ export default function AdminDashboard() {
 
                 <button onClick={() => setFilterDate(d => d === 'desc' ? 'asc' : 'desc')}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80"
-                  style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
-                           color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-                  <Calendar className="w-3.5 h-3.5" style={{ color: HColors.orangeCI }}/>
+                  style={{
+                    background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
+                    color: HColors.brownMid, fontFamily: 'var(--font-nunito)'
+                  }}>
+                  <Calendar className="w-3.5 h-3.5" style={{ color: HColors.orangeCI }} />
                   {filterDate === 'desc' ? '↓ Plus récent' : '↑ Plus ancien'}
                 </button>
 
                 {filterRole && (
                   <button onClick={() => setFilterRole('')}
                     className="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs transition-all hover:opacity-80"
-                    style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}`,
-                             color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
-                    <XCircle className="w-3 h-3"/> Effacer filtre
+                    style={{
+                      background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}`,
+                      color: HColors.bordeaux, fontFamily: 'var(--font-nunito)'
+                    }}>
+                    <XCircle className="w-3 h-3" /> Effacer filtre
                   </button>
                 )}
 
@@ -376,13 +370,17 @@ export default function AdminDashboard() {
                       </tr>
                     ) : filteredUsers.map((user, i) => (
                       <tr key={user.id}
-                        style={{ background: i % 2 === 0 ? HColors.white : 'rgba(249,243,232,0.4)',
-                                 borderBottom: `1px solid ${HAlpha.gold08}` }}>
+                        style={{
+                          background: i % 2 === 0 ? HColors.white : 'rgba(249,243,232,0.4)',
+                          borderBottom: `1px solid ${HAlpha.gold08}`
+                        }}>
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-2.5">
                             <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
-                              style={{ background: HAlpha.gold10, color: HColors.gold,
-                                       fontFamily: 'var(--font-cormorant)', border: `1px solid ${HAlpha.gold25}` }}>
+                              style={{
+                                background: HAlpha.gold10, color: HColors.gold,
+                                fontFamily: 'var(--font-cormorant)', border: `1px solid ${HAlpha.gold25}`
+                              }}>
                               {user.full_name?.charAt(0).toUpperCase() || '?'}
                             </div>
                             <div>
@@ -401,8 +399,10 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-5 py-3.5">
                           <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                            style={{ background: HAlpha.vertCI10, color: HColors.vertCI,
-                                     border: `1px solid ${HAlpha.vertCI20}`, fontFamily: 'var(--font-nunito)' }}>
+                            style={{
+                              background: HAlpha.vertCI10, color: HColors.vertCI,
+                              border: `1px solid ${HAlpha.vertCI20}`, fontFamily: 'var(--font-nunito)'
+                            }}>
                             Actif
                           </span>
                         </td>
@@ -415,8 +415,10 @@ export default function AdminDashboard() {
                         <td className="px-5 py-3.5">
                           <button onClick={() => setSelectedUser(user)}
                             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80"
-                            style={{ background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}`,
-                                     color: HColors.navy, fontFamily: 'var(--font-nunito)' }}>
+                            style={{
+                              background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}`,
+                              color: HColors.navy, fontFamily: 'var(--font-nunito)'
+                            }}>
                             <Eye className="w-3.5 h-3.5" /> Détails
                           </button>
                         </td>
@@ -443,8 +445,10 @@ export default function AdminDashboard() {
                 {/* Type */}
                 <select value={filterPropType} onChange={e => setFilterPropType(e.target.value)}
                   className="px-3 py-2 rounded-xl text-xs outline-none"
-                  style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
-                           color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                  style={{
+                    background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
+                    color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
+                  }}>
                   <option value="">Tous les types</option>
                   {Object.entries(TYPE_LABELS).map(([k, v]) => (
                     <option key={k} value={k}>{v}</option>
@@ -454,8 +458,10 @@ export default function AdminDashboard() {
                 {/* Statut */}
                 <select value={filterPropStatus} onChange={e => setFilterPropStatus(e.target.value)}
                   className="px-3 py-2 rounded-xl text-xs outline-none"
-                  style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
-                           color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                  style={{
+                    background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
+                    color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
+                  }}>
                   <option value="">Tous les statuts</option>
                   <option value="published">Publié</option>
                   <option value="pending">En attente</option>
@@ -473,15 +479,19 @@ export default function AdminDashboard() {
                     onChange={e => setFilterPropCity(e.target.value)}
                     placeholder="Ville…"
                     className="pl-7 pr-3 py-2 rounded-xl text-xs outline-none w-28"
-                    style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
-                             color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }} />
+                    style={{
+                      background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
+                      color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
+                    }} />
                 </div>
 
                 {/* Tri */}
                 <select value={sortProp} onChange={e => setSortProp(e.target.value as typeof sortProp)}
                   className="px-3 py-2 rounded-xl text-xs outline-none"
-                  style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
-                           color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                  style={{
+                    background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
+                    color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
+                  }}>
                   <option value="date_desc">↓ Date (récent)</option>
                   <option value="date_asc">↑ Date (ancien)</option>
                   <option value="price_desc">↓ Prix (élevé)</option>
@@ -492,9 +502,11 @@ export default function AdminDashboard() {
                 {(filterPropType || filterPropStatus || filterPropCity) && (
                   <button onClick={() => { setFilterPropType(''); setFilterPropStatus(''); setFilterPropCity(''); }}
                     className="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs transition-all hover:opacity-80"
-                    style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}`,
-                             color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
-                    <XCircle className="w-3 h-3"/> Effacer
+                    style={{
+                      background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}`,
+                      color: HColors.bordeaux, fontFamily: 'var(--font-nunito)'
+                    }}>
+                    <XCircle className="w-3 h-3" /> Effacer
                   </button>
                 )}
 
@@ -523,8 +535,10 @@ export default function AdminDashboard() {
                       </tr>
                     ) : filteredProperties.map((p, i) => (
                       <tr key={p.id}
-                        style={{ background: i % 2 === 0 ? HColors.white : 'rgba(249,243,232,0.4)',
-                                 borderBottom: `1px solid ${HAlpha.gold08}` }}>
+                        style={{
+                          background: i % 2 === 0 ? HColors.white : 'rgba(249,243,232,0.4)',
+                          borderBottom: `1px solid ${HAlpha.gold08}`
+                        }}>
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-2">
                             {p.images?.[0] ? (
@@ -590,8 +604,10 @@ export default function AdminDashboard() {
 
                   <select value={filterModType} onChange={e => setFilterModType(e.target.value)}
                     className="px-3 py-2 rounded-xl text-xs outline-none"
-                    style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
-                             color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                    style={{
+                      background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
+                      color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
+                    }}>
                     <option value="">Tous les types</option>
                     {Object.entries(TYPE_LABELS).map(([k, v]) => (
                       <option key={k} value={k}>{v}</option>
@@ -600,8 +616,10 @@ export default function AdminDashboard() {
 
                   <select value={sortMod} onChange={e => setSortMod(e.target.value as typeof sortMod)}
                     className="px-3 py-2 rounded-xl text-xs outline-none"
-                    style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
-                             color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                    style={{
+                      background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
+                      color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
+                    }}>
                     <option value="date_desc">↓ Date (récent)</option>
                     <option value="date_asc">↑ Date (ancien)</option>
                     <option value="price_desc">↓ Prix (élevé)</option>
@@ -611,9 +629,11 @@ export default function AdminDashboard() {
                   {filterModType && (
                     <button onClick={() => setFilterModType('')}
                       className="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs transition-all hover:opacity-80"
-                      style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}`,
-                               color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
-                      <XCircle className="w-3 h-3"/> Effacer
+                      style={{
+                        background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}`,
+                        color: HColors.bordeaux, fontFamily: 'var(--font-nunito)'
+                      }}>
+                      <XCircle className="w-3 h-3" /> Effacer
                     </button>
                   )}
 
@@ -633,8 +653,10 @@ export default function AdminDashboard() {
                   <div className="space-y-4">
                     {filteredPendingProperties.map(p => (
                       <div key={p.id} className="rounded-2xl overflow-hidden"
-                        style={{ background: HColors.white, border: `1px solid ${HAlpha.gold25}`,
-                                 boxShadow: '0 2px 12px rgba(26,14,0,0.05)' }}>
+                        style={{
+                          background: HColors.white, border: `1px solid ${HAlpha.gold25}`,
+                          boxShadow: '0 2px 12px rgba(26,14,0,0.05)'
+                        }}>
                         <div className="h-1" style={{ background: 'linear-gradient(90deg,#FF6B00,#D4A017)', opacity: 0.5 }} />
                         <div className="flex items-start gap-4 p-5">
                           {p.images?.[0] ? (
@@ -662,19 +684,18 @@ export default function AdminDashboard() {
                           <div className="flex flex-col gap-2 shrink-0">
                             <button onClick={() => setSelectedProperty(p)}
                               className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-xl transition-all hover:opacity-80"
-                              style={{ background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}`,
-                                       color: HColors.navy, fontFamily: 'var(--font-nunito)' }}>
+                              style={{
+                                background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}`,
+                                color: HColors.navy, fontFamily: 'var(--font-nunito)'
+                              }}>
                               <Eye className="w-3.5 h-3.5" /> Voir détails
-                            </button>
-                            <button onClick={() => approveProperty(p.id)}
-                              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl transition-all hover:opacity-90"
-                              style={{ background: 'linear-gradient(135deg,#2D6A4F,#1A4F3A)', color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
-                              <CheckCircle className="w-3.5 h-3.5" /> Approuver
                             </button>
                             <button onClick={() => rejectProperty(p.id)}
                               className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-xl transition-all hover:opacity-80"
-                              style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord25}`,
-                                       color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
+                              style={{
+                                background: HAlpha.bord10, border: `1px solid ${HAlpha.bord25}`,
+                                color: HColors.bordeaux, fontFamily: 'var(--font-nunito)'
+                              }}>
                               <XCircle className="w-3.5 h-3.5" /> Rejeter
                             </button>
                           </div>
@@ -709,6 +730,11 @@ export default function AdminDashboard() {
           </Suspense>
         )}
         {activeTab === 'notaires' && <NotairesTab showToast={showToast} />}
+        {activeTab === 'cgv' && (
+          <Suspense fallback={<div className="flex justify-center py-16"><div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: HAlpha.gold20, borderTopColor: HColors.gold }} /></div>}>
+            <AdminCGVTab />
+          </Suspense>
+        )}
         {activeTab === 'security' && <AdminLoginHistory />}
         {activeTab === 'admin-management' && <AdminManagement />}
       </div>
@@ -721,7 +747,7 @@ export default function AdminDashboard() {
           <div className="w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
             style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}
             onClick={e => e.stopPropagation()}>
-            <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#FF6B00,#009E49,#FFFFFF,#D4A017)' }}/>
+            <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#FF6B00,#009E49,#FFFFFF,#D4A017)' }} />
 
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4"
@@ -756,7 +782,7 @@ export default function AdminDashboard() {
                   </p>
                   <div className="flex gap-2 overflow-x-auto pb-1">
                     {selectedProperty.images.map((img, i) => (
-                      <img key={i} src={img} alt={`Photo ${i+1}`}
+                      <img key={i} src={img} alt={`Photo ${i + 1}`}
                         className="w-32 h-24 rounded-xl object-cover shrink-0"
                         style={{ border: `1px solid ${HAlpha.gold20}` }} />
                     ))}
@@ -772,12 +798,12 @@ export default function AdminDashboard() {
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { label: 'Type de bien',    value: TYPE_LABELS[selectedProperty.property_type] || selectedProperty.property_type },
-                    { label: 'Transaction',      value: selectedProperty.listing_type === 'rent' ? 'Location' : 'Vente' },
-                    { label: 'Prix',             value: `${selectedProperty.price.toLocaleString('fr-FR')} FCFA${selectedProperty.listing_type === 'rent' ? '/mois' : ''}` },
-                    { label: 'Surface',          value: selectedProperty.area ? `${selectedProperty.area} m²` : '—' },
-                    { label: 'Chambres',         value: selectedProperty.bedrooms ?? '—' },
-                    { label: 'Salles de bain',   value: selectedProperty.bathrooms ?? '—' },
+                    { label: 'Type de bien', value: TYPE_LABELS[selectedProperty.property_type] || selectedProperty.property_type },
+                    { label: 'Transaction', value: selectedProperty.listing_type === 'rent' ? 'Location' : 'Vente' },
+                    { label: 'Prix', value: `${selectedProperty.price.toLocaleString('fr-FR')} FCFA${selectedProperty.listing_type === 'rent' ? '/mois' : ''}` },
+                    { label: 'Surface', value: selectedProperty.area ? `${selectedProperty.area} m²` : '—' },
+                    { label: 'Chambres', value: selectedProperty.bedrooms ?? '—' },
+                    { label: 'Salles de bain', value: selectedProperty.bathrooms ?? '—' },
                   ].map(({ label, value }) => (
                     <div key={label} className="flex justify-between items-center py-2 px-3 rounded-xl"
                       style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}` }}>
@@ -796,10 +822,10 @@ export default function AdminDashboard() {
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { label: 'Ville',      value: selectedProperty.city || '—' },
-                    { label: 'Quartier',   value: selectedProperty.neighborhood || '—' },
-                    { label: 'Adresse',    value: selectedProperty.address || '—' },
-                    { label: 'Pays',       value: selectedProperty.country || "Côte d'Ivoire" },
+                    { label: 'Ville', value: selectedProperty.city || '—' },
+                    { label: 'Quartier', value: selectedProperty.neighborhood || '—' },
+                    { label: 'Adresse', value: selectedProperty.address || '—' },
+                    { label: 'Pays', value: selectedProperty.country || "Côte d'Ivoire" },
                   ].map(({ label, value }) => (
                     <div key={label} className="flex justify-between items-center py-2 px-3 rounded-xl"
                       style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}` }}>
@@ -820,8 +846,10 @@ export default function AdminDashboard() {
                   <div className="flex flex-wrap gap-1.5">
                     {selectedProperty.amenities.map((a: string) => (
                       <span key={a} className="px-2.5 py-1 rounded-full text-xs"
-                        style={{ background: HAlpha.gold08, color: HColors.brownMid,
-                                 border: `1px solid ${HAlpha.gold20}`, fontFamily: 'var(--font-nunito)' }}>
+                        style={{
+                          background: HAlpha.gold08, color: HColors.brownMid,
+                          border: `1px solid ${HAlpha.gold20}`, fontFamily: 'var(--font-nunito)'
+                        }}>
                         {a}
                       </span>
                     ))}
@@ -837,10 +865,10 @@ export default function AdminDashboard() {
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { label: 'ID',           value: selectedProperty.id },
+                    { label: 'ID', value: selectedProperty.id },
                     { label: 'Propriétaire', value: selectedProperty.owner_id || '—' },
-                    { label: 'Soumis le',    value: new Date(selectedProperty.created_at).toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' }) },
-                    { label: 'Modifié le',   value: selectedProperty.updated_at ? new Date(selectedProperty.updated_at).toLocaleDateString('fr-FR') : '—' },
+                    { label: 'Soumis le', value: new Date(selectedProperty.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) },
+                    { label: 'Modifié le', value: selectedProperty.updated_at ? new Date(selectedProperty.updated_at).toLocaleDateString('fr-FR') : '—' },
                   ].map(({ label, value }) => (
                     <div key={label} className="flex justify-between items-center py-2 px-3 rounded-xl"
                       style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}` }}>
@@ -852,23 +880,21 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Actions footer */}
             <div className="flex gap-2 px-6 py-4" style={{ borderTop: `1px solid ${HAlpha.gold10}` }}>
-              <button onClick={() => { approveProperty(selectedProperty.id); setSelectedProperty(null); }}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg,#2D6A4F,#1A4F3A)', color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
-                <CheckCircle className="w-4 h-4" /> Approuver
-              </button>
               <button onClick={() => { rejectProperty(selectedProperty.id); setSelectedProperty(null); }}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80"
-                style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord25}`,
-                         color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
+                style={{
+                  background: HAlpha.bord10, border: `1px solid ${HAlpha.bord25}`,
+                  color: HColors.bordeaux, fontFamily: 'var(--font-nunito)'
+                }}>
                 <XCircle className="w-4 h-4" /> Rejeter
               </button>
               <button onClick={() => setSelectedProperty(null)}
                 className="px-5 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80"
-                style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold20}`,
-                         color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                style={{
+                  background: HAlpha.gold08, border: `1px solid ${HAlpha.gold20}`,
+                  color: HColors.brownMid, fontFamily: 'var(--font-nunito)'
+                }}>
                 Fermer
               </button>
             </div>
@@ -884,14 +910,16 @@ export default function AdminDashboard() {
           <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
             style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}
             onClick={e => e.stopPropagation()}>
-            <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#FF6B00,#009E49,#FFFFFF,#D4A017)' }}/>
+            <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#FF6B00,#009E49,#FFFFFF,#D4A017)' }} />
             <div className="p-6">
               {/* Header */}
               <div className="flex items-start justify-between mb-5">
                 <div className="flex items-center gap-3">
                   <div className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-2xl"
-                    style={{ background: HAlpha.gold15, color: HColors.gold,
-                             fontFamily: 'var(--font-cormorant)', border: `2px solid ${HAlpha.gold30}` }}>
+                    style={{
+                      background: HAlpha.gold15, color: HColors.gold,
+                      fontFamily: 'var(--font-cormorant)', border: `2px solid ${HAlpha.gold30}`
+                    }}>
                     {selectedUser.full_name?.charAt(0).toUpperCase() || '?'}
                   </div>
                   <div>
@@ -912,12 +940,12 @@ export default function AdminDashboard() {
               {/* Infos */}
               <div className="space-y-2">
                 {[
-                  { label: 'Email',        value: selectedUser.email,                              icon: '✉' },
-                  { label: 'Téléphone',    value: selectedUser.phone || '—',                       icon: '📞' },
-                  { label: 'Entreprise',   value: selectedUser.company_name || '—',                icon: '🏢' },
-                  { label: 'Vérifié',      value: selectedUser.verified ? 'Oui ✓' : 'Non',        icon: '🔒' },
-                  { label: 'Inscrit le',   value: new Date(selectedUser.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }), icon: '📅' },
-                  { label: 'ID',           value: selectedUser.id,                                 icon: '#'  },
+                  { label: 'Email', value: selectedUser.email, icon: '✉' },
+                  { label: 'Téléphone', value: selectedUser.phone || '—', icon: '📞' },
+                  { label: 'Entreprise', value: selectedUser.company_name || '—', icon: '🏢' },
+                  { label: 'Vérifié', value: selectedUser.verified ? 'Oui ✓' : 'Non', icon: '🔒' },
+                  { label: 'Inscrit le', value: new Date(selectedUser.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }), icon: '📅' },
+                  { label: 'ID', value: selectedUser.id, icon: '#' },
                 ].map(({ label, value, icon }) => (
                   <div key={label} className="flex items-center justify-between gap-3 py-2.5 px-3 rounded-xl"
                     style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}` }}>
@@ -937,8 +965,10 @@ export default function AdminDashboard() {
               <div className="flex gap-2 mt-5">
                 <button onClick={() => setSelectedUser(null)}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
-                  style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold20}`,
-                           color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                  style={{
+                    background: HAlpha.gold08, border: `1px solid ${HAlpha.gold20}`,
+                    color: HColors.brownMid, fontFamily: 'var(--font-nunito)'
+                  }}>
                   Fermer
                 </button>
               </div>
@@ -990,12 +1020,12 @@ function RoleBadge({ role }: { role: string }) {
 
 function PropertyStatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { bg: string; bd: string; text: string; label: string }> = {
-    published: { bg: HAlpha.vertCI10, bd: HAlpha.vertCI25, text: HColors.vertCI,     label: 'Publié'      },
-    pending:   { bg: HAlpha.gold10,  bd: HAlpha.gold25,  text: HColors.brownMid,  label: 'En attente'  },
-    draft:     { bg: HAlpha.gold08,  bd: HAlpha.gold15,  text: HColors.brown,     label: 'Brouillon'   },
-    rejected:  { bg: HAlpha.bord10,  bd: HAlpha.bord25,  text: HColors.bordeaux,  label: 'Rejeté'      },
-    rented:    { bg: HAlpha.navy08,  bd: HAlpha.navy20,  text: HColors.navy,      label: 'Loué'        },
-    sold:      { bg: HAlpha.orange10, bd: HAlpha.terra20, text: HColors.brownDeep, label: 'Vendu'       },
+    published: { bg: HAlpha.vertCI10, bd: HAlpha.vertCI25, text: HColors.vertCI, label: 'Publié' },
+    pending: { bg: HAlpha.gold10, bd: HAlpha.gold25, text: HColors.brownMid, label: 'En attente' },
+    draft: { bg: HAlpha.gold08, bd: HAlpha.gold15, text: HColors.brown, label: 'Brouillon' },
+    rejected: { bg: HAlpha.bord10, bd: HAlpha.bord25, text: HColors.bordeaux, label: 'Rejeté' },
+    rented: { bg: HAlpha.navy08, bd: HAlpha.navy20, text: HColors.navy, label: 'Loué' },
+    sold: { bg: HAlpha.orange10, bd: HAlpha.terra20, text: HColors.brownDeep, label: 'Vendu' },
   };
   const c = cfg[status] || cfg.draft;
   return (
@@ -1040,7 +1070,7 @@ function NotairesTab({ showToast }: { showToast: (msg: string, ok?: boolean) => 
       const q = query(collection(db, 'notaire_codes'), orderBy('created_at', 'desc'));
       const snap = await getDocs(q);
       setCodes(snap.docs.map(d => ({ id: d.id, ...d.data() } as NotaireCode)));
-    } catch(e) { console.error(e); }
+    } catch (e) { console.error(e); }
     finally { setLoading(false); }
   }
 
@@ -1100,8 +1130,10 @@ function NotairesTab({ showToast }: { showToast: (msg: string, ok?: boolean) => 
             <input type="text" value={note} onChange={e => setNote(e.target.value)}
               placeholder="Ex: Me Konaté, Cabinet Abidjan..."
               className="w-full px-3 py-2.5 rounded-xl outline-none text-sm"
-              style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold20}`,
-                       color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }} />
+              style={{
+                background: HColors.creamBg, border: `1px solid ${HAlpha.gold20}`,
+                color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
+              }} />
           </div>
           <div>
             <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
@@ -1110,8 +1142,10 @@ function NotairesTab({ showToast }: { showToast: (msg: string, ok?: boolean) => 
             </label>
             <select value={expireDays} onChange={e => setExpireDays(Number(e.target.value))}
               className="px-3 py-2.5 rounded-xl outline-none text-sm"
-              style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold20}`,
-                       color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+              style={{
+                background: HColors.creamBg, border: `1px solid ${HAlpha.gold20}`,
+                color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
+              }}>
               <option value={1}>1 jour</option>
               <option value={3}>3 jours</option>
               <option value={7}>7 jours</option>
@@ -1120,8 +1154,10 @@ function NotairesTab({ showToast }: { showToast: (msg: string, ok?: boolean) => 
           </div>
           <button onClick={handleGenerate} disabled={generating}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:opacity-90 disabled:opacity-50"
-            style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF',
-                     fontFamily: 'var(--font-nunito)' }}>
+            style={{
+              background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF',
+              fontFamily: 'var(--font-nunito)'
+            }}>
             {generating ? <LoaderIcon className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             Générer un code
           </button>
@@ -1212,15 +1248,19 @@ function NotairesTab({ showToast }: { showToast: (msg: string, ok?: boolean) => 
                       <>
                         <button onClick={() => handleCopy(c.code, c.id)}
                           className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80"
-                          style={{ background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}`,
-                                   color: copiedId === c.id ? HColors.vertCI : HColors.navy, fontFamily: 'var(--font-nunito)' }}>
+                          style={{
+                            background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}`,
+                            color: copiedId === c.id ? HColors.vertCI : HColors.navy, fontFamily: 'var(--font-nunito)'
+                          }}>
                           <Copy className="w-3 h-3" />
                           {copiedId === c.id ? 'Copié !' : 'Copier'}
                         </button>
                         <button onClick={() => handleRevoke(c.id)}
                           className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80"
-                          style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}`,
-                                   color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
+                          style={{
+                            background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}`,
+                            color: HColors.bordeaux, fontFamily: 'var(--font-nunito)'
+                          }}>
                           <XCircle className="w-3 h-3" /> Révoquer
                         </button>
                       </>

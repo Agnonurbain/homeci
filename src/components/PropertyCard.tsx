@@ -3,6 +3,7 @@ import type { Property } from '../services/propertyService';
 import OptimizedImage from './OptimizedImage';
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha, HGradients } from '../styles/homeci-tokens';
+import { TYPE_LABELS } from '../constants/labels';
 
 const PLACEHOLDER = 'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=800';
 
@@ -18,19 +19,16 @@ export function PropertyCard({ property, onFavorite, isFavorite, onViewDetails, 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 }).format(price);
 
-  const TYPE_LABELS: Record<string, string> = {
-    appartement: 'Appartement', maison: 'Maison', villa: 'Villa',
-    terrain: 'Terrain', hotel: 'Hôtel', appart_hotel: 'Appart-Hôtel',
-  };
-
   const imageSrc = property.images?.length ? property.images[0] : PLACEHOLDER;
   const isTerrain = property.property_type === 'terrain';
-  const isHotel   = property.property_type === 'hotel' || property.property_type === 'appart_hotel';
+  const isHotel = property.property_type === 'hotel' || property.property_type === 'appart_hotel';
 
   return (
     <div className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
-      style={{ background: HColors.white, border: '1px solid rgba(245,230,200,0.5)',
-               boxShadow: '0 2px 12px rgba(10,61,31,0.08)' }}>
+      style={{
+        background: HColors.white, border: '1px solid rgba(245,230,200,0.5)',
+        boxShadow: '0 2px 12px rgba(10,61,31,0.08)'
+      }}>
 
       {/* Image */}
       <div className="relative aspect-[16/10] overflow-hidden" style={{ background: HColors.darkBrown }}>
@@ -91,8 +89,10 @@ export function PropertyCard({ property, onFavorite, isFavorite, onViewDetails, 
 
         {/* Transaction badge — bottom right */}
         <span className="absolute bottom-3 right-3 px-2.5 py-1 text-[10px] font-bold rounded-full"
-          style={{ background: property.transaction_type === 'location' ? HColors.vertCI : HColors.orangeCI,
-                   color: HColors.white, fontFamily: 'var(--font-nunito)' }}>
+          style={{
+            background: property.transaction_type === 'location' ? HColors.vertCI : HColors.orangeCI,
+            color: HColors.white, fontFamily: 'var(--font-nunito)'
+          }}>
           {property.transaction_type === 'location' ? 'À louer' : property.transaction_type === 'vente' ? 'À vendre' : 'Location/Vente'}
         </span>
       </div>
@@ -171,8 +171,10 @@ export function PropertyCard({ property, onFavorite, isFavorite, onViewDetails, 
             className="px-4 py-2 rounded-xl text-xs font-bold transition-all hover:opacity-90 active:scale-95 shrink-0"
             style={property.verified_notaire
               ? { background: HGradients.cta, color: HColors.white, fontFamily: 'var(--font-nunito)' }
-              : { background: HAlpha.orange08, color: HColors.orangeCI, fontFamily: 'var(--font-nunito)',
-                  border: `1px solid ${HAlpha.orange20}` }}>
+              : {
+                background: HAlpha.orange08, color: HColors.orangeCI, fontFamily: 'var(--font-nunito)',
+                border: `1px solid ${HAlpha.orange20}`
+              }}>
             {!property.verified_notaire && <AlertTriangle className="w-3 h-3 inline mr-1" />}
             Voir détails
           </button>

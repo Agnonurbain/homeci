@@ -16,11 +16,11 @@ interface MoMoProvider {
 }
 
 const PROVIDERS: MoMoProvider[] = [
-  { id: 'orange', name: 'Orange Money', color: '#FF6600', bg: 'rgba(255,102,0,0.12)', prefix: '07', logo: '/logos/orange-money.svg' },
-  { id: 'mtn',    name: 'MTN MoMo',    color: '#FFCC00', bg: 'rgba(255,204,0,0.12)', prefix: '05', logo: '/logos/mtn-momo.svg' },
-  { id: 'wave',   name: 'Wave',         color: '#1DC3E2', bg: 'rgba(29,195,226,0.12)', prefix: '01', logo: '/logos/wave.svg' },
-  { id: 'flooz',  name: 'Moov Flooz',   color: '#00A651', bg: 'rgba(0,166,81,0.12)', prefix: '01', logo: '/logos/flooz.svg' },
-  { id: 'djamo',  name: 'Djamo',        color: '#6C3BF5', bg: 'rgba(108,59,245,0.12)', prefix: '01', logo: '/logos/djamo.svg' },
+  { id: 'orange', name: 'Orange Money', color: '#FF6600', bg: 'rgba(255,102,0,0.12)', prefix: '07', logo: '/logos/orange.jpeg' },
+  { id: 'mtn',    name: 'MTN MoMo',    color: '#FFCC00', bg: 'rgba(255,204,0,0.12)', prefix: '05', logo: '/logos/mtn.jpeg' },
+  { id: 'wave',   name: 'Wave',         color: '#1DC3E2', bg: 'rgba(29,195,226,0.12)', prefix: '01', logo: '/logos/wave.jpeg' },
+  { id: 'flooz',  name: 'Moov Flooz',   color: '#00A651', bg: 'rgba(0,166,81,0.12)', prefix: '01', logo: '/logos/flooz.jpeg' },
+  { id: 'djamo',  name: 'Djamo',        color: '#6C3BF5', bg: 'rgba(108,59,245,0.12)', prefix: '01', logo: '/logos/djamo.jpeg' },
 ];
 
 // ─── Types ──────────────────────────────────────────────────────────────────

@@ -2,6 +2,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import type { Property } from '../services/propertyService';
+import { TYPE_LABELS } from '../constants/labels';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -26,11 +27,6 @@ type MapDisplayProps = SingleMapProps | MultiMapProps;
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 }).format(price);
-
-const TYPE_LABELS: Record<string, string> = {
-  appartement: 'Appartement', maison: 'Maison', villa: 'Villa',
-  terrain: 'Terrain', hotel: 'Hôtel', appart_hotel: 'Appart-Hôtel',
-};
 
 const DEFAULT_CENTER: [number, number] = [5.3539, -4.0051];
 
@@ -78,7 +74,7 @@ export default function MapDisplay(props: MapDisplayProps) {
                 <div className="min-w-[200px]">
                   <p className="font-semibold text-gray-900 mb-1">{property.title}</p>
                   <p className="text-xs text-gray-500 mb-1">
-                    {TYPE_LABELS[property.property_type]} — {property.quartier}, {property.city}
+                    {TYPE_LABELS[property.property_type] || property.property_type} — {property.quartier}, {property.city}
                   </p>
                   <p className="text-emerald-600 font-bold">
                     {formatPrice(property.price)}{property.transaction_type === 'location' ? ' / mois' : ''}
