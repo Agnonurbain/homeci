@@ -111,6 +111,7 @@ export interface Property {
   surface_par_unite: number | null;
   chambres_par_unite: number | null;
   cuisine_par_unite: boolean;
+  has_active_visit?: boolean;
   title_status?: 'en_attente' | 'valide' | 'refuse';
   title_validated_at?: string | null;
   title_rejection_reason?: string | null;
@@ -193,6 +194,7 @@ function docToProperty(id: string, data: Record<string, unknown>): Property {
     surface_par_unite: data.surface_par_unite != null ? Number(data.surface_par_unite) : null,
     chambres_par_unite: data.chambres_par_unite != null ? Number(data.chambres_par_unite) : null,
     cuisine_par_unite: Boolean(data.cuisine_par_unite ?? false),
+    has_active_visit: Boolean(data.has_active_visit ?? false),
     created_at: toISO(data.created_at),
     updated_at: toISO(data.updated_at),
   };

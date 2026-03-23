@@ -107,14 +107,11 @@ export const visitService = {
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   },
 
-  /** Vérifie si un bien a une visite active (accepted/completed) — bloque les nouvelles demandes */
+  /** Vérifie si un bien a une visite active en consultant property.has_active_visit */
   async hasActiveVisit(propertyId: string): Promise<boolean> {
-    const q = query(collection(db, 'visits'), where('property_id', '==', propertyId));
-    const snap = await getDocs(q);
-    return snap.docs.some(d => {
-      const status = d.data().status;
-      return status === 'accepted' || status === 'completed';
-    });
+    const snap = await getDoc(doc(db, 'properties', propertyId));
+    if (!snap.exists()) return false;
+    return Boolean(snap.data().has_active_visit);
   },
 
   async updateVisitStatus(visitId: string, status: 'accepted' | 'rejected' | 'completed', notes?: string): Promise<void> {
@@ -123,6 +120,22 @@ export const visitService = {
       owner_notes: notes || '',
       updated_at: serverTimestamp(),
     });
+
+    const visitSnap = await getDoc(doc(db, 'visits', visitId));
+    if (visitSnap.exists()) {
+      const propId = visitSnap.data().property_id;
+      if (status === 'accepted') {
+        await updateDoc(doc(db, 'properties', propId), { has_active_visit: true });
+      } else if (status === 'completed' || status === 'rejected') {
+        // Find if there are other active visits
+        const qOther = query(collection(db, 'visits'), where('property_id', '==', propId));
+        const snapOther = await getDocs(qOther);
+        const hasOtherActive = snapOther.docs.some(d => d.id !== visitId && (d.data().status === 'accepted' || d.data().status === 'completed'));
+        if (!hasOtherActive) {
+          await updateDoc(doc(db, 'properties', propId), { has_active_visit: false });
+        }
+      }
+    }
   },
 
   async proposeCounterDate(
@@ -153,6 +166,8 @@ export const visitService = {
       counter_proposed_by: null,
       updated_at: serverTimestamp(),
     });
+    
+    await updateDoc(doc(db, 'properties', data.property_id), { has_active_visit: true });
   },
 
   /** Récupère toutes les visites (admin) */

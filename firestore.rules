@@ -78,7 +78,12 @@ service cloud.firestore {
     // Création : tout utilisateur authentifié
     // Mise à jour : le propriétaire, le locataire concerné, un notaire (annulation décertification), ou un admin
     match /visits/{visitId} {
-      allow read: if isAuth();
+      allow read: if isAuth() && (
+        resource.data.owner_id == request.auth.uid ||
+        resource.data.tenant_id == request.auth.uid ||
+        isNotaire() ||
+        isAdmin()
+      );
       allow create: if isAuth();
       allow update: if isAuth() && (
         resource.data.owner_id == request.auth.uid ||
