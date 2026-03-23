@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import {
   X, MapPin, Bed, Bath, Maximize, CheckCircle, Calendar, Eye,
   Star, Hotel, Layers, Lock, AlertTriangle, Clock, Phone,
@@ -11,7 +11,7 @@ import { visitService } from '../services/visitService';
 import type { VisitRequest } from '../services/visitService';
 import { useAuth } from '../contexts/AuthContext';
 import OptimizedImage from './OptimizedImage';
-import MapDisplay from './MapDisplay';
+const MapDisplay = lazy(() => import('./MapDisplay'));
 import { Property3DViewer } from './Property3DViewer';
 import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
 import { analyticsService } from '../services/analyticsService';
@@ -19,6 +19,7 @@ import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { fixDocUrl } from '../utils/fixDocUrl';
 import { reportService, REASON_LABELS } from '../services/reportService';
 import { TYPE_LABELS, DOC_LABELS } from '../constants/labels';
+import { SEO } from './SEO';
 
 interface PropertyViewModalProps {
   propertyId: string;
@@ -200,6 +201,11 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
 
   return (
     <div className="fixed inset-0 flex items-start justify-center z-50 p-3 md:p-6 overflow-y-auto" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}>
+      <SEO 
+        title={property.title} 
+        description={`${TYPE_LABELS[property.property_type]} à ${property.city} - ${formatPrice(property.price)}`} 
+        image={property.images?.[0]} 
+      />
       <div className="rounded-2xl w-full max-w-5xl my-auto shadow-2xl overflow-hidden" style={{ background: HColors.creamBg }}>
 
         {/* ── Header compact ── */}
@@ -296,8 +302,10 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
           {activeTab === 'map' && property.latitude && property.longitude && (
             <div className="mb-5">
               <p className="text-xs mb-2 flex items-center gap-1" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}><Lock className="w-3 h-3" />Position approximative — adresse exacte après visite acceptée</p>
-              <MapDisplay mode="single" latitude={property.latitude + 0.003} longitude={property.longitude + 0.003}
-                title={`${TYPE_LABELS[property.property_type]} — ${property.city}`} />
+              <Suspense fallback={<div className="h-64 rounded-2xl flex items-center justify-center text-sm" style={{ background: 'rgba(212,160,23,0.06)', border: `1px solid ${HAlpha.gold15}`, color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>Chargement de la carte...</div>}>
+                <MapDisplay mode="single" latitude={property.latitude + 0.003} longitude={property.longitude + 0.003}
+                  title={`${TYPE_LABELS[property.property_type]} — ${property.city}`} />
+              </Suspense>
             </div>
           )}
           {activeTab === 'map' && (!property.latitude || !property.longitude) && (
@@ -347,8 +355,8 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
                       label={property.property_type === 'appart_hotel' ? 'Unités' : 'Chambres'}
                       value={String(property.rooms_count)} />
                   )}
-                  {property.hotel_stars > 0 && (
-                    <InfoChip icon={<Star className="w-4 h-4 text-amber-500" />} label="Classement" value={'★'.repeat(property.hotel_stars)} />
+                  {(property.hotel_stars || 0) > 0 && (
+                    <InfoChip icon={<Star className="w-4 h-4 text-amber-500" />} label="Classement" value={'★'.repeat(property.hotel_stars || 0)} />
                   )}
                   {p.surface_par_unite && <InfoChip icon={<Home className="w-4 h-4" />} label="Surface/unité" value={`${p.surface_par_unite} m²`} />}
                   {p.chambres_par_unite && <InfoChip icon={<Bed className="w-4 h-4" />} label="Ch./unité" value={String(p.chambres_par_unite)} />}

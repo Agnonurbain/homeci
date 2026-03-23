@@ -15,6 +15,7 @@ import NotFoundPage from './components/NotFoundPage';
 import ProfileModal from './components/ProfileModal';
 import { pushService } from './services/pushNotificationService';
 import { HColors, HAlpha } from './styles/homeci-tokens';
+import { SEO } from './components/SEO';
 
 // ── Lazy-loaded dashboards (4700+ lignes chargées à la demande) ──
 const TenantDashboard = lazy(() => import('./components/TenantDashboard'));
@@ -174,6 +175,19 @@ function AppContent() {
         <Route path="/" element={
           user ? <Navigate to="/dashboard" replace /> :
           <PublicLayout>
+            <SEO />
+            <main>
+              <Hero onSearch={filters => setHeroFilters(filters)} />
+              <PublicPropertyList onShowAuth={handleAuthClick} initialFilters={heroFilters} />
+              <Features />
+            </main>
+          </PublicLayout>
+        } />
+
+        {/* Route Bien Spécifique (accessible connecté ou non) */}
+        <Route path="/bien/:id" element={
+          <PublicLayout>
+            <SEO />
             <main>
               <Hero onSearch={filters => setHeroFilters(filters)} />
               <PublicPropertyList onShowAuth={handleAuthClick} initialFilters={heroFilters} />

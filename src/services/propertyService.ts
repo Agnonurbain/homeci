@@ -202,10 +202,15 @@ function docToProperty(id: string, data: Record<string, unknown>): Property {
 
 // ─── Service ────────────────────────────────────────────────────────────────────
 
+let publicPropertiesCache: Property[] | null = null;
+let publicPropertiesCacheTime = 0;
+const CACHE_TTL_MS = 5 * 60 * 1000;
+
 export const propertyService = {
   // ── CRUD Propriétés ──
 
   async createProperty(propertyData: PropertyInsert): Promise<string> {
+    publicPropertiesCache = null;
     const docRef = await addDoc(collection(db, 'properties'), {
       ...propertyData,
       created_at: serverTimestamp(),
@@ -215,6 +220,7 @@ export const propertyService = {
   },
 
   async updateProperty(id: string, propertyData: PropertyUpdate): Promise<void> {
+    publicPropertiesCache = null;
     const docRef = doc(db, 'properties', id);
     await updateDoc(docRef, {
       ...propertyData,
@@ -223,6 +229,7 @@ export const propertyService = {
   },
 
   async deleteProperty(id: string): Promise<void> {
+    publicPropertiesCache = null;
     await deleteDoc(doc(db, 'properties', id));
   },
 
@@ -242,6 +249,10 @@ export const propertyService = {
   },
 
   async getProperties(filters?: PropertyFilters): Promise<Property[]> {
+    const isPublicQuery = Object.keys(filters || {}).length === 1 && filters?.status === 'published';
+    if (isPublicQuery && publicPropertiesCache && (Date.now() - publicPropertiesCacheTime < CACHE_TTL_MS)) {
+      return [...publicPropertiesCache];
+    }
     const constraints = [];
     if (filters?.status) constraints.push(where('status', '==', filters.status));
     if (filters?.city) constraints.push(where('city', '==', filters.city));
@@ -262,6 +273,10 @@ export const propertyService = {
         p.city.toLowerCase().includes(s) ||
         (p.quartier && p.quartier.toLowerCase().includes(s))
       );
+    }
+    if (isPublicQuery) {
+      publicPropertiesCache = [...properties];
+      publicPropertiesCacheTime = Date.now();
     }
     return properties;
   },

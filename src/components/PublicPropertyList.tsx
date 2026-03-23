@@ -8,6 +8,7 @@ import type { Property } from '../services/propertyService';
 import type { FilterValues } from './PropertyFilters';
 import PropertyViewModal from './PropertyViewModal';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
+import { useParams, useNavigate } from 'react-router-dom';
 
 interface PublicPropertyListProps {
   onShowAuth?: (mode: 'login' | 'signup') => void;
@@ -23,6 +24,16 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [viewingPropertyId, setViewingPropertyId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (id) {
+      setViewingPropertyId(id);
+    } else {
+      setViewingPropertyId(null);
+    }
+  }, [id]);
 
   useEffect(() => {
     propertyService.getProperties({ status: 'published' }).then(data => {
@@ -126,7 +137,7 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
                 <PropertyCard
                   key={property.id}
                   property={property}
-                  onViewDetails={() => setViewingPropertyId(property.id)}
+                  onViewDetails={() => navigate(`/bien/${property.id}`)}
                   onContactClick={() => setShowLoginPrompt(true)}
                 />
               ))}
@@ -273,8 +284,8 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
       {viewingPropertyId && (
         <PropertyViewModal
           propertyId={viewingPropertyId}
-          onClose={() => setViewingPropertyId(null)}
-          onShowAuth={(mode) => { setViewingPropertyId(null); onShowAuth?.(mode); }}
+          onClose={() => navigate('/')}
+          onShowAuth={(mode) => { navigate('/'); onShowAuth?.(mode); }}
         />
       )}
     </section>
