@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Eye, EyeOff, Building2, User, Home, Briefcase, Award, Key, Loader, AlertCircle } from 'lucide-react';
+import { X, Eye, EyeOff, Building2, User, Home, Award, Key, Loader, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
@@ -7,6 +7,19 @@ import { analyticsService } from '../services/analyticsService';
 import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { z } from 'zod';
+
+const loginSchema = z.object({
+  email: z.string().min(1, 'Veuillez saisir votre adresse email.').email('Adresse email invalide. Vérifiez le format (ex: nom@domaine.com).'),
+  password: z.string().min(1, 'Veuillez saisir votre mot de passe.'),
+  fullName: z.string().optional()
+});
+
+const signupSchema = z.object({
+  email: z.string().min(1, 'Veuillez saisir votre adresse email.').email('Adresse email invalide. Vérifiez le format (ex: nom@domaine.com).'),
+  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères.'),
+  fullName: z.string().min(2, 'Veuillez entrer votre nom complet.')
+});
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -98,9 +111,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
   // ── Forgot password handler ──
   const handleResetPassword = async () => {
     setError('');
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim()) { setError('Veuillez saisir votre adresse email.'); return; }
-    if (!emailRegex.test(email.trim())) { setError('Adresse email invalide.'); return; }
+    const validation = z.string().min(1, 'Veuillez saisir votre adresse email.').email('Adresse email invalide.').safeParse(email.trim());
+    if (!validation.success) { setError(validation.error.issues[0].message); return; }
     setLoading(true);
     try {
       await resetPassword(email.trim());
@@ -125,26 +137,12 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
     e.preventDefault();
     setError('');
 
-    // ── Validation côté client ──
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim()) {
-      setError('Veuillez saisir votre adresse email.');
-      return;
-    }
-    if (!emailRegex.test(email.trim())) {
-      setError('Adresse email invalide. Vérifiez le format (ex: nom@domaine.com).');
-      return;
-    }
-    if (!password) {
-      setError('Veuillez saisir votre mot de passe.');
-      return;
-    }
-    if (mode === 'signup' && password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères.');
-      return;
-    }
-    if (mode === 'signup' && !fullName.trim()) {
-      setError('Veuillez entrer votre nom complet.');
+    // ── Validation côté client avec Zod ──
+    const schema = mode === 'login' ? loginSchema : signupSchema;
+    const validation = schema.safeParse({ email: email.trim(), password, fullName: fullName.trim() });
+    
+    if (!validation.success) {
+      setError(validation.error.issues[0].message);
       return;
     }
 

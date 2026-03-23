@@ -5,7 +5,7 @@
  *   mode="create" → AddPropertyForm
  *   mode="edit"   → EditPropertyForm (passe propertyId + initialData)
  */
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   X, ArrowLeft, ArrowRight, Home, MapPin, Image, Check,
   Upload, Trash2, FileText, AlertCircle, Film,
@@ -26,8 +26,35 @@ import { Property3DViewer } from './Property3DViewer';
 import PaymentModal from './PaymentModal';
 import { KenteLine } from './ui/KenteLine';
 import type { PropertyInsert, PropertyUpdate, PropertyDocument, Model3D } from '../services/propertyService';
-import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
+import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { z } from 'zod';
+
+const step1Schema = z.object({
+  title: z.string().min(1, 'Veuillez remplir le titre de l\'annonce'),
+  price: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, 'Veuillez entrer un prix valide')
+});
+
+const step2Schema = z.object({
+  property_type: z.string(),
+  land_area: z.string().optional(),
+  rooms_count: z.string().optional(),
+  surface_area: z.string().optional()
+}).superRefine((data, ctx) => {
+  if (data.property_type === 'terrain' && (!data.land_area || parseFloat(data.land_area) <= 0)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Veuillez entrer la superficie du terrain', path: ['land_area'] });
+  }
+  if (['hotel', 'appart_hotel'].includes(data.property_type) && (!data.rooms_count || parseInt(data.rooms_count) < 1)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Veuillez indiquer le nombre de chambres', path: ['rooms_count'] });
+  }
+  if (['appartement', 'maison', 'villa'].includes(data.property_type) && (!data.surface_area || parseFloat(data.surface_area) <= 0)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Veuillez entrer une surface habitable', path: ['surface_area'] });
+  }
+});
+
+const step3Schema = z.object({
+  city: z.string().min(1, 'Veuillez sélectionner la ville')
+});
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 export interface PropertyFormData {
@@ -85,8 +112,6 @@ const S = {
   label:        { color:'rgba(122,85,0,0.8)', fontFamily:'var(--font-nunito)', fontSize:'0.7rem', fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase' } as React.CSSProperties,
   labelSm:      { color:'rgba(192,124,62,0.85)', fontFamily:'var(--font-nunito)', fontSize:'0.65rem', fontWeight:700, letterSpacing:'0.05em', textTransform:'uppercase' } as React.CSSProperties,
 };
-const secTitle = { color:HColors.darkBrown, fontFamily:'var(--font-cormorant)', fontSize:'1.15rem', fontWeight:700 } as React.CSSProperties;
-const secSub   = { color:HColors.brown, fontFamily:'var(--font-nunito)', fontSize:'0.8rem' } as React.CSSProperties;
 const inputCls = 'w-full px-3 py-2.5 rounded-xl text-sm outline-none';
 
 /* ══════════════════════════════════════════════════════════════════════════════
@@ -280,27 +305,15 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
   /* ── Validation ── */
   const validateStep = (step: number): boolean => {
     setError('');
-    if (step === 1) {
-      if (!formData.title.trim()) {
-        setError('Veuillez remplir le titre de l\'annonce'); return false;
-      }
-      if (!formData.price || parseFloat(formData.price) <= 0) {
-        setError('Veuillez entrer un prix valide'); return false;
-      }
-    }
-    if (step === 2) {
-      if (formData.property_type === 'terrain' && (!formData.land_area || parseFloat(formData.land_area) <= 0)) {
-        setError('Veuillez entrer la superficie du terrain'); return false;
-      }
-      if ((formData.property_type === 'hotel' || formData.property_type === 'appart_hotel') && (!formData.rooms_count || parseInt(formData.rooms_count) < 1)) {
-        setError('Veuillez indiquer le nombre de chambres'); return false;
-      }
-      if (['appartement', 'maison', 'villa'].includes(formData.property_type) && (!formData.surface_area || parseFloat(formData.surface_area) <= 0)) {
-        setError('Veuillez entrer une surface habitable'); return false;
-      }
-    }
-    if (step === 3 && !formData.city) {
-      setError('Veuillez sélectionner la ville'); return false;
+    let validation;
+    if (step === 1) validation = step1Schema.safeParse(formData);
+    else if (step === 2) validation = step2Schema.safeParse(formData);
+    else if (step === 3) validation = step3Schema.safeParse(formData);
+    else return true;
+
+    if (!validation.success) {
+      setError(validation.error.issues[0].message);
+      return false;
     }
     return true;
   };
@@ -1078,9 +1091,9 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                 {mode === 'edit' && model3d && (
                   <div className="pt-4" style={{ borderTop:'1px solid rgba(212,160,23,0.18)' }}>
                     <p className="text-sm font-semibold mb-2" style={{ color:HColors.brownDeep, fontFamily:'var(--font-nunito)' }}>
-                      ⬡ Modèle 3D existant
+                      ⬡ Aperçu du modèle 3D généré
                     </p>
-                    <Property3DViewer model3d={model3d} propertyTitle="Aperçu 3D" />
+                    <Property3DViewer property={formData as any} />
                   </div>
                 )}
               </div>
