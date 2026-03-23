@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { propertyService } from '../services/propertyService';
 import type { Property } from '../types/property';
 import type { Profile } from '../contexts/AuthContext';
+import { useLocation, useNavigate } from 'react-router-dom';
 import AdminLoginHistory from './AdminLoginHistory';
 import AdminManagement from './AdminManagement';
 
@@ -35,7 +36,11 @@ interface Stats {
 
 export default function AdminDashboard() {
   const { profile } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'properties' | 'verification' | 'notaires' | 'reports' | 'surveys' | 'visits' | 'user-search' | 'security' | 'admin-management' | 'cgv'>('overview');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const tabFromUrl = location.pathname.split('/')[2];
+  const validTabs = ['overview', 'users', 'properties', 'verification', 'notaires', 'reports', 'surveys', 'visits', 'user-search', 'security', 'admin-management', 'cgv'];
+  const activeTab = validTabs.includes(tabFromUrl) ? tabFromUrl as any : 'overview';
   const [properties, setProperties] = useState<Property[]>([]);
   const [users, setUsers] = useState<Profile[]>([]);
   const [stats, setStats] = useState<Stats>({ total_users: 0, total_properties: 0, pending_properties: 0, verified_properties: 0 });
@@ -199,7 +204,7 @@ export default function AdminDashboard() {
           {/* Tabs */}
           <nav className="flex space-x-1 homeci-tabs-scroll">
             {TABS.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id as typeof activeTab)}
+              <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
                 aria-label={tab.label}
                 aria-current={activeTab === tab.id ? 'page' : undefined}
                 className="flex items-center gap-2 py-3 px-4 border-b-2 text-sm font-medium transition-all whitespace-nowrap"

@@ -16,6 +16,7 @@ import { PropertyGridSkeleton } from './Skeletons';
 import MapDisplay from './MapDisplay';
 import PropertyViewModal from './PropertyViewModal';
 import { useAuth } from '../contexts/AuthContext';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useFavorites } from '../hooks/useFavorites';
 import type { Property } from '../services/propertyService';
 import type { FilterValues } from './PropertyFilters';
@@ -49,7 +50,11 @@ export default function TenantDashboard() {
   const { user, profile } = useAuth();
   const { favoriteIds, toggleFavorite, isFavorite } = useFavorites(user?.uid);
 
-  const [activeTab, setActiveTab] = useState<'search' | 'favorites' | 'visits' | 'notifications'>('search');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const tabFromUrl = location.pathname.split('/')[2];
+  const validTabs = ['search', 'favorites', 'visits', 'notifications'];
+  const activeTab = validTabs.includes(tabFromUrl) ? tabFromUrl as any : 'search';
   const [allProperties, setAllProperties] = useState<Property[]>([]);
   const [filtered, setFiltered] = useState<Property[]>([]);
   const [favoriteProperties, setFavoriteProperties] = useState<Property[]>([]);
@@ -267,10 +272,10 @@ export default function TenantDashboard() {
               </p>
             </div>
             <div className="flex gap-2 flex-wrap">
-              <StatBadge icon={<Heart className="w-3.5 h-3.5" />} label="Favoris" value={favoriteIds.length} accent="#FF6B00" onClick={() => setActiveTab('favorites')} />
-              <StatBadge icon={<Clock className="w-3.5 h-3.5" />} label="En attente" value={pendingVisits} accent="#D4A017" onClick={() => setActiveTab('visits')} />
-              {acceptedVisits > 0 && <StatBadge icon={<CheckCircle className="w-3.5 h-3.5" />} label="Acceptées" value={acceptedVisits} accent="#009E49" onClick={() => setActiveTab('visits')} />}
-              {unreadCount > 0 && <StatBadge icon={<Bell className="w-3.5 h-3.5" />} label="Notifs" value={unreadCount} accent="#8B1D1D" onClick={() => setActiveTab('notifications')} />}
+              <StatBadge icon={<Heart className="w-3.5 h-3.5" />} label="Favoris" value={favoriteIds.length} accent="#FF6B00" onClick={() => navigate('/dashboard/favorites')} />
+              <StatBadge icon={<Clock className="w-3.5 h-3.5" />} label="En attente" value={pendingVisits} accent="#D4A017" onClick={() => navigate('/dashboard/visits')} />
+              {acceptedVisits > 0 && <StatBadge icon={<CheckCircle className="w-3.5 h-3.5" />} label="Acceptées" value={acceptedVisits} accent="#009E49" onClick={() => navigate('/dashboard/visits')} />}
+              {unreadCount > 0 && <StatBadge icon={<Bell className="w-3.5 h-3.5" />} label="Notifs" value={unreadCount} accent="#8B1D1D" onClick={() => navigate('/dashboard/notifications')} />}
             </div>
           </div>
 
@@ -282,7 +287,7 @@ export default function TenantDashboard() {
               { id: 'visits', icon: Calendar, label: 'Mes visites', count: pendingVisits || undefined },
               { id: 'notifications', icon: Bell, label: 'Notifications', count: unreadCount || undefined },
             ].map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id as typeof activeTab)}
+              <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
                 aria-label={tab.label}
                 aria-current={activeTab === tab.id ? 'page' : undefined}
                 className="py-3 px-4 border-b-2 text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2"
@@ -386,7 +391,7 @@ export default function TenantDashboard() {
                 <p className="text-sm mb-6" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
                   Cliquez sur le ❤ d'un bien pour le sauvegarder
                 </p>
-                <button onClick={() => setActiveTab('search')}
+                <button onClick={() => navigate('/dashboard/search')}
                   className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
                   style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
                   Découvrir les biens
@@ -443,7 +448,7 @@ export default function TenantDashboard() {
                 <p className="text-sm mb-6" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
                   Ouvrez la fiche d'un bien pour planifier une visite
                 </p>
-                <button onClick={() => setActiveTab('search')}
+                <button onClick={() => navigate('/dashboard/search')}
                   className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
                   style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
                   Rechercher un bien

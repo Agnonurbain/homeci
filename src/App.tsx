@@ -32,61 +32,25 @@ interface HeroFilters {
   city: string; commune: string; quartier: string;
 }
 
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+
 function AppContent() {
   const { user, profile, loading, pendingNewUser, clearPendingNewUser } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
-  const [isAdminRoute, setIsAdminRoute] = useState(false);
   const [accessCodeValidated, setAccessCodeValidated] = useState(false);
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
   const [heroFilters, setHeroFilters] = useState<HeroFilters>({ propertyType: '', propertyTypes: [], verifiedNotaire: false, transactionType: '', district: '', region: '', departement: '', city: '', commune: '', quartier: '' });
   const [showProfile, setShowProfile] = useState(false);
 
-  // Routes connues
-  const KNOWN_ROUTES = ['/', '/portail-securise', '/admin', '/faq'];
-  const [isNotFound, setIsNotFound] = useState(false);
-  const [isFaqRoute, setIsFaqRoute] = useState(false);
-
-  useEffect(() => {
-    const checkRoute = () => {
-      const path = window.location.pathname;
-      setIsAdminRoute(path === '/portail-securise' || path === '/admin');
-      setIsFaqRoute(path === '/faq');
-      setIsNotFound(!KNOWN_ROUTES.includes(path));
-    };
-    checkRoute();
-    window.addEventListener('popstate', checkRoute);
-    const originalPushState = window.history.pushState;
-    window.history.pushState = function (...args) {
-      originalPushState.apply(window.history, args);
-      checkRoute();
-    };
-    return () => {
-      window.removeEventListener('popstate', checkRoute);
-      window.history.pushState = originalPushState;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (user && profile?.role === 'admin' && isAdminRoute) {
-      setAdminAuthenticated(true);
-    } else if (!user) {
-      setAdminAuthenticated(false);
-      setAccessCodeValidated(false);
-      clearSessionCode();
-    }
-  }, [user, profile, isAdminRoute]);
-
-  useEffect(() => {
-    if (user && !isAdminRoute) setShowAuthModal(false);
-  }, [user, isAdminRoute]);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // ── FCM : demander la permission push après connexion ──
   const [pushToast, setPushToast] = useState<{ title: string; body: string } | null>(null);
 
   useEffect(() => {
     if (!user || !profile) return;
-    // Demander la permission après un court délai (ne pas bloquer le rendu)
     const timer = setTimeout(() => {
       pushService.requestPermissionAndRegister(user.uid).catch(() => {});
     }, 3000);
@@ -116,63 +80,11 @@ function AppContent() {
     </div>
   );
 
-  // ── PAGE FAQ ──
-  if (isFaqRoute) {
-    return (
-      <>
-        <Header onLoginClick={() => handleAuthClick('login')} onSignupClick={() => handleAuthClick('signup')} onProfileClick={() => setShowProfile(true)} />
-        <Suspense fallback={LazyFallback}>
-          <FAQPage />
-        </Suspense>
-        <Footer />
-        <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} initialMode={authMode} />
-        <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} />
-      </>
-    );
-  }
-
-  // ── PAGE 404 ──
-  const currentPath = window.location.pathname;
-  const isCurrentlyAdminPath = currentPath === '/portail-securise' || currentPath === '/admin';
-
-  if (isNotFound && !isCurrentlyAdminPath) {
-    return <NotFoundPage />;
-  }
-
-  // ── PORTAIL ADMIN ──
-  if (isAdminRoute && isCurrentlyAdminPath) {
-    if (loading) {
-      return (
-        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-red-600" />
-        </div>
-      );
-    }
-    if (!adminAuthenticated || profile?.role !== 'admin') return <AdminLogin onSuccess={() => setAdminAuthenticated(true)} />;
-    if (!accessCodeValidated) return <AdminAccessCode onSuccess={() => setAccessCodeValidated(true)} />;
-    return (
-      <AdminSessionManager
-        timeoutMinutes={profile?.session_timeout_minutes || 30}
-        onTimeout={() => {
-          setAdminAuthenticated(false);
-          setAccessCodeValidated(false);
-          clearSessionCode();
-          alert("Votre session a expiré. Veuillez vous reconnecter.");
-        }}
-      >
-        <div className="min-h-screen bg-white">
-          <Header onLoginClick={() => handleAuthClick('login')} onSignupClick={() => handleAuthClick('signup')} onProfileClick={() => setShowProfile(true)} />
-          <main><Suspense fallback={LazyFallback}><AdminDashboard /></Suspense></main>
-        </div>
-      </AdminSessionManager>
-    );
-  }
-
+  // Global loading state (Auth checking)
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-6"
         style={{ background: 'linear-gradient(160deg, #0D1F12 0%, #1A0E00 100%)' }}>
-        {/* Kente stripe */}
         <div className="absolute top-0 left-0 right-0 flex" style={{ height: 5 }}>
           {['#D4A017','#2D6A4F','#C07C3E','#7B1D1D','#D4A017','#2D6A4F','#C07C3E','#7B1D1D',
             '#D4A017','#2D6A4F','#C07C3E','#7B1D1D','#D4A017','#2D6A4F','#C07C3E','#7B1D1D',
@@ -180,7 +92,6 @@ function AppContent() {
             <div key={i} style={{ flex: 1, backgroundColor: c }} />
           ))}
         </div>
-        {/* Logo */}
         <div className="flex items-center gap-3 mb-2">
           <div className="w-12 h-12 rounded-full flex items-center justify-center"
             style={{ background: 'rgba(212,160,23,0.15)', border: '2px solid rgba(212,160,23,0.4)' }}>
@@ -191,7 +102,6 @@ function AppContent() {
             HOMECI
           </span>
         </div>
-        {/* Spinner doré */}
         <div className="w-10 h-10 rounded-full border-[3px] border-t-transparent animate-spin"
           style={{ borderColor: 'rgba(212,160,23,0.25)', borderTopColor: '#D4A017' }} />
         <p className="text-xs tracking-widest uppercase"
@@ -202,44 +112,7 @@ function AppContent() {
     );
   }
 
-  // ── PAGE PUBLIQUE (non connecté) ──
-  if (!user) {
-    return (
-      <>
-        <Header
-          onLoginClick={() => handleAuthClick('login')}
-          onSignupClick={() => handleAuthClick('signup')}
-          onProfileClick={() => setShowProfile(true)}
-        />
-        <main>
-          <Hero onSearch={filters => setHeroFilters(filters)} />
-          <PublicPropertyList
-            onShowAuth={handleAuthClick}
-            initialFilters={heroFilters}
-          />
-          <Features />
-          <Footer />
-        </main>
-        <AuthModal
-          isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
-          initialMode={authMode}
-        />
-        {pendingNewUser && (
-          <RoleSelectModal
-            uid={pendingNewUser.uid}
-            displayName={pendingNewUser.displayName}
-            photoURL={pendingNewUser.photoURL}
-            onDone={() => clearPendingNewUser()}
-          />
-        )}
-      </>
-    );
-  }
-
-  // ── DASHBOARDS CONNECTÉS ──
   const renderDashboard = () => {
-    // Bloquer le dashboard pendant la sélection de rôle
     if (pendingNewUser) return (
       <div className="min-h-screen flex items-center justify-center"
         style={{ background: 'linear-gradient(160deg, #0D1F12 0%, #1A0E00 100%)' }}>
@@ -253,19 +126,7 @@ function AppContent() {
         </div>
       </div>
     );
-    if (!profile) return (
-      <div className="min-h-screen flex items-center justify-center"
-        style={{ background: 'linear-gradient(160deg, #0D1F12 0%, #1A0E00 100%)' }}>
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 rounded-full border-2 animate-spin"
-            style={{ borderColor: 'rgba(212,160,23,0.2)', borderTopColor: '#D4A017' }} />
-          <p className="text-xs tracking-widest uppercase"
-            style={{ color: 'rgba(245,230,200,0.4)', fontFamily: 'var(--font-nunito)' }}>
-            Chargement…
-          </p>
-        </div>
-      </div>
-    );
+    if (!profile) return LazyFallback;
     switch (profile.role) {
       case 'locataire': return <Suspense fallback={LazyFallback}><TenantDashboard /></Suspense>;
       case 'proprietaire': return <Suspense fallback={LazyFallback}><OwnerAgentDashboard /></Suspense>;
@@ -275,22 +136,84 @@ function AppContent() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-white">
+  const AdminRoute = () => {
+    if (!adminAuthenticated || profile?.role !== 'admin') return <AdminLogin onSuccess={() => setAdminAuthenticated(true)} />;
+    if (!accessCodeValidated) return <AdminAccessCode onSuccess={() => setAccessCodeValidated(true)} />;
+    return (
+      <AdminSessionManager
+        timeoutMinutes={profile?.session_timeout_minutes || 30}
+        onTimeout={() => {
+          setAdminAuthenticated(false);
+          setAccessCodeValidated(false);
+          clearSessionCode();
+          alert("Votre session a expiré. Veuillez vous reconnecter.");
+          navigate('/');
+        }}
+      >
+        <div className="min-h-screen bg-white">
+          <Header onLoginClick={() => handleAuthClick('login')} onSignupClick={() => handleAuthClick('signup')} onProfileClick={() => setShowProfile(true)} />
+          <main><Suspense fallback={LazyFallback}><AdminDashboard /></Suspense></main>
+        </div>
+      </AdminSessionManager>
+    );
+  };
+
+  // Common Layout for public pages
+  const PublicLayout = ({ children }: { children: React.ReactNode }) => (
+    <>
       <Header onLoginClick={() => handleAuthClick('login')} onSignupClick={() => handleAuthClick('signup')} onProfileClick={() => setShowProfile(true)} />
-      <main>{renderDashboard()}</main>
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        initialMode={authMode}
-      />
+      <main className="flex-1">{children}</main>
+      <Footer />
+    </>
+  );
+
+  return (
+    <div className="min-h-screen bg-white flex flex-col">
+      <Routes>
+        {/* Route Publique / Accueil */}
+        <Route path="/" element={
+          user ? <Navigate to="/dashboard" replace /> :
+          <PublicLayout>
+            <main>
+              <Hero onSearch={filters => setHeroFilters(filters)} />
+              <PublicPropertyList onShowAuth={handleAuthClick} initialFilters={heroFilters} />
+              <Features />
+            </main>
+          </PublicLayout>
+        } />
+
+        {/* FAQ */}
+        <Route path="/faq" element={
+          <PublicLayout>
+            <Suspense fallback={LazyFallback}><FAQPage /></Suspense>
+          </PublicLayout>
+        } />
+
+        {/* Dashboard Connecté */}
+        <Route path="/dashboard/*" element={
+          !user ? <Navigate to="/" replace /> :
+          <>
+            <Header onLoginClick={() => handleAuthClick('login')} onSignupClick={() => handleAuthClick('signup')} onProfileClick={() => setShowProfile(true)} />
+            <main className="flex-1">{renderDashboard()}</main>
+          </>
+        } />
+
+        {/* Admin Portail */}
+        <Route path="/portail-securise" element={<AdminRoute />} />
+        <Route path="/admin" element={<Navigate to="/portail-securise" replace />} />
+
+        {/* 404 */}
+        <Route path="*" element={
+          <PublicLayout>
+            <NotFoundPage />
+          </PublicLayout>
+        } />
+      </Routes>
+
+      {/* Modals Globaux */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} initialMode={authMode} />
       {pendingNewUser && (
-        <RoleSelectModal
-          uid={pendingNewUser.uid}
-          displayName={pendingNewUser.displayName}
-          photoURL={pendingNewUser.photoURL}
-          onDone={() => clearPendingNewUser()}
-        />
+        <RoleSelectModal uid={pendingNewUser.uid} displayName={pendingNewUser.displayName} photoURL={pendingNewUser.photoURL} onDone={() => clearPendingNewUser()} />
       )}
       <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} />
 

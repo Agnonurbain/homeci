@@ -9,6 +9,7 @@ import {
   ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell,
 } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { KenteLine } from './ui/KenteLine';
 import { propertyService } from '../services/propertyService';
 import { visitService } from '../services/visitService';
@@ -34,7 +35,13 @@ import { VISIT_STATUS_STYLES, VISIT_STATUS_FALLBACK } from '../constants/visitSt
 
 const PIE_COLORS = [HColors.gold, HColors.vertCI, HColors.orangeCI, HColors.bordeaux, HColors.navy];
 
-
+const STATUS_STYLES: Record<string, { bg: string; text: string; border: string; label: string }> = {
+  draft: { bg: HAlpha.gold05, text: HColors.brownMid, border: HAlpha.gold15, label: 'Brouillon' },
+  pending: { bg: HAlpha.gold10, text: HColors.brownDeep, border: HAlpha.gold25, label: 'En attente' },
+  published: { bg: HAlpha.vertCI10, text: HColors.vertCI, border: HAlpha.vertCI25, label: 'Publié' },
+  rented: { bg: HAlpha.navy08, text: HColors.navy, border: HAlpha.navy20, label: 'Loué' },
+  sold: { bg: HAlpha.bord10, text: HColors.bordeaux, border: HAlpha.bord25, label: 'Vendu' },
+};
 /* ── Stat Card ────────────────────────────────────────────────────────────── */
 function StatCard({ icon: Icon, label, value, accent = HColors.gold }: { icon: any; label: string; value: number; accent?: string }) {
   return (
@@ -70,7 +77,11 @@ function StatusBadge({ status }: { status: string }) {
 /* ── Main Component ──────────────────────────────────────────────────────── */
 export default function OwnerAgentDashboard() {
   const { user, profile } = useAuth();
-  const [activeTab, setActiveTab] = useState<'properties' | 'requests' | 'stats' | 'notifications'>('properties');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const tabFromUrl = location.pathname.split('/')[2];
+  const validTabs = ['properties', 'requests', 'stats', 'notifications'];
+  const activeTab = validTabs.includes(tabFromUrl) ? tabFromUrl as any : 'properties';
   const [properties, setProperties] = useState<Property[]>([]);
   const [visitRequests, setVisitRequests] = useState<VisitRequest[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -323,7 +334,7 @@ export default function OwnerAgentDashboard() {
               { id: 'stats', icon: BarChart3, label: 'Statistiques' },
               { id: 'notifications', icon: Bell, label: 'Notifications', count: stats.unreadNotifs },
             ].map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id as typeof activeTab)}
+              <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
                 aria-label={tab.label}
                 aria-current={activeTab === tab.id ? 'page' : undefined}
                 className="py-4 px-4 border-b-2 text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2"

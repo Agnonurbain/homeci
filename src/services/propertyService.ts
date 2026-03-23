@@ -111,6 +111,14 @@ export interface Property {
   surface_par_unite: number | null;
   chambres_par_unite: number | null;
   cuisine_par_unite: boolean;
+  title_status?: 'en_attente' | 'valide' | 'refuse';
+  title_validated_at?: string | null;
+  title_rejection_reason?: string | null;
+  decertified_at?: string | null;
+  decertification_reason?: string | null;
+  decertified_by?: string | null;
+  notaire_taken_at?: string | null;
+  status_updated_at?: string | null;
   created_at: string;
   updated_at: string;
 }

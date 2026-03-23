@@ -17,7 +17,7 @@ service cloud.firestore {
     // Mise à jour : le propriétaire OU un admin
     // Suppression : admin uniquement
     match /users/{uid} {
-      allow read: if isAuth();
+      allow read: if isOwner(uid) || isAdmin() || isNotaire();
       allow create: if isOwner(uid);
       allow update: if isOwner(uid) || isAdmin();
       allow delete: if isAdmin();

@@ -7,7 +7,7 @@ import { db } from '../lib/firebase';
 export interface Notification {
   id: string;
   user_id: string;
-  type: 'visit_request' | 'visit_accepted' | 'visit_rejected' | 'notaire_approved' | 'notaire_rejected' | 'new_message';
+  type: 'visit_request' | 'visit_accepted' | 'visit_rejected' | 'visit_completed' | 'notaire_approved' | 'notaire_rejected' | 'new_message' | 'system';
   title: string;
   message: string;
   property_id?: string;

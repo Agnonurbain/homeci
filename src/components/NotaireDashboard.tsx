@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { getDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { propertyService } from '../services/propertyService';
 import { notificationService } from '../services/notificationService';
 import { visitService } from '../services/visitService';
@@ -49,7 +50,11 @@ export default function NotaireDashboard() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [owners, setOwners] = useState<Record<string, OwnerProfile>>({});
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<TabId>('disponible');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const tabFromUrl = location.pathname.split('/')[2];
+  const validTabs = ['disponible', 'en_cours', 'pret', 'certifie'];
+  const activeTab = validTabs.includes(tabFromUrl) ? tabFromUrl as TabId : 'disponible';
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -190,7 +195,7 @@ export default function NotaireDashboard() {
         property_id: property.id,
       });
       setProperties(prev => prev.map(p => p.id === property.id ? { ...p, verified_notaire: true, status: 'published' } : p));
-      setExpandedId(null); setActiveTab('certifie');
+      setExpandedId(null); navigate('/dashboard/certifie');
       analyticsService.certifyProperty(property.id);
       showToast('✅ Bien certifié ! Badge "Vérifié Notaire" accordé.');
     } catch { showToast('Erreur lors de la certification', false); }
@@ -300,7 +305,7 @@ export default function NotaireDashboard() {
           ? prev.map(p => p.id === property.id ? updated : p)
           : [...prev, updated];
       });
-      setActiveTab('en_cours');
+      navigate('/dashboard/en_cours');
       showToast('Dossier pris en charge — il apparaît dans "En cours".');
     } catch { showToast('Erreur lors de la prise en charge', false); }
     finally { setTakingId(null); }
@@ -415,7 +420,7 @@ export default function NotaireDashboard() {
               { id: 'pret', label: 'Prêts à certifier', count: stats.pret, accent: HColors.navy, bg: HAlpha.navy08, bd: HAlpha.navy20 },
               { id: 'certifie', label: 'Certifiés', count: stats.certifie, accent: HColors.vertCI, bg: HAlpha.vertCI10, bd: HAlpha.vertCI25 },
             ] as const).map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
                 aria-label={tab.label} aria-current={activeTab === tab.id ? 'page' : undefined}
                 className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap"
                 style={activeTab === tab.id

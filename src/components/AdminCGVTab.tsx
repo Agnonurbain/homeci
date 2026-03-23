@@ -6,9 +6,9 @@ export default function AdminCGVTab() {
   const [activeDoc, setActiveDoc] = useState<'locataire' | 'proprietaire' | 'notaire'>('locataire');
 
   const DOCS = [
-    { id: 'locataire', label: 'CGV Locataire / Acheteur', icon: ScrollText, file: '/cgv/cgv-locataire.txt', fileName: 'CGV_Locataire_Acheteur_HOMECI.txt' },
-    { id: 'proprietaire', label: 'CGV Propriétaire', icon: FileText, file: '/cgv/cgv-proprietaire.txt', fileName: 'CGV_Proprietaire_HOMECI.txt' },
-    { id: 'notaire', label: 'Charte Notaire', icon: Scale, file: '/cgv/cgv-notaire.txt', fileName: 'Charte_Notaire_HOMECI.txt' },
+    { id: 'locataire', label: 'CGV Locataire / Acheteur', icon: ScrollText, file: '/cgv/cgv-locataire.pdf', fileName: 'CGV_Locataire_Acheteur_HOMECI.pdf' },
+    { id: 'proprietaire', label: 'CGV Propriétaire', icon: FileText, file: '/cgv/cgv-proprietaire.pdf', fileName: 'CGV_Proprietaire_HOMECI.pdf' },
+    { id: 'notaire', label: 'Charte Notaire', icon: Scale, file: '/cgv/cgv-notaire.pdf', fileName: 'Charte_Notaire_HOMECI.pdf' },
   ] as const;
 
   const currentDoc = DOCS.find(d => d.id === activeDoc)!;
@@ -72,7 +72,7 @@ export default function AdminCGVTab() {
             </h3>
             <p className="text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
               Ce document fait foi en cas de conflit juridique. Il établit le cadre de responsabilité et les droits de chaque partie.
-              Vous pouvez le télécharger au format texte (.txt) ou le partager directement par email via Gmail.
+              Vous pouvez le télécharger au format PDF (.pdf) ou le partager directement par email via Gmail.
             </p>
           </div>
         </div>
@@ -84,7 +84,7 @@ export default function AdminCGVTab() {
             style={{ background: 'linear-gradient(135deg, #1A4F3A, #2D6A4F)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}
           >
             <Download className="w-4 h-4" />
-            Télécharger (.txt)
+            Télécharger (.pdf)
           </button>
 
           <button
