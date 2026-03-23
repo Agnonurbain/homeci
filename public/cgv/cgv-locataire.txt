@@ -1,0 +1,108 @@
+Ce document régit vos droits et obligations en tant que locataire ou acheteur sur HOMECI,
+ conformément à la loi n°2013-546 du 30 juillet 2013 relative aux transactions électroniques
+ en Côte d'Ivoire.
+
+ <H3>Article 1 — Objet et cadre juridique
+ 
+ Les présentes Conditions Générales d'Utilisation (ci-après « CGU ») régissent l'accès
+ et l'utilisation de la plateforme HOMECI par les locataires et acheteurs souhaitant consulter
+ des annonces immobilières et demander des visites de biens en Côte d'Ivoire. Elles sont établies
+ conformément à la loi n°2018-575 du 13 juin 2018 relative au bail à usage d'habitation,
+ au Code de la Construction et de l'Habitat (loi n°2019-575 du 26 juin 2019), et à la loi
+ n°2013-546 relative aux transactions électroniques.
+
+ Article 2 — Définitions
+ 
+ a) Locataire/Acheteur : toute personne physique ou morale utilisant la plateforme HOMECI
+ pour rechercher un bien immobilier à louer ou à acquérir en Côte d'Ivoire.
+
+ b) Visite : rendez-vous organisé via la plateforme entre le locataire/acheteur
+ et le propriétaire pour la consultation physique d'un bien immobilier.
+
+ c) Bien certifié : bien dont les documents légaux ont été vérifiés et validés
+ par un notaire agréé inscrit au tableau de l'Ordre des Notaires de Côte d'Ivoire
+ (loi n°2014-138 du 24 mars 2014).
+
+ Article 3 — Demandes de visite et tarification
+ 
+ Chaque demande de visite est soumise à des frais de service de 500 FCFA, payables via
+ les moyens de paiement Mobile Money disponibles (Orange Money, MTN MoMo, Wave, Moov Flooz, Djamo).
+ Ces paiements sont régis par la réglementation de la BCEAO relative à la monnaie électronique.
+ Les frais couvrent la mise en relation avec le propriétaire et la coordination de la visite.
+ Les frais ne sont pas remboursables en cas d'annulation par le demandeur. En cas d'annulation
+ par le propriétaire, le locataire sera recrédité dans un délai de 72 heures ouvrées.
+
+ Article 4 — Engagements du locataire/acheteur
+ Le locataire/acheteur s'engage à :
+ 
+ a) Fournir des informations d'identité exactes et vérifiables lors de son inscription
+ sur la plateforme. Toute usurpation d'identité est passible de sanctions pénales
+ au titre de la loi n°2013-451 du 19 juin 2013 relative à la lutte contre la cybercriminalité.
+
+ b) Se présenter aux visites programmées ou prévenir le propriétaire en cas d'empêchement
+ au moins 24 heures à l'avance via la plateforme.
+
+ c) Respecter les biens visités et ne causer aucun dommage. Tout dommage causé lors d'une visite
+ engage la responsabilité civile du visiteur au sens des articles 1382 et suivants
+ du Code civil ivoirien.
+
+ d) Ne pas utiliser les coordonnées des propriétaires obtenues via HOMECI à des fins
+ commerciales, frauduleuses ou de harcèlement.
+
+ e) Respecter les dispositions de la loi n°2018-575 du 13 juin 2018 relative au bail
+ à usage d'habitation dans le cadre de toute relation locative conclue suite à l'utilisation
+ de la plateforme, notamment les obligations du preneur prévues aux articles 22 et suivants.
+
+ Article 5 — Garanties et limites de la certification
+ 
+ HOMECI s'engage à ce que chaque bien publié soit vérifié par un notaire agréé conformément
+ à la loi n°2014-138. La certification porte exclusivement sur la validité des documents
+ légaux fournis par le propriétaire (titre foncier, permis de construire, etc.) et non sur
+ l'état physique, l'habitabilité ou la conformité technique du bien. Le locataire/acheteur
+ est encouragé à effectuer ses propres vérifications lors de la visite et, en cas d'achat,
+ à se faire accompagner par un professionnel du droit pour la rédaction de l'acte de vente.
+
+ Article 6 — Droits du locataire/acheteur
+ Conformément à la législation ivoirienne, le locataire/acheteur bénéficie :
+ 
+ a) Du droit d'accès aux informations complètes sur le bien (superficie, localisation,
+ prix, statut de certification) avant toute visite.
+
+ b) Du droit de signaler toute annonce suspecte ou frauduleuse via la plateforme.
+ HOMECI s'engage à traiter tout signalement dans un délai de 48 heures.
+
+ c) Du droit de rétractation sur les frais de visite dans un délai de 24 heures suivant
+ le paiement, si la visite n'a pas encore été programmée.
+
+ Article 7 — Responsabilité de HOMECI
+ 
+ HOMECI agit en tant qu'intermédiaire de mise en relation au sens de la loi n°2013-546
+ relative aux transactions électroniques. La plateforme ne saurait être tenue responsable
+ des litiges entre locataires et propriétaires, ni de l'état réel des biens proposés.
+ Toute transaction financière directe entre les parties (loyer, caution, prix de vente)
+ se fait sous leur seule responsabilité et doit respecter les dispositions légales applicables,
+ notamment la loi n°2018-575 relative au bail à usage d'habitation.
+
+ Article 8 — Règlement des litiges
+ 
+ En cas de litige lié à une visite ou à une annonce, le locataire/acheteur peut saisir
+ le service de médiation de HOMECI à l'adresse contact@homeci.ci. Si aucune solution
+ amiable n'est trouvée dans un délai de 30 jours, le litige pourra être soumis
+ aux juridictions compétentes d'Abidjan.
+
+ Article 9 — Protection des données personnelles
+ 
+ Conformément à la loi n°2013-450 du 19 juin 2013 relative à la protection des données
+ à caractère personnel, vos données sont collectées et traitées aux seules fins de la fourniture
+ des services HOMECI. Le traitement est déclaré auprès de l'ARTCI. Vous disposez d'un droit
+ d'accès, de rectification, d'opposition et de suppression de vos données en contactant
+ contact@homeci.ci. Vos données ne sont jamais cédées à des tiers sans votre consentement
+ préalable, sauf obligation légale.
+
+ Article 10 — Droit applicable et juridiction compétente
+ 
+ Les présentes CGU sont régies par le droit ivoirien. Tout litige relatif à leur interprétation
+ ou exécution sera soumis aux juridictions compétentes d'Abidjan, Côte d'Ivoire,
+ conformément au Code de procédure civile, commerciale et administrative.
+
+ Dernière mise à jour : Mars 2026

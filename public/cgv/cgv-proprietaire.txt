@@ -1,0 +1,137 @@
+Ce document constitue un engagement légal entre vous, propriétaire, et la plateforme HOMECI,
+ conformément à la loi n°2013-546 du 30 juillet 2013 relative aux transactions électroniques
+ en Côte d'Ivoire. Lisez-le attentivement avant d'accepter.
+
+ <H3>Article 1 — Objet et cadre juridique
+ 
+ Les présentes Conditions Générales d'Utilisation (ci-après « CGU ») régissent l'accès et l'utilisation
+ de la plateforme HOMECI par les propriétaires souhaitant publier des annonces immobilières
+ en Côte d'Ivoire. Elles sont établies conformément aux dispositions de la loi n°2019-575 du 26 juin 2019
+ instituant le Code de la Construction et de l'Habitat, de la loi n°2020-480 portant Code foncier
+ et domanial, et de la loi n°2013-546 du 30 juillet 2013 relative aux transactions électroniques.
+ En publiant un bien sur HOMECI, le propriétaire accepte sans réserve les présentes conditions.
+
+ Article 2 — Définitions
+ 
+ a) Propriétaire : toute personne physique ou morale, de nationalité ivoirienne ou étrangère,
+ titulaire d'un droit de propriété ou d'un mandat de gestion sur un bien immobilier situé
+ en Côte d'Ivoire, au sens du décret du 26 juillet 1932 portant réorganisation du régime
+ de la propriété foncière en AOF.
+
+ b) Bien immobilier : tout immeuble bâti ou non bâti (appartement, maison, villa, terrain,
+ hôtel, appart-hôtel) situé sur le territoire ivoirien, qu'il relève du domaine foncier urbain
+ ou rural au sens de la loi n°98-750 du 23 décembre 1998 telle que modifiée.
+
+ c) Certification notariale : processus de vérification de l'authenticité et de la conformité
+ des documents légaux du bien par un notaire inscrit au tableau de l'Ordre des Notaires
+ de Côte d'Ivoire, conformément à la loi n°2014-138 du 24 mars 2014.
+
+ Article 3 — Conditions d'éligibilité
+ Le propriétaire déclare et garantit :
+ 
+ a) Être le propriétaire légitime du bien, titulaire d'un titre foncier, d'un Arrêté de Concession
+ Définitive (ACD), d'un Certificat de Propriété Foncière (CPF), ou disposer d'une procuration
+ notariée l'autorisant à agir au nom du propriétaire, conformément à l'article 30 de la loi
+ de finances du 15 mars 2002 relative à la pleine propriété.
+
+ b) Que le bien est libre de tout litige foncier, hypothèque non déclarée, servitude
+ ou saisie judiciaire en cours.
+
+ c) Que le bien respecte les normes de construction et d'habitabilité prévues par le Code
+ de la Construction et de l'Habitat (loi n°2019-575), notamment les articles relatifs
+ au permis de construire et au certificat de conformité.
+
+ d) Être majeur et jouir de sa pleine capacité juridique, ou agir au nom d'une personne morale
+ dûment immatriculée au Registre du Commerce et du Crédit Mobilier (RCCM).
+
+ Article 4 — Engagements du propriétaire
+ Le propriétaire s'engage à :
+ 
+ a) Fournir des informations exactes, complètes et à jour concernant le bien immobilier
+ (superficie, localisation, prix, état, équipements). Toute information mensongère engage
+ sa responsabilité civile au sens des articles 1382 et suivants du Code civil ivoirien.
+
+ b) Fournir les documents légaux requis selon le type de bien : titre foncier, permis de construire,
+ plan cadastral, autorisation d'exploitation (pour les hôtels), registre de commerce, ainsi que
+ les pièces d'identité du propriétaire (CNI, passeport, attestation de résidence ou carte de séjour
+ selon sa situation).
+
+ c) Respecter les tarifs annoncés et ne pratiquer aucune discrimination contraire à la Constitution
+ de la République de Côte d'Ivoire et aux conventions internationales ratifiées.
+
+ d) Maintenir ses annonces à jour et retirer tout bien qui n'est plus disponible dans un délai
+ de 48 heures suivant la conclusion d'une transaction.
+
+ e) Ne pas publier de contenu frauduleux, trompeur ou contraire à l'ordre public et aux bonnes
+ mœurs tels que définis par la législation ivoirienne.
+
+ Article 5 — Vérification notariale et certification
+ 
+ Conformément à la loi n°2014-138 du 24 mars 2014 portant organisation de la profession de notaire
+ en Côte d'Ivoire, chaque bien publié sur HOMECI est soumis à un processus de vérification
+ par un notaire agréé inscrit au tableau de l'Ordre. Le propriétaire autorise expressément HOMECI
+ et le notaire assigné à examiner l'authenticité et la conformité des documents soumis.
+ La publication de l'annonce est conditionnée à la validation de l'ensemble des documents
+ obligatoires par le notaire. Le délai indicatif de traitement est de 48 à 72 heures ouvrées.
+
+ Article 6 — Tarification et paiements
+ 
+ Les frais de publication sont fixés à 1 000 FCFA par annonce et les frais de certification
+ notariale à 75 000 FCFA par dossier, payables via les moyens de paiement Mobile Money
+ disponibles sur la plateforme (Orange Money, MTN MoMo, Wave, Moov Flooz, Djamo). Les paiements
+ sont régis par la réglementation de la Banque Centrale des États de l'Afrique de l'Ouest (BCEAO)
+ relative à la monnaie électronique. HOMECI se réserve le droit de modifier ses tarifs
+ avec notification préalable de 30 jours aux utilisateurs.
+
+ Article 7 — Confidentialité des documents
+ 
+ Les documents légaux et pièces d'identité soumis sont traités de manière strictement confidentielle.
+ Ils sont accessibles uniquement par le propriétaire, le notaire assigné et l'équipe administrative
+ de HOMECI. Ils ne sont jamais partagés avec les locataires, acheteurs potentiels ou tout tiers
+ non autorisé. Le stockage est effectué sur des serveurs sécurisés avec chiffrement des données
+ au repos et en transit.
+
+ Article 8 — Propriété intellectuelle
+ 
+ Le propriétaire garantit qu'il détient les droits sur l'ensemble des photos, vidéos et médias
+ téléversés. En publiant ces contenus, il accorde à HOMECI une licence non exclusive, gratuite
+ et révocable d'utilisation aux seules fins de promotion de l'annonce sur la plateforme
+ et ses canaux de communication. Cette licence prend fin automatiquement à la suppression
+ de l'annonce.
+
+ Article 9 — Responsabilité et limitation
+ 
+ HOMECI agit en tant qu'intermédiaire de mise en relation au sens de la loi n°2013-546
+ relative aux transactions électroniques. La plateforme ne saurait être tenue responsable
+ des litiges entre propriétaires et locataires/acheteurs, ni de l'état final des biens.
+ Le propriétaire demeure seul responsable de l'exactitude des informations publiées
+ et de la conformité du bien aux lois et règlements ivoiriens. HOMECI ne se substitue
+ en aucun cas au notaire dans l'exercice de ses fonctions.
+
+ Article 10 — Modération et sanctions
+ 
+ HOMECI se réserve le droit de suspendre ou supprimer toute annonce ne respectant pas
+ les présentes conditions, contenant des informations fausses, ou faisant l'objet de plaintes
+ vérifiées. En cas de manquement grave ou répété, le compte du propriétaire pourra être
+ suspendu temporairement ou définitivement, sans préjudice des poursuites civiles ou pénales
+ prévues par la législation ivoirienne.
+
+ Article 11 — Protection des données personnelles
+ 
+ Conformément à la loi n°2013-450 du 19 juin 2013 relative à la protection des données
+ à caractère personnel, HOMECI s'engage à ne collecter que les données strictement nécessaires
+ à la fourniture de ses services. Le traitement est déclaré auprès de l'Autorité de Régulation
+ des Télécommunications/TIC de Côte d'Ivoire (ARTCI). Le propriétaire dispose d'un droit
+ d'accès, de rectification, d'opposition et de suppression de ses données en contactant
+ contact@homeci.ci. Les données sont conservées pour la durée nécessaire à la fourniture
+ du service et au respect des obligations légales.
+
+ Article 12 — Droit applicable et juridiction compétente
+ 
+ Les présentes CGU sont régies par le droit ivoirien. En cas de litige, les parties s'engagent
+ à rechercher une solution amiable dans un délai de 30 jours. À défaut d'accord, tout litige
+ relatif à l'interprétation ou l'exécution des présentes sera soumis aux juridictions
+ compétentes d'Abidjan, Côte d'Ivoire, conformément au Code de procédure civile,
+ commerciale et administrative.
+
+ Dernière mise à jour : Mars 2026

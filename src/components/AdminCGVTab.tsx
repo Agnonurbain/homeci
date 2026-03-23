@@ -1,18 +1,36 @@
 import { useState } from 'react';
-import { ScrollText, Shield, FileText, Scale } from 'lucide-react';
+import { ScrollText, Shield, FileText, Scale, Download, Mail } from 'lucide-react';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
-import CGVLocataireModal from './CGVLocataireModal';
-import CGVModal from './CGVModal';
-import CGVNotaireModal from './CGVNotaireModal';
 
 export default function AdminCGVTab() {
   const [activeDoc, setActiveDoc] = useState<'locataire' | 'proprietaire' | 'notaire'>('locataire');
 
   const DOCS = [
-    { id: 'locataire', label: 'CGV Locataire / Acheteur', icon: ScrollText },
-    { id: 'proprietaire', label: 'CGV Propriétaire', icon: FileText },
-    { id: 'notaire', label: 'Charte Notaire', icon: Scale },
+    { id: 'locataire', label: 'CGV Locataire / Acheteur', icon: ScrollText, file: '/cgv/cgv-locataire.txt', fileName: 'CGV_Locataire_Acheteur_HOMECI.txt' },
+    { id: 'proprietaire', label: 'CGV Propriétaire', icon: FileText, file: '/cgv/cgv-proprietaire.txt', fileName: 'CGV_Proprietaire_HOMECI.txt' },
+    { id: 'notaire', label: 'Charte Notaire', icon: Scale, file: '/cgv/cgv-notaire.txt', fileName: 'Charte_Notaire_HOMECI.txt' },
   ] as const;
+
+  const currentDoc = DOCS.find(d => d.id === activeDoc)!;
+
+  const handleDownload = () => {
+    const a = document.createElement('a');
+    a.href = currentDoc.file;
+    a.download = currentDoc.fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const handleShareGmail = () => {
+    const subject = encodeURIComponent(`Document Légal HOMECI : ${currentDoc.label}`);
+    const body = encodeURIComponent(
+      `Bonjour,\n\nVous trouverez le document légal "${currentDoc.label}" en accès libre sur notre plateforme.\n\nVous pouvez le télécharger directement via ce lien (si hébergé) : https://homeci.ci${currentDoc.file}\n\nCordialement,\nL'équipe HOMECI`
+    );
+    // Ouvre Gmail web compose avec subject et body pré-remplis
+    const url = `https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${body}`;
+    window.open(url, '_blank');
+  };
 
   return (
     <div>
@@ -21,7 +39,7 @@ export default function AdminCGVTab() {
           Documents Légaux & CGV
         </h2>
         <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-          Consultez les Conditions Générales de Vente et les chartes d'utilisation pour chaque type d'acteur.
+          Consultez, téléchargez et partagez les chartes d'utilisation pour chaque type d'acteur.
         </p>
       </div>
 
@@ -45,27 +63,37 @@ export default function AdminCGVTab() {
         ))}
       </div>
 
-      <div className="rounded-2xl overflow-hidden p-8" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}>
-        <div className="flex items-start gap-3 mb-6 p-4 rounded-xl" style={{ background: HAlpha.gold05, border: `1px solid ${HAlpha.gold15}` }}>
+      <div className="rounded-2xl p-8" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}>
+        <div className="flex items-start gap-3 mb-8 p-4 rounded-xl" style={{ background: HAlpha.gold05, border: `1px solid ${HAlpha.gold15}` }}>
           <Shield className="w-5 h-5 shrink-0" style={{ color: HColors.gold }} />
           <div>
             <h3 className="font-bold text-sm mb-1" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
-              Valeur Juridique
+              Valeur Juridique — {currentDoc.label}
             </h3>
             <p className="text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-              Ces documents font foi en cas de conflit juridique. Ils établissent le cadre de responsabilité et les droits de chaque partie.
-              Pour lire leur contenu complet, vous pouvez déclencher un aperçu ci-dessous.
+              Ce document fait foi en cas de conflit juridique. Il établit le cadre de responsabilité et les droits de chaque partie.
+              Vous pouvez le télécharger au format texte (.txt) ou le partager directement par email via Gmail.
             </p>
           </div>
         </div>
 
-        <div className="flex justify-center py-10">
+        <div className="flex justify-center gap-4 py-6">
           <button
-            onClick={() => alert('Les textes originaux sont codés en dur dans les modals (components/CGVLocataireModal.tsx, CGVModal.tsx, CGVNotaireModal.tsx). Vous pouvez les retrouver là-bas ou instancier la vue modale directement.')}
-            className="px-6 py-3 rounded-xl font-bold text-sm"
-            style={{ background: HAlpha.gold10, color: HColors.brownDeep, border: `1px solid ${HAlpha.gold25}` }}
+            onClick={handleDownload}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90 shadow-md"
+            style={{ background: 'linear-gradient(135deg, #1A4F3A, #2D6A4F)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}
           >
-            Afficher le texte complet du {DOCS.find(d => d.id === activeDoc)?.label}
+            <Download className="w-4 h-4" />
+            Télécharger (.txt)
+          </button>
+
+          <button
+            onClick={handleShareGmail}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90 shadow-md"
+            style={{ background: '#EA4335', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}
+          >
+            <Mail className="w-4 h-4" />
+            Partager via Gmail
           </button>
         </div>
       </div>
