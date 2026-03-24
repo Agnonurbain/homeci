@@ -703,11 +703,19 @@ export default function OwnerAgentDashboard() {
                             <CheckCircle className="w-3.5 h-3.5" /> Visite effectuée
                           </button>
                         )}
-                        {(visit.status === 'accepted' || visit.status === 'completed') && (
+                        {visit.status !== 'rejected' && (
                           <button onClick={() => handleOpenChat(visit)}
-                            disabled={chatLoadingId === visit.id}
+                            disabled={chatLoadingId === visit.id || (visit.status !== 'accepted' && visit.status !== 'completed')}
                             className="px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm font-semibold shrink-0 transition-all hover:opacity-90 disabled:opacity-50"
-                            style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+                            style={{ 
+                              background: (visit.status === 'accepted' || visit.status === 'completed') 
+                                ? 'linear-gradient(135deg,#FF6B00,#D4A017)' 
+                                : '#e5e7eb', 
+                              color: (visit.status === 'accepted' || visit.status === 'completed') ? '#FFFFFF' : '#9ca3af',
+                              fontFamily: 'var(--font-nunito)' 
+                            }}
+                            title={ (visit.status !== 'accepted' && visit.status !== 'completed') ? "Le chat sera accessible dès que vous aurez accepté la visite." : "" }
+                          >
                             {chatLoadingId === visit.id
                               ? <div className="w-3.5 h-3.5 animate-spin rounded-full border-b-2 border-white" />
                               : <MessageSquare className="w-3.5 h-3.5" />}

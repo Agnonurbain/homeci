@@ -693,14 +693,20 @@ export default function TenantDashboard() {
                             </div>
                           )}
 
-                          {(visit.status === 'accepted' || visit.status === 'completed') && (
+                          {visit.status !== 'rejected' && (
                             <button onClick={() => handleOpenChat(visit)}
-                              disabled={chatLoadingId === visit.id}
+                              disabled={chatLoadingId === visit.id || (visit.status !== 'accepted' && visit.status !== 'completed')}
                               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
                               style={{
-                                background: 'linear-gradient(135deg,#FF6B00,#D4A017)', border: '1px solid rgba(212,160,23,0.3)',
-                                color: '#FFFFFF', fontFamily: 'var(--font-nunito)'
-                              }}>
+                                background: (visit.status === 'accepted' || visit.status === 'completed')
+                                  ? 'linear-gradient(135deg,#FF6B00,#D4A017)'
+                                  : '#e5e7eb',
+                                border: '1px solid rgba(212,160,23,0.3)',
+                                color: (visit.status === 'accepted' || visit.status === 'completed') ? '#FFFFFF' : '#9ca3af',
+                                fontFamily: 'var(--font-nunito)'
+                              }}
+                              title={ (visit.status !== 'accepted' && visit.status !== 'completed') ? "Le chat sera accessible dès que le propriétaire aura confirmé votre visite." : "" }
+                            >
                               {chatLoadingId === visit.id
                                 ? <div className="w-3.5 h-3.5 animate-spin rounded-full border-b-2 border-white" />
                                 : <MessageSquare className="w-3.5 h-3.5" />}

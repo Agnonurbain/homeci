@@ -1,5 +1,5 @@
 import {
-  collection, doc, getDocs, setDoc, addDoc, query, where, orderBy, onSnapshot, getDoc
+  collection, doc, setDoc, addDoc, query, orderBy, onSnapshot, getDoc
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
@@ -50,24 +50,23 @@ export const chatService = {
    * Crée ou récupère le chat lié à une visite
    */
   async getOrCreateChat(visitId: string, propertyId: string, tenantId: string, ownerId: string): Promise<string> {
-    const q = query(collection(db, 'chats'), where('visit_id', '==', visitId));
-    const snaps = await getDocs(q);
+    const chatRef = doc(db, 'chats', visitId);
+    const snap = await getDoc(chatRef);
     
-    if (!snaps.empty) {
-      return snaps.docs[0].id;
+    if (snap.exists()) {
+      return snap.id;
     }
 
     try {
-      // Créer un nouveau chat
-      const newChatRef = doc(collection(db, 'chats'));
-      await setDoc(newChatRef, {
+      // Créer un nouveau chat avec visitId comme ID
+      await setDoc(chatRef, {
         property_id: propertyId,
         tenant_id: tenantId,
         owner_id: ownerId,
         visit_id: visitId,
         updated_at: new Date().toISOString()
       });
-      return newChatRef.id;
+      return visitId;
     } catch (err) {
       console.error('[chatService] Error creating chat:', err);
       throw err;
