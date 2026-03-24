@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import {
   Plus, Home, Calendar, BarChart3, Eye, Edit, X,
   CheckCircle, Clock, XCircle, Bell, TrendingUp, Users,
-  Send, MapPin, Star, AlertTriangle, RefreshCw, Zap
+  Send, MapPin, Star, AlertTriangle, RefreshCw, Zap,
+  MessageSquare
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -12,11 +13,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { KenteLine } from './ui/KenteLine';
 import { propertyService } from '../services/propertyService';
-import { visitService } from '../services/visitService';
-import { notificationService } from '../services/notificationService';
+import { visitService, type VisitRequest } from '../services/visitService';
+import { notificationService, type Notification } from '../services/notificationService';
+import { chatService } from '../services/chatService';
 import type { Property } from '../types/property';
-import type { VisitRequest } from '../services/visitService';
-import type { Notification } from '../services/notificationService';
 import AddPropertyForm from './AddPropertyForm';
 import EditPropertyForm from './EditPropertyForm';
 import PropertyViewModal from './PropertyViewModal';
@@ -24,6 +24,8 @@ import ScrollTimePicker from './ScrollTimePicker';
 import CGVModal from './CGVModal';
 import PaymentModal from './PaymentModal';
 import type { PaymentConfig } from './PaymentModal';
+import AvailabilityManager from './AvailabilityManager';
+import ChatBox from './ChatBox';
 import SatisfactionModal from './SatisfactionModal';
 import { StatGridSkeleton, PropertyTableSkeleton } from './Skeletons';
 import { analyticsService } from '../services/analyticsService';
@@ -106,6 +108,10 @@ export default function OwnerAgentDashboard() {
   const [boostProp, setBoostProp] = useState<Property | null>(null);
   const [boostDuration, setBoostDuration] = useState<BoostDuration>(7);
   const [boostPaymentConfig, setBoostPaymentConfig] = useState<PaymentConfig | null>(null);
+  
+  const [availabilityProp, setAvailabilityProp] = useState<Property | null>(null);
+  const [activeChat, setActiveChat] = useState<{ chatId: string; otherName: string; otherRole: 'Locataire' } | null>(null);
+  const [chatLoadingId, setChatLoadingId] = useState<string | null>(null);
 
   useEffect(() => { loadAll(); }, []);
 
@@ -241,7 +247,7 @@ export default function OwnerAgentDashboard() {
           ? selectedVisit.counter_date
           : selectedVisit.preferred_date;
         setDisclaimerVisit({
-          propertyTitle: selectedVisit.property_title,
+          propertyTitle: selectedVisit.property_title || 'Bien sans titre',
           visitDate,
         });
       }
@@ -273,6 +279,23 @@ export default function OwnerAgentDashboard() {
     } catch (e) {
       console.error('[HOMECI] Erreur marquage visite:', e);
     } finally { setVisitActionLoading(false); }
+  };
+
+  const handleOpenChat = async (visit: VisitRequest) => {
+    if (!user) return;
+    setChatLoadingId(visit.id);
+    try {
+      const chatId = await chatService.getOrCreateChat(visit.id, visit.property_id, visit.tenant_id, user.uid);
+      setActiveChat({
+        chatId,
+        otherName: visit.tenant_name || 'Locataire',
+        otherRole: 'Locataire'
+      });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setChatLoadingId(null);
+    }
   };
 
   const handleUpdatePropertyStatus = async (status: 'rented' | 'sold' | 'published') => {
@@ -518,6 +541,12 @@ export default function OwnerAgentDashboard() {
                                       <AlertTriangle className="w-3.5 h-3.5" /> Statut
                                     </button>
                                   )}
+                                  <button onClick={() => setAvailabilityProp(property)}
+                                    aria-label={`Gérer les disponibilités de ${property.title}`}
+                                    className="p-1.5 rounded-lg transition-all hover:opacity-80"
+                                    style={{ color: HColors.gold, background: HAlpha.gold10 }} title="Disponibilités">
+                                    <Calendar className="w-4 h-4" />
+                                  </button>
                                   {property.status === 'published' && (
                                     <button onClick={() => { setBoostProp(property); setBoostDuration(7); }}
                                       aria-label={`Booster ${property.title}`}
@@ -673,6 +702,17 @@ export default function OwnerAgentDashboard() {
                             <CheckCircle className="w-3.5 h-3.5" /> Visite effectuée
                           </button>
                         )}
+                        {(visit.status === 'accepted' || visit.status === 'completed') && (
+                          <button onClick={() => handleOpenChat(visit)}
+                            disabled={chatLoadingId === visit.id}
+                            className="px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm font-semibold shrink-0 transition-all hover:opacity-90 disabled:opacity-50"
+                            style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+                            {chatLoadingId === visit.id
+                              ? <div className="w-3.5 h-3.5 animate-spin rounded-full border-b-2 border-white" />
+                              : <MessageSquare className="w-3.5 h-3.5" />}
+                            Discuter
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
@@ -748,7 +788,7 @@ export default function OwnerAgentDashboard() {
                   <ResponsiveContainer width="100%" height={220}>
                     <PieChart>
                       <Pie data={typeData} cx="50%" cy="50%" outerRadius={80} dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                        label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}>
                         {typeData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                       </Pie>
                       <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid rgba(212,160,23,0.2)', fontFamily: 'var(--font-nunito)' }} />
@@ -1246,6 +1286,29 @@ export default function OwnerAgentDashboard() {
             loadAll();
           }}
           onClose={() => setBoostPaymentConfig(null)}
+        />
+      )}
+
+      {/* Modal AvailabilityManager */}
+      {availabilityProp && user && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(10,22,14,0.88)', backdropFilter: 'blur(8px)' }}>
+          <div className="w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl relative" style={{ background: HColors.night, border: `1px solid ${HAlpha.gold20}` }}>
+            <button onClick={() => setAvailabilityProp(null)} className="absolute top-4 right-4 p-1.5 rounded-lg z-10" style={{ background: 'rgba(255,255,255,0.06)' }}>
+              <X className="w-4 h-4" style={{ color: 'rgba(245,230,200,0.4)' }} />
+            </button>
+            <AvailabilityManager propertyId={availabilityProp.id} ownerId={user.uid} />
+          </div>
+        </div>
+      )}
+
+      {/* ChatBox */}
+      {activeChat && user && (
+        <ChatBox
+          chatId={activeChat.chatId}
+          currentUserId={user.uid}
+          otherUserName={activeChat.otherName}
+          otherUserRole={activeChat.otherRole}
+          onClose={() => setActiveChat(null)}
         />
       )}
 

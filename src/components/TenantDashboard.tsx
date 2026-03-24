@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   Heart, Calendar, Search, Map, List, X, Phone, CheckCircle,
-  XCircle, Clock, Bell, MapPin, Bed, Bath, Maximize, Eye,
-  ChevronLeft, ChevronRight, Star, AlertCircle, TrendingUp,
+  XCircle, Clock, Bell, MapPin, Bed, Maximize, Eye,
+  ChevronLeft, ChevronRight, Star, AlertCircle,
+  MessageSquare
 } from 'lucide-react';
 import { propertyService } from '../services/propertyService';
 import { visitService } from '../services/visitService';
@@ -24,9 +25,12 @@ import { KenteLine } from './ui/KenteLine';
 import CGVLocataireModal from './CGVLocataireModal';
 import PaymentModal from './PaymentModal';
 import SatisfactionModal from './SatisfactionModal';
+import ChatBox from './ChatBox';
 import { surveyService } from '../services/surveyService';
-import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
+import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { analyticsService } from '../services/analyticsService';
+import { availabilityService, type PropertyAvailability } from '../services/availabilityService';
+import { chatService } from '../services/chatService';
 import { VISIT_STATUS_TENANT as VISIT_STATUS } from '../constants/visitStatus';
 
 const PER_PAGE = 9;
@@ -64,6 +68,10 @@ export default function TenantDashboard() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+
+  const [propertyAvailability, setPropertyAvailability] = useState<PropertyAvailability | null>(null);
+  const [activeChat, setActiveChat] = useState<{ chatId: string; otherName: string; otherRole: 'Propriétaire' | 'Agent' | 'Locataire' | 'Acheteur' } | null>(null);
+  const [chatLoadingId, setChatLoadingId] = useState<string | null>(null);
 
   const [viewingPropertyId, setViewingPropertyId] = useState<string | null>(null);
   const [visitRequestPropertyId, setVisitRequestPropertyId] = useState<string | null>(null);
@@ -129,6 +137,14 @@ export default function TenantDashboard() {
     }
   }, [visitRequestPropertyId, allProperties]);
 
+  useEffect(() => {
+    if (visitModalProperty) {
+      availabilityService.getAvailability(visitModalProperty.id).then(setPropertyAvailability).catch(console.error);
+    } else {
+      setPropertyAvailability(null);
+    }
+  }, [visitModalProperty]);
+
   // Cleanup timer on unmount
   useEffect(() => () => { clearTimeout(visitSuccessTimer.current); }, []);
 
@@ -156,6 +172,23 @@ export default function TenantDashboard() {
     }
   };
 
+  const handleOpenChat = async (visit: VisitRequest) => {
+    if (!user) return;
+    setChatLoadingId(visit.id);
+    try {
+      const chatId = await chatService.getOrCreateChat(visit.id, visit.property_id, user.uid, visit.owner_id);
+      setActiveChat({
+        chatId,
+        otherName: 'Propriétaire / Agent',
+        otherRole: 'Propriétaire'
+      });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setChatLoadingId(null);
+    }
+  };
+
   const handleFilterChange = (filters: FilterValues) => {
     let r = [...allProperties];
     if (filters.propertyType) r = r.filter(p => p.property_type === filters.propertyType);
@@ -180,6 +213,16 @@ export default function TenantDashboard() {
     if (!user || !visitModalProperty || !visitForm.preferred_date || !visitForm.preferred_time) return;
     setSubmittingVisit(true); setVisitError('');
     try {
+      if (propertyAvailability) {
+        const d = new Date(visitForm.preferred_date);
+        const slots = availabilityService.getAvailableSlots(propertyAvailability, d);
+        if (slots.length === 0) {
+          setVisitError("Le propriétaire n'est pas disponible à cette date (vérifiez ses disponibilités via le bouton Info). Veuillez choisir un autre jour.");
+          setSubmittingVisit(false);
+          return;
+        }
+      }
+
       const existing = visitRequests.find(v => v.property_id === visitModalProperty.id && v.status !== 'rejected');
       if (existing) { setVisitError('Vous avez déjà une demande de visite pour ce bien.'); setSubmittingVisit(false); return; }
       await visitService.createVisitRequest({
@@ -650,6 +693,21 @@ export default function TenantDashboard() {
                             </div>
                           )}
 
+                          {(visit.status === 'accepted' || visit.status === 'completed') && (
+                            <button onClick={() => handleOpenChat(visit)}
+                              disabled={chatLoadingId === visit.id}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
+                              style={{
+                                background: 'linear-gradient(135deg,#FF6B00,#D4A017)', border: '1px solid rgba(212,160,23,0.3)',
+                                color: '#FFFFFF', fontFamily: 'var(--font-nunito)'
+                              }}>
+                              {chatLoadingId === visit.id
+                                ? <div className="w-3.5 h-3.5 animate-spin rounded-full border-b-2 border-white" />
+                                : <MessageSquare className="w-3.5 h-3.5" />}
+                              Discuter avec le propriétaire
+                            </button>
+                          )}
+
                           {visit.status === 'rejected' && (
                             <button onClick={() => {
                               const p = allProperties.find(pr => pr.id === visit.property_id);
@@ -959,6 +1017,17 @@ export default function TenantDashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ChatBox */}
+      {activeChat && user && (
+        <ChatBox
+          chatId={activeChat.chatId}
+          currentUserId={user.uid}
+          otherUserName={activeChat.otherName}
+          otherUserRole={activeChat.otherRole}
+          onClose={() => setActiveChat(null)}
+        />
       )}
 
       {/* Enquête de satisfaction */}
