@@ -11,11 +11,12 @@ interface PropertyCardProps {
   property: Property;
   onFavorite?: () => void;
   isFavorite?: boolean;
+  isBoosted?: boolean;
   onViewDetails?: () => void;
   onContactClick?: () => void;
 }
 
-export function PropertyCard({ property, onFavorite, isFavorite, onViewDetails, onContactClick }: PropertyCardProps) {
+export function PropertyCard({ property, onFavorite, isFavorite, isBoosted, onViewDetails, onContactClick }: PropertyCardProps) {
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 }).format(price);
 
@@ -26,8 +27,9 @@ export function PropertyCard({ property, onFavorite, isFavorite, onViewDetails, 
   return (
     <div className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
       style={{
-        background: HColors.white, border: '1px solid rgba(245,230,200,0.5)',
-        boxShadow: '0 2px 12px rgba(10,61,31,0.08)'
+        background: HColors.white,
+        border: isBoosted ? '2px solid rgba(212,160,23,0.5)' : '1px solid rgba(245,230,200,0.5)',
+        boxShadow: isBoosted ? '0 4px 20px rgba(212,160,23,0.15)' : '0 2px 12px rgba(10,61,31,0.08)',
       }}>
 
       {/* Image */}
@@ -45,6 +47,12 @@ export function PropertyCard({ property, onFavorite, isFavorite, onViewDetails, 
 
         {/* Type badge — top left */}
         <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
+          {isBoosted && (
+            <span className="px-2.5 py-1 text-[10px] font-bold rounded-md uppercase tracking-wider backdrop-blur-sm flex items-center gap-1"
+              style={{ background: 'rgba(212,160,23,0.9)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+              ⚡ Sponsorisé
+            </span>
+          )}
           <span className="px-2.5 py-1 text-[10px] font-bold rounded-md uppercase tracking-wider backdrop-blur-sm"
             style={{ background: HAlpha.orange15, color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>
             {TYPE_LABELS[property.property_type] || property.property_type}

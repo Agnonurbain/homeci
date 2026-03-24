@@ -3,7 +3,7 @@ import {
   Users, Home, Shield, FileCheck, AlertCircle, TrendingUp,
   CheckCircle, XCircle, Activity, UserCog, RotateCcw,
   MapPin, Calendar, Building2, Eye, Award, Copy, Plus, Loader as LoaderIcon,
-  Flag, Star, CalendarCheck, UserSearch, FileText,
+  Flag, Star, CalendarCheck, UserSearch, FileText, Megaphone,
 } from 'lucide-react';
 import { collection, getDocs, orderBy, query, limit, Timestamp, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -21,6 +21,7 @@ const AdminSurveysTab = lazy(() => import('./AdminSurveysTab'));
 const AdminVisitsTab = lazy(() => import('./AdminVisitsTab'));
 const AdminUsersSearchTab = lazy(() => import('./AdminUsersSearchTab'));
 const AdminCGVTab = lazy(() => import('./AdminCGVTab'));
+const AdminAdsTab = lazy(() => import('./AdminAdsTab'));
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { TYPE_LABELS, ROLE_CFG } from '../constants/labels';
@@ -39,7 +40,7 @@ export default function AdminDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
   const tabFromUrl = location.pathname.split('/')[2];
-  const validTabs = ['overview', 'users', 'properties', 'verification', 'notaires', 'reports', 'surveys', 'visits', 'user-search', 'security', 'admin-management', 'cgv'];
+  const validTabs = ['overview', 'users', 'properties', 'verification', 'notaires', 'reports', 'surveys', 'visits', 'user-search', 'security', 'admin-management', 'cgv', 'ads'];
   const activeTab = validTabs.includes(tabFromUrl) ? tabFromUrl as any : 'overview';
   const [properties, setProperties] = useState<Property[]>([]);
   const [users, setUsers] = useState<Profile[]>([]);
@@ -149,6 +150,7 @@ export default function AdminDashboard() {
     { id: 'surveys', icon: Star, label: 'Satisfaction', count: undefined },
     { id: 'notaires', icon: Award, label: 'Notaires', count: undefined },
     { id: 'cgv', icon: FileText, label: 'Docs Légaux', count: undefined },
+    { id: 'ads', icon: Megaphone, label: 'Publicités', count: undefined },
     { id: 'security', icon: Activity, label: 'Sécurité', count: undefined },
     { id: 'admin-management', icon: UserCog, label: 'Admins', count: undefined },
   ] as const;
@@ -742,6 +744,11 @@ export default function AdminDashboard() {
         )}
         {activeTab === 'security' && <AdminLoginHistory />}
         {activeTab === 'admin-management' && <AdminManagement />}
+        {activeTab === 'ads' && (
+          <Suspense fallback={<div className="flex justify-center py-16"><div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: HAlpha.gold20, borderTopColor: HColors.gold }} /></div>}>
+            <AdminAdsTab />
+          </Suspense>
+        )}
       </div>
 
       {/* ── Modal Détails Bien ── */}

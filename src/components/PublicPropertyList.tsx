@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Lock, SlidersHorizontal } from 'lucide-react';
 import { propertyService } from '../services/propertyService';
+import { adService } from '../services/adService';
 import { PropertyCard } from './PropertyCard';
 import { PropertyFilters } from './PropertyFilters';
 import { PropertyGridSkeleton } from './Skeletons';
 import type { Property } from '../services/propertyService';
 import type { FilterValues } from './PropertyFilters';
 import PropertyViewModal from './PropertyViewModal';
+import AdBanner from './AdBanner';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { useParams, useNavigate } from 'react-router-dom';
 
@@ -24,6 +26,7 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [viewingPropertyId, setViewingPropertyId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [boostedIds, setBoostedIds] = useState<Set<string>>(new Set());
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -36,8 +39,12 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
   }, [id]);
 
   useEffect(() => {
-    propertyService.getProperties({ status: 'published' }).then(data => {
+    Promise.all([
+      propertyService.getProperties({ status: 'published' }),
+      adService.getBoostedPropertyIds(),
+    ]).then(([data, ids]) => {
       setAllProperties(data);
+      setBoostedIds(ids);
       let result = data;
       const types = initialFilters?.propertyTypes?.length ? initialFilters.propertyTypes : (initialFilters?.propertyType ? [initialFilters.propertyType] : []);
       if (types.length) result = result.filter(p => types.includes(p.property_type));
@@ -87,7 +94,13 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
   };
 
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
-  const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  // Trier avec les biens boostés en tête
+  const sortedFiltered = [...filtered].sort((a, b) => {
+    const aBoost = boostedIds.has(a.id) ? 1 : 0;
+    const bBoost = boostedIds.has(b.id) ? 1 : 0;
+    return bBoost - aBoost;
+  });
+  const paginated = sortedFiltered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
     <section id="property-list" style={{ background: HColors.creamBg }}>
@@ -133,13 +146,22 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
         ) : (
           <>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {paginated.map(property => (
-                <PropertyCard
-                  key={property.id}
-                  property={property}
-                  onViewDetails={() => navigate(`/bien/${property.id}`)}
-                  onContactClick={() => setShowLoginPrompt(true)}
-                />
+              {paginated.map((property, idx) => (
+                <>
+                  <PropertyCard
+                    key={property.id}
+                    property={property}
+                    isBoosted={boostedIds.has(property.id)}
+                    onViewDetails={() => navigate(`/bien/${property.id}`)}
+                    onContactClick={() => setShowLoginPrompt(true)}
+                  />
+                  {/* Insérer une bannière partenaire après le 6ᵉ bien */}
+                  {idx === 5 && (
+                    <div key="ad-slot-1" className="md:col-span-2 lg:col-span-3">
+                      <AdBanner context={{ city: initialFilters?.city }} />
+                    </div>
+                  )}
+                </>
               ))}
             </div>
 

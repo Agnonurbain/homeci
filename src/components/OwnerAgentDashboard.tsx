@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import {
-  Plus, Home, Calendar, BarChart3, FileText, Eye, Edit, X,
+  Plus, Home, Calendar, BarChart3, Eye, Edit, X,
   CheckCircle, Clock, XCircle, Bell, TrendingUp, Users,
-  Send, MapPin, Star, AlertTriangle, RefreshCw
+  Send, MapPin, Star, AlertTriangle, RefreshCw, Zap
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -27,9 +27,12 @@ import type { PaymentConfig } from './PaymentModal';
 import SatisfactionModal from './SatisfactionModal';
 import { StatGridSkeleton, PropertyTableSkeleton } from './Skeletons';
 import { analyticsService } from '../services/analyticsService';
-import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
+import { adService } from '../services/adService';
+import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { TYPE_LABELS } from '../constants/labels';
 import { VISIT_STATUS_STYLES, VISIT_STATUS_FALLBACK } from '../constants/visitStatus';
+import { BOOST_PRICES } from '../types/ad';
+import type { BoostDuration } from '../types/ad';
 
 
 
@@ -100,6 +103,9 @@ export default function OwnerAgentDashboard() {
   const [surveyData, setSurveyData] = useState<{ trigger: 'visit_accepted' | 'visit_completed'; propertyId?: string; propertyTitle?: string } | null>(null);
   const [disclaimerVisit, setDisclaimerVisit] = useState<{ propertyTitle: string; visitDate: string } | null>(null);
   const [statusModal, setStatusModal] = useState<{ property: Property; loading: boolean } | null>(null);
+  const [boostProp, setBoostProp] = useState<Property | null>(null);
+  const [boostDuration, setBoostDuration] = useState<BoostDuration>(7);
+  const [boostPaymentConfig, setBoostPaymentConfig] = useState<PaymentConfig | null>(null);
 
   useEffect(() => { loadAll(); }, []);
 
@@ -510,6 +516,17 @@ export default function OwnerAgentDashboard() {
                                         fontFamily: 'var(--font-nunito)'
                                       }} title="Mettre à jour le statut">
                                       <AlertTriangle className="w-3.5 h-3.5" /> Statut
+                                    </button>
+                                  )}
+                                  {property.status === 'published' && (
+                                    <button onClick={() => { setBoostProp(property); setBoostDuration(7); }}
+                                      aria-label={`Booster ${property.title}`}
+                                      className="px-2 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all hover:opacity-80"
+                                      style={{
+                                        background: HAlpha.gold10, color: HColors.gold, border: `1px solid ${HAlpha.gold25}`,
+                                        fontFamily: 'var(--font-nunito)'
+                                      }} title="Sponsoriser ce bien">
+                                      <Zap className="w-3.5 h-3.5" /> Booster
                                     </button>
                                   )}
                                 </div>
@@ -1161,6 +1178,75 @@ export default function OwnerAgentDashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal Boost */}
+      {boostProp && !boostPaymentConfig && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(10,22,14,0.88)', backdropFilter: 'blur(8px)' }}>
+          <div className="w-full max-w-md rounded-3xl overflow-hidden shadow-2xl" style={{ background: HColors.night, border: `1px solid ${HAlpha.gold20}` }}>
+            <div className="px-6 pt-5 pb-3">
+              <KenteLine />
+              <div className="flex items-center justify-between mt-4 mb-4">
+                <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>
+                  <Zap className="w-5 h-5 text-yellow-400" /> Sponsoriser le bien
+                </h2>
+                <button onClick={() => setBoostProp(null)} className="p-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                  <X className="w-4 h-4" style={{ color: 'rgba(245,230,200,0.4)' }} />
+                </button>
+              </div>
+            </div>
+            <div className="px-6 pb-6 space-y-4">
+              <p className="text-sm" style={{ color: 'rgba(245,230,200,0.8)', fontFamily: 'var(--font-nunito)' }}>
+                Augmentez la visibilité de <strong>{boostProp.title}</strong> en l'affichant en tête des résultats avec un badge spécial.
+              </p>
+              <div>
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'rgba(245,230,200,0.6)', fontFamily: 'var(--font-nunito)' }}>
+                  Durée du boost
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {([7, 14, 30] as BoostDuration[]).map(d => (
+                    <button key={d} onClick={() => setBoostDuration(d)}
+                      className="py-3 rounded-xl text-center text-sm font-medium transition-all"
+                      style={boostDuration === d
+                        ? { background: HAlpha.gold20, border: `2px solid ${HColors.gold}`, color: HColors.cream, fontFamily: 'var(--font-nunito)' }
+                        : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(245,230,200,0.6)', fontFamily: 'var(--font-nunito)' }}>
+                      <div className="font-bold">{BOOST_PRICES[d].label}</div>
+                      <div className="text-xs mt-0.5" style={{ color: HColors.gold }}>{BOOST_PRICES[d].price} FCFA</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <button 
+                onClick={() => setBoostPaymentConfig({
+                  amount: BOOST_PRICES[boostDuration].price,
+                  title: 'Sponsoriser le bien',
+                  description: 'Boost : ' + boostProp.title,
+                })}
+                className="w-full py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90 flex items-center justify-center gap-2"
+                style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+                Payer {BOOST_PRICES[boostDuration].price} FCFA
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Paiement Boost */}
+      {boostPaymentConfig && boostProp && (
+        <PaymentModal
+          config={boostPaymentConfig}
+          onSuccess={async () => {
+            if (user) {
+              await adService.createBoost(boostProp.id, boostProp.title, user.uid, boostDuration);
+            }
+            setBoostPaymentConfig(null);
+            setBoostProp(null);
+            setBoostDuration(7);
+            alert("Sponsoring activé avec succès !");
+            loadAll();
+          }}
+          onClose={() => setBoostPaymentConfig(null)}
+        />
       )}
 
       {/* Enquête de satisfaction */}
