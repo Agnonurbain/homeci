@@ -41,9 +41,9 @@ export function Footer() {
               style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>Navigation</h3>
             <ul className="space-y-3">
               {[
-                { label: 'Rechercher', href: '#search' },
-                { label: 'Biens à louer', href: '#properties' },
-                { label: 'Biens à vendre', href: '#properties' },
+                { label: 'Rechercher', href: '/#search' },
+                { label: 'Biens à louer', href: '/#properties' },
+                { label: 'Biens à vendre', href: '/#properties' },
                 { label: 'Aide & FAQ', href: '/faq' },
               ].map(l => (
                 <li key={l.label}>

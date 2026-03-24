@@ -42,8 +42,8 @@ export function Header({ onLoginClick, onSignupClick, onProfileClick }: HeaderPr
             {/* Desktop nav */}
             <div className="hidden md:flex items-center gap-7">
               {[
-                { href: '#search', label: 'Rechercher' },
-                { href: '#properties', label: 'Biens' },
+                { href: '/#search', label: 'Rechercher' },
+                { href: '/#properties', label: 'Biens' },
               ].map(l => (
                 <a key={l.label} href={l.href}
                   className="text-sm transition-all duration-200 hover:opacity-100"
@@ -123,8 +123,8 @@ export function Header({ onLoginClick, onSignupClick, onProfileClick }: HeaderPr
           {mobileMenuOpen && (
             <div className="md:hidden py-4" style={{ borderTop: '1px solid rgba(212,160,23,0.15)' }}>
               <div className="flex flex-col gap-4" style={{ fontFamily: 'var(--font-nunito)' }}>
-                <a href="#search" style={{ color: HAlpha.white70 }}>Rechercher</a>
-                <a href="#properties" style={{ color: HAlpha.white70 }}>Biens</a>
+                <a href="/#search" style={{ color: HAlpha.white70 }}>Rechercher</a>
+                <a href="/#properties" style={{ color: HAlpha.white70 }}>Biens</a>
                 {user ? (
                   <>
                     <a href="#favorites" style={{ color: HAlpha.white70 }}>Favoris</a>

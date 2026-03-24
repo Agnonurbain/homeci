@@ -63,7 +63,7 @@ export function Hero({ onSearch }: HeroProps) {
   } as React.CSSProperties;
 
   return (
-    <section className="relative w-full flex flex-col overflow-hidden"
+    <section id="search" className="relative w-full flex flex-col overflow-hidden"
       style={{ background: HGradients.hero, minHeight: '95vh' }}>
 
       <BaoulePattern />
