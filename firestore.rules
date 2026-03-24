@@ -55,7 +55,10 @@ service cloud.firestore {
         (
           resource.data.owner_id == request.auth.uid 
           && request.resource.data.owner_id == request.auth.uid 
-          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'verified_notaire', 'notaire_id', 'verification_date'])
+          && (
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'verified_notaire', 'notaire_id', 'verification_date']) ||
+            (resource.data.status == 'published' && request.resource.data.status in ['rented', 'sold', 'published', 'failed'])
+          )
         )
       );
       

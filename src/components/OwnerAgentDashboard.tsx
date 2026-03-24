@@ -46,6 +46,7 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; border: string; 
   published: { bg: HAlpha.vertCI10, text: HColors.vertCI, border: HAlpha.vertCI25, label: 'Publié' },
   rented: { bg: HAlpha.navy08, text: HColors.navy, border: HAlpha.navy20, label: 'Loué' },
   sold: { bg: HAlpha.bord10, text: HColors.bordeaux, border: HAlpha.bord25, label: 'Vendu' },
+  failed: { bg: HAlpha.orange08, text: HColors.orangeCI, border: HAlpha.orange15, label: 'Non abouti' },
 };
 /* ── Stat Card ────────────────────────────────────────────────────────────── */
 function StatCard({ icon: Icon, label, value, accent = HColors.gold }: { icon: any; label: string; value: number; accent?: string }) {
@@ -298,7 +299,7 @@ export default function OwnerAgentDashboard() {
     }
   };
 
-  const handleUpdatePropertyStatus = async (status: 'rented' | 'sold' | 'published') => {
+  const handleUpdatePropertyStatus = async (status: 'rented' | 'sold' | 'published' | 'failed') => {
     if (!statusModal) return;
     setStatusModal(prev => prev ? { ...prev, loading: true } : null);
     try {
@@ -311,8 +312,8 @@ export default function OwnerAgentDashboard() {
 
       // Notifier les locataires qui avaient des visites en cours
       const visits = visitRequests.filter(v => v.property_id === property.id && (v.status === 'accepted' || v.status === 'completed'));
-      if (status === 'rented' || status === 'sold') {
-        const statusLabel = status === 'rented' ? 'loué' : 'vendu';
+      if (status === 'rented' || status === 'sold' || status === 'failed') {
+        const statusLabel = status === 'rented' ? 'loué' : status === 'sold' ? 'vendu' : 'non abouti (visite)';
         for (const visit of visits) {
           await notificationService.createNotification({
             user_id: visit.tenant_id,

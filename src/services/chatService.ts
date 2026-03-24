@@ -57,16 +57,21 @@ export const chatService = {
       return snaps.docs[0].id;
     }
 
-    // Créer un nouveau chat
-    const newChatRef = doc(collection(db, 'chats'));
-    await setDoc(newChatRef, {
-      property_id: propertyId,
-      tenant_id: tenantId,
-      owner_id: ownerId,
-      visit_id: visitId,
-      updated_at: new Date().toISOString()
-    });
-    return newChatRef.id;
+    try {
+      // Créer un nouveau chat
+      const newChatRef = doc(collection(db, 'chats'));
+      await setDoc(newChatRef, {
+        property_id: propertyId,
+        tenant_id: tenantId,
+        owner_id: ownerId,
+        visit_id: visitId,
+        updated_at: new Date().toISOString()
+      });
+      return newChatRef.id;
+    } catch (err) {
+      console.error('[chatService] Error creating chat:', err);
+      throw err;
+    }
   },
 
   /**
@@ -102,17 +107,22 @@ export const chatService = {
     const filteredContent = filterMessage(content);
     if (!filteredContent) return;
 
-    await addDoc(collection(db, 'chats', chatId, 'messages'), {
-      chat_id: chatId,
-      sender_id: senderId,
-      content: filteredContent,
-      created_at: new Date().toISOString(),
-      read: false
-    });
+    try {
+      await addDoc(collection(db, 'chats', chatId, 'messages'), {
+        chat_id: chatId,
+        sender_id: senderId,
+        content: filteredContent,
+        created_at: new Date().toISOString(),
+        read: false
+      });
 
-    // Mettre à jour le chat parent pour les tris
-    await setDoc(doc(db, 'chats', chatId), {
-      updated_at: new Date().toISOString()
-    }, { merge: true });
+      // Mettre à jour le chat parent pour les tris
+      await setDoc(doc(db, 'chats', chatId), {
+        updated_at: new Date().toISOString()
+      }, { merge: true });
+    } catch (err) {
+      console.error('[chatService] Error sending message:', err);
+      throw err;
+    }
   }
 };

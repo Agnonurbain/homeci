@@ -17,6 +17,7 @@ export default function ChatBox({ chatId, currentUserId, otherUserName, otherUse
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,8 +36,11 @@ export default function ChatBox({ chatId, currentUserId, otherUserName, otherUse
     try {
       await chatService.sendMessage(chatId, currentUserId, newMessage);
       setNewMessage('');
-    } catch (error) {
-      console.error('Failed to send message:', error);
+      setError(null);
+    } catch (err: any) {
+      console.error('Failed to send message:', err);
+      setError("Impossible d'envoyer le message. Vérifiez votre connexion.");
+      setTimeout(() => setError(null), 4000);
     } finally {
       setSending(false);
     }
@@ -124,6 +128,11 @@ export default function ChatBox({ chatId, currentUserId, otherUserName, otherUse
 
         {/* Input */}
         <form onSubmit={handleSend} className="shrink-0 p-3 bg-white" style={{ borderTop: '1px solid #eaeaea' }}>
+          {error && (
+            <div className="mb-2 px-3 py-1.5 rounded-lg text-[0.7rem] bg-red-50 text-red-600 border border-red-100 animate-shake">
+              {error}
+            </div>
+          )}
           <div className="flex items-end gap-2 bg-gray-50 rounded-2xl p-1 border border-gray-200">
             <textarea
               value={newMessage}

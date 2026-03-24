@@ -95,7 +95,7 @@ export interface Property {
   documents: PropertyDocument[];
   model3d: Model3D | null;
   model3d_request: Model3DRequest | null;
-  status: 'draft' | 'pending' | 'published' | 'rented' | 'sold' | 'rejected';
+  status: 'draft' | 'pending' | 'published' | 'rented' | 'sold' | 'rejected' | 'failed';
   verified_notaire: boolean;
   verification_date: string | null;
   notaire_id: string | null;
