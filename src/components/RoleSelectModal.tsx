@@ -106,12 +106,12 @@ export default function RoleSelectModal({ uid, displayName, photoURL, onDone }: 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(4px)' }}>
-      <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
+      <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[95vh]"
         style={{ background: HColors.night, border: `1px solid ${HAlpha.gold20}` }}>
 
-        <KenteLine height={4} />
+        <KenteLine height={4} className="shrink-0" />
 
-        <div className="px-6 pt-6 pb-8">
+        <div className="px-5 md:px-6 pt-6 pb-8 overflow-y-auto">
           {/* Header */}
           <div className="flex items-center gap-3 mb-6">
             {photoURL ? (

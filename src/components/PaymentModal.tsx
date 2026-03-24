@@ -100,11 +100,11 @@ export default function PaymentModal({ config, onSuccess, onClose }: PaymentModa
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4"
       style={{ background: 'rgba(10,22,14,0.88)', backdropFilter: 'blur(8px)' }}>
-      <div className="w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
+      <div className="w-full max-w-md rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[95vh]"
         style={{ background: HColors.night, border: `1px solid ${HAlpha.gold20}` }}>
 
         {/* Header */}
-        <div className="px-6 pt-5 pb-3">
+        <div className="px-5 md:px-6 pt-5 pb-3 shrink-0">
           <KenteLine />
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-center gap-3">
@@ -144,7 +144,7 @@ export default function PaymentModal({ config, onSuccess, onClose }: PaymentModa
         </div>
 
         {/* Contenu par étape */}
-        <div className="px-6 pb-6 pt-2">
+        <div className="px-5 md:px-6 pb-6 pt-2 overflow-y-auto">
 
           {/* ── Étape 1 : Sélection opérateur ── */}
           {step === 'provider' && (

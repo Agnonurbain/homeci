@@ -176,7 +176,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
         </div>
         {user ? (
           <button onClick={onRequestVisit}
-            className="w-full py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 text-sm transition-all hover:opacity-90 active:scale-95"
+            className="w-full py-3 md:py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 text-sm transition-all hover:opacity-90 active:scale-95 shadow-lg md:shadow-none"
             style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
             <Calendar className="w-4 h-4" /> Demander une visite
           </button>
@@ -185,11 +185,11 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
             <p className="text-sm" style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>Connectez-vous pour demander une visite</p>
             <div className="flex gap-2">
               <button onClick={() => onShowAuth?.('signup')}
-                className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90" style={{ background: HColors.gold, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+                className="flex-1 py-2.5 md:py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90" style={{ background: HColors.gold, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
                 S'inscrire
               </button>
               <button onClick={() => onShowAuth?.('login')}
-                className="flex-1 py-2 rounded-xl text-sm font-medium transition-all hover:opacity-80" style={{ border: '1px solid rgba(212,160,23,0.35)', color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+                className="flex-1 py-2.5 md:py-2 rounded-xl text-sm font-medium transition-all hover:opacity-80" style={{ border: '1px solid rgba(212,160,23,0.35)', color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
                 Se connecter
               </button>
             </div>
@@ -200,13 +200,13 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
   };
 
   return (
-    <div className="fixed inset-0 flex items-start justify-center z-50 p-3 md:p-6 overflow-y-auto" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}>
+    <div className="fixed inset-0 flex items-start justify-center z-50 p-0 sm:p-3 md:p-6 overflow-y-auto" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}>
       <SEO 
         title={property.title} 
         description={`${TYPE_LABELS[property.property_type]} à ${property.city} - ${formatPrice(property.price)}`} 
         image={property.images?.[0]} 
       />
-      <div className="rounded-2xl w-full max-w-5xl my-auto shadow-2xl overflow-hidden" style={{ background: HColors.creamBg }}>
+      <div className="rounded-none sm:rounded-2xl w-full max-w-5xl min-h-screen sm:min-h-0 sm:my-auto shadow-2xl flex flex-col relative" style={{ background: HColors.creamBg }}>
 
         {/* ── Header compact ── */}
         <div className="sticky top-0 px-5 py-3 flex items-center gap-3 z-10" style={{ background: HColors.night, borderBottom: '1px solid rgba(212,160,23,0.2)' }}>
@@ -265,14 +265,14 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
               )}
               {/* Miniatures */}
               {images.length > 1 && (
-                <div className="absolute bottom-2 left-2 flex gap-1">
+                <div className="absolute bottom-2 left-2 flex gap-1 max-w-[65%] sm:max-w-[80%] overflow-x-auto scrollbar-hide">
                   {images.slice(0, 5).map((img, i) => (
                     <button key={i} onClick={() => setImgIndex(i)}
-                      className={`w-8 h-8 rounded-lg overflow-hidden border-2 transition-all ${imgIndex === i ? 'border-white' : 'border-transparent opacity-70'}`}>
+                      className={`w-8 h-8 rounded-lg overflow-hidden border-2 transition-all shrink-0 ${imgIndex === i ? 'border-white' : 'border-transparent opacity-70'}`}>
                       <img src={img} alt={`Photo ${i + 1} — ${property.title}`} className="w-full h-full object-cover" />
                     </button>
                   ))}
-                  {images.length > 5 && <div className="w-8 h-8 rounded-lg bg-black/50 flex items-center justify-center text-white text-xs font-bold">+{images.length - 5}</div>}
+                  {images.length > 5 && <div className="w-8 h-8 rounded-lg bg-black/50 flex items-center justify-center shrink-0 text-white text-xs font-bold">+{images.length - 5}</div>}
                 </div>
               )}
             </div>
@@ -465,10 +465,16 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
             </div>
 
             {/* ── Colonne contact ── */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 pb-24 lg:pb-0">
               <div className="sticky top-24">
-                <div className="rounded-2xl p-4" style={{ background: HColors.white, border: '1px solid rgba(212,160,23,0.2)' }}>
+                <div className="hidden lg:block rounded-2xl p-4" style={{ background: HColors.white, border: '1px solid rgba(212,160,23,0.2)' }}>
                   <h3 className="text-sm font-bold mb-3" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1rem' }}>Contact & Visite</h3>
+                  <ContactPanel />
+                </div>
+
+                {/* Mobile Sticky CTA */}
+                <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 border-t shadow-2xl z-20" 
+                     style={{ background: HColors.creamBg, borderTop: '1px solid rgba(212,160,23,0.2)' }}>
                   <ContactPanel />
                 </div>
 

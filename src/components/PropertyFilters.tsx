@@ -134,7 +134,7 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
         <div className="px-4 pb-5 space-y-5"
           style={{ borderTop:'1px solid rgba(212,160,23,0.1)' }}>
 
-          <div className="pt-4 grid grid-cols-2 gap-3">
+          <div className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
             {/* Type de bien */}
             <div>
               <label className="block mb-1.5" style={LBL}>Type de bien</label>
@@ -213,8 +213,8 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
 
           {/* Prix & Chambres */}
           <div>
-            <label className="block mb-2" style={LBL}>Prix & Caractéristiques</label>
-            <div className="grid grid-cols-3 gap-3">
+            <label className="block mb-2 mt-3 md:mt-0" style={LBL}>Prix & Caractéristiques</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div>
                 <p className="mb-1" style={{ ...LBL, fontSize:'0.6rem', color:'rgba(122,85,0,0.5)' }}>Prix min</p>
                 <input type="number" value={filters.minPrice}

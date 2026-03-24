@@ -72,7 +72,7 @@ export function Hero({ onSearch }: HeroProps) {
       <HomeCIEmblem variant="watermark"
         className="absolute right-[-5%] top-1/2 -translate-y-1/2 w-[450px] h-[450px]" />
 
-      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-6 pt-14 pb-12">
+      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 md:px-6 pt-10 md:pt-14 pb-8 md:pb-12">
 
         <div className="w-full max-w-3xl">
           {/* Devise */}

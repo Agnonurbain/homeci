@@ -34,7 +34,7 @@ export default function MapDisplay(props: MapDisplayProps) {
   if (props.mode === 'single') {
     const position: [number, number] = [props.latitude, props.longitude];
     return (
-      <div className="border border-gray-300 rounded-xl overflow-hidden" style={{ height: '400px' }}>
+      <div className="border border-gray-300 rounded-xl overflow-hidden h-[50vh] md:h-[400px]">
         <MapContainer center={position} zoom={15} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -54,7 +54,7 @@ export default function MapDisplay(props: MapDisplayProps) {
     : DEFAULT_CENTER;
 
   return (
-    <div className="border border-gray-300 rounded-xl overflow-hidden" style={{ height: '600px' }}>
+    <div className="border border-gray-300 rounded-xl overflow-hidden h-[60vh] md:h-[600px]">
       {withCoords.length === 0 ? (
         <div className="h-full flex items-center justify-center bg-gray-50">
           <div className="text-center text-gray-500">
