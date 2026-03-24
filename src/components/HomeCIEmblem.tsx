@@ -19,14 +19,16 @@ export function HomeCIEmblem({ variant = 'full', className = '' }: HomeCIEmblemP
 
   if (variant === 'header') {
     return (
-      <div className={`flex items-center gap-2.5 ${className}`}>
-        <img src="/logo_homeci.jpg" alt="HOMECI"
-          className="h-14 w-auto rounded-md" draggable={false} />
-        <span className="font-bold text-xl tracking-widest hidden sm:inline"
+      <a href="/" className={`group flex items-center gap-3 transition-transform hover:scale-105 active:scale-95 ${className}`}>
+        <div className="relative h-14 w-14 sm:h-16 sm:w-16 flex-shrink-0 bg-white/5 rounded-xl p-1 shadow-lg border border-white/10 overflow-hidden">
+          <img src="/logo_homeci.jpg" alt="HOMECI"
+            className="w-full h-full object-contain group-hover:drop-shadow-lg transition-all" draggable={false} />
+        </div>
+        <span className="font-bold text-xl tracking-widest hidden sm:inline transition-colors group-hover:text-amber-400"
           style={{ color: '#D4A017', fontFamily: 'var(--font-cormorant)', letterSpacing: '0.15em' }}>
           HOMECI
         </span>
-      </div>
+      </a>
     );
   }
 
@@ -41,10 +43,12 @@ export function HomeCIEmblem({ variant = 'full', className = '' }: HomeCIEmblemP
 
   // Full — modals, footer, pages
   return (
-    <div className={`flex flex-col items-center ${className}`}>
-      <img src="/logo_homeci.jpg" alt="HOMECI — L'immobilier ivoirien certifié"
-        className="w-full h-auto max-w-[200px] drop-shadow-lg rounded-lg" draggable={false} />
-    </div>
+    <a href="/" className={`group flex flex-col items-center transition-all hover:-translate-y-1 ${className}`}>
+      <div className="relative bg-white/5 p-2 rounded-2xl shadow-xl border border-white/10 overflow-hidden">
+        <img src="/logo_homeci.jpg" alt="HOMECI — L'immobilier ivoirien certifié"
+          className="w-full h-auto max-w-[200px] sm:max-w-[240px] drop-shadow-xl rounded-xl transition-all group-hover:scale-105 object-contain" draggable={false} />
+      </div>
+    </a>
   );
 }
 

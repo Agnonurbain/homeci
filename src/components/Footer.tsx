@@ -95,11 +95,11 @@ export function Footer() {
                 style={{ color: HAlpha.gold50, fontFamily: 'var(--font-nunito)' }}>Paiements acceptés</p>
               <div className="flex gap-2 flex-wrap items-center">
                 {[
-                  { name: 'Orange Money', logo: '/logos/orange-money.svg' },
-                  { name: 'MTN MoMo',    logo: '/logos/mtn-momo.svg' },
-                  { name: 'Wave',         logo: '/logos/wave.svg' },
-                  { name: 'Flooz',        logo: '/logos/flooz.svg' },
-                  { name: 'Djamo',        logo: '/logos/djamo.svg' },
+                  { name: 'Orange Money', logo: '/logos/orange.jpeg' },
+                  { name: 'MTN MoMo',    logo: '/logos/mtn.jpeg' },
+                  { name: 'Wave',         logo: '/logos/wave.jpeg' },
+                  { name: 'Flooz',        logo: '/logos/flooz.jpeg' },
+                  { name: 'Djamo',        logo: '/logos/djamo.jpeg' },
                 ].map(op => (
                   <img key={op.name} src={op.logo} alt={op.name}
                     title={op.name} className="w-8 h-8 rounded-lg" />
