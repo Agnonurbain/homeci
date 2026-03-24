@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Phone, CheckCircle, Loader, Shield, ArrowRight, X } from 'lucide-react';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useAuth } from '../contexts/AuthContext';
+import { paymentService } from '../services/paymentService';
+import { movapayService } from '../services/movapayService';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { KenteLine } from './ui/KenteLine';
 
@@ -48,6 +51,7 @@ interface PaymentModalProps {
 
 export default function PaymentModal({ config, onSuccess, onClose }: PaymentModalProps) {
   useBodyScrollLock(true);
+  const { user } = useAuth();
 
   const [step, setStep] = useState<Step>('provider');
   const [provider, setProvider] = useState<MoMoProvider | null>(null);
@@ -77,7 +81,7 @@ export default function PaymentModal({ config, onSuccess, onClose }: PaymentModa
     setStep('otp');
   };
 
-  const handleSubmitOtp = () => {
+  const handleSubmitOtp = async () => {
     if (otp.length < 4) {
       setError('Code à 4 chiffres requis');
       return;
@@ -85,14 +89,47 @@ export default function PaymentModal({ config, onSuccess, onClose }: PaymentModa
     setError('');
     setStep('processing');
 
-    // Simuler le traitement (2 secondes)
-    setTimeout(() => {
-      setStep('success');
-      // Auto-ferme après 2s
-      setTimeout(() => {
-        onSuccess();
-      }, 2000);
-    }, 2500);
+    try {
+      const refCode = `HMCI-${Date.now().toString(36).toUpperCase()}`;
+      // 1. Trace dans Firestore
+      const txId = await paymentService.createTransaction({
+        userId: user?.uid || 'anonymous',
+        amount: config.amount,
+        currency: 'XOF',
+        provider: provider!.id,
+        phone: phone,
+        status: 'pending',
+        context: 'property_publish',
+        reference: refCode
+      });
+
+      // 2. Appel API Movapay
+      const movaRes = await movapayService.initiateTransaction({
+        amount: config.amount,
+        currency: 'XOF',
+        provider: provider!.id,
+        phone: phone,
+        reference: txId,
+        description: config.title
+      });
+
+      if (!movaRes.success) throw new Error(movaRes.message || 'Échec API Movapay');
+
+      // 3. Vérification du statut
+      const verifyRes = await movapayService.verifyTransaction(movaRes.movapayReference!);
+      
+      if (verifyRes.success && verifyRes.status === 'success') {
+        await paymentService.updateTransactionStatus(txId, 'success', movaRes.movapayReference);
+        setStep('success');
+        setTimeout(() => onSuccess(), 2000);
+      } else {
+        throw new Error('Paiement refusé ou expiré');
+      }
+    } catch (err) {
+      console.error('[PaymentModal] Error:', err);
+      setError(err instanceof Error ? err.message : 'Une erreur inattendue est survenue');
+      setStep('otp');
+    }
   };
 
   // ── Rendu par étape ──
