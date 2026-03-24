@@ -82,8 +82,8 @@ export default function PaymentModal({ config, onSuccess, onClose }: PaymentModa
   };
 
   const handleSubmitOtp = async () => {
-    if (otp.length < 4) {
-      setError('Code à 4 chiffres requis');
+    if (otp.length !== 4) {
+      setError('Veuillez entrer un code à 4 chiffres');
       return;
     }
     setError('');
@@ -296,9 +296,9 @@ export default function PaymentModal({ config, onSuccess, onClose }: PaymentModa
                 <input
                   type="text"
                   value={otp}
-                  onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
                   placeholder="• • • •"
-                  maxLength={6}
+                  maxLength={4}
                   className="w-full px-4 py-3.5 rounded-xl text-center text-xl tracking-[0.5em] outline-none"
                   style={{
                     background: 'rgba(255,255,255,0.06)',
@@ -314,7 +314,7 @@ export default function PaymentModal({ config, onSuccess, onClose }: PaymentModa
               </div>
 
               <button onClick={handleSubmitOtp}
-                disabled={otp.length < 4}
+                disabled={otp.length !== 4}
                 className="w-full py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center gap-2"
                 style={{ background: provider.color, color: '#fff', fontFamily: 'var(--font-nunito)' }}>
                 Confirmer le paiement — {formatPrice(config.amount)}
