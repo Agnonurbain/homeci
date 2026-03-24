@@ -1081,7 +1081,23 @@ function NotairesTab({ showToast }: { showToast: (msg: string, ok?: boolean) => 
     try {
       const q = query(collection(db, 'notaire_codes'), orderBy('created_at', 'desc'));
       const snap = await getDocs(q);
-      setCodes(snap.docs.map(d => ({ id: d.id, ...d.data() } as NotaireCode)));
+      const toISO = (v: any) => {
+        if (!v) return undefined;
+        if (v instanceof Timestamp) return v.toDate().toISOString();
+        if (typeof v === 'string') return v;
+        if (v.toDate) return v.toDate().toISOString();
+        return String(v);
+      };
+      setCodes(snap.docs.map(d => {
+        const data = d.data();
+        return {
+          id: d.id,
+          ...data,
+          created_at: toISO(data.created_at),
+          expires_at: toISO(data.expires_at),
+          used_at: toISO(data.used_at),
+        } as NotaireCode;
+      }));
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   }
@@ -1243,7 +1259,7 @@ function NotairesTab({ showToast }: { showToast: (msg: string, ok?: boolean) => 
                     <div className="flex gap-3 text-xs mt-0.5" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" style={{ color: HColors.orangeCI }} />
-                        Créé le {new Date(c.created_at).toLocaleDateString('fr-FR')}
+                        Créé le {c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '—'}
                       </span>
                       {c.expires_at && (
                         <span>Expire le {new Date(c.expires_at).toLocaleDateString('fr-FR')}</span>

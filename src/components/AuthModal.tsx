@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { analyticsService } from '../services/analyticsService';
-import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc, doc, Timestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { z } from 'zod';
@@ -44,10 +44,20 @@ async function validateNotaireCode(code: string): Promise<{ valid: boolean; docI
     if (snap.empty) return { valid: false };
     const d = snap.docs[0];
     const data = d.data();
-    // Vérifier expiration
-    if (data.expires_at && data.expires_at.toDate() < new Date()) return { valid: false };
+    // Vérifier expiration (robuste aux Timestamps vs ISO strings)
+    let expiresAt: Date | null = null;
+    if (data.expires_at) {
+      if (data.expires_at instanceof Timestamp) expiresAt = data.expires_at.toDate();
+      else if (typeof data.expires_at === 'string') expiresAt = new Date(data.expires_at);
+      else if (data.expires_at?.toDate) expiresAt = data.expires_at.toDate();
+    }
+    
+    if (expiresAt && expiresAt < new Date()) return { valid: false };
     return { valid: true, docId: d.id };
-  } catch { return { valid: false }; }
+  } catch (err) {
+    console.error('[validateNotaireCode] Error:', err);
+    return { valid: false };
+  }
 }
 
 async function markNotaireCodeUsed(docId: string) {
