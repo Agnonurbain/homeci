@@ -148,7 +148,7 @@ export default function AdminDashboard() {
     { id: 'reports', icon: Flag, label: 'Signalements', count: undefined },
     { id: 'visits', icon: CalendarCheck, label: 'Visites', count: undefined },
     { id: 'surveys', icon: Star, label: 'Satisfaction', count: undefined },
-    { id: 'notaires', icon: Award, label: 'Notaires', count: undefined },
+    { id: 'notaires', icon: Award, label: 'Codes Notaires', count: undefined },
     { id: 'cgv', icon: FileText, label: 'Docs Légaux', count: undefined },
     { id: 'ads', icon: Megaphone, label: 'Publicités', count: undefined },
     { id: 'security', icon: Activity, label: 'Sécurité', count: undefined },
@@ -811,9 +811,9 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { label: 'Type de bien', value: TYPE_LABELS[selectedProperty.property_type] || selectedProperty.property_type },
-                    { label: 'Transaction', value: selectedProperty.listing_type === 'rent' ? 'Location' : 'Vente' },
-                    { label: 'Prix', value: `${selectedProperty.price.toLocaleString('fr-FR')} FCFA${selectedProperty.listing_type === 'rent' ? '/mois' : ''}` },
-                    { label: 'Surface', value: selectedProperty.area ? `${selectedProperty.area} m²` : '—' },
+                    { label: 'Transaction', value: selectedProperty.transaction_type === 'location' ? 'Location' : 'Vente' },
+                    { label: 'Prix', value: `${selectedProperty.price.toLocaleString('fr-FR')} FCFA${selectedProperty.transaction_type === 'location' ? '/mois' : ''}` },
+                    { label: 'Surface', value: selectedProperty.surface_area ? `${selectedProperty.surface_area} m²` : '—' },
                     { label: 'Chambres', value: selectedProperty.bedrooms ?? '—' },
                     { label: 'Salles de bain', value: selectedProperty.bathrooms ?? '—' },
                   ].map(({ label, value }) => (
@@ -835,9 +835,9 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { label: 'Ville', value: selectedProperty.city || '—' },
-                    { label: 'Quartier', value: selectedProperty.neighborhood || '—' },
+                    { label: 'Quartier', value: selectedProperty.quartier || '—' },
                     { label: 'Adresse', value: selectedProperty.address || '—' },
-                    { label: 'Pays', value: selectedProperty.country || "Côte d'Ivoire" },
+                    { label: 'Pays', value: "Côte d'Ivoire" },
                   ].map(({ label, value }) => (
                     <div key={label} className="flex justify-between items-center py-2 px-3 rounded-xl"
                       style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}` }}>
@@ -1056,7 +1056,7 @@ interface NotaireCode {
   used_at?: string;
   created_at: string;
   expires_at?: string;
-  note?: string;
+  note?: string | null;
 }
 
 function generateCode(): string {
@@ -1125,7 +1125,7 @@ function NotairesTab({ showToast }: { showToast: (msg: string, ok?: boolean) => 
 
   return (
     <div>
-      <SectionTitle title="Accès Notaires" sub="Générez des codes d'invitation à usage unique pour les notaires agréés" />
+      <SectionTitle title="Codes d'invitation Notaires" sub="Générez des codes à usage unique pour permettre l'inscription des notaires agréés" />
 
       {/* Générateur */}
       <div className="rounded-2xl p-6 mb-6"
