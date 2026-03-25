@@ -166,7 +166,10 @@ export default function NotaireDashboard() {
       // Plus besoin de recharger manuellement, onSnapshot s'en occupe
       showToast(`${lbl} ${stLbl}`);
       setShowRefusalInput(null);
-    } catch { showToast('Erreur lors de la mise à jour', false); }
+    } catch (e: any) { 
+      console.error('handleDocAction error:', e);
+      showToast(`Erreur : ${e.message || 'Mise à jour échouée'}`, false); 
+    }
     finally { setActionLoading(null); }
   }
 
@@ -197,7 +200,10 @@ export default function NotaireDashboard() {
       setProperties(prev => prev.map(p => p.id === property.id ? { ...p, ...titleStatus } : p));
       setShowRefusalInput(null);
       showToast(`Titre ${stLbl}`);
-    } catch { showToast('Erreur lors de la mise à jour du titre', false); }
+    } catch (e: any) { 
+      console.error('handleTitleAction error:', e);
+      showToast(`Erreur : ${e.message || 'Mise à jour du titre échouée'}`, false); 
+    }
     finally { setActionLoading(null); }
   }
 
@@ -221,7 +227,11 @@ export default function NotaireDashboard() {
       if (owner?.email) {
         emailService.notifyPropertyApproval(owner.email, property.title).catch(console.error);
       }
-    } catch { showToast('Erreur lors de la certification', false); setCertifyingId(null); }
+    } catch (e: any) { 
+      console.error('handleCertify error:', e);
+      showToast(`Erreur : ${e.message || 'Certification échouée'}`, false); 
+      setCertifyingId(null); 
+    }
   }
 
   async function handleDelegateAction(property: Property, action: 'certify' | 'reject') {
@@ -245,8 +255,9 @@ export default function NotaireDashboard() {
       });
       setDelegationToken({ token, action, propertyTitle: property.title });
       showToast(`Jeton de délégation généré pour ${action === 'certify' ? 'certification' : 'rejet'}.`);
-    } catch (e) {
-      showToast('Erreur lors de la génération du jeton', false);
+    } catch (e: any) {
+      console.error('handleDelegateAction error:', e);
+      showToast(`Erreur : ${e.message || 'Génération du jeton échouée'}`, false);
     } finally {
       setCertifyingId(null);
     }
@@ -258,7 +269,10 @@ export default function NotaireDashboard() {
     try {
       const hasActive = await visitService.hasActiveVisit(property.id);
       setRevokeModal({ property, reason: '', hasActiveVisit: hasActive, loading: false });
-    } catch { setRevokeModal({ property, reason: '', hasActiveVisit: false, loading: false }); }
+    } catch (e: any) { 
+      console.error('handleRevoke error:', e);
+      setRevokeModal({ property, reason: '', hasActiveVisit: false, loading: false }); 
+    }
     finally { setCertifyingId(null); }
   }
 
@@ -315,8 +329,9 @@ export default function NotaireDashboard() {
       setRevokeModal(null);
       analyticsService.decertifyProperty(property.id, reason.trim());
       showToast('Certification retirée. Le propriétaire et les locataires concernés ont été notifiés.');
-    } catch {
-      showToast('Erreur lors de la décertification', false);
+    } catch (e: any) {
+      console.error('confirmRevoke error:', e);
+      showToast(`Erreur : ${e.message || 'Décertification échouée'}`, false);
       setRevokeModal(prev => prev ? { ...prev, loading: false } : null);
     }
   }
@@ -350,7 +365,10 @@ export default function NotaireDashboard() {
       // Mettre à jour la propriété dans l'état local (onSnapshot s'occupera de la mise à jour complète)
       setProperties(prev => prev.map(p => p.id === property.id ? { ...p, notaire_id: profile!.id } : p));
       showToast('Bien pris en charge. Vous pouvez maintenant examiner les documents.');
-    } catch { showToast('Erreur lors de la prise en charge', false); }
+    } catch (e: any) { 
+      console.error('doTakeCharge error:', e);
+      showToast(`Erreur : ${e.message || 'Prise en charge échouée'}`, false); 
+    }
     finally { setTakingId(null); }
   }
 
