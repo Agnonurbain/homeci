@@ -127,8 +127,14 @@ export const visitService = {
       if (status === 'accepted') {
         await updateDoc(doc(db, 'properties', propId), { has_active_visit: true });
       } else if (status === 'completed' || status === 'rejected') {
+        const data = visitSnap.data();
+        const ownerId = data.owner_id;
         // Find if there are other active visits
-        const qOther = query(collection(db, 'visits'), where('property_id', '==', propId));
+        const qOther = query(
+          collection(db, 'visits'),
+          where('property_id', '==', propId),
+          where('owner_id', '==', ownerId)
+        );
         const snapOther = await getDocs(qOther);
         const hasOtherActive = snapOther.docs.some(d => d.id !== visitId && (d.data().status === 'accepted' || d.data().status === 'completed'));
         if (!hasOtherActive) {
