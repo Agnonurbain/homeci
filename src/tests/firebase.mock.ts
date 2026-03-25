@@ -42,7 +42,7 @@ export const firestoreMocks = {
     };
   }),
   getDocs: vi.fn(async () => ({
-    docs: [],
+    docs: [] as any[],
     empty: true,
     size: 0,
   })),

@@ -1,9 +1,9 @@
 import { Plus, Home, Eye, Heart, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { propertyService } from '../services/propertyService';
-import { PropertyCard } from './PropertyCard';
-import type { Property } from '../types/property';
+import { useAuth } from '../../contexts/AuthContext';
+import { propertyService } from '../../services/propertyService';
+import { PropertyCard } from '../PropertyCard';
+import type { Property } from '../../types/property';
 
 export function Dashboard() {
   const { profile } = useAuth();
@@ -30,8 +30,8 @@ export function Dashboard() {
 
       setProperties(data);
 
-      const published = data.filter(p => p.status === 'available').length;
-      const pending = data.filter(p => p.status === 'rented').length;
+      const published = data.filter(p => p.status === 'published').length;
+      const pending = data.filter(p => p.status === 'pending').length;
 
       setStats({
         total: data.length,
@@ -46,7 +46,7 @@ export function Dashboard() {
     }
   }
 
-  if (!profile || (profile.role !== 'proprietaire' && profile.role !== 'agent')) {
+  if (!profile || (profile.role !== 'proprietaire' && profile.role !== 'agent' && (profile.role as string) !== 'admin')) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <p className="text-gray-600">Vous devez être propriétaire ou agent pour accéder à cette page</p>

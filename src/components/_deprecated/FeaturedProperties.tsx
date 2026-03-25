@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { PropertyCard } from './PropertyCard';
-import { propertyService } from '../services/propertyService';
-import type { Property } from '../services/propertyService';
+import { PropertyCard } from '../PropertyCard';
+import { propertyService } from '../../services/propertyService';
+import type { Property } from '../../services/propertyService';
 
 export function FeaturedProperties() {
   const [properties, setProperties] = useState<Property[]>([]);

@@ -1,5 +1,5 @@
 import { MapPin, Bed, Bath, Maximize, CheckCircle, Calendar, Phone, Mail, MessageCircle } from 'lucide-react';
-import type { Property } from '../services/propertyService';
+import type { Property } from '../../services/propertyService';
 
 interface PropertyDetailsProps {
   property: Property;

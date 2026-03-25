@@ -158,7 +158,7 @@ describe('propertyService', () => {
         rejection_reason: 'Document illisible',
       });
 
-      const calledWith = firestoreMocks.updateDoc.mock.calls[0][1];
+      const calledWith = (firestoreMocks.updateDoc.mock.calls[0][1] || {}) as any;
       expect(calledWith.status).toBe('refuse');
       expect(calledWith.rejection_reason).toBe('Document illisible');
     });

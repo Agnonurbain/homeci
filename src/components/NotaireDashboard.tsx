@@ -348,7 +348,6 @@ export default function NotaireDashboard() {
     // Toujours afficher la charte avant chaque nouvelle prise en charge (Conformité Légale)
     setPendingTakeChargeProperty(property);
     setShowCGVNotaire(true);
-    doTakeCharge(property);
   }
 
   async function doTakeCharge(property: Property) {
