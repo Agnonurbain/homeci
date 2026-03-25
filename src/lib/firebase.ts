@@ -20,7 +20,15 @@ const app = initializeApp(firebaseConfig);
 // Initialize AppCheck with reCAPTCHA Enterprise
 if (typeof self !== 'undefined' && import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
   // En développement local, on utilise le debug token pour éviter les erreurs 400
-  if (import.meta.env.DEV || (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))) {
+  if (
+    import.meta.env.DEV ||
+    (typeof window !== 'undefined' && (
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname.includes('.local') ||
+      import.meta.env.VITE_APP_CHECK_DEBUG === 'true'
+    ))
+  ) {
     (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
   }
 

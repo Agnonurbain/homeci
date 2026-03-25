@@ -12,9 +12,7 @@ service cloud.firestore {
       return userDoc != null ? userDoc.data.role : null;
     }
     function isAdmin() { return isAuth() && userRole() == 'admin'; }
-    function isNotaire() { 
-      return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'notaire'; 
-    }
+    function isNotaire() { return isAuth() && userRole() == 'notaire'; }
 
     // ── USERS ──
     match /users/{uid} {
