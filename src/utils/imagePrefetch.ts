@@ -53,6 +53,7 @@ const processQueue = async (): Promise<void> => {
 export const clearPrefetchCache = (): void => {
   prefetchedImages.clear();
   prefetchQueue.length = 0;
+  isProcessing = false;
 };
 
 export const isPrefetched = (url: string): boolean => {
