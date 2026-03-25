@@ -121,7 +121,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
           <X className="w-4 h-4" style={{ color: HAlpha.cream60 }} />
         </button>
 
-        <div className="p-6 space-y-5">
+        <div className="p-5 sm:p-6 space-y-5 max-h-[85vh] overflow-y-auto homeci-scrollbar">
           {/* Header */}
           <div className="text-center">
             <h2 className="text-xl font-bold" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>
