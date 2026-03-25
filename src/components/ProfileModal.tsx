@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { X, Camera, Save, Loader, User, Phone, Building2, CheckCircle } from 'lucide-react';
+import { X, Camera, Save, Loader, User, Phone, Building2, CheckCircle, MapPin, Award, Wallet } from 'lucide-react';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
@@ -19,6 +19,10 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const [fullName, setFullName] = useState(profile?.full_name || '');
   const [phone, setPhone] = useState(profile?.phone || '');
   const [companyName, setCompanyName] = useState(profile?.company_name || '');
+  const [notaireId, setNotaireId] = useState(profile?.notaire_id || '');
+  const [address, setAddress] = useState(profile?.address || '');
+  const [isAgent, setIsAgent] = useState(profile?.is_agent || false);
+  const [prefBudget, setPrefBudget] = useState(profile?.preferences?.budget_max?.toString() || '');
   const [loading, setLoading] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -66,6 +70,19 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
       };
       if (profile.role === 'proprietaire' || profile.role === 'notaire') {
         updates.company_name = companyName.trim() || null;
+        updates.address = address.trim() || null;
+      }
+      if (profile.role === 'notaire') {
+        updates.notaire_id = notaireId.trim() || null;
+      }
+      if (profile.role === 'proprietaire') {
+        updates.is_agent = isAgent;
+      }
+      if (profile.role === 'locataire') {
+        updates.preferences = {
+          ...profile.preferences,
+          budget_max: prefBudget ? parseInt(prefBudget) : null
+        };
       }
       await updateDoc(doc(db, 'users', user.uid), updates);
       await refreshProfile();
@@ -110,9 +127,13 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             <h2 className="text-xl font-bold" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>
               Mon Profil
             </h2>
-            <p className="text-xs mt-1" style={{ color: HAlpha.cream40, fontFamily: 'var(--font-nunito)' }}>
+            <div className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider mt-2"
+              style={{ background: profile.role === 'admin' ? HAlpha.orange10 : HAlpha.gold10,
+                       color: profile.role === 'admin' ? HColors.orangeCI : HColors.gold,
+                       border: `1px solid ${profile.role === 'admin' ? HAlpha.orange25 : HAlpha.gold25}`,
+                       fontFamily: 'var(--font-nunito)' }}>
               {roleLabels[profile.role] || profile.role}
-            </p>
+            </div>
           </div>
 
           {/* Avatar */}
@@ -189,21 +210,88 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             </div>
           </div>
 
-          {/* Entreprise (propriétaire/notaire) */}
+          {/* Entreprise & Adresse (propriétaire/notaire) */}
           {(profile.role === 'proprietaire' || profile.role === 'notaire') && (
-            <div>
-              <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
-                style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
-                {profile.role === 'notaire' ? 'Cabinet / Étude notariale' : 'Entreprise (optionnel)'}
-              </label>
-              <div className="flex items-center gap-2 px-4 py-3 rounded-xl"
-                style={{ background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.25)' }}>
-                <Building2 className="w-4 h-4 shrink-0" style={{ color: HAlpha.gold50 }} />
-                <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)}
-                  placeholder="Nom de l'entreprise"
-                  className="flex-1 bg-transparent outline-none text-sm"
-                  style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }} />
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                  style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
+                  {profile.role === 'notaire' ? 'Cabinet / Étude notariale' : 'Entreprise (optionnel)'}
+                </label>
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl"
+                  style={{ background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.25)' }}>
+                  <Building2 className="w-4 h-4 shrink-0" style={{ color: HAlpha.gold50 }} />
+                  <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)}
+                    placeholder="Nom de l'entreprise"
+                    className="flex-1 bg-transparent outline-none text-sm"
+                    style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }} />
+                </div>
               </div>
+
+              {profile.role === 'notaire' && (
+                <div>
+                  <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                    style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
+                    N° d'agrément Notaire *
+                  </label>
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-xl"
+                    style={{ background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.25)' }}>
+                    <Award className="w-4 h-4 shrink-0" style={{ color: HAlpha.gold50 }} />
+                    <input type="text" value={notaireId} onChange={e => setNotaireId(e.target.value)}
+                      placeholder="Ex: NOT-2024-XXXX"
+                      className="flex-1 bg-transparent outline-none text-sm"
+                      style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }} />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                  style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
+                  Adresse professionnelle
+                </label>
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl"
+                  style={{ background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.25)' }}>
+                  <MapPin className="w-4 h-4 shrink-0" style={{ color: HAlpha.gold50 }} />
+                  <input type="text" value={address} onChange={e => setAddress(e.target.value)}
+                    placeholder="Ville, Commune, Quartier"
+                    className="flex-1 bg-transparent outline-none text-sm"
+                    style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }} />
+                </div>
+              </div>
+
+              {profile.role === 'proprietaire' && (
+                <div className="flex items-center gap-3 px-4 py-2">
+                  <input type="checkbox" id="isAgent" checked={isAgent} onChange={e => setIsAgent(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
+                  <label htmlFor="isAgent" className="text-sm cursor-pointer" style={{ color: HAlpha.cream70, fontFamily: 'var(--font-nunito)' }}>
+                    Je suis un agent immobilier ou une agence
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Préférences (Locataire) */}
+          {profile.role === 'locataire' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                  style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
+                  Votre Budget Max (FCFA)
+                </label>
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl"
+                  style={{ background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.25)' }}>
+                  <Wallet className="w-4 h-4 shrink-0" style={{ color: HAlpha.gold50 }} />
+                  <input type="number" value={prefBudget} onChange={e => setPrefBudget(e.target.value)}
+                    placeholder="Ex: 500000"
+                    className="flex-1 bg-transparent outline-none text-sm"
+                    style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }} />
+                </div>
+              </div>
+              <p className="text-[10px]" style={{ color: HAlpha.cream40, fontFamily: 'var(--font-nunito)' }}>
+                Ces informations nous aident à vous proposer des biens plus pertinents.
+              </p>
             </div>
           )}
 

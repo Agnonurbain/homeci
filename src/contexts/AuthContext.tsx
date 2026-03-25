@@ -32,6 +32,15 @@ export interface Profile {
   cgv_notaire_accepted?: boolean;
   cgv_notaire_accepted_at?: string;
   session_timeout_minutes?: number;
+  // Nouveaux champs pour la personnalisation par rôle
+  notaire_id?: string | null;      // N° d'agrément
+  address?: string | null;         // Adresse cabinet ou propriétaire
+  is_agent?: boolean;              // Pour les propriétaires (Agent immobilier ?)
+  preferences?: {                  // Pour les locataires
+    cities?: string[];
+    budget_max?: number;
+    property_types?: string[];
+  } | null;
   created_at: string;
   updated_at: string;
 }
