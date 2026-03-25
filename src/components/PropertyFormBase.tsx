@@ -43,14 +43,9 @@ const step2Schema = z.object({
   bedrooms: z.string().optional(),
 }).superRefine((data, ctx) => {
   const isRes = ['appartement', 'maison', 'villa'].includes(data.property_type);
-  
   if (data.property_type === 'terrain') {
     if (!data.land_area || parseFloat(data.land_area) <= 0) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'La superficie du terrain est obligatoire', path: ['land_area'] });
-    }
-  } else if (['hotel', 'appart_hotel'].includes(data.property_type)) {
-    if (!data.rooms_count || parseInt(data.rooms_count) < 1) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Le nombre total de chambres/unités est obligatoire', path: ['rooms_count'] });
     }
   } else if (isRes) {
     if (!data.surface_area || parseFloat(data.surface_area) <= 0) {
@@ -792,10 +787,6 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                   <div className="space-y-5">
                     <SubSection title="Établissement" color="gold">
                       <div className="grid md:grid-cols-2 gap-4">
-                        <FieldGroup label="Nombre total de chambres *">
-                          <input type="number" name="rooms_count" value={formData.rooms_count}
-                            onChange={handleChange} className={inputCls} style={S.input} min="1" />
-                        </FieldGroup>
                         <FieldGroup label="Année de construction">
                           <input type="number" name="annee_construction" value={formData.annee_construction}
                             onChange={handleChange} className={inputCls} style={S.input} min="1900" />
@@ -840,11 +831,6 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                 {isAppartHotel && (
                   <div className="space-y-5">
                     <SubSection title="La Résidence" color="orange">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <FieldGroup label="Nombre total d'unités *">
-                          <input type="number" name="rooms_count" value={formData.rooms_count}
-                            onChange={handleChange} className={inputCls} style={S.input} min="1" />
-                        </FieldGroup>
                         <div className="mt-1">
                           <p className="mb-2" style={S.labelSm}>Étoiles / Standing</p>
                           <div className="flex gap-2">
@@ -860,17 +846,12 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                             ))}
                           </div>
                         </div>
-                      </div>
                     </SubSection>
                     <SubSection title="Détails des Unités" color="gold">
                       <div className="grid md:grid-cols-3 gap-4">
                         <FieldGroup label="Surface moyenne (m²)">
                           <input type="number" name="surface_par_unite" value={formData.surface_par_unite}
                             onChange={handleChange} className={inputCls} style={S.input} min="0" />
-                        </FieldGroup>
-                        <FieldGroup label="Chambres / unité">
-                          <input type="number" name="chambres_par_unite" value={formData.chambres_par_unite}
-                            onChange={handleChange} className={inputCls} style={S.input} min="1" />
                         </FieldGroup>
                       </div>
                       <label className="flex items-center gap-2 cursor-pointer mt-2">
