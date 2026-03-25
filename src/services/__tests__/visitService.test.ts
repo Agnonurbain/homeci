@@ -33,7 +33,7 @@ describe('visitService', () => {
       expect(id).toBe('visit-1');
       expect(firestoreMocks.addDoc).toHaveBeenCalledTimes(1);
 
-      const data = firestoreMocks.addDoc.mock.calls[0][1];
+      const data = firestoreMocks.addDoc.mock.calls[0][1] as any;
       expect(data.status).toBe('pending');
       expect(data.owner_notes).toBe('');
       expect(data.property_id).toBe('prop-1');
@@ -50,7 +50,7 @@ describe('visitService', () => {
       await visitService.updateVisitStatus('visit-1', 'accepted', 'RDV confirmé');
 
       expect(firestoreMocks.updateDoc).toHaveBeenCalledTimes(1);
-      const data = firestoreMocks.updateDoc.mock.calls[0][1];
+      const data = firestoreMocks.updateDoc.mock.calls[0][1] as any;
       expect(data.status).toBe('accepted');
       expect(data.owner_notes).toBe('RDV confirmé');
     });
@@ -58,7 +58,7 @@ describe('visitService', () => {
     it('rejette une visite sans notes', async () => {
       await visitService.updateVisitStatus('visit-2', 'rejected');
 
-      const data = firestoreMocks.updateDoc.mock.calls[0][1];
+      const data = firestoreMocks.updateDoc.mock.calls[0][1] as any;
       expect(data.status).toBe('rejected');
       expect(data.owner_notes).toBe('');
     });
@@ -66,7 +66,7 @@ describe('visitService', () => {
     it('marque une visite comme complétée', async () => {
       await visitService.updateVisitStatus('visit-3', 'completed');
 
-      const data = firestoreMocks.updateDoc.mock.calls[0][1];
+      const data = firestoreMocks.updateDoc.mock.calls[0][1] as any;
       expect(data.status).toBe('completed');
     });
   });
@@ -77,7 +77,7 @@ describe('visitService', () => {
     it('propose une contre-date par le propriétaire', async () => {
       await visitService.proposeCounterDate('visit-1', '2026-04-20', '14:00', 'owner');
 
-      const data = firestoreMocks.updateDoc.mock.calls[0][1];
+      const data = firestoreMocks.updateDoc.mock.calls[0][1] as any;
       expect(data.status).toBe('counter_proposed');
       expect(data.counter_date).toBe('2026-04-20');
       expect(data.counter_time).toBe('14:00');
@@ -87,7 +87,7 @@ describe('visitService', () => {
     it('propose une contre-date par le locataire', async () => {
       await visitService.proposeCounterDate('visit-1', '2026-04-22', '09:00', 'tenant');
 
-      const data = firestoreMocks.updateDoc.mock.calls[0][1];
+      const data = firestoreMocks.updateDoc.mock.calls[0][1] as any;
       expect(data.counter_proposed_by).toBe('tenant');
     });
   });
@@ -97,18 +97,20 @@ describe('visitService', () => {
   describe('acceptCounterDate', () => {
     it('accepte la contre-proposition et met à jour les dates', async () => {
       firestoreMocks.getDoc.mockResolvedValueOnce({
+        id: 'visit-1',
         exists: () => true,
         data: () => ({
           counter_date: '2026-04-20',
           counter_time: '14:00',
           preferred_date: '2026-04-15',
           preferred_time: '10:00',
+          property_id: 'prop-1',
         }),
       });
 
       await visitService.acceptCounterDate('visit-1');
 
-      const data = firestoreMocks.updateDoc.mock.calls[0][1];
+      const data = firestoreMocks.updateDoc.mock.calls[0][1] as any;
       expect(data.status).toBe('accepted');
       expect(data.preferred_date).toBe('2026-04-20'); // Remplacé par counter
       expect(data.preferred_time).toBe('14:00');
@@ -171,45 +173,41 @@ describe('visitService', () => {
 
   describe('hasActiveVisit', () => {
     it('retourne true si une visite accepted existe pour la propriété', async () => {
-      firestoreMocks.getDocs.mockResolvedValueOnce({
-        docs: [
-          { id: 'v1', data: () => ({ status: 'pending' }) },
-          { id: 'v2', data: () => ({ status: 'accepted' }) },
-        ],
+      firestoreMocks.getDoc.mockResolvedValueOnce({
+        id: 'prop-1',
+        exists: () => true,
+        data: () => ({ has_active_visit: true })
       });
-
       const result = await visitService.hasActiveVisit('prop-1');
       expect(result).toBe(true);
     });
 
     it('retourne true si une visite completed existe', async () => {
-      firestoreMocks.getDocs.mockResolvedValueOnce({
-        docs: [
-          { id: 'v1', data: () => ({ status: 'completed' }) },
-        ],
+      firestoreMocks.getDoc.mockResolvedValueOnce({
+        id: 'prop-1',
+        exists: () => true,
+        data: () => ({ has_active_visit: true })
       });
-
       const result = await visitService.hasActiveVisit('prop-1');
       expect(result).toBe(true);
     });
 
-    it('retourne false si toutes les visites sont pending ou rejected', async () => {
-      firestoreMocks.getDocs.mockResolvedValueOnce({
-        docs: [
-          { id: 'v1', data: () => ({ status: 'pending' }) },
-          { id: 'v2', data: () => ({ status: 'rejected' }) },
-        ],
+    it('retourne false si has_active_visit est false', async () => {
+      firestoreMocks.getDoc.mockResolvedValueOnce({
+        id: 'prop-1',
+        exists: () => true,
+        data: () => ({ has_active_visit: false })
       });
-
       const result = await visitService.hasActiveVisit('prop-1');
       expect(result).toBe(false);
     });
 
-    it('retourne false si aucune visite n\'existe', async () => {
-      firestoreMocks.getDocs.mockResolvedValueOnce({
-        docs: [],
+    it('retourne false si la propriété n\'existe pas', async () => {
+      firestoreMocks.getDoc.mockResolvedValueOnce({
+        id: 'prop-1',
+        exists: () => false,
+        data: () => ({})
       });
-
       const result = await visitService.hasActiveVisit('prop-1');
       expect(result).toBe(false);
     });

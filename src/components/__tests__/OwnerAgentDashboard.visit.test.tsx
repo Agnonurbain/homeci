@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { firestoreMocks } from '../../tests/firebase.mock';
+import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { createMockVisit } from '../../tests/factories';
 
 // ── Mock sub-components ─────────────────────────────────────────────────────────
@@ -11,7 +12,22 @@ vi.mock('../PropertyViewModal', () => ({ default: () => <div data-testid="view-m
 vi.mock('../ScrollTimePicker', () => ({ default: ({ value }: any) => <input data-testid="time-picker" value={value || ''} readOnly /> }));
 vi.mock('../CGVModal', () => ({ default: () => <div data-testid="cgv-modal" /> }));
 vi.mock('../PaymentModal', () => ({ default: () => <div data-testid="payment-modal" /> }));
+vi.mock('../AvailabilityManager', () => ({ default: () => <div data-testid="availability-manager" /> }));
+vi.mock('../ChatBox', () => ({ default: () => <div data-testid="chat-box" /> }));
+vi.mock('../SatisfactionModal', () => ({ default: () => <div data-testid="satisfaction-modal" /> }));
 vi.mock('../ui/KenteLine', () => ({ KenteLine: () => <div data-testid="kente-line" /> }));
+
+// Mock global scrollTo et indexedDB
+if (typeof window !== 'undefined') {
+  window.scrollTo = vi.fn();
+  (window as any).indexedDB = {
+    open: vi.fn().mockImplementation(() => ({
+      onupgradeneeded: null,
+      onsuccess: null,
+      onerror: null,
+    })),
+  };
+}
 
 vi.mock('recharts', () => ({
   BarChart: ({ children }: any) => <div data-testid="bar-chart">{children}</div>,
@@ -23,10 +39,30 @@ vi.mock('recharts', () => ({
   Pie: () => null, Cell: () => null,
 }));
 
+vi.mock('leaflet', () => ({
+  default: {
+    Icon: { Default: { prototype: { _getIconUrl: vi.fn() } } },
+    map: vi.fn(),
+    tileLayer: vi.fn(),
+    marker: vi.fn(),
+  },
+}));
+
+vi.mock('react-leaflet', () => ({
+  MapContainer: ({ children }: any) => <div data-testid="map-container">{children}</div>,
+  TileLayer: () => null,
+  Marker: ({ children }: any) => <div data-testid="marker">{children}</div>,
+  Popup: ({ children }: any) => <div data-testid="popup">{children}</div>,
+  useMap: () => ({ setView: vi.fn() }),
+}));
+
+const mockUser = { uid: 'owner-1', displayName: 'Propriétaire Test' };
+const mockProfile = { role: 'proprietaire', full_name: 'Propriétaire Test', cgv_accepted: true };
+
 vi.mock('../../contexts/AuthContext', () => ({
   useAuth: () => ({
-    user: { uid: 'owner-1', displayName: 'Propriétaire Test' },
-    profile: { role: 'proprietaire', full_name: 'Propriétaire Test', cgv_accepted: true },
+    user: mockUser,
+    profile: mockProfile,
   }),
 }));
 
@@ -35,6 +71,10 @@ vi.mock('../../services/notificationService', () => ({
     getNotifications: vi.fn(async () => []),
     createNotification: vi.fn(async () => 'notif-1'),
     markAsRead: vi.fn(async () => {}),
+    listenToNotifications: vi.fn((_uid, cb) => {
+      cb([]);
+      return () => {};
+    }),
   },
 }));
 
@@ -47,6 +87,10 @@ vi.mock('../../services/propertyService', () => ({
     updateProperty: vi.fn(async () => {}),
     deleteProperty: vi.fn(async () => {}),
     getDocuments: vi.fn(async () => []),
+    listenToPropertiesByOwner: vi.fn((_uid, cb) => {
+      cb([]);
+      return () => {};
+    }),
   },
 }));
 
@@ -56,6 +100,10 @@ vi.mock('../../services/visitService', () => ({
     updateVisitStatus: vi.fn(async () => {}),
     proposeCounterDate: vi.fn(async () => {}),
     acceptCounterDate: vi.fn(async () => {}),
+    listenToVisitRequestsByOwner: vi.fn((_uid, cb) => {
+      cb([]);
+      return () => {};
+    }),
   },
 }));
 
@@ -63,17 +111,45 @@ vi.mock('../../services/visitService', () => ({
 import OwnerAgentDashboard from '../OwnerAgentDashboard';
 import { visitService } from '../../services/visitService';
 
+vi.mock('../../services/chatService', () => ({
+  chatService: {
+    getMessages: vi.fn(async () => []),
+    sendMessage: vi.fn(async () => 'msg-1'),
+    listenToUserConversations: vi.fn((_uid, cb) => {
+      cb([]);
+      return () => {};
+    }),
+    getOrCreateChat: vi.fn(async () => 'chat-1'),
+  },
+}));
+
+vi.mock('../../services/analyticsService', () => ({
+  analyticsService: {
+    setUser: vi.fn(),
+    clearUser: vi.fn(),
+    pageView: vi.fn(),
+    viewProperty: vi.fn(),
+    acceptVisit: vi.fn(),
+    completeVisit: vi.fn(),
+    updatePropertyStatus: vi.fn(),
+  },
+}));
+
+vi.mock('../../services/adService', () => ({
+  adService: {
+    getActiveBanners: vi.fn(async () => []),
+  },
+}));
+
+vi.mock('../../services/emailService', () => ({
+  emailService: {
+    notifyVisitUpdate: vi.fn(async () => {}),
+  },
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
-
-// ── Helpers ──────────────────────────────────────────────────────────────────────
-
-/** Click on the "Demandes de visite" tab and wait for visit data to render */
-async function goToVisitsTab() {
-  const tab = await screen.findByRole('button', { name: /demandes de visite/i });
-  fireEvent.click(tab);
-}
 
 function makePendingVisit() {
   return createMockVisit({
@@ -110,13 +186,26 @@ function makeOwnerCounterVisit() {
 
 // ── Tests ────────────────────────────────────────────────────────────────────────
 
+// ── Tests ────────────────────────────────────────────────────────────────────────
+
 describe('OwnerAgentDashboard — affichage dates visites', () => {
 
   it('affiche la date initiale (preferred_date) pour une visite pending', async () => {
-    vi.mocked(visitService.getVisitRequestsByOwner).mockResolvedValueOnce([makePendingVisit()]);
+    vi.mocked(visitService.listenToVisitRequestsByOwner).mockImplementation((_uid, cb) => {
+      cb([makePendingVisit()]);
+      return () => {};
+    });
 
-    render(<OwnerAgentDashboard />);
-    await goToVisitsTab();
+    render(
+      <MemoryRouter initialEntries={['/dashboard/requests']}>
+        <HelmetProvider>
+          <OwnerAgentDashboard />
+        </HelmetProvider>
+      </MemoryRouter>
+    );
+    // On est déjà sur le bon onglet grâce à initialEntries, 
+    // mais on appelle quand même pour la compatibilité si besoin
+    // await goToVisitsTab(); 
 
     await waitFor(() => {
       expect(screen.getByText(/10\/05\/2026/)).toBeInTheDocument();
@@ -124,23 +213,45 @@ describe('OwnerAgentDashboard — affichage dates visites', () => {
   });
 
   it('affiche la counter_date du locataire quand il contre-propose', async () => {
-    vi.mocked(visitService.getVisitRequestsByOwner).mockResolvedValueOnce([makeTenantCounterVisit()]);
+    vi.mocked(visitService.listenToVisitRequestsByOwner).mockImplementation((_uid, cb) => {
+      cb([makeTenantCounterVisit()]);
+      return () => {};
+    });
 
-    render(<OwnerAgentDashboard />);
-    await goToVisitsTab();
+    render(
+      <MemoryRouter initialEntries={['/dashboard/requests']}>
+        <HelmetProvider>
+          <OwnerAgentDashboard />
+        </HelmetProvider>
+      </MemoryRouter>
+    );
+    // On est déjà sur le bon onglet grâce à initialEntries, 
+    // mais on appelle quand même pour la compatibilité si besoin
+    // await goToVisitsTab(); 
 
     await waitFor(() => {
-      // counter_time = 15:30 doit être visible (la date principale affiche counter_date)
+      // counter_time = 15:30 doit être visible
       const elements = screen.getAllByText(/15:30/);
       expect(elements.length).toBeGreaterThanOrEqual(1);
     });
   });
 
   it('affiche "Le locataire propose" quand counter_proposed_by === tenant', async () => {
-    vi.mocked(visitService.getVisitRequestsByOwner).mockResolvedValueOnce([makeTenantCounterVisit()]);
+    vi.mocked(visitService.listenToVisitRequestsByOwner).mockImplementation((_uid, cb) => {
+      cb([makeTenantCounterVisit()]);
+      return () => {};
+    });
 
-    render(<OwnerAgentDashboard />);
-    await goToVisitsTab();
+    render(
+      <MemoryRouter initialEntries={['/dashboard/requests']}>
+        <HelmetProvider>
+          <OwnerAgentDashboard />
+        </HelmetProvider>
+      </MemoryRouter>
+    );
+    // On est déjà sur le bon onglet grâce à initialEntries, 
+    // mais on appelle quand même pour la compatibilité si besoin
+    // await goToVisitsTab(); 
 
     await waitFor(() => {
       expect(screen.getByText(/Le locataire propose/)).toBeInTheDocument();
@@ -148,10 +259,21 @@ describe('OwnerAgentDashboard — affichage dates visites', () => {
   });
 
   it('affiche la date initiale barrée quand le locataire contre-propose', async () => {
-    vi.mocked(visitService.getVisitRequestsByOwner).mockResolvedValueOnce([makeTenantCounterVisit()]);
+    vi.mocked(visitService.listenToVisitRequestsByOwner).mockImplementation((_uid, cb) => {
+      cb([makeTenantCounterVisit()]);
+      return () => {};
+    });
 
-    render(<OwnerAgentDashboard />);
-    await goToVisitsTab();
+    render(
+      <MemoryRouter initialEntries={['/dashboard/requests']}>
+        <HelmetProvider>
+          <OwnerAgentDashboard />
+        </HelmetProvider>
+      </MemoryRouter>
+    );
+    // On est déjà sur le bon onglet grâce à initialEntries, 
+    // mais on appelle quand même pour la compatibilité si besoin
+    // await goToVisitsTab(); 
 
     await waitFor(() => {
       const initialEl = screen.getByText(/initial/i);
@@ -162,10 +284,21 @@ describe('OwnerAgentDashboard — affichage dates visites', () => {
   });
 
   it('affiche "Votre proposition" quand counter_proposed_by === owner', async () => {
-    vi.mocked(visitService.getVisitRequestsByOwner).mockResolvedValueOnce([makeOwnerCounterVisit()]);
+    vi.mocked(visitService.listenToVisitRequestsByOwner).mockImplementation((_uid, cb) => {
+      cb([makeOwnerCounterVisit()]);
+      return () => {};
+    });
 
-    render(<OwnerAgentDashboard />);
-    await goToVisitsTab();
+    render(
+      <MemoryRouter initialEntries={['/dashboard/requests']}>
+        <HelmetProvider>
+          <OwnerAgentDashboard />
+        </HelmetProvider>
+      </MemoryRouter>
+    );
+    // On est déjà sur le bon onglet grâce à initialEntries, 
+    // mais on appelle quand même pour la compatibilité si besoin
+    // await goToVisitsTab(); 
 
     await waitFor(() => {
       expect(screen.getByText(/Votre proposition/)).toBeInTheDocument();
@@ -173,10 +306,21 @@ describe('OwnerAgentDashboard — affichage dates visites', () => {
   });
 
   it('affiche preferred_date en principal quand c\'est le proprio qui a contre-proposé', async () => {
-    vi.mocked(visitService.getVisitRequestsByOwner).mockResolvedValueOnce([makeOwnerCounterVisit()]);
+    vi.mocked(visitService.listenToVisitRequestsByOwner).mockImplementation((_uid, cb) => {
+      cb([makeOwnerCounterVisit()]);
+      return () => {};
+    });
 
-    render(<OwnerAgentDashboard />);
-    await goToVisitsTab();
+    render(
+      <MemoryRouter initialEntries={['/dashboard/requests']}>
+        <HelmetProvider>
+          <OwnerAgentDashboard />
+        </HelmetProvider>
+      </MemoryRouter>
+    );
+    // On est déjà sur le bon onglet grâce à initialEntries, 
+    // mais on appelle quand même pour la compatibilité si besoin
+    // await goToVisitsTab(); 
 
     await waitFor(() => {
       expect(screen.getByText(/10\/05\/2026/)).toBeInTheDocument();

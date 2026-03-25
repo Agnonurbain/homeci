@@ -1,0 +1,12 @@
+4:12:34 PM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+4:12:34 PM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+
+[1m[46m RUN [49m[22m [36mv4.1.0 [39m[90m/home/aymeric/Downloads/homeci[39m
+
+[90mstderr[2m | src/components/__tests__/OwnerAgentDashboard.visit.test.tsx
+[22m[39m[2026-03-25T16:12:35.452Z]  @firebase/app-check: Failed to persist debug token to IndexedDB. Error: FirebaseError: AppCheck: Error thrown when opening storage. Original error: indexedDB is not defined. (appCheck/storage-open).
+
+[90mstdout[2m | src/components/__tests__/OwnerAgentDashboard.visit.test.tsx
+[22m[39mApp Check debug token: 1cf0b258-6cc5-4037-b189-7eea7e72672c. You will need to add it to your app's App Check settings in the Firebase console for it to work.
+

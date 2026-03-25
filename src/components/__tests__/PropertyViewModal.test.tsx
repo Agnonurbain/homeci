@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import { HelmetProvider } from 'react-helmet-async';
 import { firestoreMocks } from '../../tests/firebase.mock';
 
 const { Timestamp } = firestoreMocks;
@@ -50,21 +51,29 @@ beforeEach(() => {
   firestoreMocks.getDoc.mockReset();
   firestoreMocks.getDocs.mockReset();
   // Default: sous-collection documents vide + pas de visites
-  firestoreMocks.getDocs.mockResolvedValue({ docs: [] });
+  firestoreMocks.getDocs.mockResolvedValue({ docs: [], empty: true, size: 0 });
 });
 
 describe('PropertyViewModal', () => {
 
   it('affiche un loader pendant le chargement', () => {
     firestoreMocks.getDoc.mockReturnValue(new Promise(() => {}));
-    render(<PropertyViewModal propertyId="prop-1" onClose={vi.fn()} />);
+    render(
+      <HelmetProvider>
+        <PropertyViewModal propertyId="prop-1" onClose={vi.fn()} />
+      </HelmetProvider>
+    );
     expect(document.body).toBeTruthy();
   });
 
   it('affiche le titre de la propriété une fois chargée', async () => {
     firestoreMocks.getDoc.mockResolvedValue(mockPropertyDoc({ title: 'Superbe villa' }));
 
-    render(<PropertyViewModal propertyId="prop-1" onClose={vi.fn()} />);
+    render(
+      <HelmetProvider>
+        <PropertyViewModal propertyId="prop-1" onClose={vi.fn()} />
+      </HelmetProvider>
+    );
 
     await waitFor(() => {
       expect(screen.getByText('Superbe villa')).toBeInTheDocument();
@@ -74,7 +83,11 @@ describe('PropertyViewModal', () => {
   it('affiche le prix formaté', async () => {
     firestoreMocks.getDoc.mockResolvedValue(mockPropertyDoc({ price: 95000000 }));
 
-    render(<PropertyViewModal propertyId="prop-1" onClose={vi.fn()} />);
+    render(
+      <HelmetProvider>
+        <PropertyViewModal propertyId="prop-1" onClose={vi.fn()} />
+      </HelmetProvider>
+    );
 
     await waitFor(() => {
       expect(screen.getAllByText(/95.*000.*000/).length).toBeGreaterThanOrEqual(1);
@@ -84,7 +97,11 @@ describe('PropertyViewModal', () => {
   it('affiche le badge Vérifié quand verified_notaire=true', async () => {
     firestoreMocks.getDoc.mockResolvedValue(mockPropertyDoc({ verified_notaire: true }));
 
-    render(<PropertyViewModal propertyId="prop-1" onClose={vi.fn()} />);
+    render(
+      <HelmetProvider>
+        <PropertyViewModal propertyId="prop-1" onClose={vi.fn()} />
+      </HelmetProvider>
+    );
 
     await waitFor(() => {
       expect(screen.getAllByText(/[Vv]érifi/).length).toBeGreaterThanOrEqual(1);

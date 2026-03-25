@@ -30,9 +30,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">60.21% </span>
+                <span class="strong">59.4% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>56/93</span>
+                <span class='fraction'>60/101</span>
             </div>
         
             
@@ -227,7 +227,31 @@
 <a name='L162'></a><a href='#L162'>162</a>
 <a name='L163'></a><a href='#L163'>163</a>
 <a name='L164'></a><a href='#L164'>164</a>
-<a name='L165'></a><a href='#L165'>165</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L165'></a><a href='#L165'>165</a>
+<a name='L166'></a><a href='#L166'>166</a>
+<a name='L167'></a><a href='#L167'>167</a>
+<a name='L168'></a><a href='#L168'>168</a>
+<a name='L169'></a><a href='#L169'>169</a>
+<a name='L170'></a><a href='#L170'>170</a>
+<a name='L171'></a><a href='#L171'>171</a>
+<a name='L172'></a><a href='#L172'>172</a>
+<a name='L173'></a><a href='#L173'>173</a>
+<a name='L174'></a><a href='#L174'>174</a>
+<a name='L175'></a><a href='#L175'>175</a>
+<a name='L176'></a><a href='#L176'>176</a>
+<a name='L177'></a><a href='#L177'>177</a>
+<a name='L178'></a><a href='#L178'>178</a>
+<a name='L179'></a><a href='#L179'>179</a>
+<a name='L180'></a><a href='#L180'>180</a>
+<a name='L181'></a><a href='#L181'>181</a>
+<a name='L182'></a><a href='#L182'>182</a>
+<a name='L183'></a><a href='#L183'>183</a>
+<a name='L184'></a><a href='#L184'>184</a>
+<a name='L185'></a><a href='#L185'>185</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -279,6 +303,14 @@
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -301,6 +333,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -332,8 +367,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">13x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -389,6 +428,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import type { PropertyInsert, PropertyUpdate } from '../services/propertyService';
@@ -416,6 +456,11 @@ export interface RawFormData {
   rooms_count: string;
   nb_etages: string;
   hotel_stars: string;
+  terrain_type: string;
+  is_fenced: boolean;
+  has_acd: boolean;
+  has_conference_room: boolean;
+  nb_restaurants: string;
   furnished: boolean;
   parking: boolean;
   amenities: string[];
@@ -427,7 +472,6 @@ export interface RawFormData {
   ascenseur: boolean;
   interphone: boolean;
   // Appart-Hôtel
-  nb_unites: string;
   surface_par_unite: string;
   chambres_par_unite: string;
   cuisine_par_unite: boolean;
@@ -460,6 +504,14 @@ export function sanitizePropertyData(formData: RawFormData): SanitizedBase {
     available_from: formData.available_from || <span class="branch-1 cbranch-no" title="branch not covered" >null,</span>
     model3d: null,
     model3d_request: null,
+    // Champs réinitialisés par défaut (seront surchargés si besoin)
+    videos: [],
+    notaire_id: null,
+    terrain_type: null,
+    is_fenced: false,
+    has_acd: false,
+    has_conference_room: false,
+    nb_restaurants: null,
   };
 &nbsp;
   // ── Terrain ──────────────────────────────────────────────────────────────
@@ -474,6 +526,9 @@ export function sanitizePropertyData(formData: RawFormData): SanitizedBase {
       etage_appartement: null, nb_etages_immeuble: null,
       annee_construction: null, ascenseur: false, interphone: false,
       surface_par_unite: null, chambres_par_unite: null, cuisine_par_unite: false,
+      terrain_type: formData.terrain_type as any,
+      is_fenced: formData.is_fenced,
+      has_acd: formData.has_acd,
     };
   }
 &nbsp;
@@ -490,8 +545,11 @@ export function sanitizePropertyData(formData: RawFormData): SanitizedBase {
       hotel_stars: formData.hotel_stars ? parseInt(formData.hotel_stars) : <span class="branch-1 cbranch-no" title="branch not covered" >null,</span>
       furnished: formData.furnished, parking: formData.parking,
       etage_appartement: null, nb_etages_immeuble: null,
-      annee_construction: null, ascenseur: false, interphone: false,
+      annee_construction: formData.annee_construction ? <span class="branch-0 cbranch-no" title="branch not covered" >parseInt(formData.annee_construction) </span>: null,
+      ascenseur: false, interphone: false,
       surface_par_unite: null, chambres_par_unite: null, cuisine_par_unite: false,
+      has_conference_room: formData.has_conference_room,
+      nb_restaurants: formData.nb_restaurants ? <span class="branch-0 cbranch-no" title="branch not covered" >parseInt(formData.nb_restaurants) </span>: null,
     };
   }
 &nbsp;
@@ -508,7 +566,8 @@ export function sanitizePropertyData(formData: RawFormData): SanitizedBase {
       bedrooms: parseInt(formData.bedrooms) || <span class="branch-1 cbranch-no" title="branch not covered" >0,</span>
       furnished: formData.furnished, parking: formData.parking,
       etage_appartement: null, nb_etages_immeuble: null,
-      annee_construction: null, ascenseur: false, interphone: false,
+      annee_construction: formData.annee_construction ? <span class="branch-0 cbranch-no" title="branch not covered" >parseInt(formData.annee_construction) </span>: null,
+      ascenseur: false, interphone: false,
       surface_par_unite: formData.surface_par_unite ? parseFloat(formData.surface_par_unite) : <span class="branch-1 cbranch-no" title="branch not covered" >null,</span>
       chambres_par_unite: formData.chambres_par_unite ? parseInt(formData.chambres_par_unite) : <span class="branch-1 cbranch-no" title="branch not covered" >null,</span>
       cuisine_par_unite: formData.cuisine_par_unite || <span class="branch-1 cbranch-no" title="branch not covered" >false,</span>
@@ -547,7 +606,8 @@ export function sanitizePropertyData(formData: RawFormData): SanitizedBase {
     rooms_count: null, hotel_stars: null,
     furnished: formData.furnished, parking: formData.parking,
     etage_appartement: null, nb_etages_immeuble: null,
-    annee_construction: null, ascenseur: false, interphone: false,
+    annee_construction: formData.annee_construction ? <span class="branch-0 cbranch-no" title="branch not covered" >parseInt(formData.annee_construction) </span>: null,
+    ascenseur: false, interphone: false,
     surface_par_unite: null, chambres_par_unite: null, cuisine_par_unite: false,
   };
 }
@@ -562,7 +622,7 @@ export function <span class="fstat-no" title="function not covered" >sanitizePro
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-14T22:12:14.250Z
+                at 2026-03-25T16:37:33.077Z
             </div>
         <script src="../prettify.js"></script>
         <script>
