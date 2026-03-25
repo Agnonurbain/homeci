@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { HomeCIEmblem } from './HomeCIEmblem';
 import { KenteLine } from './ui/KenteLine';
-import { HColors, HAlpha, HGradients } from '../styles/homeci-tokens';
+import { HColors, HAlpha } from '../styles/homeci-tokens';
 
 interface HeaderProps {
   onLoginClick?: () => void;

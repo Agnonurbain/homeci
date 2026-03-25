@@ -41,7 +41,7 @@ export default function AdminAdsTab() {
   const [bannerTargetCity, setBannerTargetCity] = useState('');
   const [bannerTargetTx, setBannerTargetTx] = useState('');
   const [bannerTargetType, setBannerTargetType] = useState('');
-  const [bannerDays, setBannerDays] = useState(30);
+  const [bannerDays] = useState(30);
   const [bannerSubmitting, setBannerSubmitting] = useState(false);
 
   useEffect(() => { loadAll(); }, []);

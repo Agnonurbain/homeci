@@ -36,7 +36,15 @@ export function Hero({ onSearch }: HeroProps) {
   const [showGeo, setShowGeo] = useState(false);
 
   const upd = (key: keyof HeroSearchValues, val: string, resets: (keyof HeroSearchValues)[] = []) => {
-    setF(prev => { const next = { ...prev, [key]: val }; resets.forEach(k => { next[k] = ''; }); return next; });
+    setF(prev => {
+      const next = { ...prev, [key]: val };
+      resets.forEach(k => {
+        if (k === 'propertyTypes') (next as any)[k] = [];
+        else if (k === 'verifiedNotaire') (next as any)[k] = false;
+        else (next as any)[k] = '';
+      });
+      return next;
+    });
   };
 
   const handleSearch = () => {

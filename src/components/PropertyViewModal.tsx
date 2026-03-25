@@ -13,7 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 import OptimizedImage from './OptimizedImage';
 const MapDisplay = lazy(() => import('./MapDisplay'));
 import { Property3DViewer } from './Property3DViewer';
-import { HColors, HAlpha, HS } from '../styles/homeci-tokens';
+import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { analyticsService } from '../services/analyticsService';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { fixDocUrl } from '../utils/fixDocUrl';
@@ -35,11 +35,6 @@ const DOC_STATUS: Record<string, { label: string; color: string }> = {
 
 const TRANSACTION_LABELS: Record<string, string> = {
   location: 'Location', vente: 'Vente', both: 'Location & Vente',
-};
-const TX_COLORS: Record<string, string> = {
-  location: 'bg-blue-100 text-blue-700',
-  vente: 'bg-purple-100 text-purple-700',
-  both: 'bg-orange-100 text-orange-700',
 };
 
 function formatPrice(p: number) {

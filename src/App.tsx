@@ -33,7 +33,7 @@ interface HeroFilters {
   city: string; commune: string; quartier: string;
 }
 
-import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
 function AppContent() {
   const { user, profile, loading, pendingNewUser, clearPendingNewUser } = useAuth();
@@ -44,7 +44,6 @@ function AppContent() {
   const [heroFilters, setHeroFilters] = useState<HeroFilters>({ propertyType: '', propertyTypes: [], verifiedNotaire: false, transactionType: '', district: '', region: '', departement: '', city: '', commune: '', quartier: '' });
   const [showProfile, setShowProfile] = useState(false);
 
-  const location = useLocation();
   const navigate = useNavigate();
 
   // ── FCM : demander la permission push après connexion ──

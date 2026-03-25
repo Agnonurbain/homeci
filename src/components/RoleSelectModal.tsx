@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { KenteLine } from './ui/KenteLine';
-import { Home, Building2, Briefcase, Award, Loader, CheckCircle, XCircle } from 'lucide-react';
+import { Home, Building2, Award, Loader, CheckCircle, XCircle } from 'lucide-react';
 
 interface RoleSelectModalProps {
   uid: string;

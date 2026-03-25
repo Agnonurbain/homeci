@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Clock, Save, Loader as LoaderIcon } from 'lucide-react';
-import { availabilityService, type PropertyAvailability } from '../services/availabilityService';
+import { availabilityService } from '../services/availabilityService';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 
 interface Props {

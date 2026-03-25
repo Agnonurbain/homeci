@@ -166,7 +166,7 @@ export default function NotaireDashboard() {
     }
     setActionLoading(key);
     try {
-      const titleStatus = newStatus === 'valide' ? { title_status: 'valide', title_validated_at: new Date().toISOString() }
+      const titleStatus: Partial<Property> = newStatus === 'valide' ? { title_status: 'valide', title_validated_at: new Date().toISOString() }
         : newStatus === 'refuse' ? { title_status: 'refuse', title_rejection_reason: refusalReasons[key] || '' }
           : { title_status: 'en_attente', title_validated_at: null };
       await propertyService.updateProperty(property.id, titleStatus);

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getCachedImage, cacheImage, getConnectionQuality } from '../utils/imageOptimization';
+import { getCachedImage, cacheImage } from '../utils/imageOptimization';
 
 interface OptimizedImageProps {
   src: string;
@@ -9,6 +9,7 @@ interface OptimizedImageProps {
   width?: number;
   height?: number;
   priority?: boolean;
+  onError?: (e: React.SyntheticEvent<HTMLImageElement>) => void;
 }
 
 export default function OptimizedImage({
@@ -19,6 +20,7 @@ export default function OptimizedImage({
   width,
   height,
   priority = false,
+  onError,
 }: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(priority);
@@ -86,6 +88,7 @@ export default function OptimizedImage({
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
           // fetchPriority removed - not a standard React img prop
+          onError={onError}
           className={`w-full h-full object-cover transition-all duration-300 ${
             isLoaded && imageSrc === src
               ? 'opacity-100 scale-100'

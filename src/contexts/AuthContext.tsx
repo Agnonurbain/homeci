@@ -31,6 +31,7 @@ export interface Profile {
   cgv_accepted_at?: string;
   cgv_notaire_accepted?: boolean;
   cgv_notaire_accepted_at?: string;
+  session_timeout_minutes?: number;
   created_at: string;
   updated_at: string;
 }
