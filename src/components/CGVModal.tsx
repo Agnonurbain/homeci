@@ -68,12 +68,12 @@ export default function CGVModal({ onAccept, onClose }: CGVModalProps) {
               <ScrollText className="w-5 h-5" style={{ color: HColors.gold }} />
             </div>
             <div>
-              <h2 className="text-lg font-bold"
-                style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>
-                Conditions Générales d'Utilisation — Propriétaire
+              <h2 className="text-xl font-bold"
+                style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', letterSpacing: '0.02em' }}>
+                Conditions Générales de Vente — Propriétaire
               </h2>
-              <p className="text-xs" style={{ color: 'rgba(245,230,200,0.5)', fontFamily: 'var(--font-nunito)' }}>
-                Veuillez lire et accepter avant de publier votre premier bien
+              <p className="text-xs font-medium" style={{ color: HColors.gold, opacity: 0.8, fontFamily: 'var(--font-nunito)', marginTop: '2px' }}>
+                Engagement requis pour chaque nouvelle publication
               </p>
             </div>
           </div>

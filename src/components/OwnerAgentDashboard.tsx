@@ -149,34 +149,63 @@ export default function OwnerAgentDashboard() {
 
   const handleExportCSV = () => {
     if (properties.length === 0) return;
-    const headers = ['ID', 'Titre', 'Type', 'Prix', 'Ville', 'Statut', 'Vues', 'Date Creation'];
-    const rows = properties.map(p => [
-      p.id,
-      p.title.replace(/,/g, ' '),
-      TYPE_LABELS[p.property_type] || p.property_type,
-      p.price,
-      p.city,
-      STATUS_STYLES[p.status]?.label || p.status,
-      p.views_count || 0,
-      new Date(p.created_at).toLocaleDateString('fr-FR'),
-    ]);
-    const csvContent = "\uFEFF" + [headers, ...rows].map(e => e.join(',')).join('\n');
+    
+    // En-têtes enrichis pour un export professionnel
+    const headers = [
+      'ID', 
+      'Titre', 
+      'Type de bien', 
+      'Transaction', 
+      'Prix (FCFA)', 
+      'Surface (m²)', 
+      'Chambres', 
+      'Ville', 
+      'Commune', 
+      'Quartier', 
+      'Statut', 
+      'Vues', 
+      'Date Création'
+    ];
+
+    const rows = properties.map(p => {
+      // Nettoyage des champs texte pour éviter de casser le CSV
+      const cleanTitle = p.title ? p.title.replace(/[";,]/g, ' ') : '';
+      const cleanCity = p.city ? p.city.replace(/[";,]/g, ' ') : '';
+      const cleanCommune = p.commune ? p.commune.replace(/[";,]/g, ' ') : '';
+      const cleanQuartier = p.quartier ? p.quartier.replace(/[";,]/g, ' ') : '';
+      
+      return [
+        p.id,
+        `"${cleanTitle}"`,
+        TYPE_LABELS[p.property_type] || p.property_type,
+        p.transaction_type === 'location' ? 'Location' : 'Vente',
+        p.price,
+        p.surface_area || 0,
+        p.bedrooms || 0,
+        `"${cleanCity}"`,
+        `"${cleanCommune}"`,
+        `"${cleanQuartier}"`,
+        STATUS_STYLES[p.status]?.label || p.status,
+        p.views_count || 0,
+        new Date(p.created_at).toLocaleDateString('fr-FR'),
+      ];
+    });
+
+    // Utilisation du point-virgule (;) pour une compatibilité Excel Excel (Fr) maximale
+    const csvContent = "\uFEFF" + [headers, ...rows].map(e => e.join(';')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `mes_biens_homeci_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `homeci_export_biens_${new Date().toISOString().split('T')[0]}.csv`);
     link.click();
     URL.revokeObjectURL(url);
   };
 
   /** Vérifie les CGV avant d'ouvrir le formulaire d'ajout */
   const handleAddProperty = () => {
-    if (profile?.cgv_accepted) {
-      setShowPublicationPayment(true);
-    } else {
-      setShowCGV(true);
-    }
+    // Toujours afficher les CGV avant chaque nouvelle publication (Conformité Légale)
+    setShowCGV(true);
   };
 
   const stats = {

@@ -173,13 +173,9 @@ export default function TenantDashboard() {
       }
     } catch (e) { console.error(e); }
 
-    if (!profile?.cgv_accepted) {
-      setPendingVisitProperty(property);
-      setShowCGVLocataire(true);
-    } else {
-      setPendingVisitProperty(property);
-      setShowVisitPayment(true);
-    }
+    // Toujours afficher les CGU avant chaque nouvelle demande de visite (Conformité Légale)
+    setPendingVisitProperty(property);
+    setShowCGVLocataire(true);
   };
 
   const handleOpenChat = async (visit: VisitRequest) => {

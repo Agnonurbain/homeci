@@ -345,12 +345,9 @@ export default function NotaireDashboard() {
       showToast('Conflit d\'intérêts — vous ne pouvez pas certifier votre propre bien.', false);
       return;
     }
-    // Vérifier si le notaire a déjà accepté la charte
-    if (!profile.cgv_notaire_accepted) {
-      setPendingTakeChargeProperty(property);
-      setShowCGVNotaire(true);
-      return;
-    }
+    // Toujours afficher la charte avant chaque nouvelle prise en charge (Conformité Légale)
+    setPendingTakeChargeProperty(property);
+    setShowCGVNotaire(true);
     doTakeCharge(property);
   }
 

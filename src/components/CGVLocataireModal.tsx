@@ -68,12 +68,12 @@ export default function CGVLocataireModal({ onAccept, onClose }: CGVLocataireMod
               <ScrollText className="w-5 h-5" style={{ color: HColors.gold }} />
             </div>
             <div>
-              <h2 className="text-lg font-bold"
-                style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>
-                Conditions Générales d'Utilisation — Locataire / Acheteur
+              <h2 className="text-xl font-bold"
+                style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', letterSpacing: '0.02em' }}>
+                Conditions Générales d'Utilisation — Locataire
               </h2>
-              <p className="text-xs" style={{ color: 'rgba(245,230,200,0.5)', fontFamily: 'var(--font-nunito)' }}>
-                Veuillez lire et accepter avant de demander votre première visite
+              <p className="text-xs font-medium" style={{ color: HColors.gold, opacity: 0.8, fontFamily: 'var(--font-nunito)', marginTop: '2px' }}>
+                Engagement requis pour chaque demande de visite
               </p>
             </div>
           </div>
