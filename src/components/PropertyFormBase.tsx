@@ -81,6 +81,7 @@ export interface PropertyFormData {
   has_conference_room: boolean; nb_restaurants: string;
   surface_par_unite: string; chambres_par_unite: string;
   cuisine_par_unite: boolean; furnished: boolean; parking: boolean;
+  is_serviced: boolean; topography: string;
   amenities: string[]; available_from: string;
 }
 
@@ -96,6 +97,7 @@ export const DEFAULT_FORM_DATA: PropertyFormData = {
   has_conference_room: false, nb_restaurants: '',
   surface_par_unite: '', chambres_par_unite: '',
   cuisine_par_unite: false, furnished: false, parking: false, 
+  is_serviced: false, topography: 'plat',
   amenities: [], available_from: '',
 };
 
@@ -212,6 +214,8 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
           chambres_par_unite: (data as any).chambres_par_unite?.toString() || '',
           cuisine_par_unite: (data as any).cuisine_par_unite || false,
           furnished: data.furnished || false, parking: data.parking || false,
+          is_serviced: (data as any).is_serviced || false,
+          topography: (data as any).topography || 'plat',
           amenities: data.amenities || [], available_from: data.available_from || '',
         });
         setExistingImages(data.images || []);
@@ -643,26 +647,28 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
 
             {/* ══════════ ÉTAPE 2 : Caractéristiques ══════════ */}
             {currentStep === 2 && (
-              <div className="space-y-5">
+              <div className="space-y-6">
                 <SectionHeader icon={<Home className="w-5 h-5" style={{ color:HColors.orangeCI }} />}
                   iconBg="rgba(192,124,62,0.12)" iconBorder="rgba(192,124,62,0.3)"
                   title="Caractéristiques" subtitle="Surface, pièces et équipements" />
 
-                {/* Résidentiel */}
+                {/* --- RÉSIDENTIEL (Appartement, Maison, Villa) --- */}
                 {isResidential && (
-                  <div className="space-y-4">
-                    <SubSection title="Le bâtiment" color="vert">
-                      <div className="grid md:grid-cols-2 gap-3">
+                  <div className="space-y-5">
+                    <SubSection title="Espace de Vie" color="vert">
+                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <FieldGroup label="Surface habitable (m²) *">
                           <input type="number" name="surface_area" value={formData.surface_area}
                             onChange={handleChange} className={inputCls} style={S.input} min="0" placeholder="0" />
                         </FieldGroup>
-                        {(formData.property_type === 'maison' || formData.property_type === 'villa') && (
-                          <FieldGroup label="Superficie terrain (m²)">
-                            <input type="number" name="land_area" value={formData.land_area}
-                              onChange={handleChange} className={inputCls} style={S.input} min="0" placeholder="0" />
-                          </FieldGroup>
-                        )}
+                        <FieldGroup label="Nombre de pièces">
+                          <input type="number" name="rooms_count" value={formData.rooms_count}
+                            onChange={handleChange} className={inputCls} style={S.input} min="1" placeholder="Ex: 3" />
+                        </FieldGroup>
+                        <FieldGroup label="Année de construction">
+                          <input type="number" name="annee_construction" value={formData.annee_construction}
+                            onChange={handleChange} className={inputCls} style={S.input} min="1900" max="2030" placeholder="Ex: 2022" />
+                        </FieldGroup>
                         <FieldGroup label="Chambres">
                           <input type="number" name="bedrooms" value={formData.bedrooms}
                             onChange={handleChange} className={inputCls} style={S.input} min="0" />
@@ -671,111 +677,133 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                           <input type="number" name="bathrooms" value={formData.bathrooms}
                             onChange={handleChange} className={inputCls} style={S.input} min="0" />
                         </FieldGroup>
-                        {(formData.property_type === 'maison' || formData.property_type === 'villa') && (
+                        {isAppartement && (
+                          <FieldGroup label="Niveau (Étage)">
+                            <input type="number" name="etage_appartement" value={formData.etage_appartement}
+                              onChange={handleChange} className={inputCls} style={S.input} min="0" placeholder="0 pour RDC" />
+                          </FieldGroup>
+                        )}
+                        {!isAppartement && (
                           <FieldGroup label="Nombre de niveaux">
                             <input type="number" name="nb_etages" value={formData.nb_etages}
                               onChange={handleChange} className={inputCls} style={S.input} min="1" placeholder="Ex: 1" />
                           </FieldGroup>
                         )}
-                        {isAppartement && (
-                          <FieldGroup label="Étage">
-                            <input type="number" name="etage_appartement" value={formData.etage_appartement}
-                              onChange={handleChange} className={inputCls} style={S.input} min="0" />
-                          </FieldGroup>
-                        )}
-                        <FieldGroup label="Année de construction">
-                          <input type="number" name="annee_construction" value={formData.annee_construction}
-                            onChange={handleChange} className={inputCls} style={S.input} min="1900" max="2030" />
-                        </FieldGroup>
                       </div>
-                      {isAppartement && (
-                        <div className="flex gap-4 mt-2 flex-wrap">
-                          {[
-                            { name:'ascenseur', label:'Ascenseur' },
-                            { name:'interphone', label:'Interphone' },
-                          ].map(cb => (
-                            <label key={cb.name} className="flex items-center gap-2 cursor-pointer">
-                              <input type="checkbox" name={cb.name}
-                                checked={formData[cb.name as keyof PropertyFormData] as boolean}
-                                onChange={handleChange} className="accent-amber-600" />
-                              <span className="text-sm" style={{ color:HColors.brownDark, fontFamily:'var(--font-nunito)' }}>
-                                {cb.label}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      )}
                     </SubSection>
 
+                    {/* Spécifique Maisons / Villas : Terrain & Extérieur */}
+                    {!isAppartement && (
+                      <SubSection title="Terrain & Extérieur" color="orange">
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <FieldGroup label="Superficie du terrain (m²)">
+                            <input type="number" name="land_area" value={formData.land_area}
+                              onChange={handleChange} className={inputCls} style={S.input} min="0" />
+                          </FieldGroup>
+                          <div className="flex flex-col justify-center">
+                            <label className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-white/40 transition-colors">
+                              <input type="checkbox" name="is_fenced"
+                                checked={formData.is_fenced} onChange={handleChange} className="w-4 h-4 accent-amber-600" />
+                              <span className="text-sm font-medium" style={{ color:HColors.brownDark, fontFamily:'var(--font-nunito)' }}>
+                                Propriété clôturée
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                      </SubSection>
+                    )}
+
+                    {/* Spécifique Appartements : L'immeuble */}
                     {isAppartement && (
                       <SubSection title="L'immeuble" color="gold">
-                        <FieldGroup label="Nombre d'étages de l'immeuble">
-                          <input type="number" name="nb_etages_immeuble" value={formData.nb_etages_immeuble}
-                            onChange={handleChange} className={inputCls} style={S.input} min="1" />
-                        </FieldGroup>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <FieldGroup label="Total étages de l'immeuble">
+                            <input type="number" name="nb_etages_immeuble" value={formData.nb_etages_immeuble}
+                              onChange={handleChange} className={inputCls} style={S.input} min="1" />
+                          </FieldGroup>
+                          <div className="flex items-center gap-6">
+                            <label className="flex items-center gap-2 cursor-pointer p-1">
+                              <input type="checkbox" name="ascenseur"
+                                checked={formData.ascenseur} onChange={handleChange} className="w-4 h-4 accent-amber-600" />
+                              <span className="text-sm font-medium" style={{ color:HColors.brownDark, fontFamily:'var(--font-nunito)' }}>Ascenseur</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer p-1">
+                              <input type="checkbox" name="interphone"
+                                checked={formData.interphone} onChange={handleChange} className="w-4 h-4 accent-amber-600" />
+                              <span className="text-sm font-medium" style={{ color:HColors.brownDark, fontFamily:'var(--font-nunito)' }}>Interphone</span>
+                            </label>
+                          </div>
+                        </div>
                       </SubSection>
                     )}
                   </div>
                 )}
 
-                {/* Terrain */}
+                {/* --- TERRAIN --- */}
                 {isTerrain && (
-                  <SubSection title="Le terrain" color="orange">
-                    <div className="grid md:grid-cols-2 gap-3">
-                      <FieldGroup label="Superficie totale (m²) *">
-                        <input type="number" name="land_area" value={formData.land_area}
-                          onChange={handleChange} className={inputCls} style={S.input} min="0" />
-                      </FieldGroup>
-                      <FieldGroup label="Usage du terrain">
-                        <select name="terrain_type" value={formData.terrain_type} onChange={handleChange}
-                          className={inputCls} style={S.input}>
-                          <option value="residentiel">Résidentiel</option>
-                          <option value="agricole">Agricole</option>
-                          <option value="industriel">Industriel</option>
-                          <option value="commercial">Commercial</option>
-                        </select>
-                      </FieldGroup>
-                    </div>
-                    <div className="flex gap-4 mt-3 flex-wrap">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" name="has_acd"
-                          checked={formData.has_acd} onChange={handleChange} className="accent-amber-600" />
-                        <span className="text-sm" style={{ color:HColors.brownDark, fontFamily:'var(--font-nunito)' }}>Possède un ACD</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" name="is_fenced"
-                          checked={formData.is_fenced} onChange={handleChange} className="accent-amber-600" />
-                        <span className="text-sm" style={{ color:HColors.brownDark, fontFamily:'var(--font-nunito)' }}>Terrain clôturé</span>
-                      </label>
-                    </div>
-                  </SubSection>
+                  <div className="space-y-5">
+                    <SubSection title="Dimensions & Usage" color="orange">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <FieldGroup label="Superficie totale (m²) *">
+                          <input type="number" name="land_area" value={formData.land_area}
+                            onChange={handleChange} className={inputCls} style={S.input} min="0" />
+                        </FieldGroup>
+                        <FieldGroup label="Usage du terrain">
+                          <select name="terrain_type" value={formData.terrain_type} onChange={handleChange}
+                            className={inputCls} style={S.input}>
+                            <option value="residentiel">Résidentiel</option>
+                            <option value="agricole">Agricole</option>
+                            <option value="industriel">Industriel</option>
+                            <option value="commercial">Commercial</option>
+                          </select>
+                        </FieldGroup>
+                      </div>
+                    </SubSection>
+
+                    <SubSection title="État & Aménagements" color="vert">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <FieldGroup label="Topographie (Relief)">
+                          <select name="topography" value={formData.topography} onChange={handleChange}
+                            className={inputCls} style={S.input}>
+                            <option value="plat">Plat</option>
+                            <option value="pente">En pente</option>
+                            <option value="accidente">Accidenté / Vallonné</option>
+                          </select>
+                        </FieldGroup>
+                        <div className="space-y-2 pt-2">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="has_acd"
+                              checked={formData.has_acd} onChange={handleChange} className="w-4 h-4 accent-amber-600" />
+                            <span className="text-sm font-medium" style={{ color:HColors.brownDark, fontFamily:'var(--font-nunito)' }}>Possède un ACD</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="is_serviced"
+                              checked={formData.is_serviced} onChange={handleChange} className="w-4 h-4 accent-amber-600" />
+                            <span className="text-sm font-medium" style={{ color:HColors.brownDark, fontFamily:'var(--font-nunito)' }}>Terrain viabilisé (Eau/Élec)</span>
+                          </label>
+                        </div>
+                      </div>
+                    </SubSection>
+                  </div>
                 )}
 
-                {/* Hôtel */}
+                {/* --- HÔTEL --- */}
                 {isHotel && (
-                  <SubSection title="L'établissement" color="gold">
-                    <div className="grid md:grid-cols-2 gap-3">
-                      <FieldGroup label="Nombre total de chambres *">
-                        <input type="number" name="rooms_count" value={formData.rooms_count}
-                          onChange={handleChange} className={inputCls} style={S.input} min="1" />
-                      </FieldGroup>
-                      <FieldGroup label="Nombre d'étages">
-                        <input type="number" name="nb_etages" value={formData.nb_etages}
-                          onChange={handleChange} className={inputCls} style={S.input} min="1" />
-                      </FieldGroup>
-                      <FieldGroup label="Année de construction">
-                        <input type="number" name="annee_construction" value={formData.annee_construction}
-                          onChange={handleChange} className={inputCls} style={S.input} min="1900" />
-                      </FieldGroup>
-                      <FieldGroup label="Nombre de restaurants">
-                        <input type="number" name="nb_restaurants" value={formData.nb_restaurants}
-                          onChange={handleChange} className={inputCls} style={S.input} min="0" />
-                      </FieldGroup>
-                    </div>
-                    <div className="mt-3 flex gap-4 flex-wrap">
-                      <div className="flex-1 min-w-[200px]">
+                  <div className="space-y-5">
+                    <SubSection title="Établissement" color="gold">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <FieldGroup label="Nombre total de chambres *">
+                          <input type="number" name="rooms_count" value={formData.rooms_count}
+                            onChange={handleChange} className={inputCls} style={S.input} min="1" />
+                        </FieldGroup>
+                        <FieldGroup label="Année de construction">
+                          <input type="number" name="annee_construction" value={formData.annee_construction}
+                            onChange={handleChange} className={inputCls} style={S.input} min="1900" />
+                        </FieldGroup>
+                      </div>
+                      <div className="mt-3">
                         <p className="mb-2" style={S.labelSm}>Classement étoiles</p>
-                        <div className="flex gap-2 flex-wrap">
+                        <div className="flex gap-2">
                           {[1,2,3,4,5].map(star => (
                             <button key={star} type="button"
                               onClick={() => setFormData(prev => ({ ...prev, hotel_stars: star.toString() }))}
@@ -788,52 +816,59 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                           ))}
                         </div>
                       </div>
-                      <label className="flex items-center gap-2 cursor-pointer mt-6">
-                        <input type="checkbox" name="has_conference_room"
-                          checked={formData.has_conference_room} onChange={handleChange} className="accent-amber-600" />
-                        <span className="text-sm" style={{ color:HColors.brownDark, fontFamily:'var(--font-nunito)' }}>Salles de conférence</span>
-                      </label>
-                    </div>
-                  </SubSection>
+                    </SubSection>
+
+                    <SubSection title="Services & Capacité" color="navy">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <FieldGroup label="Nombre de restaurants">
+                          <input type="number" name="nb_restaurants" value={formData.nb_restaurants}
+                            onChange={handleChange} className={inputCls} style={S.input} min="0" />
+                        </FieldGroup>
+                        <div className="flex flex-col justify-center">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="has_conference_room"
+                              checked={formData.has_conference_room} onChange={handleChange} className="w-4 h-4 accent-amber-600" />
+                            <span className="text-sm font-medium" style={{ color:HColors.brownDark, fontFamily:'var(--font-nunito)' }}>Salles de conférence disponibles</span>
+                          </label>
+                        </div>
+                      </div>
+                    </SubSection>
+                  </div>
                 )}
 
-                {/* Appart-Hôtel */}
+                {/* --- APPART-HÔTEL --- */}
                 {isAppartHotel && (
-                  <div className="space-y-4">
-                    <SubSection title="La résidence" color="orange">
-                      <div className="grid md:grid-cols-2 gap-3">
+                  <div className="space-y-5">
+                    <SubSection title="La Résidence" color="orange">
+                      <div className="grid md:grid-cols-2 gap-4">
                         <FieldGroup label="Nombre total d'unités *">
                           <input type="number" name="rooms_count" value={formData.rooms_count}
                             onChange={handleChange} className={inputCls} style={S.input} min="1" />
                         </FieldGroup>
-                        <FieldGroup label="Nombre d'étages">
-                          <input type="number" name="nb_etages" value={formData.nb_etages}
-                            onChange={handleChange} className={inputCls} style={S.input} min="1" />
-                        </FieldGroup>
-                      </div>
-                      <div className="mt-3">
-                        <p className="mb-2" style={S.labelSm}>Classement</p>
-                        <div className="flex gap-2 flex-wrap">
-                          {[1,2,3,4,5].map(star => (
-                            <button key={star} type="button"
-                              onClick={() => setFormData(prev => ({ ...prev, hotel_stars: star.toString() }))}
-                              className="w-10 h-10 rounded-xl font-bold text-sm transition-all"
-                              style={parseInt(formData.hotel_stars) === star
-                                ? { background:HColors.gold, color:HColors.night }
-                                : { background:'rgba(255,255,255,0.6)', color:HColors.brown, border:'1px solid rgba(212,160,23,0.25)' }}>
-                              {star}★
-                            </button>
-                          ))}
+                        <div className="mt-1">
+                          <p className="mb-2" style={S.labelSm}>Étoiles / Standing</p>
+                          <div className="flex gap-2">
+                            {[1,2,3,4,5].map(star => (
+                              <button key={star} type="button"
+                                onClick={() => setFormData(prev => ({ ...prev, hotel_stars: star.toString() }))}
+                                className="w-10 h-10 rounded-xl font-bold text-sm transition-all"
+                                style={parseInt(formData.hotel_stars) === star
+                                  ? { background:HColors.gold, color:HColors.night }
+                                  : { background:'rgba(255,255,255,0.6)', color:HColors.brown, border:'1px solid rgba(212,160,23,0.25)' }}>
+                                {star}★
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </SubSection>
-                    <SubSection title="Chaque unité" color="navy">
-                      <div className="grid md:grid-cols-3 gap-3">
-                        <FieldGroup label="Surface (m²)">
+                    <SubSection title="Détails des Unités" color="gold">
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <FieldGroup label="Surface moyenne (m²)">
                           <input type="number" name="surface_par_unite" value={formData.surface_par_unite}
                             onChange={handleChange} className={inputCls} style={S.input} min="0" />
                         </FieldGroup>
-                        <FieldGroup label="Chambres">
+                        <FieldGroup label="Chambres / unité">
                           <input type="number" name="chambres_par_unite" value={formData.chambres_par_unite}
                             onChange={handleChange} className={inputCls} style={S.input} min="1" />
                         </FieldGroup>
@@ -847,35 +882,32 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                   </div>
                 )}
 
-                {/* Équipements (tous sauf terrain) */}
+                {/* --- ÉQUIPEMENTS & SERVICES (Commun, sauf terrain) --- */}
                 {!isTerrain && (
-                  <SubSection title="Équipements & Services" color="vert">
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  <SubSection title="Équipements & Prestations" color="navy">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                       {AMENITIES_OPTIONS.map(amenity => (
                         <button key={amenity} type="button"
                           onClick={(e) => toggleAmenity(amenity, e)}
-                          className="px-3 py-2 rounded-xl text-xs font-medium text-left transition-all"
+                          className="px-3 py-2 rounded-xl text-[11px] font-bold text-left transition-all border"
                           style={formData.amenities.includes(amenity)
-                            ? { background:HAlpha.gold15, border:'1px solid rgba(212,160,23,0.5)', color:HColors.darkBrown, fontFamily:'var(--font-nunito)' }
-                            : { background:'rgba(255,255,255,0.6)', border:'1px solid rgba(212,160,23,0.15)', color:HColors.brownDark, fontFamily:'var(--font-nunito)' }}>
+                            ? { background:HAlpha.gold15, borderColor:'rgba(212,160,23,0.5)', color:HColors.darkBrown }
+                            : { background:'rgba(255,255,255,0.6)', borderColor:'rgba(212,160,23,0.1)', color:HColors.brownMid }}>
                           {amenity}
                         </button>
                       ))}
                     </div>
-                    <div className="flex gap-4 mt-3 flex-wrap">
-                      {[
-                        { name:'furnished', label:'Meublé' },
-                        { name:'parking', label:'Parking disponible' },
-                      ].map(cb => (
-                        <label key={cb.name} className="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" name={cb.name}
-                            checked={formData[cb.name as keyof PropertyFormData] as boolean}
-                            onChange={handleChange} className="accent-amber-600" />
-                          <span className="text-sm" style={{ color:HColors.brownDark, fontFamily:'var(--font-nunito)' }}>
-                            {cb.label}
-                          </span>
-                        </label>
-                      ))}
+                    <div className="flex gap-6 mt-4 pt-4 border-t border-white/40">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="furnished"
+                          checked={formData.furnished} onChange={handleChange} className="w-4 h-4 accent-amber-600" />
+                        <span className="text-sm font-bold" style={{ color:HColors.brownDark }}>Meublé</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="parking"
+                          checked={formData.parking} onChange={handleChange} className="w-4 h-4 accent-amber-600" />
+                        <span className="text-sm font-bold" style={{ color:HColors.brownDark }}>Parking disponible</span>
+                      </label>
                     </div>
                   </SubSection>
                 )}

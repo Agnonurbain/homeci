@@ -127,6 +127,8 @@ export interface Property {
   has_acd?: boolean;
   has_conference_room?: boolean;
   nb_restaurants?: number | null;
+  is_serviced?: boolean;
+  topography?: 'plat' | 'pente' | 'accidente' | null;
   created_at: string;
   updated_at: string;
 }
@@ -207,6 +209,8 @@ function docToProperty(id: string, data: Record<string, unknown>): Property {
     has_acd: Boolean(data.has_acd ?? false),
     has_conference_room: Boolean(data.has_conference_room ?? false),
     nb_restaurants: data.nb_restaurants != null ? Number(data.nb_restaurants) : null,
+    is_serviced: Boolean(data.is_serviced ?? false),
+    topography: (data.topography as Property['topography']) ?? null,
     created_at: toISO(data.created_at),
     updated_at: toISO(data.updated_at),
   };

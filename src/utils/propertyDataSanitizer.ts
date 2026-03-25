@@ -42,6 +42,8 @@ export interface RawFormData {
   surface_par_unite: string;
   chambres_par_unite: string;
   cuisine_par_unite: boolean;
+  is_serviced: boolean;
+  topography: string;
 }
 
 type SanitizedBase = Omit<
@@ -79,6 +81,8 @@ export function sanitizePropertyData(formData: RawFormData): SanitizedBase {
     has_acd: false,
     has_conference_room: false,
     nb_restaurants: null,
+    is_serviced: false,
+    topography: null,
   };
 
   // ── Terrain ──────────────────────────────────────────────────────────────
@@ -96,6 +100,8 @@ export function sanitizePropertyData(formData: RawFormData): SanitizedBase {
       terrain_type: formData.terrain_type as any,
       is_fenced: formData.is_fenced,
       has_acd: formData.has_acd,
+      is_serviced: formData.is_serviced,
+      topography: formData.topography as any,
     };
   }
 
