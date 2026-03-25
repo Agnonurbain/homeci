@@ -122,6 +122,8 @@ describe('visitService', () => {
     it('ne fait rien si la visite n\'existe pas', async () => {
       firestoreMocks.getDoc.mockResolvedValueOnce({
         exists: () => false,
+        data: () => ({}),
+        id: 'no-chat',
       });
 
       await visitService.acceptCounterDate('visit-inexistant');
@@ -158,6 +160,8 @@ describe('visitService', () => {
             }),
           },
         ],
+        empty: false,
+        size: 1,
       });
 
       const visits = await visitService.getVisitRequestsByOwner('owner-1');

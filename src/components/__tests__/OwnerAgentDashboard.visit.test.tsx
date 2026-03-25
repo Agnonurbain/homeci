@@ -63,6 +63,7 @@ vi.mock('../../contexts/AuthContext', () => ({
   useAuth: () => ({
     user: mockUser,
     profile: mockProfile,
+    refreshProfile: vi.fn(async () => {}),
   }),
 }));
 
@@ -87,6 +88,7 @@ vi.mock('../../services/propertyService', () => ({
     updateProperty: vi.fn(async () => {}),
     deleteProperty: vi.fn(async () => {}),
     getDocuments: vi.fn(async () => []),
+    updatePropertyStatus: vi.fn(async () => {}),
     listenToPropertiesByOwner: vi.fn((_uid, cb) => {
       cb([]);
       return () => {};
@@ -120,6 +122,10 @@ vi.mock('../../services/chatService', () => ({
       return () => {};
     }),
     getOrCreateChat: vi.fn(async () => 'chat-1'),
+    subscribeToMessages: vi.fn((_chatId, cb) => {
+      cb([]);
+      return () => {};
+    }),
   },
 }));
 
