@@ -5,7 +5,7 @@ import {
   MapPin, Calendar, Building2, Eye, Award, Copy, Plus, Loader as LoaderIcon,
   Flag, Star, CalendarCheck, UserSearch, FileText, Megaphone,
 } from 'lucide-react';
-import { collection, getDocs, orderBy, query, limit, Timestamp, addDoc, updateDoc, doc, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, limit, Timestamp, addDoc, updateDoc, doc, onSnapshot, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { propertyService } from '../services/propertyService';
@@ -15,6 +15,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import AdminLoginHistory from './AdminLoginHistory';
 import AdminManagement from './AdminManagement';
 import { delegateService } from '../services/delegateService';
+import { emailService } from '../services/emailService';
 
 // ── Lazy-loaded admin tabs ──
 const AdminReportsTab = lazy(() => import('./AdminReportsTab'));
@@ -140,7 +141,22 @@ export default function AdminDashboard() {
 
 
   const rejectProperty = async (propertyId: string) => {
-    try { await propertyService.updateProperty(propertyId, { status: 'rejected' }); showToast('Bien rejeté'); }
+    try { 
+      await propertyService.updateProperty(propertyId, { status: 'rejected' }); 
+      showToast('Bien rejeté'); 
+      // Optionnel: Envoyer un email de notification au propriétaire ici aussi
+      const prop = await propertyService.getProperty(propertyId);
+      if (prop) {
+        const ownerSnap = await getDoc(doc(db, 'users', prop.owner_id));
+        if (ownerSnap.exists() && ownerSnap.data().email) {
+          emailService.sendEmail({
+            to: ownerSnap.data().email,
+            subject: `Information concernant votre bien "${prop.title}"`,
+            html: `<p>Bonjour,</p><p>Votre bien <strong>${prop.title}</strong> a été rejeté par l'administration de HomeCI.</p><p>Veuillez vérifier vos documents et soumettre à nouveau si nécessaire.</p>`
+          }).catch(console.error);
+        }
+      }
+    }
     catch { showToast('Erreur', false); }
   };
 

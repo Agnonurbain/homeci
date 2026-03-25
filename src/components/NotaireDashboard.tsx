@@ -16,6 +16,7 @@ import {
   ThumbsUp, ThumbsDown, Loader, BadgeCheck, Share2
 } from 'lucide-react';
 import { delegateService } from '../services/delegateService';
+import { emailService } from '../services/emailService';
 import { KenteLine } from './ui/KenteLine';
 import CGVNotaireModal from './CGVNotaireModal';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
@@ -213,9 +214,14 @@ export default function NotaireDashboard() {
       setProperties(prev => prev.map(p => p.id === property.id ? { ...p, verified_notaire: true, status: 'published' } : p));
       setExpandedId(null); navigate('/dashboard/certifie');
       analyticsService.certifyProperty(property.id);
-      showToast('✅ Bien certifié ! Badge "Vérifié Notaire" accordé.');
-    } catch { showToast('Erreur lors de la certification', false); }
-    finally { setCertifyingId(null); }
+      showToast('Bien certifié avec succès ! 🏆');
+      setCertifyingId(null);
+      // Notification Email
+      const owner = owners[property.owner_id];
+      if (owner?.email) {
+        emailService.notifyPropertyApproval(owner.email, property.title).catch(console.error);
+      }
+    } catch { showToast('Erreur lors de la certification', false); setCertifyingId(null); }
   }
 
   async function handleDelegateAction(property: Property, action: 'certify' | 'reject') {

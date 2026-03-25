@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { emailService } from '../services/emailService';
 import { KenteLine } from './ui/KenteLine';
 import { propertyService } from '../services/propertyService';
 import { visitService, type VisitRequest } from '../services/visitService';
@@ -264,6 +265,9 @@ export default function OwnerAgentDashboard() {
             ? { ...v, status: 'accepted', preferred_date: selectedVisit.counter_date!, preferred_time: confirmedTime, counter_date: undefined, counter_time: undefined, counter_proposed_by: undefined }
             : v
         ));
+        if (selectedVisit.tenant_email) {
+          emailService.notifyVisitUpdate(selectedVisit.tenant_email, selectedVisit.property_title || 'votre bien', 'approved').catch(console.error);
+        }
       } else {
         // Accepter une visite normale (pending) ou rejeter
         await visitService.updateVisitStatus(selectedVisit.id, action);
@@ -277,6 +281,9 @@ export default function OwnerAgentDashboard() {
           property_id: selectedVisit.property_id,
         });
         setVisitRequests(prev => prev.map(v => v.id === selectedVisit.id ? { ...v, status: action } : v));
+        if (selectedVisit.tenant_email && (action === 'accepted' || action === 'rejected')) {
+          emailService.notifyVisitUpdate(selectedVisit.tenant_email, selectedVisit.property_title || 'votre bien', action === 'accepted' ? 'approved' : 'rejected').catch(console.error);
+        }
       }
       setSelectedVisit(null);
       setCounterDate(''); setCounterTime('');

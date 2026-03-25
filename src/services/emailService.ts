@@ -75,5 +75,24 @@ export const emailService = {
         </div>
       `,
     });
+  },
+
+  async notifyStatusReminder(ownerEmail: string, propertyTitle: string, visitDate: string) {
+    await this.sendEmail({
+      to: ownerEmail,
+      subject: `Rappel : Quel est le statut de votre bien "${propertyTitle}" ?`,
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+          <h2 style="color: #FF6B00;">Suite à votre visite du ${new Date(visitDate).toLocaleDateString('fr-FR')}</h2>
+          <p>Bonjour,</p>
+          <p>Votre visite pour le bien <strong>${propertyTitle}</strong> a eu lieu il y a plus de 24h.</p>
+          <p>Pourriez-vous mettre à jour le statut du bien sur HomeCI ? Est-il <strong>Loué</strong>, <strong>Vendu</strong>, ou toujours <strong>Disponible</strong> ?</p>
+          <p>Une mise à jour rapide permet de libérer les autres demandes de visites en attente.</p>
+          <a href="${window.location.origin}/dashboard" style="display: inline-block; padding: 10px 20px; background-color: #FF6B00; color: white; text-decoration: none; border-radius: 5px; margin-top: 15px;">Accéder à mon tableau de bord</a>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+          <p style="font-size: 0.9em; color: #777;">L'équipe HomeCI</p>
+        </div>
+      `,
+    });
   }
 };

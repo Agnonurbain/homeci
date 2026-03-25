@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Calendar, CheckCircle, Clock, XCircle, TrendingUp, Users, Eye } from 'lucide-react';
+import { Calendar, CheckCircle, Clock, XCircle, TrendingUp, Users, Eye, Bell } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { visitService } from '../services/visitService';
+import { emailService } from '../services/emailService';
+import { propertyService } from '../services/propertyService';
+import { db } from '../lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import type { VisitRequest } from '../services/visitService';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 
@@ -19,10 +23,53 @@ export default function AdminVisitsTab() {
   const [visits, setVisits] = useState<VisitRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
+  const [sendingReminders, setSendingReminders] = useState(false);
 
   useEffect(() => {
     visitService.getAllVisits().then(v => { setVisits(v); setLoading(false); }).catch(() => setLoading(false));
   }, []);
+
+  const handleSendReminders = async () => {
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+    const targetVisits = visits.filter(v => 
+      v.status === 'completed' && 
+      new Date(v.preferred_date) < oneDayAgo
+    );
+
+    if (targetVisits.length === 0) {
+      alert('Aucun rappel à envoyer (aucune visite terminée il y a plus de 24h).');
+      return;
+    }
+
+    if (!confirm(`Voulez-vous envoyer un email de rappel à ${targetVisits.length} propriétaire(s) ?`)) return;
+
+    setSendingReminders(true);
+    let sentCount = 0;
+
+    try {
+      for (const visit of targetVisits) {
+        const ownerSnap = await getDoc(doc(db, 'users', visit.owner_id));
+        if (ownerSnap.exists()) {
+          const ownerData = ownerSnap.data();
+          if (ownerData.email) {
+            const prop = await propertyService.getProperty(visit.property_id);
+            if (prop && prop.status === 'published') {
+              await emailService.notifyStatusReminder(ownerData.email, visit.property_title || 'votre bien', visit.preferred_date);
+              sentCount++;
+            }
+          }
+        }
+      }
+      alert(`${sentCount} rappel(s) envoyé(s) avec succès.`);
+    } catch (e) {
+      console.error(e);
+      alert('Erreur lors de l’envoi des rappels.');
+    } finally {
+      setSendingReminders(false);
+    }
+  };
 
   const filtered = filter ? visits.filter(v => v.status === filter) : visits;
 
@@ -43,7 +90,7 @@ export default function AdminVisitsTab() {
     { name: 'Effectuées', value: stats.completed },
   ].filter(d => d.value > 0);
 
-  // Bar chart — visites par mois (6 derniers mois)
+  // Bar chart
   const monthlyData = (() => {
     const months: Record<string, number> = {};
     const now = new Date();
@@ -68,16 +115,34 @@ export default function AdminVisitsTab() {
   );
 
   return (
-    <div>
-      <h2 className="font-bold text-xl mb-1" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>
-        Suivi des visites
-      </h2>
-      <p className="text-sm mb-6" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-        {visits.length} visite{visits.length > 1 ? 's' : ''} au total
-      </p>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="font-bold text-xl mb-1" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>
+            Suivi des visites
+          </h2>
+          <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+            {visits.length} visite{visits.length > 1 ? 's' : ''} au total
+          </p>
+        </div>
+        
+        <button 
+          onClick={handleSendReminders}
+          disabled={sendingReminders}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
+          style={{ background: HColors.night, color: HColors.gold, border: `1px solid ${HAlpha.gold25}` }}
+        >
+          {sendingReminders ? (
+            <div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin" />
+          ) : (
+            <Bell className="w-4 h-4" />
+          )}
+          Envoyer Rappels Statut (24h+)
+        </button>
+      </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { icon: Calendar, label: 'Total', value: stats.total, accent: HColors.gold },
           { icon: Clock, label: 'En attente', value: stats.pending, accent: HColors.orangeCI },
@@ -94,10 +159,8 @@ export default function AdminVisitsTab() {
       </div>
 
       {/* Charts row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Bar chart */}
-        <div className="rounded-2xl p-5"
-          style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="rounded-2xl p-5" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
           <h3 className="font-bold mb-4" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
             <TrendingUp className="w-4 h-4 inline mr-2" style={{ color: HColors.vertCI }} />
             Visites par mois
@@ -113,9 +176,7 @@ export default function AdminVisitsTab() {
           </ResponsiveContainer>
         </div>
 
-        {/* Pie chart */}
-        <div className="rounded-2xl p-5"
-          style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+        <div className="rounded-2xl p-5" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
           <h3 className="font-bold mb-4" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
             <Users className="w-4 h-4 inline mr-2" style={{ color: HColors.navy }} />
             Répartition par statut
@@ -147,8 +208,7 @@ export default function AdminVisitsTab() {
         </div>
       </div>
 
-      {/* Filter + list */}
-      <div className="flex gap-2 mb-5 flex-wrap">
+      <div className="flex gap-2 flex-wrap">
         {[
           { val: '', label: `Toutes (${visits.length})` },
           { val: 'pending', label: `En attente (${stats.pending})` },
@@ -166,13 +226,11 @@ export default function AdminVisitsTab() {
         ))}
       </div>
 
-      {/* Visit list */}
       <div className="space-y-3">
         {filtered.slice(0, 30).map(visit => {
           const s = STATUS_STYLES[visit.status] || STATUS_STYLES.pending;
           return (
-            <div key={visit.id} className="rounded-xl p-4"
-              style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+            <div key={visit.id} className="rounded-xl p-4" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
