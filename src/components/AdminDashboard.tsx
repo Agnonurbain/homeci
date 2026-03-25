@@ -5,7 +5,7 @@ import {
   MapPin, Calendar, Building2, Eye, Award, Copy, Plus, Loader as LoaderIcon,
   Flag, Star, CalendarCheck, UserSearch, FileText, Megaphone,
 } from 'lucide-react';
-import { collection, getDocs, orderBy, query, limit, Timestamp, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, limit, Timestamp, addDoc, updateDoc, doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { propertyService } from '../services/propertyService';
@@ -61,18 +61,13 @@ export default function AdminDashboard() {
   const [tokenInput, setTokenInput] = useState('');
   const [consumingToken, setConsumingToken] = useState(false);
 
-  useEffect(() => { loadData(); }, []);
-
-  function showToast(msg: string, ok = true) {
-    setToast({ msg, ok }); setTimeout(() => setToast(null), 3000);
-  }
-
-  const loadData = async () => {
+  useEffect(() => {
     setLoading(true);
-    try {
-      const usersQuery = query(collection(db, 'users'), orderBy('created_at', 'desc'), limit(20));
-      const usersSnapshot = await getDocs(usersQuery);
-      const profiles = usersSnapshot.docs.map(d => {
+    
+    // 1. Écouteur pour les utilisateurs récents
+    const usersQuery = query(collection(db, 'users'), orderBy('created_at', 'desc'), limit(50));
+    const unsubUsers = onSnapshot(usersQuery, (snapshot) => {
+      const profiles = snapshot.docs.map(d => {
         const data = d.data();
         const toISO = (v: unknown) => {
           if (!v) return new Date().toISOString();
@@ -86,20 +81,66 @@ export default function AdminDashboard() {
           verified: Boolean(data.verified ?? false), created_at: toISO(data.created_at), updated_at: toISO(data.updated_at),
         } as Profile;
       });
-      const allProperties = await propertyService.getAllProperties();
-      setUsers(profiles); setProperties(allProperties.slice(0, 20));
-      setStats({
-        total_users: profiles.length, total_properties: allProperties.length,
+      setUsers(profiles);
+      setStats(prev => ({ ...prev, total_users: profiles.length }));
+      setLoading(false);
+    }, (err) => {
+      console.error('Error listening to users:', err);
+      setLoading(false);
+    });
+
+    // 2. Écouteur pour tous les biens (pour stats et listes)
+    // Note: Pour une plateforme avec des milliers de biens, il faudrait limiter ou utiliser des agrégations.
+    const propsQuery = query(collection(db, 'properties'), orderBy('created_at', 'desc'));
+    const unsubProps = onSnapshot(propsQuery, (snapshot) => {
+      const allProperties = snapshot.docs.map(d => {
+        const data = d.data();
+        const toISO = (v: unknown) => {
+          if (!v) return new Date().toISOString();
+          if (v instanceof Timestamp) return v.toDate().toISOString();
+          return String(v);
+        };
+        return {
+          id: d.id,
+          owner_id: String(data.owner_id ?? ''),
+          title: String(data.title ?? ''),
+          property_type: (data.property_type as any) ?? 'appartement',
+          transaction_type: (data.transaction_type as any) ?? 'location',
+          price: Number(data.price ?? 0),
+          city: String(data.city ?? ''),
+          status: (data.status as any) ?? 'pending',
+          verified_notaire: Boolean(data.verified_notaire ?? false),
+          created_at: toISO(data.created_at),
+          images: Array.isArray(data.images) ? data.images : [],
+        } as Property;
+      });
+      
+      setProperties(allProperties);
+      setStats(prev => ({
+        ...prev,
+        total_properties: allProperties.length,
         pending_properties: allProperties.filter(p => p.status === 'pending').length,
         verified_properties: allProperties.filter(p => p.verified_notaire).length,
-      });
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
-  };
+      }));
+    }, (err) => {
+      console.error('Error listening to properties:', err);
+    });
+
+    return () => {
+      unsubUsers();
+      unsubProps();
+    };
+  }, []);
+
+  function showToast(msg: string, ok = true) {
+    setToast({ msg, ok }); setTimeout(() => setToast(null), 3000);
+  }
+
+  // Suppression de loadData au profit de onSnapshot
 
 
   const rejectProperty = async (propertyId: string) => {
-    try { await propertyService.updateProperty(propertyId, { status: 'rejected' }); loadData(); showToast('Bien rejeté'); }
+    try { await propertyService.updateProperty(propertyId, { status: 'rejected' }); showToast('Bien rejeté'); }
     catch { showToast('Erreur', false); }
   };
 
@@ -110,7 +151,6 @@ export default function AdminDashboard() {
       const result = await delegateService.consumeToken(tokenInput.trim(), profile!.id);
       showToast(result.message);
       setTokenInput('');
-      loadData();
     } catch (e: any) {
       showToast(e.message || 'Erreur lors de la consommation du jeton', false);
     } finally {
@@ -213,10 +253,10 @@ export default function AdminDashboard() {
                   </span>
                 )}
               </div>
-              <button onClick={loadData} aria-label="Actualiser"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80"
+              <button onClick={() => {}} aria-label="Actualiser"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80 opacity-50 cursor-not-allowed"
                 style={{ background: HAlpha.gold10, border: `1px solid ${HAlpha.gold25}`, color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-                <RotateCcw className="w-3.5 h-3.5" /> Actualiser
+                <RotateCcw className="w-3.5 h-3.5" /> Temps réel actif
               </button>
             </div>
           </div>

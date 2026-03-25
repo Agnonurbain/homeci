@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { getDoc, doc } from 'firebase/firestore';
+import { getDoc, doc, collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -76,47 +76,62 @@ export default function NotaireDashboard() {
   } | null>(null);
   const [delegationToken, setDelegationToken] = useState<{ token: string; action: 'certify' | 'reject'; propertyTitle: string } | null>(null);
 
-  useEffect(() => { loadProperties(); }, []);
-
-  async function loadProperties() {
+  useEffect(() => {
+    if (!profile?.id) return;
     setLoading(true);
-    try {
-      const all = await propertyService.getPropertiesWithDocs();
-      // Biens legacy : certifiés ou avec docs validés, sans notaire_id (avant la MAJ)
+
+    // Écouteur en temps réel sur les propriétés
+    const q = query(collection(db, 'properties'), orderBy('created_at', 'desc'));
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const all = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Property));
+      
+      // Charger les documents pour tous les bijoux (nécessaire pour isReadyToCertify)
+      // Note: On limite aux biens qui concernent le notaire pour éviter trop de requêtes
+      const relevant = all.filter(p => 
+        p.notaire_id === profile.id || 
+        (!p.notaire_id && !p.verified_notaire && p.status === 'pending')
+      );
+
+      // Pour chaque bien pertinent, on charge les docs si pas déjà présents ou si mise à jour
+      const withDocs = await Promise.all(relevant.map(async (p) => {
+        try {
+          p.documents = await propertyService.getDocuments(p.id);
+        } catch { p.documents = []; }
+        return p;
+      }));
+
+      // Legacy
       const legacy = all.filter(p =>
         !p.notaire_id &&
-        (p.verified_notaire || p.documents?.some((d: any) => d.status === 'valide'))
+        (p.verified_notaire || p.status === 'published') // Simplifié pour legacy
       );
       setLegacyProperties(legacy);
-
-      // Un notaire voit :
-      // 1. Ses propres biens (notaire_id === profile.id), peu importe leur état
-      // 2. Biens disponibles = docs soumis, AUCUN doc validé, pas certifié, pas assigné
-      const withDocs = all.filter(p => {
-        // Ses biens → toujours visibles
-        if (p.notaire_id === profile?.id) return true;
-        // Assigné à un AUTRE notaire → invisible
-        if (p.notaire_id && p.notaire_id !== profile?.id) return false;
-        // Legacy (certifié ou docs validés sans notaire_id) → géré séparément
-        if (p.verified_notaire || p.documents?.some((d: any) => d.status === 'valide')) return false;
-        // Pas de documents → invisible
-        if (!p.documents?.length) return false;
-        // Disponible : docs soumis, tous en_attente, pas assigné
-        return true;
-      });
       setProperties(withDocs);
-      const ownerIds = [...new Set(withDocs.map(p => p.owner_id))];
-      const entries = await Promise.all(ownerIds.map(async id => {
-        try {
-          const snap = await getDoc(doc(db, 'users', id));
-          if (snap.exists()) { const d = snap.data(); return [id, { full_name: d.full_name || 'Propriétaire', phone: d.phone, email: d.email }] as [string, OwnerProfile]; }
-        } catch { }
-        return [id, { full_name: 'Propriétaire' }] as [string, OwnerProfile];
-      }));
-      setOwners(Object.fromEntries(entries));
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
-  }
+      
+      // Charger les proprios manquants
+      const missingOwnerIds = [...new Set(withDocs.map(p => p.owner_id))].filter(id => !owners[id]);
+      if (missingOwnerIds.length > 0) {
+        const newEntries = await Promise.all(missingOwnerIds.map(async id => {
+          try {
+            const snap = await getDoc(doc(db, 'users', id));
+            if (snap.exists()) { 
+              const d = snap.data(); 
+              return [id, { full_name: d.full_name || 'Propriétaire', phone: d.phone, email: d.email }] as [string, OwnerProfile]; 
+            }
+          } catch { }
+          return [id, { full_name: 'Propriétaire' }] as [string, OwnerProfile];
+        }));
+        setOwners(prev => ({ ...prev, ...Object.fromEntries(newEntries) }));
+      }
+
+      setLoading(false);
+    }, (err) => {
+      console.error('Notaire listener error:', err);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [profile?.id]);
 
   function showToast(msg: string, ok = true) { setToast({ msg, ok }); setTimeout(() => setToast(null), 3500); }
 
@@ -147,10 +162,9 @@ export default function NotaireDashboard() {
         message: `Votre ${lbl} pour "${property.title}" a été ${stLbl}${reason ? ` : ${reason}` : ''}`,
         property_id: property.id,
       });
-      // Recharger les docs de cette propriété
-      const updatedDocs = await propertyService.getDocuments(property.id);
-      setProperties(prev => prev.map(p => p.id === property.id ? { ...p, documents: updatedDocs } : p));
-      setShowRefusalInput(null); showToast(`${lbl} ${stLbl}`);
+      // Plus besoin de recharger manuellement, onSnapshot s'en occupe
+      showToast(`${lbl} ${stLbl}`);
+      setShowRefusalInput(null);
     } catch { showToast('Erreur lors de la mise à jour', false); }
     finally { setActionLoading(null); }
   }
@@ -325,18 +339,11 @@ export default function NotaireDashboard() {
         notaire_id: profile.id,
         notaire_taken_at: new Date().toISOString(),
       });
-      const updated = { ...property, notaire_id: profile.id };
       // Retirer des legacy si c'était un bien antérieur
       setLegacyProperties(prev => prev.filter(p => p.id !== property.id));
-      // Ajouter dans properties (ou mettre à jour s'il y est déjà)
-      setProperties(prev => {
-        const exists = prev.some(p => p.id === property.id);
-        return exists
-          ? prev.map(p => p.id === property.id ? updated : p)
-          : [...prev, updated];
-      });
-      navigate('/dashboard/en_cours');
-      showToast('Dossier pris en charge — il apparaît dans "En cours".');
+      // Mettre à jour la propriété dans l'état local (onSnapshot s'occupera de la mise à jour complète)
+      setProperties(prev => prev.map(p => p.id === property.id ? { ...p, notaire_id: profile!.id } : p));
+      showToast('Bien pris en charge. Vous pouvez maintenant examiner les documents.');
     } catch { showToast('Erreur lors de la prise en charge', false); }
     finally { setTakingId(null); }
   }
@@ -434,10 +441,10 @@ export default function NotaireDashboard() {
                   {stats.certifie} certifié{stats.certifie > 1 ? 's' : ''}
                 </span>
               </div>
-              <button onClick={loadProperties} aria-label="Actualiser"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80"
+              <button onClick={() => {}} aria-label="Actualiser"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all opacity-50 cursor-not-allowed"
                 style={{ background: HAlpha.gold10, border: `1px solid ${HAlpha.gold25}`, color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-                <RotateCcw className="w-3.5 h-3.5" /> Actualiser
+                <RotateCcw className="w-3.5 h-3.5" /> Temps réel actif
               </button>
             </div>
           </div>
