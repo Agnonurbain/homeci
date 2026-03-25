@@ -167,7 +167,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
         <div className="p-3 rounded-xl space-y-2" style={{ background: HAlpha.gold05, border: `1px solid ${HAlpha.gold15}` }}>
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Propriétaire</p>
           <div className="flex items-center gap-2"><Phone className="w-4 h-4" style={{ color: 'rgba(139,106,48,0.25)' }} /><p className="text-sm font-mono tracking-widest" style={{ color: 'rgba(139,106,48,0.45)', fontFamily: 'var(--font-nunito)' }}>+225 ·· ·· ·· ·· ··</p></div>
-          <p className="text-xs flex items-center gap-1" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}><Lock className="w-3 h-3" />Contact révélé après visite acceptée</p>
+          <p className="text-xs flex items-center gap-1" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}><Lock className="w-3 h-3" />Vous pourrez récupérer le numéro du propriétaire via le Chat -{'>'} bouton Discuter</p>
         </div>
         {user ? (
           <button onClick={onRequestVisit}

@@ -24,25 +24,11 @@ export interface Chat {
   property_title?: string;
 }
 
-// Filtre basique pour expurger les numéros de téléphones et les emails
+// Filtre basique pour expurger les emails (on garde les numéros de téléphone accessibles)
 const filterMessage = (msg: string): string => {
-  // Regex pour attraper les numéros (ex: +22501020304, 0102030405, 01 02 03 04 05)
-  const phoneRegex = /(?:\+?\d{1,3}[-. ]?)?\(?\d{2,3}\)?[-. ]?\d{2,3}[-. ]?\d{2,3}[-. ]?\d{2,3}([-. ]?\d{2,3})?/g;
   // Regex basique pour emails
   const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi;
-
-  let filtered = msg.replace(emailRegex, ' [Email masqué par sécurité] ');
-  
-  // Remplacer les chaînes qui ressemblent à des téléphones (seulement si la somme des chiffres >= 8)
-  filtered = filtered.replace(phoneRegex, (match) => {
-    const digitsCount = match.replace(/\D/g, '').length;
-    if (digitsCount >= 8) {
-      return ' [Téléphone masqué par sécurité] ';
-    }
-    return match;
-  });
-
-  return filtered.trim();
+  return msg.replace(emailRegex, ' [Email masqué par sécurité] ').trim();
 };
 
 export const chatService = {
