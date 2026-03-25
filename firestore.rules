@@ -112,6 +112,11 @@ service cloud.firestore {
       allow create: if isAuth();
     }
 
+    // ── MAIL (Trigger Email Extension) ──
+    match /mail/{mailId} {
+      allow create: if isAuth();
+    }
+
     // ── NOTAIRE CODES ──
     match /notaire_codes/{codeId} {
       allow read: if true;
