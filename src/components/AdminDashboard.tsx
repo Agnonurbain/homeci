@@ -14,6 +14,7 @@ import type { Profile } from '../contexts/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import AdminLoginHistory from './AdminLoginHistory';
 import AdminManagement from './AdminManagement';
+import { delegateService } from '../services/delegateService';
 
 // ── Lazy-loaded admin tabs ──
 const AdminReportsTab = lazy(() => import('./AdminReportsTab'));
@@ -57,6 +58,8 @@ export default function AdminDashboard() {
   const [filterModType, setFilterModType] = useState('');
   const [sortMod, setSortMod] = useState<'date_desc' | 'date_asc' | 'price_asc' | 'price_desc'>('date_desc');
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [tokenInput, setTokenInput] = useState('');
+  const [consumingToken, setConsumingToken] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
@@ -98,6 +101,21 @@ export default function AdminDashboard() {
   const rejectProperty = async (propertyId: string) => {
     try { await propertyService.updateProperty(propertyId, { status: 'rejected' }); loadData(); showToast('Bien rejeté'); }
     catch { showToast('Erreur', false); }
+  };
+
+  const handleConsumeToken = async () => {
+    if (!tokenInput.trim()) return;
+    setConsumingToken(true);
+    try {
+      const result = await delegateService.consumeToken(tokenInput.trim(), profile!.id);
+      showToast(result.message);
+      setTokenInput('');
+      loadData();
+    } catch (e: any) {
+      showToast(e.message || 'Erreur lors de la consommation du jeton', false);
+    } finally {
+      setConsumingToken(false);
+    }
   };
 
   const filteredUsers = useMemo(() => {
@@ -590,6 +608,34 @@ export default function AdminDashboard() {
           <div>
             <SectionTitle title="Modération des Biens"
               sub="Approuvez ou rejetez les nouvelles annonces soumises à validation" />
+
+            {/* Delegation Token Input */}
+            <div className="mb-8 p-6 rounded-2xl shadow-sm border border-dashed animate-in fade-in slide-in-from-top-4 duration-500"
+              style={{ background: HAlpha.orange08, borderColor: HAlpha.orange30 }}>
+              <div className="flex flex-col md:flex-row md:items-center gap-6">
+                <div className="flex-1">
+                  <h4 className="text-lg font-bold flex items-center gap-2 mb-1" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>
+                    <Shield className="w-5 h-5" style={{ color: HColors.orangeCI }} />
+                    Délégation Notaire
+                  </h4>
+                  <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                    Utilisez un jeton à usage unique fourni par un notaire pour finaliser une modération (Certification ou Rejet).
+                  </p>
+                </div>
+                <div className="flex gap-2 min-w-[300px]">
+                  <input type="text" value={tokenInput} onChange={e => setTokenInput(e.target.value.toUpperCase())}
+                    placeholder="JETON (ex: HC-XXXXXX)"
+                    className="flex-1 px-4 py-2.5 rounded-xl font-mono font-bold tracking-widest outline-none transition-all placeholder:font-sans placeholder:tracking-normal"
+                    style={{ background: HColors.white, border: `1px solid ${HAlpha.orange30}`, color: HColors.darkBrown }} />
+                  <button onClick={handleConsumeToken} disabled={consumingToken || !tokenInput}
+                    className="px-6 py-2.5 rounded-xl font-bold transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
+                    style={{ background: `linear-gradient(135deg,${HColors.orangeCI},${HColors.gold})`, color: HColors.white }}>
+                    {consumingToken ? <LoaderIcon className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
+                    Valider
+                  </button>
+                </div>
+              </div>
+            </div>
 
             {pendingProperties.length === 0 ? (
               <div className="rounded-2xl p-16 text-center"

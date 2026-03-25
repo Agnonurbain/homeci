@@ -3,7 +3,7 @@ import {
   Plus, Home, Calendar, BarChart3, Eye, Edit, X,
   CheckCircle, Clock, XCircle, Bell, TrendingUp, Users,
   Send, MapPin, Star, AlertTriangle, RefreshCw, Zap,
-  MessageSquare
+  MessageSquare, Download
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -114,21 +114,59 @@ export default function OwnerAgentDashboard() {
   const [activeChat, setActiveChat] = useState<{ chatId: string; otherName: string; otherRole: 'Locataire' } | null>(null);
   const [chatLoadingId, setChatLoadingId] = useState<string | null>(null);
 
-  useEffect(() => { loadAll(); }, []);
-
-  const loadAll = async () => {
+  useEffect(() => {
     if (!user) { setLoading(false); return; }
-    try {
-      const [props, visits, notifs] = await Promise.all([
-        propertyService.getPropertiesByOwner(user.uid),
-        visitService.getVisitRequestsByOwner(user.uid),
-        notificationService.getNotifications(user.uid),
-      ]);
+
+    setLoading(true);
+    
+    // 1. Écouteur des biens
+    const unsubProps = propertyService.listenToPropertiesByOwner(user.uid, (props) => {
       setProperties(props);
+      setLoading(false);
+    });
+
+    // 2. Écouteur des visites
+    const unsubVisits = visitService.listenToVisitRequestsByOwner(user.uid, (visits) => {
       setVisitRequests(visits);
+    });
+
+    // 3. Écouteur des notifications
+    const unsubNotifs = notificationService.listenToNotifications(user.uid, (notifs) => {
       setNotifications(notifs);
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
+    });
+
+    return () => {
+      unsubProps();
+      unsubVisits();
+      unsubNotifs();
+    };
+  }, [user]);
+
+  const loadAll = () => {
+    // Cette fonction n'est plus nécessaire car on utilise onSnapshot
+  };
+
+  const handleExportCSV = () => {
+    if (properties.length === 0) return;
+    const headers = ['ID', 'Titre', 'Type', 'Prix', 'Ville', 'Statut', 'Vues', 'Date Creation'];
+    const rows = properties.map(p => [
+      p.id,
+      p.title.replace(/,/g, ' '),
+      TYPE_LABELS[p.property_type] || p.property_type,
+      p.price,
+      p.city,
+      STATUS_STYLES[p.status]?.label || p.status,
+      p.views_count || 0,
+      new Date(p.created_at).toLocaleDateString('fr-FR'),
+    ]);
+    const csvContent = "\uFEFF" + [headers, ...rows].map(e => e.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `mes_biens_homeci_${new Date().toISOString().split('T')[0]}.csv`);
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   /** Vérifie les CGV avant d'ouvrir le formulaire d'ajout */
@@ -402,14 +440,21 @@ export default function OwnerAgentDashboard() {
                   {stats.total} bien(s) enregistré(s)
                 </p>
               </div>
-              <button onClick={handleAddProperty}
-                className="px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-sm"
-                style={{
-                  background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF',
-                  fontFamily: 'var(--font-nunito)'
-                }}>
-                <Plus className="w-4 h-4" /> Ajouter un bien
-              </button>
+              <div className="flex items-center gap-3">
+                <button onClick={handleExportCSV}
+                  className="px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition-all hover:bg-gray-100 border border-gray-200"
+                  style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)', background: HColors.white }}>
+                  <Download className="w-4 h-4" /> Exporter CSV
+                </button>
+                <button onClick={handleAddProperty}
+                  className="px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-sm"
+                  style={{
+                    background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF',
+                    fontFamily: 'var(--font-nunito)'
+                  }}>
+                  <Plus className="w-4 h-4" /> Ajouter un bien
+                </button>
+              </div>
             </div>
 
             {loading ? (

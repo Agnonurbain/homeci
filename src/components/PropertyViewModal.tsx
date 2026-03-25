@@ -4,6 +4,7 @@ import {
   Star, Hotel, Layers, Lock, AlertTriangle, Clock, Phone,
   ShieldCheck, CreditCard, ChevronLeft, ChevronRight, Home,
   Building2, Car, ArrowUpDown, FileText, ExternalLink, Flag,
+  Utensils, FileCheck,
 } from 'lucide-react';
 import { propertyService } from '../services/propertyService';
 import type { Property } from '../services/propertyService';
@@ -357,14 +358,16 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
                   {p.chambres_par_unite && <InfoChip icon={<Bed className="w-4 h-4" />} label="Ch./unité" value={String(p.chambres_par_unite)} />}
                   {p.nb_etages_immeuble && <InfoChip icon={<Building2 className="w-4 h-4" />} label="Ét. immeuble" value={String(p.nb_etages_immeuble)} />}
                   {p.annee_construction && <InfoChip icon={<Calendar className="w-4 h-4" />} label="Construit" value={String(p.annee_construction)} />}
+                  {p.nb_restaurants && <InfoChip icon={<Utensils className="w-4 h-4" />} label="Restaurants" value={String(p.nb_restaurants)} />}
                 </div>
               )}
 
               {/* Terrain */}
               {property.property_type === 'terrain' && (
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {property.land_area && <InfoChip icon={<Layers className="w-4 h-4" />} label="Superficie" value={`${property.land_area} m²`} />}
-                  {property.surface_area && <InfoChip icon={<Maximize className="w-4 h-4" />} label="Constructible" value={`${property.surface_area} m²`} />}
+                  {p.terrain_type && <InfoChip icon={<Maximize className="w-4 h-4" />} label="Usage" value={String(p.terrain_type).charAt(0).toUpperCase() + String(p.terrain_type).slice(1)} />}
+                  {p.has_acd && <InfoChip icon={<FileCheck className="w-4 h-4 text-emerald-600" />} label="Juridique" value="ACD Disponible" />}
                 </div>
               )}
 
@@ -374,6 +377,8 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
                 {property.parking && <Badge color="blue" label="Parking" icon={<Car className="w-3.5 h-3.5" />} />}
                 {p.ascenseur && <Badge color="gray" label="Ascenseur" icon={<ArrowUpDown className="w-3.5 h-3.5" />} />}
                 {p.interphone && <Badge color="gray" label="Interphone" />}
+                {p.is_fenced && <Badge color="orange" label="Terrain clôturé" />}
+                {p.has_conference_room && <Badge color="blue" label="Salles de conférence" />}
                 {p.cuisine_par_unite && <Badge color="orange" label="Cuisine/unité" />}
               </div>
 

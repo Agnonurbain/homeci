@@ -175,10 +175,31 @@ export default function AdminAdsTab() {
       {/* ════════════════════ BOOSTS ════════════════════ */}
       {subTab === 'boosts' && (
         <div>
-          <div className="flex justify-between items-center mb-5">
-            <div className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-              {boosts.length} boost(s) au total — {boosts.filter(b => b.status === 'active').length} actif(s)
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="p-4 rounded-2xl" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+                <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>Boosts Actifs</div>
+                <div className="text-2xl font-bold" style={{ color: HColors.orangeCI, fontFamily: 'var(--font-cormorant)' }}>
+                  {boosts.filter(b => b.status === 'active').length}
+                </div>
+              </div>
+              <div className="p-4 rounded-2xl" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+                <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>Revenus Générés (Est.)</div>
+                <div className="text-2xl font-bold" style={{ color: HColors.vertCI, fontFamily: 'var(--font-cormorant)' }}>
+                  {formatPrice(boosts.reduce((acc, b) => acc + (b.amountPaid || 0), 0))}
+                </div>
+              </div>
+              <div className="p-4 rounded-2xl" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+                <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>Durée Moyenne</div>
+                <div className="text-2xl font-bold" style={{ color: HColors.gold, fontFamily: 'var(--font-cormorant)' }}>
+                  {boosts.length ? Math.round(boosts.reduce((acc, b) => acc + b.duration, 0) / boosts.length) : 0} jours
+                </div>
+              </div>
             </div>
+
+            <div className="flex justify-between items-center mb-5">
+              <div className="text-sm font-semibold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+                Historique des Boosts
+              </div>
             <button onClick={() => setShowBoostForm(true)}
               className="px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all hover:opacity-90"
               style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
@@ -319,9 +340,39 @@ export default function AdminAdsTab() {
       {/* ════════════════════ BANNIÈRES ════════════════════ */}
       {subTab === 'banners' && (
         <div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="p-4 rounded-2xl" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+              <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>Vues Totales</div>
+              <div className="text-2xl font-bold" style={{ color: HColors.navy, fontFamily: 'var(--font-cormorant)' }}>
+                {banners.reduce((acc, b) => acc + (b.impressions || 0), 0).toLocaleString()}
+              </div>
+            </div>
+            <div className="p-4 rounded-2xl" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+              <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>Clics Totaux</div>
+              <div className="text-2xl font-bold" style={{ color: HColors.orangeCI, fontFamily: 'var(--font-cormorant)' }}>
+                {banners.reduce((acc, b) => acc + (b.clicks || 0), 0).toLocaleString()}
+              </div>
+            </div>
+            <div className="p-4 rounded-2xl" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+              <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>CTR Moyen</div>
+              <div className="text-2xl font-bold" style={{ color: HColors.gold, fontFamily: 'var(--font-cormorant)' }}>
+                {banners.length ? (
+                  (banners.reduce((acc, b) => acc + (b.clicks || 0), 0) / 
+                   Math.max(1, banners.reduce((acc, b) => acc + (b.impressions || 0), 0))) * 100
+                ).toFixed(2) : '0.00'}%
+              </div>
+            </div>
+            <div className="p-4 rounded-2xl" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+              <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>Revenus Bannières</div>
+              <div className="text-2xl font-bold" style={{ color: HColors.vertCI, fontFamily: 'var(--font-cormorant)' }}>
+                {formatPrice(banners.reduce((acc, b) => acc + (b.amountPaid || 0), 0))}
+              </div>
+            </div>
+          </div>
+
           <div className="flex justify-between items-center mb-5">
-            <div className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-              {banners.length} bannière(s) — {banners.filter(b => b.status === 'active').length} active(s)
+            <div className="text-sm font-semibold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+              Gestion des Bannières
             </div>
             <button onClick={() => setShowBannerForm(true)}
               className="px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all hover:opacity-90"
@@ -387,6 +438,9 @@ export default function AdminAdsTab() {
                         </span>
                         <span className="flex items-center gap-1">
                           <MousePointer className="w-3 h-3" /> {banner.clicks} clics
+                        </span>
+                        <span className="px-2 py-0.5 rounded bg-navy/5 font-bold" style={{ color: HColors.navy }}>
+                          CTR: {banner.impressions ? ((banner.clicks / banner.impressions) * 100).toFixed(2) : '0.00'}%
                         </span>
                         {banner.targetCity && (
                           <span className="flex items-center gap-1">

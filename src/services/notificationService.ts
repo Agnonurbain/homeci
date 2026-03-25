@@ -1,6 +1,6 @@
 import {
   collection, doc, addDoc, updateDoc, getDocs,
-  query, where, serverTimestamp, Timestamp
+  query, where, serverTimestamp, Timestamp, onSnapshot, orderBy
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
@@ -52,6 +52,20 @@ export const notificationService = {
       .map(d => docToNotif(d.id, d.data() as Record<string, unknown>))
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 50);
+  },
+
+  listenToNotifications(userId: string, callback: (notifications: Notification[]) => void) {
+    const q = query(
+      collection(db, 'notifications'),
+      where('user_id', '==', userId)
+    );
+    return onSnapshot(q, (snap) => {
+      const notifs = snap.docs
+        .map(d => docToNotif(d.id, d.data() as Record<string, unknown>))
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 50);
+      callback(notifs);
+    });
   },
 
   async markAsRead(notifId: string): Promise<void> {

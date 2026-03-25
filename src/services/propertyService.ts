@@ -11,6 +11,7 @@ import {
   where,
   serverTimestamp,
   Timestamp,
+  onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
@@ -114,11 +115,18 @@ export interface Property {
   title_status?: 'en_attente' | 'valide' | 'refuse';
   title_validated_at?: string | null;
   title_rejection_reason?: string | null;
+  rejection_reason?: string | null;
   decertified_at?: string | null;
   decertification_reason?: string | null;
   decertified_by?: string | null;
   notaire_taken_at?: string | null;
   status_updated_at?: string | null;
+  // Nouveaux champs optimisés
+  terrain_type?: 'residentiel' | 'agricole' | 'industriel' | 'commercial' | null;
+  is_fenced?: boolean;
+  has_acd?: boolean;
+  has_conference_room?: boolean;
+  nb_restaurants?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -194,6 +202,11 @@ function docToProperty(id: string, data: Record<string, unknown>): Property {
     chambres_par_unite: data.chambres_par_unite != null ? Number(data.chambres_par_unite) : null,
     cuisine_par_unite: Boolean(data.cuisine_par_unite ?? false),
     has_active_visit: Boolean(data.has_active_visit ?? false),
+    terrain_type: (data.terrain_type as Property['terrain_type']) ?? null,
+    is_fenced: Boolean(data.is_fenced ?? false),
+    has_acd: Boolean(data.has_acd ?? false),
+    has_conference_room: Boolean(data.has_conference_room ?? false),
+    nb_restaurants: data.nb_restaurants != null ? Number(data.nb_restaurants) : null,
     created_at: toISO(data.created_at),
     updated_at: toISO(data.updated_at),
   };
@@ -285,6 +298,14 @@ export const propertyService = {
     const snapshot = await getDocs(q);
     const props = snapshot.docs.map(d => docToProperty(d.id, d.data() as Record<string, unknown>));
     return props.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  },
+
+  listenToPropertiesByOwner(ownerId: string, callback: (properties: Property[]) => void) {
+    const q = query(collection(db, 'properties'), where('owner_id', '==', ownerId));
+    return onSnapshot(q, (snapshot) => {
+      const props = snapshot.docs.map(d => docToProperty(d.id, d.data() as Record<string, unknown>));
+      callback(props.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+    });
   },
 
   async getFeaturedProperties(limitCount: number = 6): Promise<Property[]> {

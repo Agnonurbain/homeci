@@ -13,8 +13,9 @@ import {
   FileCheck, CheckCircle, XCircle, Clock, FileText, Building2,
   MapPin, ExternalLink, Search, AlertCircle, X, Eye,
   RotateCcw, Stamp, ChevronDown, Phone, User, Calendar,
-  ThumbsUp, ThumbsDown, Loader, BadgeCheck,
+  ThumbsUp, ThumbsDown, Loader, BadgeCheck, Share2
 } from 'lucide-react';
+import { delegateService } from '../services/delegateService';
 import { KenteLine } from './ui/KenteLine';
 import CGVNotaireModal from './CGVNotaireModal';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
@@ -73,6 +74,7 @@ export default function NotaireDashboard() {
     hasActiveVisit: boolean;
     loading: boolean;
   } | null>(null);
+  const [delegationToken, setDelegationToken] = useState<{ token: string; action: 'certify' | 'reject'; propertyTitle: string } | null>(null);
 
   useEffect(() => { loadProperties(); }, []);
 
@@ -200,6 +202,34 @@ export default function NotaireDashboard() {
       showToast('✅ Bien certifié ! Badge "Vérifié Notaire" accordé.');
     } catch { showToast('Erreur lors de la certification', false); }
     finally { setCertifyingId(null); }
+  }
+
+  async function handleDelegateAction(property: Property, action: 'certify' | 'reject') {
+    const key = `title:${property.id}`;
+    const reason = action === 'reject' ? refusalReasons[key]?.trim() : undefined;
+    
+    if (action === 'reject' && !reason) {
+      showToast('Indiquez un motif de rejet avant de déléguer.', false);
+      setShowRefusalInput(key);
+      return;
+    }
+
+    setCertifyingId(property.id);
+    try {
+      const token = await delegateService.createToken({
+        notary_id: profile!.id,
+        property_id: property.id,
+        property_title: property.title,
+        action,
+        rejection_reason: reason,
+      });
+      setDelegationToken({ token, action, propertyTitle: property.title });
+      showToast(`Jeton de délégation généré pour ${action === 'certify' ? 'certification' : 'rejet'}.`);
+    } catch (e) {
+      showToast('Erreur lors de la génération du jeton', false);
+    } finally {
+      setCertifyingId(null);
+    }
   }
 
   async function handleRevoke(property: Property) {
@@ -704,7 +734,40 @@ export default function NotaireDashboard() {
                           </div>
                         );
                       })()}
+                      {/* Delegation Section */}
+                      {!property.verified_notaire && (
+                        <div className="mb-4 p-4 rounded-xl" style={{ background: HAlpha.orange08, border: `1px solid ${HAlpha.orange20}` }}>
+                          <div className="flex items-center justify-between gap-4">
+                            <div>
+                              <h4 className="text-sm font-bold flex items-center gap-2" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>
+                                <Share2 className="w-4 h-4" style={{ color: HColors.orangeCI }} />
+                                Déléguer la modération à l'Administrateur
+                              </h4>
+                              <p className="text-xs mt-1" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                                Si vous êtes dans l'incapacité de finaliser, envoyez un jeton à usage unique à l'Admin.
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              {isReadyToCertify(property) && (
+                                <button onClick={() => handleDelegateAction(property, 'certify')}
+                                  disabled={certifyingId === property.id}
+                                  className="px-3 py-1.5 text-xs font-bold rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
+                                  style={{ background: HColors.vertCI, color: '#FFFFFF' }}>
+                                  Déléguer Certification
+                                </button>
+                              )}
+                              <button onClick={() => handleDelegateAction(property, 'reject')}
+                                disabled={certifyingId === property.id}
+                                className="px-3 py-1.5 text-xs font-bold rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
+                                style={{ background: HColors.bordeaux, color: '#FFFFFF' }}>
+                                Déléguer Rejet
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
+                      {/* Title & Docs Section */}
                       <div>
                         <h4 className="text-xs font-bold uppercase tracking-wider mb-2"
                           style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>Documents soumis</h4>
@@ -1057,6 +1120,36 @@ export default function NotaireDashboard() {
           }}
           onClose={() => { setShowCGVNotaire(false); setPendingTakeChargeProperty(null); }}
         />
+      )}
+      {/* Delegation Token Modal */}
+      {delegationToken && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300"
+            style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}>
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-[#F9F3E8] flex items-center justify-center mx-auto mb-4 border border-[#D4A017]/20">
+                <Share2 className="w-8 h-8 text-[#FF6B00]" />
+              </div>
+              <h3 className="text-xl font-bold mb-2" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>
+                Jeton de Délégation Généré
+              </h3>
+              <p className="text-sm mb-6" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                Copiez ce code et envoyez-le à l'administrateur pour qu'il puisse {delegationToken.action === 'certify' ? 'certifier' : 'rejeter'} le bien <strong>{delegationToken.propertyTitle}</strong>.
+              </p>
+              
+              <div className="p-4 rounded-2xl mb-6 text-2xl font-mono font-bold tracking-widest select-all"
+                style={{ background: HAlpha.gold08, border: `2px dashed ${HAlpha.gold30}`, color: HColors.darkBrown }}>
+                {delegationToken.token}
+              </div>
+
+              <button onClick={() => setDelegationToken(null)}
+                className="w-full py-3 rounded-xl font-bold transition-all hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+                J'ai compris
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

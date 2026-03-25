@@ -23,6 +23,11 @@ export interface RawFormData {
   rooms_count: string;
   nb_etages: string;
   hotel_stars: string;
+  terrain_type: string;
+  is_fenced: boolean;
+  has_acd: boolean;
+  has_conference_room: boolean;
+  nb_restaurants: string;
   furnished: boolean;
   parking: boolean;
   amenities: string[];
@@ -34,7 +39,6 @@ export interface RawFormData {
   ascenseur: boolean;
   interphone: boolean;
   // Appart-Hôtel
-  nb_unites: string;
   surface_par_unite: string;
   chambres_par_unite: string;
   cuisine_par_unite: boolean;
@@ -67,6 +71,14 @@ export function sanitizePropertyData(formData: RawFormData): SanitizedBase {
     available_from: formData.available_from || null,
     model3d: null,
     model3d_request: null,
+    // Champs réinitialisés par défaut (seront surchargés si besoin)
+    videos: [],
+    notaire_id: null,
+    terrain_type: null,
+    is_fenced: false,
+    has_acd: false,
+    has_conference_room: false,
+    nb_restaurants: null,
   };
 
   // ── Terrain ──────────────────────────────────────────────────────────────
@@ -81,6 +93,9 @@ export function sanitizePropertyData(formData: RawFormData): SanitizedBase {
       etage_appartement: null, nb_etages_immeuble: null,
       annee_construction: null, ascenseur: false, interphone: false,
       surface_par_unite: null, chambres_par_unite: null, cuisine_par_unite: false,
+      terrain_type: formData.terrain_type as any,
+      is_fenced: formData.is_fenced,
+      has_acd: formData.has_acd,
     };
   }
 
@@ -97,8 +112,11 @@ export function sanitizePropertyData(formData: RawFormData): SanitizedBase {
       hotel_stars: formData.hotel_stars ? parseInt(formData.hotel_stars) : null,
       furnished: formData.furnished, parking: formData.parking,
       etage_appartement: null, nb_etages_immeuble: null,
-      annee_construction: null, ascenseur: false, interphone: false,
+      annee_construction: formData.annee_construction ? parseInt(formData.annee_construction) : null,
+      ascenseur: false, interphone: false,
       surface_par_unite: null, chambres_par_unite: null, cuisine_par_unite: false,
+      has_conference_room: formData.has_conference_room,
+      nb_restaurants: formData.nb_restaurants ? parseInt(formData.nb_restaurants) : null,
     };
   }
 
@@ -115,7 +133,8 @@ export function sanitizePropertyData(formData: RawFormData): SanitizedBase {
       bedrooms: parseInt(formData.bedrooms) || 0,
       furnished: formData.furnished, parking: formData.parking,
       etage_appartement: null, nb_etages_immeuble: null,
-      annee_construction: null, ascenseur: false, interphone: false,
+      annee_construction: formData.annee_construction ? parseInt(formData.annee_construction) : null,
+      ascenseur: false, interphone: false,
       surface_par_unite: formData.surface_par_unite ? parseFloat(formData.surface_par_unite) : null,
       chambres_par_unite: formData.chambres_par_unite ? parseInt(formData.chambres_par_unite) : null,
       cuisine_par_unite: formData.cuisine_par_unite || false,
@@ -154,7 +173,8 @@ export function sanitizePropertyData(formData: RawFormData): SanitizedBase {
     rooms_count: null, hotel_stars: null,
     furnished: formData.furnished, parking: formData.parking,
     etage_appartement: null, nb_etages_immeuble: null,
-    annee_construction: null, ascenseur: false, interphone: false,
+    annee_construction: formData.annee_construction ? parseInt(formData.annee_construction) : null,
+    ascenseur: false, interphone: false,
     surface_par_unite: null, chambres_par_unite: null, cuisine_par_unite: false,
   };
 }

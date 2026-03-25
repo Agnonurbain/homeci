@@ -1,6 +1,6 @@
 import {
   collection, doc, addDoc, updateDoc, getDocs,
-  query, where, serverTimestamp, Timestamp, getDoc,
+  query, where, serverTimestamp, Timestamp, getDoc, onSnapshot
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
@@ -99,12 +99,30 @@ export const visitService = {
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   },
 
+  listenToVisitRequestsByOwner(ownerId: string, callback: (visits: VisitRequest[]) => void) {
+    const q = query(collection(db, 'visits'), where('owner_id', '==', ownerId));
+    return onSnapshot(q, (snap) => {
+      callback(snap.docs
+        .map(d => docToVisit(d.id, d.data() as Record<string, unknown>))
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+    });
+  },
+
   async getVisitRequestsByTenant(tenantId: string): Promise<VisitRequest[]> {
     const q = query(collection(db, 'visits'), where('tenant_id', '==', tenantId));
     const snap = await getDocs(q);
     return snap.docs
       .map(d => docToVisit(d.id, d.data() as Record<string, unknown>))
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  },
+
+  listenToVisitRequestsByTenant(tenantId: string, callback: (visits: VisitRequest[]) => void) {
+    const q = query(collection(db, 'visits'), where('tenant_id', '==', tenantId));
+    return onSnapshot(q, (snap) => {
+      callback(snap.docs
+        .map(d => docToVisit(d.id, d.data() as Record<string, unknown>))
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+    });
   },
 
   /** Vérifie si un bien a une visite active en consultant property.has_active_visit */

@@ -90,11 +90,14 @@ export default function TenantDashboard() {
   const [pendingVisitProperty, setPendingVisitProperty] = useState<Property | null>(null);
 
   useEffect(() => {
+    // 1. Chargement initial des propriétés (statique car moins fréquent ou géré autrement)
     propertyService.getProperties({ status: 'published' }).then(data => {
       setAllProperties(data); setFiltered(data); setLoading(false);
     }).catch(() => { setLoading(false); });
+
     if (user) {
-      visitService.getVisitRequestsByTenant(user.uid).then(visits => {
+      // 2. Écouteur des visites
+      const unsubVisits = visitService.listenToVisitRequestsByTenant(user.uid, (visits) => {
         setVisitRequests(visits);
         const ids = [...new Set(visits.map(v => v.property_id))];
         Promise.all(ids.map(id => propertyService.getProperty(id))).then(props => {
@@ -102,8 +105,15 @@ export default function TenantDashboard() {
           props.forEach(p => { if (p) map[p.id] = p; });
           setVisitProperties(map);
         }).catch(console.error);
-      }).catch(console.error);
-      notificationService.getNotifications(user.uid).then(setNotifications).catch(console.error);
+      });
+
+      // 3. Écouteur des notifications
+      const unsubNotifs = notificationService.listenToNotifications(user.uid, setNotifications);
+
+      return () => {
+        unsubVisits();
+        unsubNotifs();
+      };
     }
   }, [user]);
 
@@ -238,8 +248,7 @@ export default function TenantDashboard() {
         message: `${profile?.full_name || 'Un locataire'} souhaite visiter "${visitModalProperty.title}" le ${visitForm.preferred_date} à ${visitForm.preferred_time}.`,
         property_id: visitModalProperty.id,
       });
-      const updated = await visitService.getVisitRequestsByTenant(user.uid);
-      setVisitRequests(updated);
+      analyticsService.requestVisit(visitModalProperty.id);
       analyticsService.requestVisit(visitModalProperty.id);
       setVisitSuccess(true);
       visitSuccessTimer.current = setTimeout(() => {
@@ -260,8 +269,7 @@ export default function TenantDashboard() {
         message: `${profile?.full_name || 'Le locataire'} a accepté la date proposée pour "${visit.property_title}" : ${visit.counter_date ? new Date(visit.counter_date).toLocaleDateString('fr-FR') : ''} à ${visit.counter_time}.`,
         property_id: visit.property_id,
       });
-      const updated = await visitService.getVisitRequestsByTenant(user!.uid);
-      setVisitRequests(updated);
+      // La mise à jour est gérée par onSnapshot
     } catch (e) { console.error(e); }
   };
 
@@ -278,8 +286,7 @@ export default function TenantDashboard() {
         message: `${profile?.full_name || 'Le locataire'} propose le ${new Date(counterForm.date).toLocaleDateString('fr-FR')} à ${counterForm.time} pour "${visit.property_title}".`,
         property_id: visit.property_id,
       });
-      const updated = await visitService.getVisitRequestsByTenant(user.uid);
-      setVisitRequests(updated); setCounterForm(null);
+      setCounterForm(null);
     } catch (e) { console.error(e); }
     finally { setCounterLoading(false); }
   };
