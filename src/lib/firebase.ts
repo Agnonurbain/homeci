@@ -19,6 +19,11 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize AppCheck with reCAPTCHA Enterprise
 if (typeof self !== 'undefined' && import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
+  // En développement local, on utilise le debug token pour éviter les erreurs 400
+  if (import.meta.env.DEV) {
+    (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+  }
+
   initializeAppCheck(app, {
     provider: new ReCaptchaEnterpriseProvider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
     isTokenAutoRefreshEnabled: true
