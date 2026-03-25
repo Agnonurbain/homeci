@@ -153,6 +153,7 @@ service cloud.firestore {
     // ── CHATS & MESSAGES ──
     match /chats/{chatId} {
       allow read: if isAuth() && (
+        resource == null || 
         resource.data.owner_id == request.auth.uid ||
         resource.data.tenant_id == request.auth.uid ||
         isAdmin() || isNotaire()
