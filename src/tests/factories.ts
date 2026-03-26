@@ -33,8 +33,6 @@ export function createMockProperty(overrides: Partial<Property> = {}): Property 
     images: ['https://example.com/img1.jpg', 'https://example.com/img2.jpg'],
     videos: [],
     documents: [],
-    model3d: null,
-    model3d_request: null,
     status: 'published',
     verified_notaire: true,
     verification_date: '2026-03-01',

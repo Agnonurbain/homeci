@@ -113,20 +113,6 @@ export const storageService = {
     return getDownloadURL(storageRef);
   },
 
-  /**
-   * Upload de modèle 3D (.glb, .gltf).
-   * Stocké dans : models3d/{propertyId}/{timestamp}.{ext}
-   */
-  async uploadModel3D(
-    file: File,
-    propertyId: string
-  ): Promise<string> {
-    const ext = file.name.split('.').pop() || 'glb';
-    const path = `models3d/${propertyId}/${Date.now()}.${ext}`;
-    const storageRef = ref(storage, path);
-    await uploadBytes(storageRef, file);
-    return getDownloadURL(storageRef);
-  },
 
   /**
    * Upload vidéo avec progression.

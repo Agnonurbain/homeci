@@ -69,20 +69,6 @@ describe('storageService', () => {
     });
   });
 
-  // ── uploadModel3D ──
-
-  describe('uploadModel3D', () => {
-    it('upload un fichier 3D dans models3d/{propertyId}/', async () => {
-      const file = createMockFile('model.glb', 'model/gltf-binary');
-      const url = await storageService.uploadModel3D(file, 'prop-789');
-
-      const refPath = storageMocks.ref.mock.calls[0][1] as string;
-      expect(refPath).toMatch(/^models3d\/prop-789\//);
-      expect(refPath).toMatch(/\.glb$/);
-      expect(url).toContain('firebasestorage');
-    });
-  });
-
   // ── uploadMultipleImages ──
 
   describe('uploadMultipleImages', () => {

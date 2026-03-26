@@ -17,9 +17,6 @@ vi.mock('../MapDisplay', () => ({
   default: () => <div data-testid="map-display" />,
 }));
 
-vi.mock('../Property3DViewer', () => ({
-  Property3DViewer: () => <div data-testid="3d-viewer" />,
-}));
 
 vi.mock('../../services/analyticsService', () => ({
   analyticsService: {

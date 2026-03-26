@@ -22,10 +22,9 @@ import {
   getHierarchyByVille, getHierarchyByCommune,
 } from '../data/coteIvoireGeo';
 import { DocumentsStep } from './DocumentsStep';
-import { Property3DViewer } from './Property3DViewer';
 import PaymentModal from './PaymentModal';
 import { KenteLine } from './ui/KenteLine';
-import type { PropertyInsert, PropertyUpdate, PropertyDocument, Model3D } from '../services/propertyService';
+import type { PropertyInsert, PropertyUpdate, PropertyDocument } from '../services/propertyService';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { z } from 'zod';
@@ -155,7 +154,6 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
   const [existingVideos, setExistingVideos]       = useState<string[]>([]);
   const [newVideos, setNewVideos]                 = useState<File[]>([]);
   const [newVideoPreviews, setNewVideoPreviews]   = useState<string[]>([]);
-  const [model3d, setModel3d]                     = useState<Model3D | null>(null);
 
   // Documents (partagé)
   const [documents, setDocuments] = useState<PropertyDocument[]>([]);
@@ -216,8 +214,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
         setExistingImages(data.images || []);
         setExistingVideos(data.videos || []);
         setDocuments(data.documents || []);
-        setModel3d((data as any).model3d || null);
-      } catch (e) {
+        } catch (e) {
         setError('Impossible de charger les données du bien.');
       } finally {
         setLoading(false);
@@ -398,7 +395,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
 
       } else if (propertyId) {
         const propertyData: PropertyUpdate = sanitizePropertyUpdate(formData);
-        await propertyService.updateProperty(propertyId, { ...propertyData, images: existingImages, videos: existingVideos, model3d } as any);
+        await propertyService.updateProperty(propertyId, { ...propertyData, images: existingImages, videos: existingVideos } as any);
         // Sauver les documents dans la sous-collection
         if (documents.length > 0) {
           await Promise.all(documents.map(d => propertyService.setDocument(propertyId, d)));
@@ -1169,15 +1166,6 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
                   )}
                 </div>
 
-                {/* Visionneuse 3D (edit uniquement) */}
-                {mode === 'edit' && model3d && (
-                  <div className="pt-4" style={{ borderTop:'1px solid rgba(212,160,23,0.18)' }}>
-                    <p className="text-sm font-semibold mb-2" style={{ color:HColors.brownDeep, fontFamily:'var(--font-nunito)' }}>
-                      ⬡ Aperçu du modèle 3D généré
-                    </p>
-                    <Property3DViewer property={formData as any} />
-                  </div>
-                )}
               </div>
             )}
 

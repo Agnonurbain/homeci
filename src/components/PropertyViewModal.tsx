@@ -13,7 +13,6 @@ import type { VisitRequest } from '../services/visitService';
 import { useAuth } from '../contexts/AuthContext';
 import OptimizedImage from './OptimizedImage';
 const MapDisplay = lazy(() => import('./MapDisplay'));
-import { Property3DViewer } from './Property3DViewer';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { analyticsService } from '../services/analyticsService';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -57,7 +56,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
   const [myVisit, setMyVisit] = useState<VisitRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [imgIndex, setImgIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<'photos' | 'videos' | '3d' | 'map'>('photos');
+  const [activeTab, setActiveTab] = useState<'photos' | 'videos' | 'map'>('photos');
   const [showReportForm, setShowReportForm] = useState(false);
   const [reportReason, setReportReason] = useState<string>('');
   const [reportDetails, setReportDetails] = useState('');
@@ -229,13 +228,12 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
             {[
               { key: 'photos', label: `📷 Photos${images.length > 1 ? ` (${images.length})` : ''}` },
               ...(property.videos?.length ? [{ key: 'videos', label: `🎬 Vidéos (${property.videos.length})` }] : []),
-              { key: '3d', label: '⬡ Vue 3D' },
               { key: 'map', label: '🗺 Carte' },
             ].map(tab => (
               <button key={tab.key} onClick={() => setActiveTab(tab.key as any)}
                 className="px-3 py-1.5 rounded-xl text-xs font-medium transition-all"
                 style={activeTab === tab.key
-                  ? { background: tab.key === '3d' ? HColors.brownDeep : HColors.navyDark, color: HColors.cream, fontFamily: 'var(--font-nunito)' }
+                  ? { background: HColors.navyDark, color: HColors.cream, fontFamily: 'var(--font-nunito)' }
                   : { background: HAlpha.gold08, color: HColors.brown, border: `1px solid ${HAlpha.gold15}`, fontFamily: 'var(--font-nunito)' }}>
                 {tab.label}
               </button>
@@ -274,8 +272,6 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
             </div>
           )}
 
-          {/* ── Vue 3D ── */}
-          {activeTab === '3d' && <div className="mb-5"><Property3DViewer property={property} height={380} /></div>}
 
           {/* Vidéos */}
           {activeTab === 'videos' && property.videos?.length > 0 && (

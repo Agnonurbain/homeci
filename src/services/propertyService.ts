@@ -27,40 +27,7 @@ export interface PropertyDocument {
   rejection_reason?: string;
 }
 
-// ─── Modèle 3D ─────────────────────────────────────────────────────────────────
 
-export interface RoomDimension {
-  nom: string;
-  longueur: number;
-  largeur: number;
-  hauteur: number;
-}
-
-export interface Model3DRequest {
-  status: 'non_soumis' | 'en_attente' | 'en_cours' | 'termine';
-  submitted_at?: string;
-  nb_etages: number;
-  hauteur_sous_plafond: number;
-  surface_totale: number;
-  plan_urls: string[];
-  pieces: RoomDimension[];
-  photo_nord?: string;
-  photo_sud?: string;
-  photo_est?: string;
-  photo_ouest?: string;
-  photos_interieures: string[];
-  materiaux_facade: string;
-  type_toiture: string;
-  notes: string;
-  model_url?: string;
-  model_provider?: string;
-}
-
-export interface Model3D {
-  type: 'url' | 'file';
-  url: string;
-  provider?: 'matterport' | 'sketchfab' | 'youtube' | 'other';
-}
 
 // ─── Propriété ──────────────────────────────────────────────────────────────────
 
@@ -93,8 +60,6 @@ export interface Property {
   videos: string[];
   /** Documents légaux — chargés séparément via getDocuments() */
   documents: PropertyDocument[];
-  model3d: Model3D | null;
-  model3d_request: Model3DRequest | null;
   status: 'draft' | 'pending' | 'published' | 'rented' | 'sold' | 'rejected' | 'failed';
   verified_notaire: boolean;
   verification_date: string | null;
@@ -185,8 +150,6 @@ function docToProperty(id: string, data: Record<string, unknown>): Property {
     videos: Array.isArray(data.videos) ? (data.videos as string[]) : [],
     // Documents chargés séparément — initialisé à vide
     documents: [],
-    model3d: (data.model3d as Property['model3d']) ?? null,
-    model3d_request: (data.model3d_request as Property['model3d_request']) ?? null,
     status: (data.status as Property['status']) ?? 'pending',
     verified_notaire: Boolean(data.verified_notaire ?? false),
     notaire_id: (data.notaire_id as string) || null,

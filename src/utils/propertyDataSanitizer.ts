@@ -71,8 +71,6 @@ export function sanitizePropertyData(formData: RawFormData): SanitizedBase {
     longitude: formData.longitude,
     amenities: formData.amenities || [],
     available_from: formData.available_from || null,
-    model3d: null,
-    model3d_request: null,
     // Champs réinitialisés par défaut (seront surchargés si besoin)
     videos: [],
     notaire_id: null,
