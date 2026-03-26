@@ -54,7 +54,7 @@ export function PropertyCard({ property, onFavorite, isFavorite, isBoosted, onVi
             </span>
           )}
           <span className="px-2.5 py-1 text-[10px] font-bold rounded-md uppercase tracking-wider backdrop-blur-sm"
-            style={{ background: HAlpha.orange15, color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>
+            style={{ background: HAlpha.orange15, color: HColors.orangeDark, fontFamily: 'var(--font-nunito)' }}>
             {TYPE_LABELS[property.property_type] || property.property_type}
           </span>
           {property.videos?.length > 0 && (
@@ -180,7 +180,7 @@ export function PropertyCard({ property, onFavorite, isFavorite, isBoosted, onVi
             style={property.verified_notaire
               ? { background: HGradients.cta, color: HColors.white, fontFamily: 'var(--font-nunito)' }
               : {
-                background: HAlpha.orange08, color: HColors.orangeCI, fontFamily: 'var(--font-nunito)',
+                background: HAlpha.orange08, color: HColors.orangeDark, fontFamily: 'var(--font-nunito)',
                 border: `1px solid ${HAlpha.orange20}`
               }}>
             {!property.verified_notaire && <AlertTriangle className="w-3 h-3 inline mr-1" />}

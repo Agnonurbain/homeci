@@ -8,7 +8,9 @@ import type { CSSProperties } from 'react';
 export const HColors = {
   // Palette primaire CI
   orangeCI:    '#FF6B00',
+  orangeDark:  '#AF4B00', // Accessible sur blanc (4.5:1+)
   vertCI:      '#009E49',
+  vertDark:    '#007536', // Accessible sur blanc (4.5:1+)
   blanc:       '#FFFFFF',
 
   // Fonds sombres
@@ -149,7 +151,7 @@ export const HS: Record<string, CSSProperties> = {
     fontFamily: 'var(--font-nunito)',
   },
   label: {
-    color:         'rgba(122,85,0,0.8)',
+    color:         '#604200', // Plus sombre que rgba(122,85,0,0.8) pour le contraste
     fontFamily:    'var(--font-nunito)',
     fontSize:      '0.7rem',
     fontWeight:    700,
@@ -157,7 +159,7 @@ export const HS: Record<string, CSSProperties> = {
     textTransform: 'uppercase',
   } as CSSProperties,
   labelSm: {
-    color:         'rgba(192,124,62,0.85)',
+    color:         '#925B2D', // Plus sombre que rgba(192,124,62,0.85)
     fontFamily:    'var(--font-nunito)',
     fontSize:      '0.65rem',
     fontWeight:    700,
@@ -184,7 +186,7 @@ export const HS: Record<string, CSSProperties> = {
   btnSecondary: {
     background: 'rgba(255,107,0,0.08)',
     border:     '1px solid rgba(255,107,0,0.2)',
-    color:      HColors.orangeCI,
+    color:      '#AF4B00', // orangeDark pour le texte
     fontFamily: 'var(--font-nunito)',
     fontWeight: 600,
   },

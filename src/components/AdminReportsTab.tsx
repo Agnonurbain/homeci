@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { AlertTriangle, CheckCircle, XCircle, Clock, Eye, Loader } from 'lucide-react';
+import { AlertTriangle, CheckCircle, XCircle, Loader } from 'lucide-react';
 import { reportService, REASON_LABELS } from '../services/reportService';
 import type { PropertyReport } from '../services/reportService';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; border: string; label: string }> = {
-  pending:  { bg: HAlpha.orange10, text: HColors.orangeCI, border: HAlpha.orange25, label: 'En attente' },
-  reviewed: { bg: HAlpha.vertCI10, text: HColors.vertCI,   border: HAlpha.vertCI25, label: 'Traité' },
+  pending:  { bg: HAlpha.orange10, text: HColors.orangeDark, border: HAlpha.orange25, label: 'En attente' },
+  reviewed: { bg: HAlpha.vertCI10, text: HColors.vertDark,   border: HAlpha.vertCI25, label: 'Traité' },
   dismissed:{ bg: HAlpha.navy08,   text: HColors.navy,     border: HAlpha.navy18,   label: 'Rejeté' },
 };
 
@@ -49,7 +49,7 @@ export default function AdminReportsTab({ showToast }: { showToast: (msg: string
           </h2>
           <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
             {pending > 0
-              ? <span style={{ color: HColors.orangeCI, fontWeight: 600 }}>{pending} en attente de traitement</span>
+              ? <span style={{ color: HColors.orangeDark, fontWeight: 600 }}>{pending} en attente de traitement</span>
               : 'Tous les signalements ont été traités'}
           </p>
         </div>
@@ -66,7 +66,7 @@ export default function AdminReportsTab({ showToast }: { showToast: (msg: string
           <button key={f.val} onClick={() => setFilter(f.val)}
             className="px-4 py-2 rounded-xl text-xs font-medium transition-all"
             style={filter === f.val
-              ? { background: HColors.orangeCI, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }
+              ? { background: HColors.orangeDark, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }
               : { background: HColors.white, color: HColors.brown, border: `1px solid ${HAlpha.gold20}`, fontFamily: 'var(--font-nunito)' }}>
             {f.label}
           </button>
@@ -91,7 +91,7 @@ export default function AdminReportsTab({ showToast }: { showToast: (msg: string
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <AlertTriangle className="w-4 h-4" style={{ color: HColors.orangeCI }} />
+                      <AlertTriangle className="w-4 h-4" style={{ color: HColors.orangeDark }} />
                       <span className="text-sm font-bold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
                         {report.property_title}
                       </span>
@@ -118,7 +118,7 @@ export default function AdminReportsTab({ showToast }: { showToast: (msg: string
                       <button onClick={() => handleAction(report.id, 'reviewed')}
                         disabled={actionLoading === report.id}
                         className="px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1 transition-all hover:opacity-80 disabled:opacity-50"
-                        style={{ background: HAlpha.vertCI10, color: HColors.vertCI, border: `1px solid ${HAlpha.vertCI25}`, fontFamily: 'var(--font-nunito)' }}>
+                        style={{ background: HAlpha.vertCI10, color: HColors.vertDark, border: `1px solid ${HAlpha.vertCI25}`, fontFamily: 'var(--font-nunito)' }}>
                         {actionLoading === report.id ? <Loader className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
                         Traiter
                       </button>

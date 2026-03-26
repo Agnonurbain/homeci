@@ -170,7 +170,7 @@ export function Hero({ onSearch }: HeroProps) {
                 Rechercher
                 {activeCount > 0 && (
                   <span className="text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center"
-                    style={{ background: HColors.white, color: HColors.orangeCI }}>{activeCount}</span>
+                    style={{ background: HColors.white, color: HColors.orangeDark }}>{activeCount}</span>
                 )}
               </button>
             </div>
@@ -215,7 +215,7 @@ export function Hero({ onSearch }: HeroProps) {
                   <div className="col-span-2 md:col-span-3 text-right">
                     <button type="button" onClick={() => setF(p => ({ ...p, district:'', region:'', departement:'', city:'', commune:'', quartier:'' }))}
                       className="text-xs font-medium hover:opacity-80"
-                      style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>
+                      style={{ color: HColors.orangeDark, fontFamily: 'var(--font-nunito)' }}>
                       ✕ Réinitialiser la localisation
                     </button>
                   </div>

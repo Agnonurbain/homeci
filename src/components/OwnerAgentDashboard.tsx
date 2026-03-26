@@ -44,7 +44,7 @@ const PIE_COLORS = [HColors.gold, HColors.vertCI, HColors.orangeCI, HColors.bord
 const STATUS_STYLES: Record<string, { bg: string; text: string; border: string; label: string }> = {
   draft: { bg: HAlpha.gold05, text: HColors.brownMid, border: HAlpha.gold15, label: 'Brouillon' },
   pending: { bg: HAlpha.gold10, text: HColors.brownDeep, border: HAlpha.gold25, label: 'En attente' },
-  published: { bg: HAlpha.vertCI10, text: HColors.vertCI, border: HAlpha.vertCI25, label: 'Publié' },
+  published: { bg: HAlpha.vertCI10, text: HColors.vertDark, border: HAlpha.vertCI25, label: 'Publié' },
   rented: { bg: HAlpha.navy08, text: HColors.navy, border: HAlpha.navy20, label: 'Loué' },
   sold: { bg: HAlpha.bord10, text: HColors.bordeaux, border: HAlpha.bord25, label: 'Vendu' },
   failed: { bg: HAlpha.orange08, text: HColors.orangeCI, border: HAlpha.orange15, label: 'Non abouti' },
@@ -443,7 +443,7 @@ export default function OwnerAgentDashboard() {
                 aria-current={activeTab === tab.id ? 'page' : undefined}
                 className="py-4 px-4 border-b-2 text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2"
                 style={activeTab === tab.id
-                  ? { borderColor: HColors.orangeCI, color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }
+                  ? { borderColor: HColors.orangeCI, color: HColors.orangeDark, fontFamily: 'var(--font-nunito)' }
                   : { borderColor: 'transparent', color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
@@ -451,7 +451,7 @@ export default function OwnerAgentDashboard() {
                   <span className="px-1.5 py-0.5 rounded-full text-xs font-bold"
                     style={tab.id === 'notifications'
                       ? { background: HColors.bordeaux, color: HColors.cream }
-                      : { background: HAlpha.orange20, color: HColors.orangeCI }}>
+                      : { background: HAlpha.orange20, color: HColors.orangeDark }}>
                     {tab.count}
                   </span>
                 )}
@@ -553,7 +553,7 @@ export default function OwnerAgentDashboard() {
                                 <div className="text-sm font-semibold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1rem' }}>
                                   {property.title}
                                 </div>
-                                <div className="flex items-center gap-1 mt-0.5 text-xs" style={{ color: HColors.orangeCI }}>
+                                <div className="flex items-center gap-1 mt-0.5 text-xs" style={{ color: HColors.orangeDark }}>
                                   <MapPin className="w-3 h-3" />{property.city}
                                 </div>
                               </td>
@@ -561,7 +561,7 @@ export default function OwnerAgentDashboard() {
                                 {TYPE_LABELS[property.property_type]}
                               </td>
                               <td className="px-5 py-4">
-                                <div className="text-sm font-bold" style={{ color: HColors.orangeCI, fontFamily: 'var(--font-cormorant)' }}>
+                                <div className="text-sm font-bold" style={{ color: HColors.orangeDark, fontFamily: 'var(--font-cormorant)' }}>
                                   {property.price.toLocaleString()} FCFA
                                 </div>
                                 <div className="text-xs" style={{ color: HAlpha.brown60, fontFamily: 'var(--font-nunito)' }}>
@@ -617,7 +617,7 @@ export default function OwnerAgentDashboard() {
                                       aria-label={`Statut ${property.title}`}
                                       className="px-2 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all hover:opacity-80 animate-pulse"
                                       style={{
-                                        background: HAlpha.orange10, color: HColors.orangeCI, border: `1px solid ${HAlpha.orange25}`,
+                                        background: HAlpha.orange10, color: HColors.orangeDark, border: `1px solid ${HAlpha.orange25}`,
                                         fontFamily: 'var(--font-nunito)'
                                       }} title="Mettre à jour le statut">
                                       <AlertTriangle className="w-3.5 h-3.5" /> Statut
@@ -720,17 +720,17 @@ export default function OwnerAgentDashboard() {
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm"
                             style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
                             <div className="flex items-center gap-1.5">
-                              <Users className="w-3.5 h-3.5" style={{ color: HColors.orangeCI }} />{visit.tenant_name}
+                              <Users className="w-3.5 h-3.5" style={{ color: HColors.orangeDark }} />{visit.tenant_name}
                             </div>
                             <div className="flex items-center gap-1.5">
-                              <Calendar className="w-3.5 h-3.5" style={{ color: HColors.orangeCI }} />
+                              <Calendar className="w-3.5 h-3.5" style={{ color: HColors.orangeDark }} />
                               {visit.status === 'counter_proposed' && visit.counter_proposed_by === 'tenant' && visit.counter_date
                                 ? <>{new Date(visit.counter_date).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'long' })} à {visit.counter_time}</>
                                 : <>{new Date(visit.preferred_date).toLocaleDateString('fr-FR')} à {visit.preferred_time}</>
                               }
                             </div>
                             <div className="flex items-center gap-1.5">
-                              <MapPin className="w-3.5 h-3.5" style={{ color: HColors.orangeCI }} />{visit.property_city}
+                              <MapPin className="w-3.5 h-3.5" style={{ color: HColors.orangeDark }} />{visit.property_city}
                             </div>
                           </div>
 
@@ -868,7 +868,7 @@ export default function OwnerAgentDashboard() {
                 }}>
                 <h3 className="font-bold mb-5 flex items-center gap-2"
                   style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
-                  <BarChart3 className="w-5 h-5" style={{ color: HColors.orangeCI }} /> Répartition par type
+                  <BarChart3 className="w-5 h-5" style={{ color: HColors.orangeDark }} /> Répartition par type
                 </h3>
                 {typeData.length === 0 ? (
                   <div className="text-center py-10 text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
@@ -1051,10 +1051,10 @@ export default function OwnerAgentDashboard() {
                 <>
                   <div className="flex items-center gap-3 p-3 rounded-xl mb-2 text-sm"
                     style={{ background: HAlpha.orange10, border: '1px solid rgba(192,124,62,0.25)' }}>
-                    <Calendar className="w-4 h-4 shrink-0" style={{ color: HColors.orangeCI }} />
+                    <Calendar className="w-4 h-4 shrink-0" style={{ color: HColors.orangeDark }} />
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wide mb-0.5"
-                        style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>Contre-proposition du locataire</p>
+                        style={{ color: HColors.orangeDark, fontFamily: 'var(--font-nunito)' }}>Contre-proposition du locataire</p>
                       <p className="font-semibold" style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
                         {new Date(selectedVisit.counter_date).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })} à {selectedVisit.counter_time}
                       </p>
@@ -1067,10 +1067,10 @@ export default function OwnerAgentDashboard() {
               ) : (
                 <div className="flex items-center gap-3 p-3 rounded-xl mb-4 text-sm"
                   style={{ background: HAlpha.orange10, border: '1px solid rgba(192,124,62,0.25)' }}>
-                  <Calendar className="w-4 h-4 shrink-0" style={{ color: HColors.orangeCI }} />
+                  <Calendar className="w-4 h-4 shrink-0" style={{ color: HColors.orangeDark }} />
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide mb-0.5"
-                      style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>Date demandée</p>
+                      style={{ color: HColors.orangeDark, fontFamily: 'var(--font-nunito)' }}>Date demandée</p>
                     <p className="font-semibold" style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
                       {new Date(selectedVisit.preferred_date).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })} à {selectedVisit.preferred_time}
                     </p>
@@ -1159,7 +1159,7 @@ export default function OwnerAgentDashboard() {
                 Quel est le résultat de la visite ?
               </h2>
               <p className="text-center text-sm mb-5" style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
-                Bien : <strong style={{ color: HColors.orangeCI }}>« {statusModal.property.title} »</strong>
+                Bien : <strong style={{ color: HColors.orangeDark }}>« {statusModal.property.title} »</strong>
               </p>
 
               <div className="space-y-3 mb-5">
@@ -1211,7 +1211,7 @@ export default function OwnerAgentDashboard() {
                     <RefreshCw className="w-5 h-5" style={{ color: '#FFFFFF' }} />
                   </div>
                   <div className="text-left">
-                    <p className="text-sm font-bold" style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>
+                    <p className="text-sm font-bold" style={{ color: HColors.orangeDark, fontFamily: 'var(--font-nunito)' }}>
                       Transaction non aboutie
                     </p>
                     <p className="text-xs" style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
@@ -1250,7 +1250,7 @@ export default function OwnerAgentDashboard() {
             <div className="px-6 pt-5 pb-6">
               <div className="w-14 h-14 mx-auto mb-4 rounded-full flex items-center justify-center"
                 style={{ background: HAlpha.orange10, border: `2px solid ${HAlpha.orange25}` }}>
-                <AlertTriangle className="w-7 h-7" style={{ color: HColors.orangeCI }} />
+                <AlertTriangle className="w-7 h-7" style={{ color: HColors.orangeDark }} />
               </div>
               <h2 className="text-center text-lg font-bold mb-3"
                 style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: '1.4rem' }}>
@@ -1259,7 +1259,7 @@ export default function OwnerAgentDashboard() {
 
               <div className="space-y-3 mb-5">
                 <div className="p-3 rounded-xl" style={{ background: HAlpha.orange08, border: `1px solid ${HAlpha.orange15}` }}>
-                  <p className="text-sm font-semibold mb-1" style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>
+                  <p className="text-sm font-semibold mb-1" style={{ color: HColors.orangeDark, fontFamily: 'var(--font-nunito)' }}>
                     Bien : « {disclaimerVisit.propertyTitle} »
                   </p>
                   <p className="text-xs" style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
@@ -1270,7 +1270,7 @@ export default function OwnerAgentDashboard() {
                 </div>
 
                 <p className="text-sm leading-relaxed" style={{ color: HAlpha.cream70, fontFamily: 'var(--font-nunito)' }}>
-                  Ce bien est désormais <strong style={{ color: HColors.orangeCI }}>en cours de transaction</strong>.
+                  Ce bien est désormais <strong style={{ color: HColors.orangeDark }}>en cours de transaction</strong>.
                   Aucune autre demande de visite ne sera acceptée pendant cette période.
                 </p>
 

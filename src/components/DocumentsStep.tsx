@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { FileText, Upload, CheckCircle, Clock, X, Eye, AlertTriangle } from 'lucide-react';
 import { storageService } from '../services/storageService';
 import type { PropertyDocument } from '../services/propertyService';

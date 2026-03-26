@@ -1276,9 +1276,9 @@ function SubSection({ title, color, children }: {
   title: string; color: 'vert' | 'gold' | 'orange' | 'navy'; children: React.ReactNode;
 }) {
   const colors = {
-    vert:   { bg:'rgba(0,158,73,0.06)',  border:HAlpha.vertCI20,  text:HColors.vertCI },
+    vert:   { bg:'rgba(0,158,73,0.06)',  border:HAlpha.vertCI20,  text:HColors.vertDark },
     gold:   { bg:HAlpha.gold05,          border:HAlpha.gold15,    text:HColors.brownMid },
-    orange: { bg:HAlpha.orange08,        border:HAlpha.orange20,  text:HColors.orangeCI },
+    orange: { bg:HAlpha.orange08,        border:HAlpha.orange20,  text:HColors.orangeDark },
     navy:   { bg:HAlpha.navy06,          border:HAlpha.navy18,    text:HColors.navy },
   };
   const c = colors[color];
@@ -1296,7 +1296,7 @@ function FieldGroup({ label, children }: { label: string; children: React.ReactN
   return (
     <div>
       <label className="block mb-1.5"
-        style={{ color:'rgba(122,85,0,0.8)', fontFamily:'var(--font-nunito)', fontSize:'0.7rem', fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase' as const }}>
+        style={{ color:'#604200', fontFamily:'var(--font-nunito)', fontSize:'0.7rem', fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase' as const }}>
         {label}
       </label>
       {children}

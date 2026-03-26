@@ -166,7 +166,7 @@ export default function AdminAdsTab() {
             {t.label}
             {t.count > 0 && (
               <span className="px-1.5 py-0.5 rounded-full text-xs font-bold"
-                style={{ background: HAlpha.orange20, color: HColors.orangeCI }}>{t.count}</span>
+                style={{ background: HAlpha.orange20, color: HColors.orangeDark }}>{t.count}</span>
             )}
           </button>
         ))}
@@ -178,13 +178,13 @@ export default function AdminAdsTab() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="p-4 rounded-2xl" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
                 <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>Boosts Actifs</div>
-                <div className="text-2xl font-bold" style={{ color: HColors.orangeCI, fontFamily: 'var(--font-cormorant)' }}>
+                <div className="text-2xl font-bold" style={{ color: HColors.orangeDark, fontFamily: 'var(--font-cormorant)' }}>
                   {boosts.filter(b => b.status === 'active').length}
                 </div>
               </div>
               <div className="p-4 rounded-2xl" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
                 <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>Revenus Générés (Est.)</div>
-                <div className="text-2xl font-bold" style={{ color: HColors.vertCI, fontFamily: 'var(--font-cormorant)' }}>
+                <div className="text-2xl font-bold" style={{ color: HColors.vertDark, fontFamily: 'var(--font-cormorant)' }}>
                   {formatPrice(boosts.reduce((acc, b) => acc + (b.amountPaid || 0), 0))}
                 </div>
               </div>
@@ -238,7 +238,7 @@ export default function AdminAdsTab() {
                         <span className={`px-2 py-0.5 rounded-full text-xs font-semibold`}
                           style={{
                             background: isActive ? HAlpha.vertCI10 : HAlpha.gold08,
-                            color: isActive ? HColors.vertCI : HColors.brownMid,
+                            color: isActive ? HColors.vertDark : HColors.brownMid,
                             border: `1px solid ${isActive ? HAlpha.vertCI25 : HAlpha.gold15}`,
                             fontFamily: 'var(--font-nunito)',
                           }}>
@@ -349,7 +349,7 @@ export default function AdminAdsTab() {
             </div>
             <div className="p-4 rounded-2xl" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
               <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>Clics Totaux</div>
-              <div className="text-2xl font-bold" style={{ color: HColors.orangeCI, fontFamily: 'var(--font-cormorant)' }}>
+              <div className="text-2xl font-bold" style={{ color: HColors.orangeDark, fontFamily: 'var(--font-cormorant)' }}>
                 {banners.reduce((acc, b) => acc + (b.clicks || 0), 0).toLocaleString()}
               </div>
             </div>
@@ -364,7 +364,7 @@ export default function AdminAdsTab() {
             </div>
             <div className="p-4 rounded-2xl" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
               <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>Revenus Bannières</div>
-              <div className="text-2xl font-bold" style={{ color: HColors.vertCI, fontFamily: 'var(--font-cormorant)' }}>
+              <div className="text-2xl font-bold" style={{ color: HColors.vertDark, fontFamily: 'var(--font-cormorant)' }}>
                 {formatPrice(banners.reduce((acc, b) => acc + (b.amountPaid || 0), 0))}
               </div>
             </div>
@@ -418,7 +418,7 @@ export default function AdminAdsTab() {
                         <span className={`px-2 py-0.5 rounded-full text-xs font-semibold`}
                           style={{
                             background: isActive ? HAlpha.vertCI10 : banner.status === 'paused' ? HAlpha.gold08 : HAlpha.bord10,
-                            color: isActive ? HColors.vertCI : banner.status === 'paused' ? HColors.brownMid : HColors.bordeaux,
+                            color: isActive ? HColors.vertDark : banner.status === 'paused' ? HColors.brownMid : HColors.bordeaux,
                             fontFamily: 'var(--font-nunito)',
                           }}>
                           {isActive ? 'Active' : banner.status === 'paused' ? 'En pause' : 'Expirée'}

@@ -140,7 +140,7 @@ export function Header({ onLoginClick, onSignupClick, onProfileClick }: HeaderPr
                           <Settings className="w-3.5 h-3.5" /> Mon profil
                         </button>
                         <button onClick={() => { setShowLogoutConfirm(true); setMobileMenuOpen(false); }}
-                          className="text-sm" style={{ color: HColors.orangeCI }}>Déconnexion</button>
+                          className="text-sm" style={{ color: HColors.orangeDark }}>Déconnexion</button>
                       </div>
                     </div>
                   </>
@@ -149,7 +149,7 @@ export function Header({ onLoginClick, onSignupClick, onProfileClick }: HeaderPr
                     <button onClick={() => { onLoginClick?.(); setMobileMenuOpen(false); }}
                       className="text-left" style={{ color: HAlpha.white70 }}>Connexion</button>
                     <button onClick={() => { onSignupClick?.(); setMobileMenuOpen(false); }}
-                      className="text-left font-semibold" style={{ color: HColors.orangeCI }}>S'inscrire</button>
+                      className="text-left font-semibold" style={{ color: HColors.orangeDark }}>S'inscrire</button>
                   </>
                 )}
               </div>

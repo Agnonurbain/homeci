@@ -122,7 +122,7 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
             </div>
           </div>
           <div className="flex items-center gap-2 text-sm font-medium"
-            style={{ color:HColors.orangeCI, fontFamily:'var(--font-nunito)' }}>
+            style={{ color: HColors.orangeDark, fontFamily: 'var(--font-nunito)' }}>
             <SlidersHorizontal className="w-4 h-4" />
             <span>Filtres avancés ci-dessous</span>
           </div>
