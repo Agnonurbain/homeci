@@ -70,38 +70,53 @@ describe('DocumentsStep', () => {
     render(<DocumentsStep {...defaultProps} propertyType="maison" />);
 
     const obligatoires = screen.getAllByText('Obligatoire');
+    const auChoix = screen.getAllByText('Au choix');
     const optionnels = screen.getAllByText('Optionnel');
 
-    // Maison : titre_foncier + permis = 2 obligatoires, plan + certificat = 2 optionnels
+    // Maison : titre_foncier + permis = 2 obligatoires
+    // Identité : 5 "Au choix"
+    // Autres : 2 "Optionnel"
     expect(obligatoires).toHaveLength(2);
+    expect(auChoix).toHaveLength(5);
     expect(optionnels).toHaveLength(2);
   });
 
   // ── Progression ──
 
-  it('affiche la barre de progression 0/2 sans documents', () => {
+  it('affiche la barre de progression 0/3 sans documents', () => {
     render(<DocumentsStep {...defaultProps} propertyType="maison" documents={[]} />);
 
-    expect(screen.getByText('0/2')).toBeInTheDocument();
+    expect(screen.getByText('0/3')).toBeInTheDocument();
   });
 
-  it('affiche la progression 1/2 avec un document obligatoire uploadé', () => {
+  it('affiche la progression 1/3 avec un document obligatoire uploadé', () => {
     const docs: PropertyDocument[] = [
       { type: 'titre_foncier', label: 'Titre foncier', url: 'https://example.com/doc.pdf', status: 'en_attente' },
     ];
     render(<DocumentsStep {...defaultProps} propertyType="maison" documents={docs} />);
 
-    expect(screen.getByText('1/2')).toBeInTheDocument();
+    expect(screen.getByText('1/3')).toBeInTheDocument();
   });
 
-  it('affiche la progression 2/2 avec tous les documents obligatoires', () => {
+  it('affiche la progression 2/3 avec tous les documents de propriété obligatoires mais sans identité', () => {
     const docs: PropertyDocument[] = [
       { type: 'titre_foncier', label: 'Titre foncier', url: 'https://example.com/doc1.pdf', status: 'en_attente' },
       { type: 'permis_construire', label: 'Permis de construire', url: 'https://example.com/doc2.pdf', status: 'en_attente' },
     ];
     render(<DocumentsStep {...defaultProps} propertyType="maison" documents={docs} />);
 
-    expect(screen.getByText('2/2')).toBeInTheDocument();
+    expect(screen.getByText('2/3')).toBeInTheDocument();
+  });
+
+  it('affiche la progression 3/3 avec tous les documents de propriété obligatoires ET une identité', () => {
+    const docs: PropertyDocument[] = [
+      { type: 'titre_foncier', label: 'Titre foncier', url: 'https://example.com/doc1.pdf', status: 'en_attente' },
+      { type: 'permis_construire', label: 'Permis de construire', url: 'https://example.com/doc2.pdf', status: 'en_attente' },
+      { type: 'cni', label: 'CNI', url: 'https://example.com/ident.pdf', status: 'en_attente' },
+    ];
+    render(<DocumentsStep {...defaultProps} propertyType="maison" documents={docs} />);
+
+    expect(screen.getByText('3/3')).toBeInTheDocument();
   });
 
   // ── Statuts des documents ──

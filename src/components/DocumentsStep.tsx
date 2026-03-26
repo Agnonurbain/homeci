@@ -6,7 +6,7 @@ import { fixDocUrl } from '../utils/fixDocUrl';
 import { useAuth } from '../contexts/AuthContext';
 
 /** Types de pièces d'identité → uploadés dans identity/{userId}/ */
-const IDENTITY_DOC_TYPES = ['cni', 'passeport', 'attestation_residence', 'carte_sejour'];
+const IDENTITY_DOC_TYPES = ['cni', 'passeport', 'attestation_residence', 'carte_sejour', 'registre_commerce_proprio'];
 
 const DOCUMENTS_BY_TYPE: Record<string, { type: string; label: string; required: boolean; hint: string }[]> = {
   appartement: [
@@ -102,8 +102,9 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
     onChange(documents.filter(d => d.type !== type));
   };
 
-  const requiredCount = docDefs.filter(d => d.required).length;
-  const uploadedRequired = docDefs.filter(d => d.required && getDocument(d.type)).length;
+  const hasIdentity = OWNER_IDENTITY_DOCS.some(d => getDocument(d.type));
+  const requiredCount = docDefs.filter(d => d.required).length + 1; // +1 pour l'identité
+  const uploadedRequired = docDefs.filter(d => d.required && getDocument(d.type)).length + (hasIdentity ? 1 : 0);
 
   return (
     <div className="space-y-6">
@@ -257,7 +258,7 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Identité du propriétaire</h3>
           <p className="text-sm text-gray-600">
-            Fournissez au moins un document selon votre situation (citoyen, entreprise ou étranger)
+            Fournissez au moins une pièce d'identité valide (obligatoire)
           </p>
         </div>
       </div>
@@ -279,7 +280,7 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-medium text-gray-900">{def.label}</span>
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Selon votre situation</span>
+                    <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">Au choix</span>
                   </div>
                   <p className="text-xs text-gray-500">{def.hint}</p>
                   {error && (

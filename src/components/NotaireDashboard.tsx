@@ -38,7 +38,10 @@ type TabId = 'disponible' | 'en_cours' | 'pret' | 'certifie';
 
 function isReadyToCertify(p: Property) {
   const req = REQUIRED_DOCS[p.property_type] || ['titre_foncier'];
-  return req.every(r => p.documents?.find(d => d.type === r)?.status === 'valide');
+  const hasRequiredDocs = req.every(r => p.documents?.find(d => d.type === r)?.status === 'valide');
+  const identityTypes = ['cni', 'passeport', 'attestation_residence', 'carte_sejour', 'registre_commerce_proprio'];
+  const hasIdentity = p.documents?.some(d => identityTypes.includes(d.type) && d.status === 'valide');
+  return hasRequiredDocs && !!hasIdentity;
 }
 function getDocStatus(p: Property): 'aucun' | 'partiel' | 'complet' | 'certifie' {
   if (p.verified_notaire) return 'certifie';
