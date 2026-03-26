@@ -16,8 +16,11 @@ service cloud.firestore {
 
     // ── USERS ──
     match /users/{uid} {
-      // Lecture : tout utilisateur authentifié (nécessaire pour voir le profil des auteurs/locataires)
-      allow read: if isAuth();
+      // Lecture individuelle : tout utilisateur authentifié
+      allow get: if isAuth();
+
+      // Listage : Uniquement Admin
+      allow list: if isAdmin();
       
       // Création : L'utilisateur ne peut s'attribuer un rôle d'Admin lui-même
       allow create: if isOwner(uid) && request.resource.data.role != 'admin';
@@ -119,7 +122,9 @@ service cloud.firestore {
 
     // ── NOTAIRE CODES ──
     match /notaire_codes/{codeId} {
-      allow read: if true;
+      // Lecture : Admin (listage) ou public (verification pendant signup)
+      allow get: if true;
+      allow list: if isAdmin() || (isAuth() && !resource.data.used); // Protège les codes valides du listage public
       allow create: if isAdmin();
       allow update: if isAuth()
         && resource.data.used == false
