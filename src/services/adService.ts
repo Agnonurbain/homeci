@@ -73,7 +73,8 @@ class AdService {
     const active: PropertyBoost[] = [];
     for (const b of boosts) {
       if (isExpired(b.endDate)) {
-        await this.updateBoostStatus(b.id!, 'expired');
+        // Tentative de mise à jour (peut échouer si non-admin, on ignore)
+        this.updateBoostStatus(b.id!, 'expired').catch(() => {});
       } else {
         active.push(b);
       }
@@ -136,7 +137,8 @@ class AdService {
     const active: AdBanner[] = [];
     for (const b of banners) {
       if (isExpired(b.endDate)) {
-        await this.updateBannerStatus(b.id!, 'expired');
+        // Tentative de mise à jour (peut échouer si non-admin, on ignore)
+        this.updateBannerStatus(b.id!, 'expired').catch(() => {});
       } else {
         active.push(b);
       }
