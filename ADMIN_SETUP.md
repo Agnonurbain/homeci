@@ -2,44 +2,23 @@
 
 ## Création de l'Administrateur Principal
 
-Pour créer l'administrateur principal avec les identifiants spécifiés :
+### Étape 1 : Créer le compte via Firebase Auth
 
-### Étape 1 : Créer le compte via Supabase Auth
-
-Vous devez créer le compte admin principal avec ces identifiants :
-- **Email** : `ned12@gmail.com`
-- **Mot de passe** : `dad333`
-
-#### Option A : Via l'interface Supabase Dashboard
-1. Allez dans votre projet Supabase
-2. Naviguez vers `Authentication` > `Users`
-3. Cliquez sur `Add user` > `Create new user`
-4. Entrez l'email : `ned12@gmail.com`
-5. Entrez le mot de passe : `dad333`
-6. Cliquez sur `Create user`
-
-#### Option B : Via SQL
-Exécutez cette requête SQL dans l'éditeur SQL de Supabase :
-
-```sql
--- Note: Remplacez 'dad333' par le hash bcrypt si nécessaire
--- Cette méthode nécessite que vous utilisiez l'API Supabase Auth
-```
+1. Allez dans la console Firebase > Authentication > Users
+2. Créez un utilisateur avec l'email et mot de passe souhaités
+3. **Ne jamais documenter les credentials dans le code source ou la documentation**
 
 ### Étape 2 : Mettre à jour le profil
 
-Après la création du compte, exécutez cette requête SQL pour définir le rôle admin :
-
-```sql
-UPDATE profiles
-SET role = 'admin', full_name = 'Administrateur Principal'
-WHERE email = 'ned12@gmail.com';
-```
+Après la création du compte, définissez le rôle admin dans Firestore :
+- Collection `users`, document = UID de l'utilisateur
+- Champ `role` = `"admin"`
+- Champ `full_name` = `"Administrateur Principal"`
 
 ## Accès au Portail Administrateur
 
 ### Code d'accès
-Le code de validation pour accéder au portail administrateur est : **9573517c**
+Le code de session est généré dynamiquement à chaque connexion (valide 5 minutes).
 
 ### URLs d'accès
 - `/portail-securise`
@@ -49,7 +28,7 @@ Le code de validation pour accéder au portail administrateur est : **9573517c**
 
 ### 1. Code d'Accès de Sécurité
 - Première couche de sécurité avant la page de connexion
-- Code requis : `9573517c` (7 chiffres + 1 lettre)
+- Code généré dynamiquement par session (8 caractères alphanumériques, valide 5 minutes)
 
 ### 2. Connexion Sécurisée
 - Email et mot de passe requis
@@ -61,7 +40,7 @@ Le code de validation pour accéder au portail administrateur est : **9573517c**
 ### 3. Gestion des Administrateurs (Onglet "Gestion Admins")
 
 #### Pour l'Administrateur Principal
-L'administrateur principal (`ned12@gmail.com`) dispose de privilèges étendus :
+L'administrateur principal (défini dans Firebase) dispose de privilèges étendus :
 
 **Modifier ses propres identifiants :**
 - Changer son email
@@ -129,7 +108,7 @@ Stocke les demandes de modification d'identifiants des administrateurs :
 
 ## Notes Importantes
 
-- Le code d'accès (`9573517c`) est en dur dans le code. Pour une sécurité accrue en production, envisagez de le stocker dans les variables d'environnement.
-- L'admin principal est identifié par son email (`ned12@gmail.com`). Ne supprimez pas cet utilisateur.
+- Le code d'accès est généré dynamiquement par session (pas de code en dur).
+- L'admin principal est identifié par son email dans Firebase Auth. Ne supprimez pas cet utilisateur.
 - Toutes les tentatives de connexion sont enregistrées dans la table `admin_login_attempts`.
 - Les sessions administrateur expirent automatiquement après 30 minutes d'inactivité (configurable).

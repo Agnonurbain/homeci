@@ -26,9 +26,16 @@ Deno.serve(async (req: Request) => {
       }
     });
 
+    const adminEmail = Deno.env.get("ADMIN_EMAIL");
+    const adminPassword = Deno.env.get("ADMIN_PASSWORD");
+
+    if (!adminEmail || !adminPassword) {
+      throw new Error("ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required");
+    }
+
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: "ned12@gmail.com",
-      password: "dad333",
+      email: adminEmail,
+      password: adminPassword,
       email_confirm: true,
     });
 

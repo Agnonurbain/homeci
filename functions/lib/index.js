@@ -9,14 +9,25 @@
  * sendPushNotification :
  *   Déclenché quand une notification est créée dans Firestore.
  *   Envoie un push FCM à tous les tokens du destinataire.
+ *
+ * assignNotaireRole :
+ *   Callable : valide un code notaire et assigne le rôle atomiquement.
+ *
+ * certifyProperty :
+ *   Callable : un notaire certifie un bien qui lui est assigné.
+ *
+ * createAdmin :
+ *   Callable : l'admin principal crée un nouveau compte admin.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendPushNotification = exports.autoResetPropertyStatus = void 0;
+exports.createAdmin = exports.certifyProperty = exports.assignNotaireRole = exports.sendPushNotification = exports.autoResetPropertyStatus = void 0;
 const scheduler_1 = require("firebase-functions/v2/scheduler");
 const firestore_1 = require("firebase-functions/v2/firestore");
+const https_1 = require("firebase-functions/v2/https");
 const app_1 = require("firebase-admin/app");
 const firestore_2 = require("firebase-admin/firestore");
 const messaging_1 = require("firebase-admin/messaging");
+const auth_1 = require("firebase-admin/auth");
 const firebase_functions_1 = require("firebase-functions");
 (0, app_1.initializeApp)();
 const DELAY_DAYS = 3;
@@ -197,5 +208,195 @@ exports.sendPushNotification = (0, firestore_1.onDocumentCreated)({
     }
     const sent = results.filter((r) => r.status === "fulfilled").length;
     firebase_functions_1.logger.info(`Push envoyé à ${userId}: ${sent}/${tokens.length} token(s) atteint(s).`);
+});
+// ─────────────────────────────────────────────────────────────────
+// assignNotaireRole
+// Valide un code notaire et assigne le rôle atomiquement côté serveur.
+// ─────────────────────────────────────────────────────────────────
+exports.assignNotaireRole = (0, https_1.onCall)({ region: "europe-west1" }, async (request) => {
+    var _a;
+    if (!request.auth) {
+        throw new https_1.HttpsError("unauthenticated", "Authentification requise.");
+    }
+    const { codeId } = request.data;
+    if (!codeId || typeof codeId !== "string") {
+        throw new https_1.HttpsError("invalid-argument", "codeId requis.");
+    }
+    const db = (0, firestore_2.getFirestore)();
+    const uid = request.auth.uid;
+    // Vérifier que l'utilisateur n'a pas déjà un rôle notaire/admin
+    const userDoc = await db.collection("users").doc(uid).get();
+    if (!userDoc.exists) {
+        throw new https_1.HttpsError("not-found", "Profil utilisateur introuvable.");
+    }
+    const currentRole = (_a = userDoc.data()) === null || _a === void 0 ? void 0 : _a.role;
+    if (currentRole === "admin" || currentRole === "notaire") {
+        throw new https_1.HttpsError("already-exists", "Vous avez déjà un rôle privilégié.");
+    }
+    // Transaction atomique : valider le code + assigner le rôle
+    await db.runTransaction(async (tx) => {
+        var _a;
+        const codeRef = db.collection("notaire_codes").doc(codeId);
+        const codeDoc = await tx.get(codeRef);
+        if (!codeDoc.exists) {
+            throw new https_1.HttpsError("not-found", "Code notaire introuvable.");
+        }
+        if ((_a = codeDoc.data()) === null || _a === void 0 ? void 0 : _a.used) {
+            throw new https_1.HttpsError("already-exists", "Ce code a déjà été utilisé.");
+        }
+        // Marquer le code comme utilisé
+        tx.update(codeRef, {
+            used: true,
+            used_at: firestore_2.FieldValue.serverTimestamp(),
+            used_by: uid,
+        });
+        // Assigner le rôle notaire
+        tx.update(db.collection("users").doc(uid), {
+            role: "notaire",
+            updated_at: firestore_2.FieldValue.serverTimestamp(),
+        });
+    });
+    firebase_functions_1.logger.info(`Rôle notaire assigné à ${uid} via code ${codeId}.`);
+    return { success: true };
+});
+// ─────────────────────────────────────────────────────────────────
+// certifyProperty
+// Un notaire certifie un bien qui lui est assigné (notaire_id).
+// ─────────────────────────────────────────────────────────────────
+exports.certifyProperty = (0, https_1.onCall)({ region: "europe-west1" }, async (request) => {
+    var _a, _b, _c;
+    if (!request.auth) {
+        throw new https_1.HttpsError("unauthenticated", "Authentification requise.");
+    }
+    const { propertyId, action, reason } = request.data;
+    if (!propertyId || !action) {
+        throw new https_1.HttpsError("invalid-argument", "propertyId et action requis.");
+    }
+    const db = (0, firestore_2.getFirestore)();
+    const uid = request.auth.uid;
+    // Vérifier que l'appelant est bien notaire
+    const userDoc = await db.collection("users").doc(uid).get();
+    if (((_a = userDoc.data()) === null || _a === void 0 ? void 0 : _a.role) !== "notaire" && ((_b = userDoc.data()) === null || _b === void 0 ? void 0 : _b.role) !== "admin") {
+        throw new https_1.HttpsError("permission-denied", "Seuls les notaires peuvent certifier.");
+    }
+    // Vérifier que le bien existe et est assigné à ce notaire
+    const propDoc = await db.collection("properties").doc(propertyId).get();
+    if (!propDoc.exists) {
+        throw new https_1.HttpsError("not-found", "Bien introuvable.");
+    }
+    const propData = propDoc.data();
+    if (((_c = userDoc.data()) === null || _c === void 0 ? void 0 : _c.role) === "notaire" && propData.notaire_id !== uid) {
+        throw new https_1.HttpsError("permission-denied", "Ce bien ne vous est pas assigné.");
+    }
+    if (action === "certify") {
+        // Vérifier que tous les documents requis sont validés
+        const docsSnap = await db
+            .collection("properties")
+            .doc(propertyId)
+            .collection("documents")
+            .get();
+        const allValid = docsSnap.docs.every((d) => d.data().status === "valide");
+        if (!docsSnap.empty && !allValid) {
+            throw new https_1.HttpsError("failed-precondition", "Tous les documents doivent être validés avant certification.");
+        }
+        await db.collection("properties").doc(propertyId).update({
+            verified_notaire: true,
+            verification_date: new Date().toISOString(),
+            status: "published",
+            updated_at: firestore_2.FieldValue.serverTimestamp(),
+        });
+    }
+    else {
+        if (!reason) {
+            throw new https_1.HttpsError("invalid-argument", "Raison requise pour un rejet.");
+        }
+        await db.collection("properties").doc(propertyId).update({
+            verified_notaire: false,
+            status: "pending",
+            decertified_at: new Date().toISOString(),
+            decertification_reason: reason,
+            decertified_by: uid,
+            updated_at: firestore_2.FieldValue.serverTimestamp(),
+        });
+    }
+    // Log admin
+    await db.collection("admin_logs").add({
+        action: `property_${action}`,
+        property_id: propertyId,
+        performed_by: uid,
+        reason: reason || null,
+        created_at: firestore_2.FieldValue.serverTimestamp(),
+    });
+    // Notifier le propriétaire
+    await db.collection("notifications").doc().set({
+        user_id: propData.owner_id,
+        type: "notaire",
+        title: action === "certify"
+            ? "Bien certifié par le notaire"
+            : "Certification refusée",
+        message: action === "certify"
+            ? `Votre bien "${propData.title}" a été certifié et publié.`
+            : `La certification de "${propData.title}" a été refusée : ${reason}`,
+        property_id: propertyId,
+        read: false,
+        created_at: firestore_2.FieldValue.serverTimestamp(),
+    });
+    firebase_functions_1.logger.info(`Property ${propertyId} ${action}ed by notaire ${uid}.`);
+    return { success: true };
+});
+// ─────────────────────────────────────────────────────────────────
+// createAdmin
+// L'admin principal crée un nouveau compte admin.
+// ─────────────────────────────────────────────────────────────────
+exports.createAdmin = (0, https_1.onCall)({ region: "europe-west1" }, async (request) => {
+    var _a;
+    if (!request.auth) {
+        throw new https_1.HttpsError("unauthenticated", "Authentification requise.");
+    }
+    const { email, password, fullName } = request.data;
+    if (!email || !password || !fullName) {
+        throw new https_1.HttpsError("invalid-argument", "email, password et fullName requis.");
+    }
+    const db = (0, firestore_2.getFirestore)();
+    const uid = request.auth.uid;
+    // Vérifier que l'appelant est admin
+    const callerDoc = await db.collection("users").doc(uid).get();
+    if (((_a = callerDoc.data()) === null || _a === void 0 ? void 0 : _a.role) !== "admin") {
+        throw new https_1.HttpsError("permission-denied", "Seul un admin peut créer un admin.");
+    }
+    // Créer l'utilisateur Firebase Auth
+    const auth = (0, auth_1.getAuth)();
+    let newUser;
+    try {
+        newUser = await auth.createUser({
+            email,
+            password,
+            displayName: fullName,
+        });
+    }
+    catch (err) {
+        const error = err;
+        throw new https_1.HttpsError("internal", error.message || "Erreur lors de la création.");
+    }
+    // Créer le profil Firestore avec rôle admin
+    await db.collection("users").doc(newUser.uid).set({
+        id: newUser.uid,
+        email,
+        full_name: fullName,
+        role: "admin",
+        created_at: firestore_2.FieldValue.serverTimestamp(),
+        updated_at: firestore_2.FieldValue.serverTimestamp(),
+        created_by: uid,
+    });
+    // Log
+    await db.collection("admin_logs").add({
+        action: "create_admin",
+        target_uid: newUser.uid,
+        target_email: email,
+        performed_by: uid,
+        created_at: firestore_2.FieldValue.serverTimestamp(),
+    });
+    firebase_functions_1.logger.info(`Admin ${email} créé par ${uid}.`);
+    return { success: true, uid: newUser.uid };
 });
 //# sourceMappingURL=index.js.map

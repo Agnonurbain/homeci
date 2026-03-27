@@ -51,7 +51,7 @@ BEGIN
     SELECT 1 FROM profiles
     WHERE id = auth.uid()
     AND role = 'admin'
-    AND email = 'ned12@gmail.com'
+    AND email = current_setting('app.admin_principal_email', true)
   );
 END;
 $$;
