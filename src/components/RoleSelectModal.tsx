@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { doc, updateDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -78,20 +79,23 @@ export default function RoleSelectModal({ uid, displayName, photoURL, onDone }: 
     if (!canConfirm) return;
     setLoading(true);
     try {
-      await updateDoc(doc(db, 'users', uid), {
-        role: selected,
-        updated_at: serverTimestamp(),
-      });
+      if (selected === 'notaire' && validCodeDocId) {
+        // Rôle notaire : passer par la Cloud Function (validation atomique côté serveur)
+        const assignNotaireRole = httpsCallable(functions, 'assignNotaireRole');
+        await assignNotaireRole({ codeId: validCodeDocId });
+      } else {
+        // Rôles non-privilégiés (locataire/proprietaire) : écriture directe autorisée
+        await updateDoc(doc(db, 'users', uid), {
+          role: selected,
+          updated_at: serverTimestamp(),
+        });
+      }
       // Update localStorage cache
       const cacheKey = `homeci_profile_${uid}`;
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
         const parsed = JSON.parse(cached);
         localStorage.setItem(cacheKey, JSON.stringify({ ...parsed, role: selected }));
-      }
-      // Marquer le code notaire comme utilisé
-      if (selected === 'notaire' && validCodeDocId) {
-        await markNotaireCodeUsed(validCodeDocId);
       }
       // Recharger le profil en mémoire → déclenche le bon dashboard
       await refreshProfile();

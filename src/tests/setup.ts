@@ -45,6 +45,12 @@ vi.mock('firebase/storage', () => ({
   connectStorageEmulator: vi.fn(),
 }));
 
+vi.mock('firebase/functions', () => ({
+  getFunctions: vi.fn(() => ({})),
+  httpsCallable: vi.fn(() => vi.fn(async () => ({ data: { success: true } }))),
+  connectFunctionsEmulator: vi.fn(),
+}));
+
 vi.mock('firebase/analytics', () => ({
   getAnalytics: vi.fn(),
   isSupported: vi.fn().mockResolvedValue(false),

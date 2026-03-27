@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { getFunctions } from 'firebase/functions';
 import { getAnalytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
 import { getMessaging, isSupported as isMessagingSupported } from 'firebase/messaging';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
@@ -41,6 +42,7 @@ if (typeof self !== 'undefined' && import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+export const functions = getFunctions(app, 'europe-west1');
 
 // Analytics — initialisé uniquement si le navigateur le supporte (pas en SSR/test)
 export const analyticsPromise = isAnalyticsSupported().then(yes => yes ? getAnalytics(app) : null);

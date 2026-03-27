@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { UserPlus, Mail, Lock, Shield, CheckCircle, XCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
-import { createUserWithEmailAndPassword, updateEmail, updatePassword } from 'firebase/auth';
-import { doc, setDoc, collection, getDocs, query, where } from 'firebase/firestore';
-import { auth, db } from '../lib/firebase';
+import { updateEmail, updatePassword } from 'firebase/auth';
+import { httpsCallable } from 'firebase/functions';
+import { auth, functions } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 
 interface CredentialRequest {
@@ -107,13 +107,11 @@ export default function AdminManagement() {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, newAdminEmail, newAdminPassword);
-      await setDoc(doc(db, 'users', userCredential.user.uid), {
-        id: userCredential.user.uid,
+      const createAdminFn = httpsCallable(functions, 'createAdmin');
+      await createAdminFn({
         email: newAdminEmail,
-        full_name: newAdminName,
-        role: 'admin',
-        created_at: new Date().toISOString(),
+        password: newAdminPassword,
+        fullName: newAdminName,
       });
 
       setMessage('Nouvel administrateur créé avec succès');
@@ -122,7 +120,7 @@ export default function AdminManagement() {
       setNewAdminName('');
     } catch (err: any) {
       console.error('Error creating admin:', err);
-      setError(err.message || 'Une erreur est survenue lors de la création de l\'administrateur');
+      setError(err.details?.message || err.message || 'Une erreur est survenue lors de la création de l\'administrateur');
     }
   };
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getDoc, doc, collection, query, orderBy, onSnapshot } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { propertyService } from '../services/propertyService';
@@ -211,18 +212,15 @@ export default function NotaireDashboard() {
   }
 
   async function handleCertify(property: Property) {
-    if (!isReadyToCertify(property)) return; 
+    if (!isReadyToCertify(property)) return;
     setCertifyingId(property.id);
     try {
-      await propertyService.updateProperty(property.id, { verified_notaire: true, verification_date: new Date().toISOString(), status: 'published' });
-      await notificationService.createNotification({
-        user_id: property.owner_id, type: 'system',
-        title: '🏆 Bien certifié Notaire !',
-        message: `Votre bien "${property.title}" a obtenu le badge "Vérifié Notaire" et est maintenant publié.`,
-        property_id: property.id,
-      });
+      // Appel Cloud Function sécurisé (vérifie notaire_id, documents, crée le log + notification)
+      const certifyPropertyFn = httpsCallable(functions, 'certifyProperty');
+      await certifyPropertyFn({ propertyId: property.id, action: 'certify' });
+
       setProperties(prev => prev.map(p => p.id === property.id ? { ...p, verified_notaire: true, status: 'published' } : p));
-      setExpandedId(null); 
+      setExpandedId(null);
       navigate('/dashboard/certifie');
       analyticsService.certifyProperty(property.id);
       showToast('Bien certifié avec succès ! 🏆');
@@ -232,10 +230,10 @@ export default function NotaireDashboard() {
       if (owner?.email) {
         emailService.notifyPropertyApproval(owner.email, property.title).catch(console.error);
       }
-    } catch (e) { 
+    } catch (e) {
       console.error('handleCertify error:', e);
-      showToast(`Erreur : ${(e as any).message || 'Certification échouée'}`, false); 
-      setCertifyingId(null); 
+      showToast(`Erreur : ${(e as any).message || 'Certification échouée'}`, false);
+      setCertifyingId(null);
     }
   }
 
@@ -290,26 +288,11 @@ export default function NotaireDashboard() {
     try {
       const { property, reason, hasActiveVisit } = revokeModal;
 
-      // 1. Retirer la certification + repasser en pending
-      await propertyService.updateProperty(property.id, {
-        verified_notaire: false,
-        verification_date: null,
-        status: 'pending',
-        decertified_at: new Date().toISOString(),
-        decertification_reason: reason.trim(),
-        decertified_by: profile?.id,
-      });
+      // 1. Appel Cloud Function sécurisé pour retirer la certification
+      const certifyPropertyFn = httpsCallable(functions, 'certifyProperty');
+      await certifyPropertyFn({ propertyId: property.id, action: 'reject', reason: reason.trim() });
 
-      // 2. Notifier le propriétaire
-      await notificationService.createNotification({
-        user_id: property.owner_id,
-        type: 'system',
-        title: '⚠️ Certification retirée',
-        message: `La certification "Vérifié Notaire" de votre bien "${property.title}" a été retirée. Motif : ${reason.trim()}. Votre annonce est repassée en attente de vérification.`,
-        property_id: property.id,
-      });
-
-      // 3. Si visite active → annuler les visites + notifier le locataire
+      // 2. Si visite active → annuler les visites + notifier le locataire
       if (hasActiveVisit) {
         const ownerVisits = await visitService.getVisitRequestsByOwner(property.owner_id);
         const activeVisits = ownerVisits.filter(
@@ -327,7 +310,7 @@ export default function NotaireDashboard() {
         }
       }
 
-      // 4. Mettre à jour l'état local
+      // 3. Mettre à jour l'état local
       setProperties(prev => prev.map(p =>
         p.id === property.id ? { ...p, verified_notaire: false, status: 'pending' } : p
       ));
