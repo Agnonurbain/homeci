@@ -163,6 +163,9 @@ export function Hero({ onSearch }: HeroProps) {
               type="text" 
               value={advValue}
               onChange={e => handleAdvancedSearch(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') handleSearch();
+              }}
               placeholder="Ex: 'Appartement Cocody 3 pièces' ou 'Villa > 500000'"
               className="w-full rounded-2xl py-5 px-14 text-lg outline-none transition-all shadow-xl"
               style={{ 
