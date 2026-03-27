@@ -14,7 +14,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 interface PublicPropertyListProps {
   onShowAuth?: (mode: 'login' | 'signup') => void;
-  initialFilters?: { propertyType?: string; propertyTypes?: string[]; verifiedNotaire?: boolean; transactionType?: string; district?: string; region?: string; departement?: string; city?: string; commune?: string; quartier?: string; };
+  initialFilters?: { 
+    propertyType?: string; propertyTypes?: string[]; verifiedNotaire?: boolean; transactionType?: string; 
+    district?: string; region?: string; departement?: string; city?: string; commune?: string; quartier?: string; 
+    minPrice?: number; maxPrice?: number; minBedrooms?: number; maxBedrooms?: number; advancedQuery?: string;
+  };
 }
 
 const PER_PAGE = 9;
@@ -69,9 +73,28 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
     if (initialFilters?.city) result = result.filter(p => p.city === initialFilters.city);
     if (initialFilters?.commune) result = result.filter(p => p.commune === initialFilters.commune);
     if (initialFilters?.quartier) result = result.filter(p => p.quartier?.toLowerCase().includes((initialFilters.quartier || '').toLowerCase()));
+    if (initialFilters?.minPrice) result = result.filter(p => p.price >= initialFilters.minPrice!);
+    if (initialFilters?.maxPrice) result = result.filter(p => p.price <= initialFilters.maxPrice!);
+    if (initialFilters?.minBedrooms) result = result.filter(p => p.bedrooms >= initialFilters.minBedrooms!);
+    if (initialFilters?.advancedQuery) {
+      const q = initialFilters.advancedQuery.toLowerCase();
+      result = result.filter(p => 
+        p.title.toLowerCase().includes(q) || 
+        p.city.toLowerCase().includes(q) ||
+        p.commune?.toLowerCase().includes(q) ||
+        p.quartier?.toLowerCase().includes(q) ||
+        p.amenities?.some(a => a.toLowerCase().includes(q))
+      );
+    }
     setFiltered(result);
     setPage(1);
-  }, [initialFilters?.propertyTypes, initialFilters?.propertyType, initialFilters?.verifiedNotaire, initialFilters?.transactionType, initialFilters?.district, initialFilters?.region, initialFilters?.departement, initialFilters?.city, initialFilters?.commune, initialFilters?.quartier]);
+  }, [
+    initialFilters?.propertyTypes, initialFilters?.propertyType, initialFilters?.verifiedNotaire, 
+    initialFilters?.transactionType, initialFilters?.district, initialFilters?.region, 
+    initialFilters?.departement, initialFilters?.city, initialFilters?.commune, 
+    initialFilters?.quartier, initialFilters?.minPrice, initialFilters?.maxPrice, 
+    initialFilters?.minBedrooms, initialFilters?.advancedQuery
+  ]);
 
   const handleFilterChange = (filters: FilterValues) => {
     let result = [...allProperties];
@@ -89,6 +112,16 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
     if (filters.furnished) result = result.filter(p => p.furnished);
     if (filters.parking) result = result.filter(p => p.parking);
     if (filters.verifiedOnly) result = result.filter(p => p.verified_notaire);
+    if (filters.advancedQuery) {
+      const q = filters.advancedQuery.toLowerCase();
+      result = result.filter(p => 
+        p.title.toLowerCase().includes(q) || 
+        p.city.toLowerCase().includes(q) ||
+        p.commune?.toLowerCase().includes(q) ||
+        p.quartier?.toLowerCase().includes(q) ||
+        p.amenities?.some(a => a.toLowerCase().includes(q))
+      );
+    }
     setFiltered(result);
     setPage(1);
   };

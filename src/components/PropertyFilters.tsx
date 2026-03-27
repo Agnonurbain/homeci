@@ -4,7 +4,10 @@ import { HColors, HAlpha } from '../styles/homeci-tokens';
 import {
   ALL_DISTRICTS, getRegionsByDistrict, getDepartementsByRegion,
   getVillesByDepartement, getCommunesByVille, getQuartiersByCommune, getQuartiersByVille,
+  getHierarchyByVille, getHierarchyByCommune
 } from '../data/coteIvoireGeo';
+import { parseAdvancedSearch } from '../utils/searchParser';
+import { Search } from 'lucide-react';
 
 interface PropertyFiltersProps {
   onFilterChange: (filters: FilterValues) => void;
@@ -16,6 +19,7 @@ export interface FilterValues {
   city: string; commune: string; quartier: string;
   minPrice: string; maxPrice: string; bedrooms: string;
   furnished: boolean; parking: boolean; verifiedOnly: boolean;
+  advancedQuery?: string;
 }
 
 const DEFAULT_FILTERS: FilterValues = {
@@ -53,6 +57,7 @@ const cls = 'w-full px-3 py-2 rounded-xl outline-none';
 export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
   const [open, setOpen] = useState(false);
   const [filters, setFilters] = useState<FilterValues>(DEFAULT_FILTERS);
+  const [advValue, setAdvValue] = useState('');
 
   const activeCount = [
     filters.propertyType, filters.transactionType, filters.district, filters.region,
@@ -64,12 +69,56 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
 
   const update = (key: keyof FilterValues, value: string | boolean, resets: (keyof FilterValues)[] = []) => {
     const next = { ...filters, [key]: value };
-    resets.forEach(k => { (next as any)[k] = typeof filters[k] === 'boolean' ? false : ''; });
+    resets.forEach(k => { (next as any)[k] = typeof (DEFAULT_FILTERS as any)[k] === 'boolean' ? false : ''; });
     setFilters(next);
     onFilterChange(next);
   };
 
-  const reset = () => { setFilters(DEFAULT_FILTERS); onFilterChange(DEFAULT_FILTERS); };
+  const handleAdvancedSearch = (val: string) => {
+    setAdvValue(val);
+    const parsed = parseAdvancedSearch(val);
+    
+    // Sync dropdowns
+    const next = { ...filters, advancedQuery: val };
+    
+    if (parsed.propertyType) next.propertyType = parsed.propertyType;
+    if (parsed.transactionType) next.transactionType = parsed.transactionType;
+    if (parsed.verifiedNotaire !== undefined) next.verifiedOnly = parsed.verifiedNotaire;
+    
+    // Geo sync
+    if (parsed.quartier) next.quartier = parsed.quartier;
+    if (parsed.commune) {
+      next.commune = parsed.commune;
+      const h = getHierarchyByCommune(parsed.commune);
+      if (h) {
+        next.district = h.district; next.region = h.region; next.departement = h.departement; next.city = h.city;
+      }
+    } else if (parsed.city) {
+      next.city = parsed.city;
+      const h = getHierarchyByVille(parsed.city);
+      if (h) {
+        next.district = h.district; next.region = h.region; next.departement = h.departement;
+      }
+    } else if (parsed.district) {
+      next.district = parsed.district;
+    }
+
+    if (parsed.minPrice) next.minPrice = parsed.minPrice.toString();
+    if (parsed.maxPrice) next.maxPrice = parsed.maxPrice.toString();
+    if (parsed.exactPrice) { next.minPrice = parsed.exactPrice.toString(); next.maxPrice = parsed.exactPrice.toString(); }
+    
+    if (parsed.minBedrooms) next.bedrooms = parsed.minBedrooms.toString();
+    if (parsed.exactBedrooms) next.bedrooms = parsed.exactBedrooms.toString();
+
+    setFilters(next);
+    onFilterChange(next);
+  };
+
+  const reset = () => { 
+    setFilters(DEFAULT_FILTERS); 
+    setAdvValue('');
+    onFilterChange(DEFAULT_FILTERS); 
+  };
 
   const options: Record<string, string[]> = {
     district:    ALL_DISTRICTS,
@@ -81,7 +130,35 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
   };
 
   return (
-    <div className="rounded-2xl mb-5 overflow-hidden"
+    <div className="flex flex-col gap-3">
+      {/* ── Recherche Avancée (Smart Search) ── */}
+      <div className="relative group">
+        <input 
+          type="text" 
+          value={advValue}
+          onChange={e => handleAdvancedSearch(e.target.value)}
+          placeholder="Recherche intelligente (ex: 'Appartement Cocody 3 pièces < 500000')"
+          className="w-full rounded-2xl py-4 px-12 text-sm outline-none transition-all shadow-sm"
+          style={{ 
+            background: '#fff', 
+            border: '1px solid rgba(212,160,23,0.3)',
+            color: HColors.darkBrown,
+            fontFamily: 'var(--font-nunito)'
+          }}
+        />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: HColors.gold }} />
+        {advValue && (
+          <button 
+            onClick={() => handleAdvancedSearch('')}
+            className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:opacity-70"
+            style={{ color: HAlpha.brown30 }}
+          >
+            <X size={16} />
+          </button>
+        )}
+      </div>
+
+      <div className="rounded-2xl mb-5 overflow-hidden"
       style={{ background:'#fff', border:'1px solid rgba(212,160,23,0.15)', boxShadow:'0 2px 12px rgba(26,14,0,0.04)' }}>
 
       {/* ── Barre principale ── */}
@@ -259,6 +336,7 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
         </div>
       )}
     </div>
+  </div>
   );
 }
 

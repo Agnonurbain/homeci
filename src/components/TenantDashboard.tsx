@@ -211,6 +211,16 @@ export default function TenantDashboard() {
     if (filters.furnished) r = r.filter(p => p.furnished);
     if (filters.parking) r = r.filter(p => p.parking);
     if (filters.verifiedOnly) r = r.filter(p => p.verified_notaire);
+    if (filters.advancedQuery) {
+      const q = filters.advancedQuery.toLowerCase();
+      r = r.filter(p => 
+        p.title.toLowerCase().includes(q) || 
+        p.city.toLowerCase().includes(q) ||
+        p.commune?.toLowerCase().includes(q) ||
+        p.quartier?.toLowerCase().includes(q) ||
+        p.amenities?.some(a => a.toLowerCase().includes(q))
+      );
+    }
     setFiltered(r); setPage(1);
     if (Object.values(filters).some(v => v)) analyticsService.search('filter', r.length);
   };

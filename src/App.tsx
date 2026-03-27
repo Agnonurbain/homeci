@@ -31,6 +31,9 @@ interface HeroFilters {
   transactionType: string;
   district: string; region: string; departement: string;
   city: string; commune: string; quartier: string;
+  minPrice?: number; maxPrice?: number;
+  minBedrooms?: number; maxBedrooms?: number;
+  advancedQuery?: string;
 }
 
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';

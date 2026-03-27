@@ -1,18 +1,23 @@
 import { useState } from 'react';
-import { ChevronDown, MapPin, Search } from 'lucide-react';
+import { ChevronDown, MapPin, Search, X } from 'lucide-react';
 import { HColors, HAlpha, HGradients } from '../styles/homeci-tokens';
 import { KenteLine } from './ui/KenteLine';
 import { HomeCIEmblem } from './HomeCIEmblem';
 import {
   ALL_DISTRICTS, getRegionsByDistrict, getDepartementsByRegion,
   getVillesByDepartement, getCommunesByVille, getQuartiersByCommune, getQuartiersByVille,
+  getHierarchyByVille, getHierarchyByCommune
 } from '../data/coteIvoireGeo';
+import { parseAdvancedSearch } from '../utils/searchParser';
 
 interface HeroSearchValues {
   propertyType: string; propertyTypes: string[]; transactionType: string;
   verifiedNotaire: boolean;
   district: string; region: string; departement: string;
   city: string; commune: string; quartier: string;
+  minPrice?: number; maxPrice?: number;
+  minBedrooms?: number; maxBedrooms?: number;
+  advancedQuery?: string;
 }
 interface HeroProps { onSearch?: (filters: HeroSearchValues) => void; }
 
@@ -34,17 +39,64 @@ function BaoulePattern() {
 export function Hero({ onSearch }: HeroProps) {
   const [f, setF] = useState<HeroSearchValues>(EMPTY);
   const [showGeo, setShowGeo] = useState(false);
+  const [advValue, setAdvValue] = useState('');
 
-  const upd = (key: keyof HeroSearchValues, val: string, resets: (keyof HeroSearchValues)[] = []) => {
+  const upd = (key: keyof HeroSearchValues, val: any, resets: (keyof HeroSearchValues)[] = []) => {
     setF(prev => {
       const next = { ...prev, [key]: val };
       resets.forEach(k => {
         if (k === 'propertyTypes') (next as any)[k] = [];
         else if (k === 'verifiedNotaire') (next as any)[k] = false;
+        else if (k === 'minPrice' || k === 'maxPrice' || k === 'minBedrooms' || k === 'maxBedrooms') (next as any)[k] = undefined;
         else (next as any)[k] = '';
       });
       return next;
     });
+  };
+
+  const handleAdvancedSearch = (val: string) => {
+    setAdvValue(val);
+    const parsed = parseAdvancedSearch(val);
+    
+    // Sync dropdowns
+    const next: HeroSearchValues = { ...f, advancedQuery: val };
+    
+    if (parsed.propertyType) next.propertyType = parsed.propertyType;
+    if (parsed.transactionType) next.transactionType = parsed.transactionType;
+    if (parsed.verifiedNotaire !== undefined) next.verifiedNotaire = parsed.verifiedNotaire;
+    
+    // Geo sync (intelligence)
+    if (parsed.quartier) next.quartier = parsed.quartier;
+    if (parsed.commune) {
+      next.commune = parsed.commune;
+      const h = getHierarchyByCommune(parsed.commune);
+      if (h) {
+        next.district = h.district;
+        next.region = h.region;
+        next.departement = h.departement;
+        next.city = h.city;
+      }
+    } else if (parsed.city) {
+      next.city = parsed.city;
+      const h = getHierarchyByVille(parsed.city);
+      if (h) {
+        next.district = h.district;
+        next.region = h.region;
+        next.departement = h.departement;
+      }
+    } else if (parsed.district) {
+      next.district = parsed.district;
+    }
+
+    if (parsed.minPrice) next.minPrice = parsed.minPrice;
+    if (parsed.maxPrice) next.maxPrice = parsed.maxPrice;
+    if (parsed.exactPrice) { next.minPrice = parsed.exactPrice; next.maxPrice = parsed.exactPrice; }
+    
+    if (parsed.minBedrooms) next.minBedrooms = parsed.minBedrooms;
+    if (parsed.maxBedrooms) next.maxBedrooms = parsed.maxBedrooms;
+    if (parsed.exactBedrooms) { next.minBedrooms = parsed.exactBedrooms; next.maxBedrooms = parsed.exactBedrooms; }
+
+    setF(next);
   };
 
   const handleSearch = () => {
@@ -105,7 +157,35 @@ export function Hero({ onSearch }: HeroProps) {
             La solidité d'un éléphant au service de vos projets.
           </p>
 
-          {/* ── Barre de recherche glassmorphism ── */}
+          {/* ── Barre de recherche avancée (Smart Search) ── */}
+          <div className="w-full relative mb-4 group">
+            <input 
+              type="text" 
+              value={advValue}
+              onChange={e => handleAdvancedSearch(e.target.value)}
+              placeholder="Ex: 'Appartement Cocody 3 pièces' ou 'Villa > 500000'"
+              className="w-full rounded-2xl py-5 px-14 text-lg outline-none transition-all shadow-xl"
+              style={{ 
+                background: 'rgba(255,255,255,0.12)', 
+                border: '1px solid rgba(212,160,23,0.3)',
+                backdropFilter: 'blur(20px)',
+                color: HColors.white,
+                fontFamily: 'var(--font-nunito)'
+              }}
+            />
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6" style={{ color: HColors.gold }} />
+            {advValue && (
+              <button 
+                onClick={() => handleAdvancedSearch('')}
+                className="absolute right-5 top-1/2 -translate-y-1/2 p-1 hover:opacity-70"
+                style={{ color: HAlpha.white50 }}
+              >
+                <X size={20} />
+              </button>
+            )}
+          </div>
+
+          {/* ── Barre de recherche glassmorphism (Dropdowns) ── */}
           <div className="w-full rounded-2xl p-2 mb-4"
             style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
                      backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
