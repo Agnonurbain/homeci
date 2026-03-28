@@ -267,8 +267,8 @@ describe('5. Logos paiement SVG', () => {
 // ══════════════════════════════════════════════════════════════════════════
 
 describe('6. Performance — Taille des assets', () => {
-  it('logo_homeci.jpg < 200 KB (optimisé)', () => {
-    const size = fileSize('public/logo_homeci.jpg');
+  it('logo_homeci.png < 200 KB (optimisé)', () => {
+    const size = fileSize('public/logo_homeci.png');
     expect(size).toBeLessThan(200 * 1024); // 200 KB
   });
 
