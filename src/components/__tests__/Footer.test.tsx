@@ -6,7 +6,7 @@ describe('Footer', () => {
 
   it('affiche le logo HOMECI', () => {
     render(<Footer />);
-    expect(screen.getByAltText(/HOMECI/)).toBeInTheDocument();
+    expect(screen.getByText('HOMECI')).toBeInTheDocument();
   });
 
   it('affiche le copyright 2026', () => {

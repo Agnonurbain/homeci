@@ -4,7 +4,6 @@ const CACHE_NAME = 'homeci-v1';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
-  '/logo_homeci.png',
   '/favicon-192x192.png',
   '/favicon-512x512.png',
 ];
