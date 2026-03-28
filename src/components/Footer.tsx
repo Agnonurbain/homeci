@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 import { HomeCIEmblem } from './HomeCIEmblem';
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
+import PrivacyPolicyModal from './PrivacyPolicyModal';
 
 export function Footer() {
+  const [showPrivacy, setShowPrivacy] = useState(false);
   return (
     <footer style={{ background: HColors.night, borderTop: '1px solid rgba(212,160,23,0.15)' }}>
 
@@ -116,13 +119,23 @@ export function Footer() {
             © 2026 HOMECI — Côte d'Ivoire. Tous droits réservés.
           </p>
           <div className="flex gap-6">
-            {["Conditions d'utilisation", "Politique de confidentialité", "Mentions légales"].map(l => (
-              <a key={l} href="#" className="text-xs transition-colors hover:opacity-100"
-                style={{ color: 'rgba(245,230,200,0.35)', fontFamily: 'var(--font-nunito)' }}>{l}</a>
-            ))}
+            <a href="/faq" className="text-xs transition-colors hover:opacity-100"
+              style={{ color: 'rgba(245,230,200,0.35)', fontFamily: 'var(--font-nunito)' }}>
+              Conditions d'utilisation
+            </a>
+            <button onClick={() => setShowPrivacy(true)}
+              className="text-xs transition-colors hover:opacity-100 cursor-pointer bg-transparent border-none"
+              style={{ color: 'rgba(245,230,200,0.35)', fontFamily: 'var(--font-nunito)' }}>
+              Politique de confidentialité
+            </button>
+            <a href="#" className="text-xs transition-colors hover:opacity-100"
+              style={{ color: 'rgba(245,230,200,0.35)', fontFamily: 'var(--font-nunito)' }}>
+              Mentions légales
+            </a>
           </div>
         </div>
       </div>
+      {showPrivacy && <PrivacyPolicyModal onClose={() => setShowPrivacy(false)} />}
     </footer>
   );
 }

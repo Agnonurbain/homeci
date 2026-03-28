@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import {
   Heart, Calendar, Search, Map, List, X, Phone, CheckCircle,
   XCircle, Clock, Bell, MapPin, Bed, Maximize, Eye,
@@ -14,7 +14,7 @@ import type { Notification } from '../services/notificationService';
 import { PropertyCard } from './PropertyCard';
 import { PropertyFilters } from './PropertyFilters';
 import { PropertyGridSkeleton } from './Skeletons';
-import MapDisplay from './MapDisplay';
+const MapDisplay = lazy(() => import('./MapDisplay'));
 import PropertyViewModal from './PropertyViewModal';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -398,7 +398,9 @@ export default function TenantDashboard() {
             {loading ? (
               <PropertyGridSkeleton count={6} />
             ) : viewMode === 'map' ? (
-              <MapDisplay mode="multi" properties={filtered} />
+              <Suspense fallback={<PropertyGridSkeleton count={6} />}>
+                <MapDisplay mode="multi" properties={filtered} />
+              </Suspense>
             ) : filtered.length === 0 ? (
               <div className="rounded-2xl p-20 text-center"
                 style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
