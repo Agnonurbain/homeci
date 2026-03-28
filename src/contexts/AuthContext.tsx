@@ -80,11 +80,11 @@ function getCachedProfile(uid: string): Profile | null {
 }
 
 function setCachedProfile(profile: Profile) {
-  try { localStorage.setItem(CACHE_KEY(profile.id), JSON.stringify(profile)); } catch {}
+  try { localStorage.setItem(CACHE_KEY(profile.id), JSON.stringify(profile)); } catch { /* ignored */ }
 }
 
 function clearCachedProfile(uid: string) {
-  try { localStorage.removeItem(CACHE_KEY(uid)); } catch {}
+  try { localStorage.removeItem(CACHE_KEY(uid)); } catch { /* ignored */ }
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -155,7 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfile(data);
         setCachedProfile(data);
       }
-    } catch {}
+    } catch { /* ignored */ }
   }
 
   async function signIn(email: string, password: string) {
@@ -163,30 +163,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function signUp(email: string, password: string, fullName: string, role: Profile['role']) {
-    try {
-      const { user: newUser } = await createUserWithEmailAndPassword(auth, email, password);
+    const { user: newUser } = await createUserWithEmailAndPassword(auth, email, password);
 
-      const now = new Date().toISOString();
-      const profileData: Profile = {
-        id: newUser.uid, email, full_name: fullName, role,
-        phone: null, avatar_url: null, company_name: null,
-        verified: false, created_at: now, updated_at: now,
-      };
+    const now = new Date().toISOString();
+    const profileData: Profile = {
+      id: newUser.uid, email, full_name: fullName, role,
+      phone: null, avatar_url: null, company_name: null,
+      verified: false, created_at: now, updated_at: now,
+    };
 
-      setDoc(doc(db, 'users', newUser.uid), {
-        ...profileData,
-        created_at: serverTimestamp(),
-        updated_at: serverTimestamp(),
-      }).catch(console.error);
+    setDoc(doc(db, 'users', newUser.uid), {
+      ...profileData,
+      created_at: serverTimestamp(),
+      updated_at: serverTimestamp(),
+    }).catch(console.error);
 
-      setCachedProfile(profileData);
-      skipNextProfileLoad.current = true;
-      setUser(newUser);
-      setProfile(profileData);
-      setLoading(false);
-    } catch (error) {
-      throw error;
-    }
+    setCachedProfile(profileData);
+    skipNextProfileLoad.current = true;
+    setUser(newUser);
+    setProfile(profileData);
+    setLoading(false);
   }
 
   async function signInWithProvider(provider: 'google' | 'facebook' | 'twitter') {
@@ -255,7 +251,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function sendPhoneOTP(phoneNumber: string, recaptchaContainerId: string) {
     // Nettoyer l'ancien verifier si existant
     if (recaptchaVerifier.current) {
-      try { recaptchaVerifier.current.clear(); } catch {}
+      try { recaptchaVerifier.current.clear(); } catch { /* ignored */ }
     }
 
     // Créer le verifier en mode normal (visible) — fiable sur connexions lentes
@@ -266,7 +262,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       'expired-callback': () => {
         if (recaptchaVerifier.current) {
-          try { recaptchaVerifier.current.clear(); } catch {}
+          try { recaptchaVerifier.current.clear(); } catch { /* ignored */ }
         }
       },
     });

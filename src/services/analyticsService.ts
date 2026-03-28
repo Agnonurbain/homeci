@@ -37,14 +37,14 @@ export const analyticsService = {
     try {
       setUserId(analytics, userId);
       setUserProperties(analytics, { user_role: role });
-    } catch {}
+    } catch { /* ignored */ }
   },
 
   clearUser() {
     if (!analytics) return;
     try {
       setUserId(analytics, '');
-    } catch {}
+    } catch { /* ignored */ }
   },
 
   // ── Auth ──

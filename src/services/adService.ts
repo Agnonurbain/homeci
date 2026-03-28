@@ -131,7 +131,7 @@ class AdService {
       orderBy('createdAt', 'desc')
     );
     const snap = await getDocs(q);
-    let banners = snap.docs.map(d => ({ ...d.data(), id: d.id } as AdBanner));
+    const banners = snap.docs.map(d => ({ ...d.data(), id: d.id } as AdBanner));
 
     // Auto-expire
     const active: AdBanner[] = [];

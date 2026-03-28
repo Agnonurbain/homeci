@@ -323,7 +323,7 @@ export function Hero({ onSearch }: HeroProps) {
                 tag.kind === 'type'    ? f.propertyTypes.includes(tag.value) :
                                          f.transactionType === tag.value;
               const toggle = () => {
-                let next = { ...f };
+                const next = { ...f };
                 if (tag.kind === 'notaire') {
                   next.verifiedNotaire = !f.verifiedNotaire;
                 } else if (tag.kind === 'type') {

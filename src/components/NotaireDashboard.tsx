@@ -123,7 +123,7 @@ export default function NotaireDashboard() {
               const d = snap.data(); 
               return [id, { full_name: d.full_name || 'Propriétaire', phone: d.phone, email: d.email }] as [string, OwnerProfile]; 
             }
-          } catch { }
+          } catch { /* ignored */ }
           return [id, { full_name: 'Propriétaire' }] as [string, OwnerProfile];
         }));
         setOwners(prev => ({ ...prev, ...Object.fromEntries(newEntries) }));
