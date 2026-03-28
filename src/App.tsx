@@ -44,6 +44,7 @@ function AppContent() {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [accessCodeValidated, setAccessCodeValidated] = useState(false);
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
+  const [notaireCodeValidated, setNotaireCodeValidated] = useState(false);
   const [heroFilters, setHeroFilters] = useState<HeroFilters>({ propertyType: '', propertyTypes: [], verifiedNotaire: false, transactionType: '', district: '', region: '', departement: '', city: '', commune: '', quartier: '' });
   const [showProfile, setShowProfile] = useState(false);
 
@@ -134,7 +135,21 @@ function AppContent() {
       case 'locataire': return <Suspense fallback={LazyFallback}><TenantDashboard /></Suspense>;
       case 'proprietaire': return <Suspense fallback={LazyFallback}><OwnerAgentDashboard /></Suspense>;
       case 'admin': return <Suspense fallback={LazyFallback}><AdminDashboard /></Suspense>;
-      case 'notaire': return <Suspense fallback={LazyFallback}><NotaireDashboard /></Suspense>;
+      case 'notaire':
+        if (!notaireCodeValidated) return <AdminAccessCode role="notaire" onSuccess={() => setNotaireCodeValidated(true)} />;
+        return (
+          <AdminSessionManager
+            timeoutMinutes={profile?.session_timeout_minutes || 30}
+            onTimeout={() => {
+              setNotaireCodeValidated(false);
+              clearSessionCode('notaire');
+              alert("Votre session a expiré. Veuillez vous reconnecter.");
+              navigate('/');
+            }}
+          >
+            <Suspense fallback={LazyFallback}><NotaireDashboard /></Suspense>
+          </AdminSessionManager>
+        );
       default: return <Suspense fallback={LazyFallback}><TenantDashboard /></Suspense>;
     }
   };

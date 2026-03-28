@@ -5,6 +5,7 @@ import { HColors, HAlpha } from '../styles/homeci-tokens';
 
 interface AdminAccessCodeProps {
   onSuccess: () => void;
+  role?: 'admin' | 'notaire';
 }
 
 // Génère un code alphanumérique sécurisé de 8 caractères
@@ -19,29 +20,34 @@ function generateSessionCode(): string {
   return code;
 }
 
-const SESSION_CODE_KEY = 'homeci_admin_session_code';
-const SESSION_CODE_EXPIRY = 'homeci_admin_session_expiry';
 const CODE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
-export function getOrCreateSessionCode(): string {
-  // Vérifie si un code valide existe déjà en session
-  const existing = sessionStorage.getItem(SESSION_CODE_KEY);
-  const expiry = sessionStorage.getItem(SESSION_CODE_EXPIRY);
+function sessionKeys(role: string) {
+  return {
+    code: `homeci_${role}_session_code`,
+    expiry: `homeci_${role}_session_expiry`,
+  };
+}
+
+export function getOrCreateSessionCode(role: string = 'admin'): string {
+  const keys = sessionKeys(role);
+  const existing = sessionStorage.getItem(keys.code);
+  const expiry = sessionStorage.getItem(keys.expiry);
   if (existing && expiry && Date.now() < parseInt(expiry)) return existing;
-  // Génère un nouveau code
   const newCode = generateSessionCode();
-  sessionStorage.setItem(SESSION_CODE_KEY, newCode);
-  sessionStorage.setItem(SESSION_CODE_EXPIRY, String(Date.now() + CODE_TTL_MS));
+  sessionStorage.setItem(keys.code, newCode);
+  sessionStorage.setItem(keys.expiry, String(Date.now() + CODE_TTL_MS));
   return newCode;
 }
 
-export function clearSessionCode(): void {
-  sessionStorage.removeItem(SESSION_CODE_KEY);
-  sessionStorage.removeItem(SESSION_CODE_EXPIRY);
+export function clearSessionCode(role: string = 'admin'): void {
+  const keys = sessionKeys(role);
+  sessionStorage.removeItem(keys.code);
+  sessionStorage.removeItem(keys.expiry);
 }
 
-export default function AdminAccessCode({ onSuccess }: AdminAccessCodeProps) {
-  const [sessionCode] = useState(() => getOrCreateSessionCode());
+export default function AdminAccessCode({ onSuccess, role = 'admin' }: AdminAccessCodeProps) {
+  const [sessionCode] = useState(() => getOrCreateSessionCode(role));
   const [input, setInput] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -52,18 +58,19 @@ export default function AdminAccessCode({ onSuccess }: AdminAccessCodeProps) {
 
   // Countdown
   useEffect(() => {
-    const expiry = parseInt(sessionStorage.getItem(SESSION_CODE_EXPIRY) || '0');
+    const keys = sessionKeys(role);
+    const expiry = parseInt(sessionStorage.getItem(keys.expiry) || '0');
     const interval = setInterval(() => {
       const remaining = expiry - Date.now();
       if (remaining <= 0) {
-        clearSessionCode();
+        clearSessionCode(role);
         window.location.reload();
       } else {
         setTimeLeft(remaining);
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [role]);
 
   const minutes = Math.floor(timeLeft / 60000);
   const seconds = Math.floor((timeLeft % 60000) / 1000);
@@ -123,7 +130,7 @@ export default function AdminAccessCode({ onSuccess }: AdminAccessCodeProps) {
                 {confirmed ? 'Accès accordé !' : 'Code de session'}
               </h1>
               <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                {confirmed ? 'Redirection vers le tableau de bord…' : 'Étape 2 sur 2 — Vérification'}
+                {confirmed ? 'Redirection vers le tableau de bord…' : role === 'admin' ? 'Étape 2 sur 2 — Vérification' : 'Vérification de sécurité'}
               </p>
               {/* Stepper */}
               <div className="flex items-center justify-center gap-2 mt-3">
