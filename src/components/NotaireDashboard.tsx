@@ -84,6 +84,8 @@ export default function NotaireDashboard() {
   const [delegateRejectInput, setDelegateRejectInput] = useState<string | null>(null);
   const [delegateRejectReason, setDelegateRejectReason] = useState('');
   const expandedCardRef = useRef<HTMLDivElement>(null);
+  const ownersRef = useRef(owners);
+  ownersRef.current = owners;
 
   useEffect(() => {
     if (!profile?.id) return;
@@ -94,7 +96,7 @@ export default function NotaireDashboard() {
     const unsubscribe = onSnapshot(q, async (snapshot) => {
       const all = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Property));
       
-      // Charger les documents pour tous les bijoux (nécessaire pour isReadyToCertify)
+      // Charger les documents pour tous les biens (nécessaire pour isReadyToCertify)
       // Note: On limite aux biens qui concernent le notaire pour éviter trop de requêtes
       const relevant = all.filter(p => 
         p.notaire_id === profile.id || 
@@ -118,7 +120,7 @@ export default function NotaireDashboard() {
       setProperties(withDocs);
       
       // Charger les proprios manquants
-      const missingOwnerIds = [...new Set(withDocs.map(p => p.owner_id))].filter(id => !owners[id]);
+      const missingOwnerIds = [...new Set(withDocs.map(p => p.owner_id))].filter(id => !ownersRef.current[id]);
       if (missingOwnerIds.length > 0) {
         const newEntries = await Promise.all(missingOwnerIds.map(async id => {
           try {
@@ -351,6 +353,14 @@ export default function NotaireDashboard() {
         notaire_id: profile.id,
         notaire_taken_at: new Date().toISOString(),
       });
+      // Notifier le propriétaire
+      await notificationService.createNotification({
+        user_id: property.owner_id,
+        type: 'system',
+        title: '📋 Dossier pris en charge par un notaire',
+        message: `Votre bien "${property.title}" est désormais examiné par Me ${profile.full_name || 'un notaire agréé'}. Vous serez notifié de l'avancement.`,
+        property_id: property.id,
+      });
       // Retirer des legacy si c'était un bien antérieur
       setLegacyProperties(prev => prev.filter(p => p.id !== property.id));
       // Mettre à jour la propriété dans l'état local (onSnapshot s'occupera de la mise à jour complète)
@@ -400,7 +410,7 @@ export default function NotaireDashboard() {
       docsAttente: activeProp.flatMap(p => p.documents || []).filter(d => d.status === 'en_attente').length,
       docsValides: activeProp.flatMap(p => p.documents || []).filter(d => d.status === 'valide').length,
     };
-  }, [disponible, enCours, pret, certifie, profile?.id]);
+  }, [disponible, enCours, pret, certifie]);
 
   if (loading) return (
     <div className="min-h-screen" style={{ background: HColors.creamBg }}>
@@ -631,6 +641,10 @@ export default function NotaireDashboard() {
                       <button onClick={() => {
                           const newId = isExpanded ? null : property.id;
                           setExpandedId(newId);
+                          // Reset états intermédiaires quand on change de propriété
+                          setShowRefusalInput(null);
+                          setDelegateRejectInput(null);
+                          setDelegateRejectReason('');
                           if (newId) setTimeout(() => expandedCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
                         }}
                         aria-label={isExpanded ? 'Fermer' : `Examiner ${property.title}`}
@@ -714,7 +728,7 @@ export default function NotaireDashboard() {
                                 )}
                               </div>
                               {!property.verified_notaire && (
-                                <div className="flex items-center gap-1.5 shrink-0">
+                                <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
                                   {titleStatus !== 'valide' && (
                                     <button onClick={() => handleTitleAction(property, 'valide')}
                                       disabled={isLoadingTitle}
@@ -755,9 +769,15 @@ export default function NotaireDashboard() {
                                   }} />
                                 <button onClick={() => handleTitleAction(property, 'refuse')}
                                   disabled={isLoadingTitle}
-                                  className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all hover:opacity-80 disabled:opacity-50"
-                                  style={{ background: 'rgba(139,29,29,0.12)', border: '1px solid rgba(139,29,29,0.3)', color: HColors.bordeaux }}>
-                                  Confirmer le refus
+                                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all hover:opacity-80 disabled:opacity-50"
+                                  style={{ background: HColors.bordeaux, color: HColors.cream }}>
+                                  {isLoadingTitle ? <Loader className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
+                                  Confirmer
+                                </button>
+                                <button onClick={() => setShowRefusalInput(null)} aria-label="Annuler"
+                                  className="p-1.5 rounded-lg transition-all hover:opacity-70"
+                                  style={{ color: HColors.brown }}>
+                                  <X className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                             )}
@@ -801,7 +821,7 @@ export default function NotaireDashboard() {
                                       </p>
                                     )}
                                   </div>
-                                  <div className="flex items-center gap-1.5 shrink-0">
+                                  <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
                                     {docItem.url && (
                                       <a href={fixDocUrl(docItem.url)} target="_blank" rel="noopener noreferrer"
                                         className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80"

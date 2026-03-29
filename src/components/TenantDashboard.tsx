@@ -46,6 +46,8 @@ const NOTIF_ICON: Record<string, React.ReactNode> = {
   visit_accepted: <CheckCircle className="w-4 h-4" style={{ color: HColors.vertCI }} />,
   visit_rejected: <XCircle className="w-4 h-4" style={{ color: HColors.bordeaux }} />,
   visit_completed: <Star className="w-4 h-4" style={{ color: HColors.gold }} />,
+  notaire_approved: <CheckCircle className="w-4 h-4" style={{ color: HColors.vertCI }} />,
+  new_message: <MessageSquare className="w-4 h-4" style={{ color: HColors.orangeCI }} />,
   system: <Bell className="w-4 h-4" style={{ color: HAlpha.brown50 }} />,
 };
 
@@ -163,7 +165,6 @@ export default function TenantDashboard() {
   const [propertyInTransaction, setPropertyInTransaction] = useState(false);
 
   const handleRequestVisit = async (property: Property) => {
-    analyticsService.requestVisit(property.id);
     // Vérifier si le bien est déjà en cours de transaction
     try {
       const active = await visitService.hasActiveVisit(property.id);
@@ -246,7 +247,7 @@ export default function TenantDashboard() {
         property_id: visitModalProperty.id, property_title: visitModalProperty.title,
         property_city: visitModalProperty.city, owner_id: visitModalProperty.owner_id,
         tenant_id: user.uid, tenant_name: profile?.full_name || 'Locataire',
-        tenant_phone: '', tenant_email: '',
+        tenant_phone: profile?.phone || '', tenant_email: user.email || '',
         preferred_date: visitForm.preferred_date, preferred_time: visitForm.preferred_time,
       });
       await notificationService.createNotification({
@@ -255,7 +256,6 @@ export default function TenantDashboard() {
         message: `${profile?.full_name || 'Un locataire'} souhaite visiter "${visitModalProperty.title}" le ${visitForm.preferred_date} à ${visitForm.preferred_time}.`,
         property_id: visitModalProperty.id,
       });
-      analyticsService.requestVisit(visitModalProperty.id);
       analyticsService.requestVisit(visitModalProperty.id);
       setVisitSuccess(true);
       visitSuccessTimer.current = setTimeout(() => {
@@ -300,8 +300,12 @@ export default function TenantDashboard() {
 
   const handleMarkAllRead = async () => {
     if (!user) return;
-    await notificationService.markAllAsRead(user.uid);
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    try {
+      await notificationService.markAllAsRead(user.uid);
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (e) {
+      console.error('Failed to mark all as read:', e);
+    }
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -1088,7 +1092,16 @@ function StatBadge({ icon, label, value, accent, onClick }: {
 }
 
 function Pagination({ page, totalPages, onPage }: { page: number; totalPages: number; onPage: (p: number) => void }) {
-  const pages = Array.from({ length: Math.min(totalPages, 7) }, (_, i) => i + 1);
+  // Fenêtre glissante autour de la page courante (max 7 boutons)
+  const maxVisible = 7;
+  let start = Math.max(1, page - Math.floor(maxVisible / 2));
+  const end = Math.min(totalPages, start + maxVisible - 1);
+  start = Math.max(1, end - maxVisible + 1);
+  const pages: (number | 'dots')[] = [];
+  if (start > 1) { pages.push(1); if (start > 2) pages.push('dots'); }
+  for (let i = start; i <= end; i++) pages.push(i);
+  if (end < totalPages) { if (end < totalPages - 1) pages.push('dots'); pages.push(totalPages); }
+
   return (
     <div className="flex items-center justify-center gap-2 mt-8">
       <button disabled={page === 1} onClick={() => onPage(page - 1)}
@@ -1097,7 +1110,10 @@ function Pagination({ page, totalPages, onPage }: { page: number; totalPages: nu
         style={{ background: HAlpha.gold10, border: '1px solid rgba(212,160,23,0.2)' }}>
         <ChevronLeft className="w-4 h-4" style={{ color: HColors.gold }} />
       </button>
-      {pages.map(p => (
+      {pages.map((p, i) => p === 'dots' ? (
+        <span key={`dots-${i}`} className="w-9 h-9 flex items-center justify-center text-sm"
+          style={{ color: HColors.brown }}>…</span>
+      ) : (
         <button key={p} onClick={() => onPage(p)}
           aria-label={`Page ${p}`}
           aria-current={page === p ? 'page' : undefined}
