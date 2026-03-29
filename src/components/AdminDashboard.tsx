@@ -278,12 +278,12 @@ export default function AdminDashboard() {
           </div>
 
           {/* Tabs */}
-          <nav className="flex space-x-1 homeci-tabs-scroll">
+          <nav className="flex space-x-1 overflow-x-auto homeci-tabs-scroll">
             {TABS.map(tab => (
               <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
                 aria-label={tab.label}
                 aria-current={activeTab === tab.id ? 'page' : undefined}
-                className="flex items-center gap-2 py-3 px-4 border-b-2 text-sm font-medium transition-all whitespace-nowrap"
+                className="flex items-center gap-2 py-3 px-3 sm:px-4 border-b-2 text-xs sm:text-sm font-medium transition-all whitespace-nowrap"
                 style={activeTab === tab.id
                   ? { borderColor: HColors.gold, color: HColors.gold, fontFamily: 'var(--font-nunito)' }
                   : { borderColor: 'transparent', color: HAlpha.cream45, fontFamily: 'var(--font-nunito)' }}>
@@ -317,7 +317,7 @@ export default function AdminDashboard() {
             ) : (
               <>
                 {/* Stat cards */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
                   {[
                     { icon: Users, label: 'Utilisateurs inscrits', value: stats.total_users, accent: HColors.navy, bg: HAlpha.navy08 },
                     { icon: Home, label: 'Biens immobiliers', value: stats.total_properties, accent: HColors.vertCI, bg: HAlpha.vertCI10 },
@@ -631,7 +631,7 @@ export default function AdminDashboard() {
                                 <Building2 className="w-3.5 h-3.5" style={{ color: HAlpha.gold30 }} />
                               </div>
                             )}
-                            <span className="text-sm font-medium truncate max-w-[180px]"
+                            <span className="text-sm font-medium truncate max-w-[120px] sm:max-w-[180px]"
                               style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>{p.title}</span>
                           </div>
                         </td>
@@ -678,7 +678,7 @@ export default function AdminDashboard() {
                     Utilisez un jeton à usage unique fourni par un notaire pour finaliser une modération (Certification ou Rejet).
                   </p>
                 </div>
-                <div className="flex gap-2 min-w-[300px]">
+                <div className="flex gap-2 w-full sm:min-w-[300px]">
                   <input type="text" value={tokenInput} onChange={e => setTokenInput(e.target.value.toUpperCase())}
                     placeholder="JETON (ex: HC-XXXXXX)"
                     className="flex-1 px-4 py-2.5 rounded-xl font-mono font-bold tracking-widest outline-none transition-all placeholder:font-sans placeholder:tracking-normal"
@@ -897,7 +897,7 @@ export default function AdminDashboard() {
                   <div className="flex gap-2 overflow-x-auto pb-1">
                     {selectedProperty.images.map((img, i) => (
                       <img key={i} src={img} alt={`Photo ${i + 1}`}
-                        className="w-32 h-24 rounded-xl object-cover shrink-0"
+                        className="w-24 h-18 sm:w-32 sm:h-24 rounded-xl object-cover shrink-0"
                         style={{ border: `1px solid ${HAlpha.gold20}` }} />
                     ))}
                   </div>
@@ -944,7 +944,7 @@ export default function AdminDashboard() {
                     <div key={label} className="flex justify-between items-center py-2 px-3 rounded-xl"
                       style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}` }}>
                       <span className="text-xs font-semibold" style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>{label}</span>
-                      <span className="text-xs text-right max-w-[140px] truncate" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>{value}</span>
+                      <span className="text-xs text-right max-w-[100px] sm:max-w-[140px] truncate" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>{value}</span>
                     </div>
                   ))}
                 </div>
@@ -987,7 +987,7 @@ export default function AdminDashboard() {
                     <div key={label} className="flex justify-between items-center py-2 px-3 rounded-xl"
                       style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}` }}>
                       <span className="text-xs font-semibold" style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>{label}</span>
-                      <span className="text-xs text-right max-w-[150px] truncate font-mono" style={{ color: HColors.darkBrown }}>{value}</span>
+                      <span className="text-xs text-right max-w-[100px] sm:max-w-[150px] truncate font-mono" style={{ color: HColors.darkBrown }}>{value}</span>
                     </div>
                   ))}
                 </div>
@@ -1067,7 +1067,7 @@ export default function AdminDashboard() {
                       style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
                       <span>{icon}</span>{label}
                     </span>
-                    <span className="text-xs text-right truncate max-w-[200px]"
+                    <span className="text-xs text-right truncate max-w-[130px] sm:max-w-[200px]"
                       style={{ color: HColors.darkBrown, fontFamily: label === 'ID' ? 'monospace' : 'var(--font-nunito)' }}>
                       {value}
                     </span>

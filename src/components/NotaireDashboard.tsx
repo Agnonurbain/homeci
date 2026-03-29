@@ -458,7 +458,7 @@ export default function NotaireDashboard() {
           </div>
 
           {/* Tabs */}
-          <nav className="flex gap-1 homeci-tabs-scroll">
+          <nav className="flex gap-1 overflow-x-auto homeci-tabs-scroll">
             {([
               { id: 'disponible', label: 'Disponibles', count: stats.disponible, accent: HColors.orangeCI, bg: HAlpha.orange10, bd: HAlpha.orange25 },
               { id: 'en_cours', label: 'En cours', count: stats.enCours, accent: HColors.gold, bg: HAlpha.gold10, bd: HAlpha.gold25 },
@@ -467,7 +467,7 @@ export default function NotaireDashboard() {
             ] as const).map(tab => (
               <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
                 aria-label={tab.label} aria-current={activeTab === tab.id ? 'page' : undefined}
-                className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap"
+                className="flex items-center gap-2 px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap"
                 style={activeTab === tab.id
                   ? { borderColor: HColors.gold, color: HColors.gold, fontFamily: 'var(--font-nunito)' }
                   : { borderColor: 'transparent', color: HAlpha.cream45, fontFamily: 'var(--font-nunito)' }}>

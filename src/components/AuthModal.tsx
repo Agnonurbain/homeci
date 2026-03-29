@@ -241,7 +241,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
           </svg>
         </div>
 
-        <div className="relative z-10 p-5 md:p-8 max-h-[90vh] overflow-y-auto">
+        <div className="relative z-10 p-3 sm:p-5 md:p-8 max-h-[90vh] overflow-y-auto">
           <button onClick={onClose}
             className="absolute top-4 right-4 p-1.5 rounded-full transition-all hover:opacity-80"
             style={{ background: HAlpha.gold10, border: '1px solid rgba(212,160,23,0.2)' }}>
