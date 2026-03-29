@@ -22,6 +22,7 @@ import { KenteLine } from './ui/KenteLine';
 import CGVNotaireModal from './CGVNotaireModal';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { fixDocUrl } from '../utils/fixDocUrl';
+import TutorialButton from './TutorialButton';
 import { TYPE_LABELS, DOC_LABELS } from '../constants/labels';
 
 
@@ -435,6 +436,7 @@ export default function NotaireDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <TutorialButton />
               <div className="hidden md:flex items-center gap-2 text-xs" style={{ fontFamily: 'var(--font-nunito)' }}>
                 <span className="px-2.5 py-1 rounded-full font-semibold"
                   style={{ background: HAlpha.gold10, color: HColors.brownMid, border: `1px solid ${HAlpha.gold25}` }}>

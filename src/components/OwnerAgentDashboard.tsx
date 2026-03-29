@@ -36,6 +36,7 @@ import { TYPE_LABELS } from '../constants/labels';
 import { VISIT_STATUS_STYLES, VISIT_STATUS_FALLBACK } from '../constants/visitStatus';
 import { BOOST_PRICES } from '../types/ad';
 import type { BoostDuration } from '../types/ad';
+import TutorialButton from './TutorialButton';
 
 
 
@@ -431,7 +432,8 @@ export default function OwnerAgentDashboard() {
           borderBottom: `1px solid ${HAlpha.gold15}`
         }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-1 homeci-tabs-scroll">
+          <div className="flex items-center gap-3">
+            <nav className="flex space-x-1 homeci-tabs-scroll flex-1">
             {[
               { id: 'properties', icon: Home, label: 'Mes Biens', count: stats.total },
               { id: 'requests', icon: Calendar, label: 'Demandes de visite', count: stats.pendingVisits },
@@ -458,6 +460,8 @@ export default function OwnerAgentDashboard() {
               </button>
             ))}
           </nav>
+            <TutorialButton />
+          </div>
         </div>
       </div>
 

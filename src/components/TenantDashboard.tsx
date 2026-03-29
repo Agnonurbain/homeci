@@ -32,6 +32,7 @@ import { analyticsService } from '../services/analyticsService';
 import { availabilityService, type PropertyAvailability } from '../services/availabilityService';
 import { chatService } from '../services/chatService';
 import { VISIT_STATUS_TENANT as VISIT_STATUS } from '../constants/visitStatus';
+import TutorialButton from './TutorialButton';
 
 const PER_PAGE = 9;
 
@@ -327,7 +328,8 @@ export default function TenantDashboard() {
                 Trouvez, sauvegardez et planifiez vos visites
               </p>
             </div>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2 flex-wrap items-center">
+              <TutorialButton />
               <StatBadge icon={<Heart className="w-3.5 h-3.5" />} label="Favoris" value={favoriteIds.length} accent="#FF6B00" onClick={() => navigate('/dashboard/favorites')} />
               <StatBadge icon={<Clock className="w-3.5 h-3.5" />} label="En attente" value={pendingVisits} accent="#D4A017" onClick={() => navigate('/dashboard/visits')} />
               {acceptedVisits > 0 && <StatBadge icon={<CheckCircle className="w-3.5 h-3.5" />} label="Acceptées" value={acceptedVisits} accent="#009E49" onClick={() => navigate('/dashboard/visits')} />}
