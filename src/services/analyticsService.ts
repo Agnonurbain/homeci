@@ -49,7 +49,7 @@ export const analyticsService = {
 
   // ── Auth ──
 
-  login(method: 'email' | 'google' | 'phone') {
+  login(method: 'email' | 'google' | 'facebook' | 'phone') {
     track('login', { method });
   },
 
