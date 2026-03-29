@@ -5,7 +5,7 @@ import {
   MapPin, Calendar, Building2, Eye, Award, Copy, Plus, Loader as LoaderIcon,
   Flag, Star, CalendarCheck, UserSearch, FileText, Megaphone,
 } from 'lucide-react';
-import { collection, getDocs, orderBy, query, limit, Timestamp, addDoc, updateDoc, doc, onSnapshot, getDoc } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, limit, Timestamp, addDoc, updateDoc, doc, onSnapshot, getDoc, getCountFromServer } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { propertyService } from '../services/propertyService';
@@ -42,10 +42,11 @@ export default function AdminDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
   const tabFromUrl = location.pathname.split('/')[2];
-  const validTabs = ['overview', 'users', 'properties', 'verification', 'notaires', 'reports', 'surveys', 'visits', 'user-search', 'security', 'admin-management', 'cgv', 'ads'];
-  const activeTab = validTabs.includes(tabFromUrl) ? tabFromUrl as any : 'overview';
+  type AdminTab = 'overview' | 'users' | 'properties' | 'verification' | 'notaires' | 'reports' | 'surveys' | 'visits' | 'user-search' | 'security' | 'admin-management' | 'cgv' | 'ads';
+  const validTabs: AdminTab[] = ['overview', 'users', 'properties', 'verification', 'notaires', 'reports', 'surveys', 'visits', 'user-search', 'security', 'admin-management', 'cgv', 'ads'];
+  const activeTab: AdminTab = validTabs.includes(tabFromUrl as AdminTab) ? tabFromUrl as AdminTab : 'overview';
   const [properties, setProperties] = useState<Property[]>([]);
-  const [users, setUsers] = useState<Profile[]>([]);
+  const [users, setUsers] = useState<(Profile & { suspended?: boolean })[]>([]);
   const [stats, setStats] = useState<Stats>({ total_users: 0, total_properties: 0, pending_properties: 0, verified_properties: 0 });
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
@@ -65,7 +66,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     setLoading(true);
     
-    // 1. Écouteur pour les utilisateurs récents
+    // 1. Écouteur pour les utilisateurs récents (50 derniers pour la liste)
     const usersQuery = query(collection(db, 'users'), orderBy('created_at', 'desc'), limit(50));
     const unsubUsers = onSnapshot(usersQuery, (snapshot) => {
       const profiles = snapshot.docs.map(d => {
@@ -79,16 +80,21 @@ export default function AdminDashboard() {
           id: d.id, email: String(data.email ?? ''), full_name: String(data.full_name ?? ''),
           phone: (data.phone as string | null) ?? null, role: (data.role as Profile['role']) ?? 'locataire',
           avatar_url: (data.avatar_url as string | null) ?? null, company_name: (data.company_name as string | null) ?? null,
-          verified: Boolean(data.verified ?? false), created_at: toISO(data.created_at), updated_at: toISO(data.updated_at),
-        } as Profile;
+          verified: Boolean(data.verified ?? false), suspended: Boolean(data.suspended ?? false),
+          created_at: toISO(data.created_at), updated_at: toISO(data.updated_at),
+        } as Profile & { suspended: boolean };
       });
       setUsers(profiles);
-      setStats(prev => ({ ...prev, total_users: profiles.length }));
       setLoading(false);
     }, (err) => {
       console.error('Error listening to users:', err);
       setLoading(false);
     });
+
+    // Compteur total réel des utilisateurs (sans limit)
+    getCountFromServer(collection(db, 'users'))
+      .then(snap => setStats(prev => ({ ...prev, total_users: snap.data().count })))
+      .catch(console.error);
 
     // 2. Écouteur pour tous les biens (pour stats et listes)
     // Note: Pour une plateforme avec des milliers de biens, il faudrait limiter ou utiliser des agrégations.
@@ -137,16 +143,13 @@ export default function AdminDashboard() {
     setToast({ msg, ok }); setTimeout(() => setToast(null), 3000);
   }
 
-  // Suppression de loadData au profit de onSnapshot
-
-
   const rejectProperty = async (propertyId: string) => {
-    try { 
-      await propertyService.updateProperty(propertyId, { status: 'rejected' }); 
-      showToast('Bien rejeté'); 
-      // Optionnel: Envoyer un email de notification au propriétaire ici aussi
-      const prop = await propertyService.getProperty(propertyId);
-      if (prop) {
+    try {
+      await propertyService.updateProperty(propertyId, { status: 'rejected' });
+      showToast('Bien rejeté');
+      // Notifier le propriétaire par email
+      const prop = properties.find(p => p.id === propertyId);
+      if (prop?.owner_id) {
         const ownerSnap = await getDoc(doc(db, 'users', prop.owner_id));
         if (ownerSnap.exists() && ownerSnap.data().email) {
           emailService.sendEmail({
@@ -198,7 +201,7 @@ export default function AdminDashboard() {
     return list;
   }, [properties, filterPropType, filterPropStatus, filterPropCity, sortProp]);
 
-  const pendingProperties = properties.filter(p => p.status === 'pending');
+  const pendingProperties = useMemo(() => properties.filter(p => p.status === 'pending'), [properties]);
 
   const filteredPendingProperties = useMemo(() => {
     let list = [...pendingProperties];
@@ -480,11 +483,11 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-5 py-3.5">
                           <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                            style={{
-                              background: HAlpha.vertCI10, color: HColors.vertCI,
-                              border: `1px solid ${HAlpha.vertCI20}`, fontFamily: 'var(--font-nunito)'
-                            }}>
-                            Actif
+                            style={user.suspended
+                              ? { background: HAlpha.bord10, color: HColors.bordeaux, border: `1px solid ${HAlpha.bord20}`, fontFamily: 'var(--font-nunito)' }
+                              : { background: HAlpha.vertCI10, color: HColors.vertCI, border: `1px solid ${HAlpha.vertCI20}`, fontFamily: 'var(--font-nunito)' }
+                            }>
+                            {user.suspended ? 'Suspendu' : 'Actif'}
                           </span>
                         </td>
                         <td className="px-5 py-3.5 text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
