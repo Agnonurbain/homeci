@@ -35,8 +35,7 @@ const TUTORIALS: TutorialSection[] = [
         icon: <UserPlus className="w-6 h-6" />,
         title: 'Créez votre compte',
         description:
-          'Cliquez sur "S\'inscrire" en haut à droite. Vous pouvez vous inscrire par email, avec Google, ou par numéro de téléphone ivoirien (+225). Un code SMS vous sera envoyé pour vérification.',
-        tip: 'Les propriétaires doivent utiliser un email ou Google pour la traçabilité des transactions.',
+          'Cliquez sur "S\'inscrire" en haut à droite. Vous pouvez vous inscrire par email ou avec Google.',
       },
       {
         icon: <Users className="w-6 h-6" />,

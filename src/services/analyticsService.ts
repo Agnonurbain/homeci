@@ -49,11 +49,11 @@ export const analyticsService = {
 
   // ── Auth ──
 
-  login(method: 'email' | 'google' | 'phone') {
+  login(method: 'email' | 'google') {
     track('login', { method });
   },
 
-  signup(method: 'email' | 'google' | 'phone', role: string) {
+  signup(method: 'email' | 'google', role: string) {
     track('sign_up', { method, role });
   },
 

@@ -304,10 +304,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               <div className="p-3 rounded-xl text-xs leading-relaxed"
                 style={{ background: HAlpha.orange08, border: `1px solid ${HAlpha.orange15}`,
                          color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
-                <strong style={{ color: HColors.orangeCI }}>Locataire :</strong> Si vous vous êtes inscrit par téléphone,
-                vous n'avez pas de mot de passe — reconnectez-vous avec votre numéro.<br />
-                <strong style={{ color: HColors.orangeCI }}>Propriétaire / Notaire :</strong> Utilisez l'email
-                avec lequel vous avez créé votre compte ou connectez-vous avec Google.
+                Utilisez l'email avec lequel vous avez créé votre compte ou connectez-vous avec Google.
               </div>
 
               <div>

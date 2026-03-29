@@ -47,10 +47,6 @@ const FAQ_SECTIONS: FAQSection[] = [
         answer: "Ce badge garantit qu'un notaire agréé a vérifié les documents légaux du bien (titre foncier, permis de construire, identité du propriétaire). C'est votre assurance que le bien est légitime et les documents conformes.",
       },
       {
-        question: "Puis-je me connecter avec mon numéro de téléphone ?",
-        answer: "Oui ! Les locataires/acheteurs peuvent se connecter par email, Google, ou numéro de téléphone ivoirien (+225). Un code SMS sera envoyé pour vérification.",
-      },
-      {
         question: "Que se passe-t-il si un bien est « en cours de transaction » ?",
         answer: "Cela signifie qu'une visite a déjà été confirmée avec un autre utilisateur. Le bien redeviendra disponible si la transaction n'aboutit pas. Vous pouvez ajouter le bien en favori pour être informé.",
       },

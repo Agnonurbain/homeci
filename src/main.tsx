@@ -27,8 +27,7 @@ if (import.meta.env.DEV) {
     if (
       msg.includes('MouseEvent') || 
       msg.includes('longtask') || 
-      msg.includes('Partitioned cookie') ||
-      msg.includes('recaptcha')
+      msg.includes('Partitioned cookie')
     ) return;
     originalWarn(...args);
   };
