@@ -13,6 +13,19 @@ vi.mock('../../contexts/AuthContext', () => ({
   }),
 }));
 
+vi.mock('../../services/notificationService', () => ({
+  notificationService: {
+    listenToNotifications: vi.fn(() => vi.fn()),
+  },
+}));
+
+vi.mock('../../services/pushNotificationService', () => ({
+  pushService: {
+    getPermissionStatus: vi.fn(() => 'default'),
+    requestPermissionAndRegister: vi.fn(),
+  },
+}));
+
 import { Header } from '../Header';
 
 beforeEach(() => {
