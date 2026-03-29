@@ -88,8 +88,9 @@ export default function OwnerAgentDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
   const tabFromUrl = location.pathname.split('/')[2];
-  const validTabs = ['properties', 'requests', 'stats', 'notifications'];
-  const activeTab = validTabs.includes(tabFromUrl) ? tabFromUrl as any : 'properties';
+  type Tab = 'properties' | 'requests' | 'stats' | 'notifications';
+  const validTabs: Tab[] = ['properties', 'requests', 'stats', 'notifications'];
+  const activeTab: Tab = validTabs.includes(tabFromUrl as Tab) ? tabFromUrl as Tab : 'properties';
   const [properties, setProperties] = useState<Property[]>([]);
   const [visitRequests, setVisitRequests] = useState<VisitRequest[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -144,9 +145,6 @@ export default function OwnerAgentDashboard() {
     };
   }, [user]);
 
-  const loadAll = () => {
-    // Cette fonction n'est plus nécessaire car on utilise onSnapshot
-  };
 
   const handleExportCSV = () => {
     if (properties.length === 0) return;
@@ -223,7 +221,7 @@ export default function OwnerAgentDashboard() {
   const viewsData = [...properties]
     .sort((a, b) => (b.views_count || 0) - (a.views_count || 0))
     .slice(0, 6)
-    .map(p => ({ name: p.title.substring(0, 18) + '…', vues: p.views_count || 0 }));
+    .map(p => ({ name: p.title.length > 18 ? p.title.substring(0, 18) + '…' : p.title, vues: p.views_count || 0 }));
 
   const typeData = Object.entries(
     properties.reduce((acc, p) => { acc[p.property_type] = (acc[p.property_type] || 0) + 1; return acc; }, {} as Record<string, number>)
@@ -254,7 +252,6 @@ export default function OwnerAgentDashboard() {
         message: `Le bien "${property.title}" à ${property.city} est soumis pour vérification.`,
         property_id: property.id,
       });
-      await loadAll();
     } catch (e) { console.error(e); }
     finally { setSubmittingVerif(null); }
   };
@@ -681,7 +678,7 @@ export default function OwnerAgentDashboard() {
                     : { background: HColors.white, color: HColors.brown, border: '1px solid rgba(212,160,23,0.2)', fontFamily: 'var(--font-nunito)' }}>
                   {f === 'all' ? `Toutes (${visitRequests.length})`
                     : f === 'pending' ? `En attente (${visitRequests.filter(v => v.status === 'pending').length})`
-                      : f === 'accepted' ? `Acceptées (${visitRequests.filter(v => v.status === 'accepted').length})`
+                      : f === 'accepted' ? `Acceptées (${visitRequests.filter(v => v.status === 'accepted' || v.status === 'completed').length})`
                         : `Refusées (${visitRequests.filter(v => v.status === 'rejected').length})`}
                 </button>
               ))}
@@ -777,7 +774,7 @@ export default function OwnerAgentDashboard() {
                                 background: HAlpha.gold12, color: HColors.brownMid,
                                 border: '1px solid rgba(212,160,23,0.3)', fontFamily: 'var(--font-nunito)'
                               }}>
-                            {visit.status === 'counter_proposed' ? 'Répondre' : 'Répondre'}
+                            Répondre
                           </button>
                         )}
                         {visit.status === 'accepted' && (
@@ -1008,8 +1005,8 @@ export default function OwnerAgentDashboard() {
           onClose={() => setShowPublicationPayment(false)}
         />
       )}
-      {showAddForm && <AddPropertyForm onClose={() => setShowAddForm(false)} onSuccess={loadAll} />}
-      {editingPropertyId && <EditPropertyForm propertyId={editingPropertyId} onClose={() => setEditingPropertyId(null)} onSuccess={loadAll} />}
+      {showAddForm && <AddPropertyForm onClose={() => setShowAddForm(false)} onSuccess={() => {}} />}
+      {editingPropertyId && <EditPropertyForm propertyId={editingPropertyId} onClose={() => setEditingPropertyId(null)} onSuccess={() => {}} />}
       {viewingPropertyId && <PropertyViewModal propertyId={viewingPropertyId} onClose={() => setViewingPropertyId(null)} />}
 
       {/* Modal réponse visite */}
@@ -1377,7 +1374,6 @@ export default function OwnerAgentDashboard() {
             setBoostProp(null);
             setBoostDuration(7);
             alert("Sponsoring activé avec succès !");
-            loadAll();
           }}
           onClose={() => setBoostPaymentConfig(null)}
         />
