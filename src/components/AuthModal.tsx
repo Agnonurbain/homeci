@@ -307,7 +307,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                 <strong style={{ color: HColors.orangeCI }}>Locataire :</strong> Si vous vous êtes inscrit par téléphone,
                 vous n'avez pas de mot de passe — reconnectez-vous avec votre numéro.<br />
                 <strong style={{ color: HColors.orangeCI }}>Propriétaire / Notaire :</strong> Utilisez l'email
-                avec lequel vous avez créé votre compte ou connectez-vous avec Google ou Facebook.
+                avec lequel vous avez créé votre compte ou connectez-vous avec Google.
               </div>
 
               <div>
@@ -579,11 +579,6 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                 </svg>
               )},
-              { id:'facebook', label:'Continuer avec Facebook', icon:(
-                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="#1877F2">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12S0 5.446 0 12.073c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-              )},
             ] as {id:string;label:string;icon:React.ReactNode}[]).map(p => (
               <button key={p.id} type="button"
                 onClick={async () => {
@@ -591,7 +586,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                   setError('');
                   try {
                     await signInWithProvider(p.id as 'google'|'facebook'|'twitter');
-                    analyticsService.login(p.id as 'google'|'facebook');
+                    analyticsService.login('google');
                     onClose();
                   } catch (err: any) {
                     const code = err?.code || '';
@@ -600,7 +595,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                     } else if (code === 'auth/unauthorized-domain') {
                       setError('Domaine non autorisé. Ajoutez ce domaine dans Firebase Console → Authentication → Domaines autorisés.');
                     } else if (code === 'auth/operation-not-allowed') {
-                      setError('Ce fournisseur n\'est pas activé. Activez-le dans Firebase Console → Authentication → Sign-in method.');
+                      setError('Connexion Google non activée. Activez-la dans Firebase Console → Authentication → Sign-in method.');
                     } else if (code === 'auth/account-exists-with-different-credential') {
                       setError('Un compte existe déjà avec cet email. Connectez-vous avec email/mot de passe.');
                     } else if (code === 'auth/popup-blocked') {
