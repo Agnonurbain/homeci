@@ -1,9 +1,11 @@
-import { Heart, User, LogOut, Menu, X, Settings } from 'lucide-react';
-import { useState } from 'react';
+import { Heart, User, LogOut, Menu, X, Settings, Bell, BellOff } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { HomeCIEmblem } from './HomeCIEmblem';
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
+import { notificationService, type Notification } from '../services/notificationService';
+import { pushService } from '../services/pushNotificationService';
 
 interface HeaderProps {
   onLoginClick?: () => void;
@@ -15,6 +17,28 @@ export function Header({ onLoginClick, onSignupClick, onProfileClick }: HeaderPr
   const { user, profile, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [pushPermission, setPushPermission] = useState<NotificationPermission | 'unsupported'>('default');
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  // Écouter les notifications en temps réel
+  useEffect(() => {
+    if (!user) { setNotifications([]); return; }
+    const unsub = notificationService.listenToNotifications(user.uid, setNotifications);
+    return () => unsub();
+  }, [user]);
+
+  // Vérifier le statut de la permission push
+  useEffect(() => {
+    setPushPermission(pushService.getPermissionStatus());
+  }, []);
+
+  const handleEnablePush = async () => {
+    if (!user) return;
+    const ok = await pushService.requestPermissionAndRegister(user.uid);
+    setPushPermission(ok ? 'granted' : pushService.getPermissionStatus());
+  };
 
   const handleLogout = async () => {
     try {
@@ -75,6 +99,27 @@ export function Header({ onLoginClick, onSignupClick, onProfileClick }: HeaderPr
             <div className="hidden md:flex items-center gap-3">
               {user ? (
                 <div className="flex items-center gap-3">
+                  {/* Cloche notifications */}
+                  <a href="/dashboard/notifications" className="relative p-2 rounded-lg transition-all hover:opacity-80"
+                    style={{ background: HAlpha.orange08, border: `1px solid ${HAlpha.orange20}` }}
+                    aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} non lues)` : ''}`}>
+                    <Bell className="w-4 h-4" style={{ color: HColors.gold }} />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold"
+                        style={{ background: HColors.bordeaux, color: HColors.white }}>
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </a>
+                  {/* Activer les push si refusé/non demandé */}
+                  {pushPermission !== 'granted' && pushPermission !== 'unsupported' && (
+                    <button onClick={handleEnablePush}
+                      className="p-2 rounded-lg transition-all hover:opacity-80"
+                      style={{ background: 'rgba(139,29,29,0.15)', border: '1px solid rgba(139,29,29,0.3)' }}
+                      title={pushPermission === 'denied' ? 'Notifications bloquées — activez-les dans les paramètres du navigateur' : 'Activer les notifications push'}>
+                      <BellOff className="w-4 h-4" style={{ color: pushPermission === 'denied' ? HColors.bordeaux : HAlpha.white50 }} />
+                    </button>
+                  )}
                   <button onClick={onProfileClick}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
                     style={{ background: HAlpha.orange08, border: `1px solid ${HAlpha.orange20}` }}>
@@ -130,6 +175,24 @@ export function Header({ onLoginClick, onSignupClick, onProfileClick }: HeaderPr
                     <a href="#favorites" style={{ color: HAlpha.white70 }}>Favoris</a>
                     {profile?.role === 'proprietaire' && (
                       <a href="#dashboard" style={{ color: HAlpha.white70 }}>Mes biens</a>
+                    )}
+                    <a href="/dashboard/notifications" className="flex items-center gap-2" style={{ color: HAlpha.white70 }}
+                      onClick={() => setMobileMenuOpen(false)}>
+                      <Bell className="w-3.5 h-3.5" /> Notifications
+                      {unreadCount > 0 && (
+                        <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold"
+                          style={{ background: HColors.bordeaux, color: HColors.white }}>
+                          {unreadCount}
+                        </span>
+                      )}
+                    </a>
+                    {pushPermission !== 'granted' && pushPermission !== 'unsupported' && (
+                      <button onClick={() => { handleEnablePush(); setMobileMenuOpen(false); }}
+                        className="flex items-center gap-2 text-sm"
+                        style={{ color: HColors.orangeDark }}>
+                        <BellOff className="w-3.5 h-3.5" />
+                        {pushPermission === 'denied' ? 'Notifications bloquées (voir paramètres navigateur)' : 'Activer les notifications push'}
+                      </button>
                     )}
                     <div className="pt-2" style={{ borderTop: '1px solid rgba(212,160,23,0.15)' }}>
                       <p className="text-sm font-medium" style={{ color: HColors.white }}>{profile?.full_name}</p>

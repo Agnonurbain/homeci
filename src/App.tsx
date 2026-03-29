@@ -61,6 +61,19 @@ function AppContent() {
     // Écouter les messages en premier plan
     pushService.onForegroundMessage((payload) => {
       setPushToast({ title: payload.title, body: payload.body });
+      // Son de notification (court beep)
+      try {
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 880;
+        gain.gain.value = 0.15;
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+      } catch { /* ignore si audio non supporté */ }
       setTimeout(() => setPushToast(null), 5000);
     });
     return () => clearTimeout(timer);

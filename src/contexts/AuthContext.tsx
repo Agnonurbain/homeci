@@ -41,6 +41,11 @@ export interface Profile {
     budget_max?: number;
     property_types?: string[];
   } | null;
+  notification_prefs?: {
+    visits?: boolean;
+    certifications?: boolean;
+    system?: boolean;
+  } | null;
   created_at: string;
   updated_at: string;
 }

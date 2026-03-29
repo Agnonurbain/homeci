@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { X, Camera, Save, Loader, User, Phone, Building2, CheckCircle, MapPin, Award, Wallet } from 'lucide-react';
+import { X, Camera, Save, Loader, User, Phone, Building2, CheckCircle, MapPin, Award, Wallet, Bell } from 'lucide-react';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
@@ -23,6 +23,9 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const [address, setAddress] = useState(profile?.address || '');
   const [isAgent, setIsAgent] = useState(profile?.is_agent || false);
   const [prefBudget, setPrefBudget] = useState(profile?.preferences?.budget_max?.toString() || '');
+  const [notifVisits, setNotifVisits] = useState(profile?.notification_prefs?.visits !== false);
+  const [notifCertifications, setNotifCertifications] = useState(profile?.notification_prefs?.certifications !== false);
+  const [notifSystem, setNotifSystem] = useState(profile?.notification_prefs?.system !== false);
   const [loading, setLoading] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -84,6 +87,11 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
           budget_max: prefBudget ? parseInt(prefBudget) : null
         };
       }
+      updates.notification_prefs = {
+        visits: notifVisits,
+        certifications: notifCertifications,
+        system: notifSystem,
+      };
       await updateDoc(doc(db, 'users', user.uid), updates);
       await refreshProfile();
       setSuccess(true);
@@ -294,6 +302,28 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
               </p>
             </div>
           )}
+
+          {/* Préférences de notification */}
+          <div className="space-y-3">
+            <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider"
+              style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
+              <Bell className="w-3.5 h-3.5" /> Notifications
+            </label>
+            {([
+              { id: 'visits', label: 'Visites (demandes, acceptations, refus)', checked: notifVisits, onChange: setNotifVisits },
+              { id: 'certifications', label: 'Certifications notaire', checked: notifCertifications, onChange: setNotifCertifications },
+              { id: 'system', label: 'Système et annonces', checked: notifSystem, onChange: setNotifSystem },
+            ] as const).map(pref => (
+              <label key={pref.id} className="flex items-center gap-3 px-4 py-2.5 rounded-xl cursor-pointer"
+                style={{ background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.25)' }}>
+                <input type="checkbox" checked={pref.checked} onChange={e => pref.onChange(e.target.checked)}
+                  className="w-4 h-4 rounded accent-current" style={{ accentColor: HColors.orangeCI }} />
+                <span className="text-sm" style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
+                  {pref.label}
+                </span>
+              </label>
+            ))}
+          </div>
 
           {/* Error */}
           {error && (

@@ -15,9 +15,9 @@ import type { Messaging } from 'firebase/messaging';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db, messagingPromise } from '../lib/firebase';
 
-// ⚠️ REMPLACER par votre clé VAPID générée dans Firebase Console
+// Clé VAPID depuis .env — générer dans Firebase Console :
 // Project Settings → Cloud Messaging → Web Push certificates → Generate key pair
-const VAPID_KEY = 'VOTRE_VAPID_KEY_ICI';
+const VAPID_KEY = import.meta.env.VITE_FCM_VAPID_KEY || '';
 
 let messaging: Messaging | null = null;
 messagingPromise.then(m => { messaging = m; }).catch(() => {});
@@ -44,7 +44,7 @@ export const pushService = {
    * Retourne true si le token a été enregistré avec succès
    */
   async requestPermissionAndRegister(userId: string): Promise<boolean> {
-    if (!this.isSupported() || VAPID_KEY === 'VOTRE_VAPID_KEY_ICI') return false;
+    if (!this.isSupported() || !VAPID_KEY) return false;
 
     try {
       const permission = await Notification.requestPermission();
