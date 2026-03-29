@@ -1,5 +1,5 @@
 import {
-  collection, doc, setDoc, addDoc, query, orderBy, onSnapshot, getDoc
+  collection, doc, setDoc, addDoc, query, orderBy, onSnapshot, getDoc, serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
@@ -97,13 +97,13 @@ export const chatService = {
         chat_id: chatId,
         sender_id: senderId,
         content: filteredContent,
-        created_at: new Date().toISOString(),
+        created_at: serverTimestamp(),
         read: false
       });
 
       // Mettre à jour le chat parent pour les tris
       await setDoc(doc(db, 'chats', chatId), {
-        updated_at: new Date().toISOString()
+        updated_at: serverTimestamp()
       }, { merge: true });
     } catch (err) {
       console.error('[chatService] Error sending message:', err);

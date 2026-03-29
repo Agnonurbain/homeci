@@ -46,8 +46,9 @@ export default function ChatBox({ chatId, currentUserId, otherUserName, otherUse
     }
   };
 
-  const formatTime = (iso: string) => {
-    const d = new Date(iso);
+  const formatTime = (val: any) => {
+    if (!val) return '';
+    const d = val?.toDate ? val.toDate() : new Date(val);
     return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   };
 
