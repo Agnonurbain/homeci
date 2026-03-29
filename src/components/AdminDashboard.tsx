@@ -5,7 +5,7 @@ import {
   MapPin, Calendar, Building2, Eye, Award, Copy, Plus, Loader as LoaderIcon,
   Flag, Star, CalendarCheck, UserSearch, FileText, Megaphone,
 } from 'lucide-react';
-import { collection, getDocs, orderBy, query, limit, Timestamp, addDoc, updateDoc, doc, onSnapshot, getDoc, getCountFromServer } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, limit, Timestamp, addDoc, updateDoc, doc, onSnapshot, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { propertyService } from '../services/propertyService';
@@ -92,8 +92,8 @@ export default function AdminDashboard() {
     });
 
     // Compteur total réel des utilisateurs (sans limit)
-    getCountFromServer(collection(db, 'users'))
-      .then(snap => setStats(prev => ({ ...prev, total_users: snap.data().count })))
+    getDocs(collection(db, 'users'))
+      .then(snap => setStats(prev => ({ ...prev, total_users: snap.size })))
       .catch(console.error);
 
     // 2. Écouteur pour tous les biens (pour stats et listes)
