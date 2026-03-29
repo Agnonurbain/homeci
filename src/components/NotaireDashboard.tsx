@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { getDoc, doc, collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../lib/firebase';
@@ -81,6 +81,9 @@ export default function NotaireDashboard() {
     loading: boolean;
   } | null>(null);
   const [delegationToken, setDelegationToken] = useState<{ token: string; action: 'certify' | 'reject'; propertyTitle: string } | null>(null);
+  const [delegateRejectInput, setDelegateRejectInput] = useState<string | null>(null);
+  const [delegateRejectReason, setDelegateRejectReason] = useState('');
+  const expandedCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!profile?.id) return;
@@ -239,17 +242,18 @@ export default function NotaireDashboard() {
   }
 
   async function handleDelegateAction(property: Property, action: 'certify' | 'reject') {
-    const key = `title:${property.id}`;
-    const reason = action === 'reject' ? refusalReasons[key]?.trim() : undefined;
-    
-    if (action === 'reject' && !reason) {
-      showToast('Indiquez un motif de rejet avant de déléguer.', false);
-      setShowRefusalInput(key);
-      return;
+    if (action === 'reject') {
+      const reason = delegateRejectReason.trim();
+      if (!reason) {
+        showToast('Indiquez un motif de rejet avant de déléguer.', false);
+        setDelegateRejectInput(property.id);
+        return;
+      }
     }
 
     setCertifyingId(property.id);
     try {
+      const reason = action === 'reject' ? delegateRejectReason.trim() : undefined;
       const token = await delegateService.createToken({
         notary_id: profile!.id,
         property_id: property.id,
@@ -258,6 +262,8 @@ export default function NotaireDashboard() {
         rejection_reason: reason,
       });
       setDelegationToken({ token, action, propertyTitle: property.title });
+      setDelegateRejectInput(null);
+      setDelegateRejectReason('');
       showToast(`Jeton de délégation généré pour ${action === 'certify' ? 'certification' : 'rejet'}.`);
     } catch (e) {
       console.error('handleDelegateAction error:', e);
@@ -350,9 +356,12 @@ export default function NotaireDashboard() {
       // Mettre à jour la propriété dans l'état local (onSnapshot s'occupera de la mise à jour complète)
       setProperties(prev => prev.map(p => p.id === property.id ? { ...p, notaire_id: profile!.id } : p));
       showToast('Bien pris en charge. Vous pouvez maintenant examiner les documents.');
-    } catch (e) { 
+      // Naviguer vers l'onglet "En cours" pour que l'utilisateur retrouve le bien
+      navigate('/dashboard/en_cours');
+      setExpandedId(property.id);
+    } catch (e) {
       console.error('doTakeCharge error:', e);
-      showToast(`Erreur : ${(e as any).message || 'Prise en charge échouée'}`, false); 
+      showToast(`Erreur : ${(e as any).message || 'Prise en charge échouée'}`, false);
     }
     finally { setTakingId(null); }
   }
@@ -619,7 +628,11 @@ export default function NotaireDashboard() {
                         Prendre en charge
                       </button>
                     ) : (
-                      <button onClick={() => setExpandedId(isExpanded ? null : property.id)}
+                      <button onClick={() => {
+                          const newId = isExpanded ? null : property.id;
+                          setExpandedId(newId);
+                          if (newId) setTimeout(() => expandedCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+                        }}
                         aria-label={isExpanded ? 'Fermer' : `Examiner ${property.title}`}
                         aria-expanded={isExpanded}
                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl shrink-0 self-start transition-all hover:opacity-80"
@@ -634,7 +647,7 @@ export default function NotaireDashboard() {
                   </div>
 
                   {isExpanded && (
-                    <div className="border-t p-4 space-y-4"
+                    <div ref={expandedCardRef} className="border-t p-4 space-y-4"
                       style={{ borderColor: HAlpha.gold15, background: 'rgba(249,243,232,0.5)' }}>
 
                       {owner && (
@@ -732,7 +745,7 @@ export default function NotaireDashboard() {
                             </div>
                             {isShowingTitleRefusal && (
                               <div className="px-3 pb-3 flex gap-2">
-                                <input type="text" placeholder="Motif du refus (optionnel)"
+                                <input type="text" placeholder="Motif du refus (obligatoire)"
                                   value={refusalReasons[titleKey] || ''}
                                   onChange={e => setRefusalReasons(prev => ({ ...prev, [titleKey]: e.target.value }))}
                                   className="flex-1 px-3 py-1.5 rounded-lg text-xs outline-none"
@@ -751,39 +764,6 @@ export default function NotaireDashboard() {
                           </div>
                         );
                       })()}
-                      {/* Delegation Section */}
-                      {!property.verified_notaire && (
-                        <div className="mb-4 p-4 rounded-xl" style={{ background: HAlpha.orange08, border: `1px solid ${HAlpha.orange20}` }}>
-                          <div className="flex items-center justify-between gap-4">
-                            <div>
-                              <h4 className="text-sm font-bold flex items-center gap-2" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>
-                                <Share2 className="w-4 h-4" style={{ color: HColors.orangeCI }} />
-                                Déléguer la modération à l'Administrateur
-                              </h4>
-                              <p className="text-xs mt-1" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                                Si vous êtes dans l'incapacité de finaliser, envoyez un jeton à usage unique à l'Admin.
-                              </p>
-                            </div>
-                            <div className="flex gap-2">
-                              {isReadyToCertify(property) && (
-                                <button onClick={() => handleDelegateAction(property, 'certify')}
-                                  disabled={certifyingId === property.id}
-                                  className="px-3 py-1.5 text-xs font-bold rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
-                                  style={{ background: HColors.vertCI, color: '#FFFFFF' }}>
-                                  Déléguer Certification
-                                </button>
-                              )}
-                              <button onClick={() => handleDelegateAction(property, 'reject')}
-                                disabled={certifyingId === property.id}
-                                className="px-3 py-1.5 text-xs font-bold rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
-                                style={{ background: HColors.bordeaux, color: '#FFFFFF' }}>
-                                Déléguer Rejet
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
                       {/* Title & Docs Section */}
                       <div>
                         <h4 className="text-xs font-bold uppercase tracking-wider mb-2"
@@ -902,6 +882,61 @@ export default function NotaireDashboard() {
                           );
                         })()}
                       </div>
+
+                      {/* Delegation Section — après documents */}
+                      {!property.verified_notaire && (
+                        <div className="p-4 rounded-xl" style={{ background: HAlpha.orange08, border: `1px solid ${HAlpha.orange20}` }}>
+                          <div className="flex items-center justify-between gap-4 flex-wrap">
+                            <div>
+                              <h4 className="text-sm font-bold flex items-center gap-2" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>
+                                <Share2 className="w-4 h-4" style={{ color: HColors.orangeCI }} />
+                                Déléguer la modération à l'Administrateur
+                              </h4>
+                              <p className="text-xs mt-1" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+                                Si vous êtes dans l'incapacité de finaliser, envoyez un jeton à usage unique à l'Admin.
+                              </p>
+                            </div>
+                            <div className="flex gap-2 flex-wrap">
+                              {isReadyToCertify(property) && (
+                                <button onClick={() => handleDelegateAction(property, 'certify')}
+                                  disabled={certifyingId === property.id}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
+                                  style={{ background: HColors.vertCI, color: '#FFFFFF' }}>
+                                  {certifyingId === property.id ? <Loader className="w-3 h-3 animate-spin" /> : <Share2 className="w-3 h-3" />}
+                                  Déléguer Certification
+                                </button>
+                              )}
+                              <button onClick={() => handleDelegateAction(property, 'reject')}
+                                disabled={certifyingId === property.id}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
+                                style={{ background: HColors.bordeaux, color: '#FFFFFF' }}>
+                                {certifyingId === property.id ? <Loader className="w-3 h-3 animate-spin" /> : <Share2 className="w-3 h-3" />}
+                                Déléguer Rejet
+                              </button>
+                            </div>
+                          </div>
+                          {delegateRejectInput === property.id && (
+                            <div className="mt-3 flex gap-2">
+                              <input type="text" value={delegateRejectReason}
+                                onChange={e => setDelegateRejectReason(e.target.value)}
+                                placeholder="Motif du rejet (obligatoire)"
+                                className="flex-1 px-3 py-1.5 text-xs rounded-lg outline-none"
+                                style={{ background: HColors.white, border: `1px solid ${HAlpha.bord25}`, color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }} />
+                              <button onClick={() => handleDelegateAction(property, 'reject')}
+                                disabled={certifyingId === property.id}
+                                className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
+                                style={{ background: HColors.bordeaux, color: HColors.cream }}>
+                                Confirmer
+                              </button>
+                              <button onClick={() => { setDelegateRejectInput(null); setDelegateRejectReason(''); }}
+                                className="p-1.5 rounded-lg transition-all hover:opacity-70"
+                                style={{ color: HColors.brown }}>
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                       <div className="flex items-center justify-between gap-3 p-4 rounded-xl"
                         style={ready && !property.verified_notaire
