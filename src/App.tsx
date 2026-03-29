@@ -23,6 +23,7 @@ const OwnerAgentDashboard = lazy(() => import('./components/OwnerAgentDashboard'
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 const NotaireDashboard = lazy(() => import('./components/NotaireDashboard'));
 const FAQPage = lazy(() => import('./components/FAQPage'));
+const TutorialPage = lazy(() => import('./components/TutorialPage'));
 
 interface HeroFilters {
   propertyType: string;
@@ -230,6 +231,13 @@ function AppContent() {
         <Route path="/faq" element={
           <PublicLayout>
             <Suspense fallback={LazyFallback}><FAQPage /></Suspense>
+          </PublicLayout>
+        } />
+
+        {/* Tutoriel */}
+        <Route path="/tutoriel" element={
+          <PublicLayout>
+            <Suspense fallback={LazyFallback}><TutorialPage /></Suspense>
           </PublicLayout>
         } />
 

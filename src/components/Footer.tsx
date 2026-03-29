@@ -47,6 +47,7 @@ export function Footer() {
                 { label: 'Rechercher', href: '/#search' },
                 { label: 'Biens à louer', href: '/#properties' },
                 { label: 'Biens à vendre', href: '/#properties' },
+                { label: 'Guide d\'utilisation', href: '/tutoriel' },
                 { label: 'Aide & FAQ', href: '/faq' },
               ].map(l => (
                 <li key={l.label}>

@@ -68,6 +68,7 @@ export function Header({ onLoginClick, onSignupClick, onProfileClick }: HeaderPr
               {[
                 { href: '/#search', label: 'Rechercher' },
                 { href: '/#properties', label: 'Biens' },
+                { href: '/tutoriel', label: 'Guide' },
               ].map(l => (
                 <a key={l.label} href={l.href}
                   className="text-sm transition-all duration-200 hover:opacity-100"
@@ -170,6 +171,7 @@ export function Header({ onLoginClick, onSignupClick, onProfileClick }: HeaderPr
               <div className="flex flex-col gap-4" style={{ fontFamily: 'var(--font-nunito)' }}>
                 <a href="/#search" style={{ color: HAlpha.white70 }}>Rechercher</a>
                 <a href="/#properties" style={{ color: HAlpha.white70 }}>Biens</a>
+                <a href="/tutoriel" style={{ color: HAlpha.white70 }}>Guide</a>
                 {user ? (
                   <>
                     <a href="#favorites" style={{ color: HAlpha.white70 }}>Favoris</a>
