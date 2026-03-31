@@ -428,16 +428,16 @@ export default function NotaireDashboard() {
       <div style={{ background: HColors.night, borderBottom: `1px solid ${HAlpha.gold20}` }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-0">
           <div className="flex items-center justify-between gap-4 flex-wrap pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center"
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
                 style={{ background: HAlpha.gold15, border: `1px solid ${HAlpha.gold30}` }}>
                 <Stamp className="w-5 h-5" style={{ color: HColors.gold }} />
               </div>
-              <div>
-                <h1 className="font-bold" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: '1.6rem' }}>
+              <div className="min-w-0">
+                <h1 className="font-bold truncate" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(1.2rem, 4vw, 1.6rem)' }}>
                   Espace Notaire
                 </h1>
-                <p className="text-sm flex items-center gap-2" style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
+                <p className="text-xs sm:text-sm flex items-center gap-2 flex-wrap" style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
                   Bonjour, {profile?.full_name?.split(' ')[0] || 'Notaire'}
                   {stats.docsAttente > 0 && (
                     <span className="px-2 py-0.5 rounded-full text-xs font-bold"
