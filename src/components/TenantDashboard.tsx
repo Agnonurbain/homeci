@@ -321,14 +321,14 @@ export default function TenantDashboard() {
 
       {/* ── Header personnalisé ── */}
       <div style={{ background: HColors.night, borderBottom: '1px solid rgba(212,160,23,0.2)' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">
-          <div className="flex items-start justify-between gap-4 flex-wrap mb-5">
-            <div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4" style={{ overflow: 'hidden' }}>
+          <div className="flex items-start justify-between gap-3 flex-wrap mb-5">
+            <div style={{ minWidth: 0 }}>
               <h1 className="font-bold mb-0.5"
-                style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: '1.8rem' }}>
+                style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(1.3rem, 5vw, 1.8rem)' }}>
                 Bonjour, {firstName} 👋
               </h1>
-              <p className="text-sm" style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
+              <p className="text-xs sm:text-sm" style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
                 Trouvez, sauvegardez et planifiez vos visites
               </p>
             </div>

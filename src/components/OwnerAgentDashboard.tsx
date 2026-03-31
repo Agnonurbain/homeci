@@ -53,17 +53,18 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; border: string; 
 /* ── Stat Card ────────────────────────────────────────────────────────────── */
 function StatCard({ icon: Icon, label, value, accent = HColors.gold }: { icon: any; label: string; value: number; accent?: string }) {
   return (
-    <div className="rounded-2xl p-5 text-center"
+    <div className="rounded-2xl p-3 sm:p-5 text-center"
       style={{
         background: HColors.white, border: `1px solid ${HAlpha.gold15}`,
-        boxShadow: '0 2px 12px rgba(26,14,0,0.05)'
+        boxShadow: '0 2px 12px rgba(26,14,0,0.05)',
+        minWidth: 0, overflow: 'hidden'
       }}>
-      <div className="w-11 h-11 rounded-xl flex items-center justify-center mx-auto mb-3"
+      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3"
         style={{ background: `${accent}18`, border: `1px solid ${accent}30` }}>
-        <Icon className="w-5 h-5" style={{ color: accent }} />
+        <Icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: accent }} />
       </div>
-      <div className="text-2xl font-bold" style={{ color: accent, fontFamily: 'var(--font-cormorant)' }}>{value}</div>
-      <div className="text-xs mt-0.5" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>{label}</div>
+      <div className="text-xl sm:text-2xl font-bold" style={{ color: accent, fontFamily: 'var(--font-cormorant)' }}>{value}</div>
+      <div className="text-[10px] sm:text-xs mt-0.5 truncate" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>{label}</div>
     </div>
   );
 }
@@ -426,26 +427,28 @@ export default function OwnerAgentDashboard() {
       <div className="sticky top-14 z-10"
         style={{
           background: 'rgba(10,22,14,0.97)', backdropFilter: 'blur(12px)',
-          borderBottom: `1px solid ${HAlpha.gold15}`
+          borderBottom: `1px solid ${HAlpha.gold15}`,
+          overflow: 'hidden'
         }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <nav className="flex space-x-1 homeci-tabs-scroll flex-1">
+          <div className="flex items-center gap-2">
+            <nav className="flex space-x-1 homeci-tabs-scroll flex-1" style={{ minWidth: 0 }}>
             {[
               { id: 'properties', icon: Home, label: 'Mes Biens', count: stats.total },
-              { id: 'requests', icon: Calendar, label: 'Demandes de visite', count: stats.pendingVisits },
+              { id: 'requests', icon: Calendar, label: 'Demandes', count: stats.pendingVisits },
               { id: 'stats', icon: BarChart3, label: 'Statistiques' },
-              { id: 'notifications', icon: Bell, label: 'Notifications', count: stats.unreadNotifs },
+              { id: 'notifications', icon: Bell, label: 'Notif.', count: stats.unreadNotifs },
             ].map(tab => (
               <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
                 aria-label={tab.label}
                 aria-current={activeTab === tab.id ? 'page' : undefined}
-                className="py-4 px-4 border-b-2 text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2"
+                className="py-4 px-3 sm:px-4 border-b-2 text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex items-center gap-1.5 sm:gap-2"
                 style={activeTab === tab.id
                   ? { borderColor: HColors.orangeCI, color: HColors.orangeDark, fontFamily: 'var(--font-nunito)' }
                   : { borderColor: 'transparent', color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
-                <tab.icon className="w-4 h-4" />
-                {tab.label}
+                <tab.icon className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">{tab.label}</span>
                 {tab.count !== undefined && tab.count > 0 && (
                   <span className="px-1.5 py-0.5 rounded-full text-xs font-bold"
                     style={tab.id === 'notifications'
@@ -462,7 +465,7 @@ export default function OwnerAgentDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" style={{ overflow: 'hidden' }}>
 
         {/* ════════════════════════ ONGLET MES BIENS ════════════════════════ */}
         {activeTab === 'properties' && (

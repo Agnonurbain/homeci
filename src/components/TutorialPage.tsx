@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search, Heart, Calendar, Bell, Home, UserPlus, Camera, FileText, CheckCircle,
-  ChevronRight, MapPin, Star, MessageCircle, Shield, BookOpen, Users, Scale, Eye
+  ChevronRight, ChevronLeft, MapPin, Star, MessageCircle, Shield, BookOpen, Users, Scale, Eye
 } from 'lucide-react';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 
@@ -260,7 +261,9 @@ function StepCard({ step, index }: { step: TutorialStep; index: number }) {
 
 export default function TutorialPage() {
   const [activeSection, setActiveSection] = useState(0);
+  const navigate = useNavigate();
   const section = TUTORIALS[activeSection];
+  const isLastSection = activeSection === TUTORIALS.length - 1;
 
   return (
     <div className="min-h-screen" style={{ background: HColors.creamBg }}>
@@ -332,18 +335,26 @@ export default function TutorialPage() {
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-30"
             style={{ background: HColors.white, color: HColors.brown, border: `1px solid ${HAlpha.gold15}`,
                      fontFamily: 'var(--font-nunito)' }}>
-            <ChevronRight className="w-4 h-4 rotate-180" /> Précédent
+            <ChevronLeft className="w-4 h-4" /> Précédent
           </button>
           <span className="text-xs" style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
             {activeSection + 1} / {TUTORIALS.length}
           </span>
-          <button
-            onClick={() => setActiveSection(Math.min(TUTORIALS.length - 1, activeSection + 1))}
-            disabled={activeSection === TUTORIALS.length - 1}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-30"
-            style={{ background: HColors.orangeCI, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
-            Suivant <ChevronRight className="w-4 h-4" />
-          </button>
+          {isLastSection ? (
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
+              style={{ background: HColors.orangeCI, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+              <ChevronLeft className="w-4 h-4" /> Retour
+            </button>
+          ) : (
+            <button
+              onClick={() => setActiveSection(Math.min(TUTORIALS.length - 1, activeSection + 1))}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
+              style={{ background: HColors.orangeCI, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+              Suivant <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         {/* Help link */}

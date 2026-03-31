@@ -60,16 +60,16 @@ export default function CGVLocataireModal({ onAccept, onClose }: CGVLocataireMod
         style={{ background: HColors.night, border: `1px solid ${HAlpha.gold20}`, maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
 
         {/* Header */}
-        <div className="px-6 pt-6 pb-4 shrink-0">
+        <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 shrink-0">
           <KenteLine />
-          <div className="flex items-center gap-3 mt-4">
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center"
+          <div className="flex items-start gap-3 mt-4">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0"
               style={{ background: HAlpha.gold12, border: `1px solid ${HAlpha.gold20}` }}>
               <ScrollText className="w-5 h-5" style={{ color: HColors.gold }} />
             </div>
-            <div>
-              <h2 className="text-xl font-bold"
-                style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', letterSpacing: '0.02em' }}>
+            <div style={{ minWidth: 0 }}>
+              <h2 className="font-bold"
+                style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', letterSpacing: '0.02em', fontSize: 'clamp(1rem, 4vw, 1.25rem)' }}>
                 Conditions Générales d'Utilisation — Locataire
               </h2>
               <p className="text-xs font-medium" style={{ color: HColors.gold, opacity: 0.8, fontFamily: 'var(--font-nunito)', marginTop: '2px' }}>
@@ -81,7 +81,7 @@ export default function CGVLocataireModal({ onAccept, onClose }: CGVLocataireMod
 
         {/* Contenu scrollable */}
         <div ref={scrollRef} onScroll={handleScroll}
-          className="flex-1 overflow-y-auto px-6 pb-2" style={{ maxHeight: '50vh' }}>
+          className="flex-1 overflow-y-auto px-4 sm:px-6 pb-2" style={{ maxHeight: '50vh' }}>
           <div className="prose prose-sm max-w-none text-sm leading-relaxed space-y-4"
             style={{ color: 'rgba(245,230,200,0.75)', fontFamily: 'var(--font-nunito)' }}>
 
@@ -230,7 +230,7 @@ export default function CGVLocataireModal({ onAccept, onClose }: CGVLocataireMod
           </div>
         )}
 
-        <div className="px-6 py-4 shrink-0"
+        <div className="px-4 sm:px-6 py-4 shrink-0"
           style={{ borderTop: `1px solid ${HAlpha.gold15}`, background: 'rgba(10,22,14,0.5)' }}>
           <label className="flex items-start gap-3 cursor-pointer mb-4 select-none">
             <input type="checkbox" checked={checked} onChange={e => setChecked(e.target.checked)}
