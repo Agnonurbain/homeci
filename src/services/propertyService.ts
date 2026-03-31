@@ -94,6 +94,7 @@ export interface Property {
   nb_restaurants?: number | null;
   is_serviced?: boolean;
   topography?: 'plat' | 'pente' | 'accidente' | null;
+  needs_status_update?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -174,6 +175,7 @@ function docToProperty(id: string, data: Record<string, unknown>): Property {
     nb_restaurants: data.nb_restaurants != null ? Number(data.nb_restaurants) : null,
     is_serviced: Boolean(data.is_serviced ?? false),
     topography: (data.topography as Property['topography']) ?? null,
+    needs_status_update: Boolean(data.needs_status_update ?? false),
     created_at: toISO(data.created_at),
     updated_at: toISO(data.updated_at),
   };

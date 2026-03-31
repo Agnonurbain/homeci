@@ -335,6 +335,9 @@ export default function OwnerAgentDashboard() {
     setVisitActionLoading(true);
     try {
       await visitService.updateVisitStatus(visit.id, 'completed');
+      // Persister le flag sur le bien pour que le bouton Statut survive aux re-renders
+      await propertyService.updateProperty(visit.property_id, { needs_status_update: true });
+      setProperties(prev => prev.map(p => p.id === visit.property_id ? { ...p, needs_status_update: true } : p));
       await notificationService.createNotification({
         user_id: visit.tenant_id,
         type: 'visit_completed',
@@ -377,7 +380,7 @@ export default function OwnerAgentDashboard() {
     setStatusModal(prev => prev ? { ...prev, loading: true } : null);
     try {
       const { property } = statusModal;
-      const updates: Record<string, any> = { status };
+      const updates: Record<string, any> = { status, needs_status_update: false };
       if (status === 'rented' || status === 'sold') {
         updates.status_updated_at = new Date().toISOString();
       }
@@ -399,7 +402,7 @@ export default function OwnerAgentDashboard() {
       }
 
       // Mettre à jour l'état local
-      setProperties(prev => prev.map(p => p.id === property.id ? { ...p, status } : p));
+      setProperties(prev => prev.map(p => p.id === property.id ? { ...p, status, needs_status_update: false } : p));
       analyticsService.updatePropertyStatus(property.id, status);
       setStatusModal(null);
     } catch (e) {
@@ -616,7 +619,7 @@ export default function OwnerAgentDashboard() {
                                     style={{ color: HColors.vertCI, background: HAlpha.vertCI10 }} title="Modifier">
                                     <Edit className="w-4 h-4" />
                                   </button>
-                                  {(property.status === 'published' && visitRequests.some(v => v.property_id === property.id && v.status === 'completed')) && (
+                                  {(property.status === 'published' && property.needs_status_update) && (
                                     <button onClick={() => setStatusModal({ property, loading: false })}
                                       aria-label={`Statut ${property.title}`}
                                       className="px-2 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all hover:opacity-80 animate-pulse"
