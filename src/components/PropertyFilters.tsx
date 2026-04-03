@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { SlidersHorizontal, X, ChevronDown, MapPin } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { SlidersHorizontal, X, ChevronDown, MapPin, Search } from 'lucide-react';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import {
   ALL_DISTRICTS, getRegionsByDistrict, getDepartementsByRegion,
@@ -7,7 +7,6 @@ import {
   getHierarchyByVille, getHierarchyByCommune
 } from '../data/coteIvoireGeo';
 import { parseAdvancedSearch } from '../utils/searchParser';
-import { Search } from 'lucide-react';
 
 interface PropertyFiltersProps {
   onFilterChange: (filters: FilterValues) => void;
@@ -47,7 +46,6 @@ const cascadeResets: Record<string, (keyof FilterValues)[]> = {
   quartier: [],
 };
 
-/* ── Styles ─────────────────────────────────────────────────────────────────── */
 const SEL = { background:'rgba(255,255,255,0.8)', border:'1px solid rgba(212,160,23,0.2)', color:HColors.darkBrown, fontFamily:'var(--font-nunito)', fontSize:'0.875rem' } as React.CSSProperties;
 const SEL_DIS = { ...SEL, background:'rgba(255,255,255,0.4)', color:'rgba(26,14,0,0.35)', cursor:'not-allowed' } as React.CSSProperties;
 const INP = { ...SEL } as React.CSSProperties;
@@ -58,6 +56,7 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
   const [open, setOpen] = useState(false);
   const [filters, setFilters] = useState<FilterValues>(DEFAULT_FILTERS);
   const [advValue, setAdvValue] = useState('');
+  const debounceTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const activeCount = [
     filters.propertyType, filters.transactionType, filters.district, filters.region,
@@ -111,8 +110,20 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
     if (parsed.exactBedrooms) next.bedrooms = parsed.exactBedrooms.toString();
 
     setFilters(next);
-    onFilterChange(next);
+    
+    // Debounce filter change for text input
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      onFilterChange(next);
+    }, 400);
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, []);
 
   const reset = () => { 
     setFilters(DEFAULT_FILTERS); 

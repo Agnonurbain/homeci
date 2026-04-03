@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import {
-  Calendar, Users, MapPin, CheckCircle, MessageSquare
+  Calendar, Users, MapPin, CheckCircle, MessageSquare, FileText
 } from 'lucide-react';
 import type { VisitRequest } from '../../services/visitService';
 import type { VisitFilter } from '../../hooks/useOwnerVisits';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
 import { VISIT_STATUS_STYLES, VISIT_STATUS_FALLBACK } from '../../constants/visitStatus';
+import DossierViewerModal from './DossierViewerModal';
 
 /* ── Props ─────────────────────────────────────────────────────────────────── */
 
@@ -27,6 +29,8 @@ export default function VisitRequestsTab({
   actionLoading, chatLoadingId,
   onRespond, onMarkCompleted, onOpenChat,
 }: VisitRequestsTabProps) {
+  const [viewingDossier, setViewingDossier] = useState<{ id: string, name: string } | null>(null);
+
   return (
     <div>
       <div className="mb-7">
@@ -89,7 +93,7 @@ export default function VisitRequestsTab({
                         {visit.property_title}
                       </h3>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm"
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm"
                       style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
                       <div className="flex items-center gap-1.5">
                         <Users className="w-3.5 h-3.5" style={{ color: HColors.orangeDark }} />{visit.tenant_name}
@@ -104,6 +108,13 @@ export default function VisitRequestsTab({
                       <div className="flex items-center gap-1.5">
                         <MapPin className="w-3.5 h-3.5" style={{ color: HColors.orangeDark }} />{visit.property_city}
                       </div>
+                      {/* NEW: Dossier Button */}
+                      <button onClick={() => setViewingDossier({ id: visit.tenant_id, name: visit.tenant_name || 'Locataire' })}
+                        className="flex items-center gap-1.5 px-2 py-1 rounded bg-navy-50 text-navy-700 hover:bg-navy-100 transition-colors w-fit group"
+                        style={{ background: HAlpha.navy08, color: HColors.navy }}>
+                        <FileText className="w-3 h-3 group-hover:scale-110 transition-transform" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider">Voir Dossier</span>
+                      </button>
                     </div>
 
                     {/* Counter proposals */}
@@ -136,49 +147,60 @@ export default function VisitRequestsTab({
                     )}
                   </div>
 
-                  {(visit.status === 'pending' || (visit.status === 'counter_proposed' && visit.counter_proposed_by === 'tenant')) && (
-                    <button onClick={() => onRespond(visit)}
-                      className="px-4 py-2 rounded-xl text-sm font-semibold shrink-0 transition-all hover:opacity-90"
-                      style={visit.status === 'counter_proposed'
-                        ? { background: HColors.navyDark, color: HColors.cream, fontFamily: 'var(--font-nunito)' }
-                        : {
-                          background: HAlpha.gold12, color: HColors.brownMid,
-                          border: '1px solid rgba(212,160,23,0.3)', fontFamily: 'var(--font-nunito)'
-                        }}>
-                      Répondre
-                    </button>
-                  )}
-                  {visit.status === 'accepted' && (
-                    <button onClick={() => onMarkCompleted(visit)}
-                      disabled={actionLoading}
-                      className="px-4 py-2 rounded-xl text-sm font-semibold shrink-0 transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
-                      style={{ background: HColors.vertCI, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
-                      <CheckCircle className="w-3.5 h-3.5" /> Visite effectuée
-                    </button>
-                  )}
-                  {visit.status !== 'rejected' && (
-                    <button onClick={() => onOpenChat(visit)}
-                      disabled={chatLoadingId === visit.id || (visit.status !== 'accepted' && visit.status !== 'completed')}
-                      className="px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm font-semibold shrink-0 transition-all hover:opacity-90 disabled:opacity-50"
-                      style={{
-                        background: (visit.status === 'accepted' || visit.status === 'completed')
-                          ? 'linear-gradient(135deg,#FF6B00,#D4A017)'
-                          : '#e5e7eb',
-                        color: (visit.status === 'accepted' || visit.status === 'completed') ? '#FFFFFF' : '#9ca3af',
-                        fontFamily: 'var(--font-nunito)'
-                      }}
-                      title={(visit.status !== 'accepted' && visit.status !== 'completed') ? "Le chat sera accessible dès que vous aurez accepté la visite." : ""}>
-                      {chatLoadingId === visit.id
-                        ? <div className="w-3.5 h-3.5 animate-spin rounded-full border-b-2 border-white" />
-                        : <MessageSquare className="w-3.5 h-3.5" />}
-                      Discuter
-                    </button>
-                  )}
+                  <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+                    {(visit.status === 'pending' || (visit.status === 'counter_proposed' && visit.counter_proposed_by === 'tenant')) && (
+                      <button onClick={() => onRespond(visit)}
+                        className="px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
+                        style={visit.status === 'counter_proposed'
+                          ? { background: HColors.navyDark, color: HColors.cream, fontFamily: 'var(--font-nunito)' }
+                          : {
+                            background: HAlpha.gold12, color: HColors.brownMid,
+                            border: '1px solid rgba(212,160,23,0.3)', fontFamily: 'var(--font-nunito)'
+                          }}>
+                        Répondre
+                      </button>
+                    )}
+                    {visit.status === 'accepted' && (
+                      <button onClick={() => onMarkCompleted(visit)}
+                        disabled={actionLoading}
+                        className="px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
+                        style={{ background: HColors.vertCI, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+                        <CheckCircle className="w-3.5 h-3.5" /> Visite effectuée
+                      </button>
+                    )}
+                    {visit.status !== 'rejected' && (
+                      <button onClick={() => onOpenChat(visit)}
+                        disabled={chatLoadingId === visit.id || (visit.status !== 'accepted' && visit.status !== 'completed')}
+                        className="px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-50"
+                        style={{
+                          background: (visit.status === 'accepted' || visit.status === 'completed')
+                            ? 'linear-gradient(135deg,#FF6B00,#D4A017)'
+                            : '#e5e7eb',
+                          color: (visit.status === 'accepted' || visit.status === 'completed') ? '#FFFFFF' : '#9ca3af',
+                          fontFamily: 'var(--font-nunito)'
+                        }}
+                        title={(visit.status !== 'accepted' && visit.status !== 'completed') ? "Le chat sera accessible dès que vous aurez accepté la visite." : ""}>
+                        {chatLoadingId === visit.id
+                          ? <div className="w-3.5 h-3.5 animate-spin rounded-full border-b-2 border-white" />
+                          : <MessageSquare className="w-3.5 h-3.5" />}
+                        Discuter
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
           })}
         </div>
+      )}
+
+      {/* NEW: Dossier Viewer Modal */}
+      {viewingDossier && (
+        <DossierViewerModal
+          tenantId={viewingDossier.id}
+          tenantName={viewingDossier.name}
+          onClose={() => setViewingDossier(null)}
+        />
       )}
     </div>
   );

@@ -2,33 +2,54 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
+    // Helpers
+    function isAuth() { return request.auth != null; }
+    function getUserData() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+    function isAdmin() { return isAuth() && getUserData().role == 'admin'; }
+    function isNotaire() { return isAuth() && getUserData().role == 'notaire'; }
+    function isProprietaire() { return isAuth() && getUserData().role == 'proprietaire'; }
+
     // ── Images de propriétés : lecture publique, écriture authentifiée ──
     match /images/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null
+      allow write: if isAuth()
         && request.resource.size < 5 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
     }
 
     // ── Documents légaux de propriétés (titre foncier, permis, etc.) ──
-    // Lecture : tout utilisateur authentifié (les notaires doivent y accéder)
-    // Écriture : utilisateur authentifié, PDF ou images uniquement, max 10 Mo
+    // Lecture : uniquement par le propriétaire du bien, un notaire ou un admin
+    // Écriture : Admin ou Propriétaire
     match /documents/{propertyId}/{allPaths=**} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
-        && request.resource.size < 10 * 1024 * 1024
+      allow read: if isAuth() && (
+        isAdmin() || isNotaire() ||
+        firestore.get(/databases/(default)/documents/properties/$(propertyId)).data.owner_id == request.auth.uid
+      );
+      allow write: if isAuth() && (
+        isAdmin() ||
+        firestore.get(/databases/(default)/documents/properties/$(propertyId)).data.owner_id == request.auth.uid
+      )
+      && request.resource.size < 10 * 1024 * 1024
+      && (request.resource.contentType.matches('application/pdf')
+          || request.resource.contentType.matches('image/.*'));
+    }
+
+    // ── Dossier Locataire (justificatifs de revenus, etc.) ──
+    // SENSIBLE : uniquement le locataire lui-même, l'admin ou le PROPRIÉTAIRE (pour vérification comfort)
+    match /tenant_dossiers/{userId}/{allPaths=**} {
+      allow read: if isAuth() && (request.auth.uid == userId || isAdmin() || isProprietaire());
+      allow write: if isAuth() && request.auth.uid == userId
+        && request.resource.size < 5 * 1024 * 1024
         && (request.resource.contentType.matches('application/pdf')
             || request.resource.contentType.matches('image/.*'));
     }
 
-    // ── Pièces d'identité du propriétaire (CNI, passeport, carte de séjour, attestation) ──
-    // SENSIBLE : même restriction que les documents officiels
-    // Écriture : uniquement le propriétaire du fichier
-    // Lecture : uniquement le propriétaire du fichier
-    // Le notaire accède aux pièces via les URLs de téléchargement (avec token) stockées dans Firestore
+    // ── Pièces d'identité (CNI, passeport, etc.) ──
     match /identity/{userId}/{allPaths=**} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow write: if request.auth != null && request.auth.uid == userId
+      allow read: if isAuth() && (request.auth.uid == userId || isAdmin() || isProprietaire());
+      allow write: if isAuth() && request.auth.uid == userId
         && request.resource.size < 5 * 1024 * 1024
         && (request.resource.contentType.matches('application/pdf')
             || request.resource.contentType.matches('image/.*'));
@@ -37,7 +58,7 @@ service firebase.storage {
     // ── Avatars (photos de profil) : lecture publique, écriture par le propriétaire ──
     match /avatars/{userId}/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId
+      allow write: if isAuth() && request.auth.uid == userId
         && request.resource.size < 2 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
     }
@@ -45,7 +66,7 @@ service firebase.storage {
     // ── Modèles 3D : lecture publique, écriture authentifiée ──
     match /models3d/{propertyId}/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null
+      allow write: if isAuth()
         && request.resource.size < 50 * 1024 * 1024
         && (request.resource.contentType.matches('model/.*')
             || request.resource.contentType.matches('application/octet-stream')
@@ -55,7 +76,7 @@ service firebase.storage {
     // ── Vidéos : lecture publique, écriture authentifiée ──
     match /videos/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null
+      allow write: if isAuth()
         && request.resource.size < 100 * 1024 * 1024
         && request.resource.contentType.matches('video/.*');
     }

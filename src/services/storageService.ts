@@ -113,6 +113,27 @@ export const storageService = {
     return getDownloadURL(storageRef);
   },
 
+  /**
+   * Upload de justificatifs de revenus (bulletins de paie, attestation employeur, etc.)
+   * Stocké dans : tenant_dossiers/{userId}/{documentType}_{timestamp}.{ext}
+   */
+  async uploadTenantDocument(
+    file: File,
+    userId: string,
+    documentType: string
+  ): Promise<string> {
+    let fileToUpload = file;
+    if (file.type.startsWith('image/')) {
+      fileToUpload = await compressImage(file, COMPRESS_PRESETS.avatar);
+    }
+
+    const ext = file.name.split('.').pop() || 'pdf';
+    const path = `tenant_dossiers/${userId}/${documentType}_${Date.now()}.${ext}`;
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, fileToUpload);
+    return getDownloadURL(storageRef);
+  },
+
 
   /**
    * Upload vidéo avec progression.

@@ -43,6 +43,34 @@ export interface Profile {
     certifications?: boolean;
     system?: boolean;
   } | null;
+  dossier?: {
+    // Identité
+    identity_url?: string;
+    identity_type?: 'cni' | 'passport' | 'carte_sejour';
+    identity_status?: 'pending' | 'validated' | 'rejected';
+    identity_rejection_reason?: string;
+
+    // Revenus (3 derniers mois)
+    pay_slip_1_url?: string;
+    pay_slip_1_status?: 'pending' | 'validated' | 'rejected';
+    pay_slip_2_url?: string;
+    pay_slip_2_status?: 'pending' | 'validated' | 'rejected';
+    pay_slip_3_url?: string;
+    pay_slip_3_status?: 'pending' | 'validated' | 'rejected';
+
+    employment_proof_url?: string;
+    employment_proof_status?: 'pending' | 'validated' | 'rejected';
+
+    // Garant (Cautionnaire)
+    guarantor_identity_url?: string;
+    guarantor_identity_status?: 'pending' | 'validated' | 'rejected';
+    guarantor_income_url?: string;
+    guarantor_income_status?: 'pending' | 'validated' | 'rejected';
+
+    overall_status?: 'incomplete' | 'pending' | 'validated' | 'action_required';
+    last_updated?: string;
+    rejection_reason?: string; // Motif global si besoin
+  } | null;
   created_at: string;
   updated_at: string;
 }

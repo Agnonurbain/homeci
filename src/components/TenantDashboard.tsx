@@ -3,7 +3,7 @@ import {
   Heart, Calendar, Search, Map, List, X, Phone, CheckCircle,
   XCircle, Clock, Bell, MapPin, Bed, Maximize, Eye,
   ChevronLeft, ChevronRight, Star, AlertCircle,
-  MessageSquare
+  MessageSquare, FileText
 } from 'lucide-react';
 import { propertyService } from '../services/propertyService';
 import { visitService } from '../services/visitService';
@@ -15,6 +15,7 @@ import { PropertyCard } from './PropertyCard';
 import { PropertyFilters } from './PropertyFilters';
 import { PropertyGridSkeleton } from './Skeletons';
 const MapDisplay = lazy(() => import('./MapDisplay'));
+const TenantDossier = lazy(() => import('./TenantDossier'));
 import PropertyViewModal from './PropertyViewModal';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -60,7 +61,7 @@ export default function TenantDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
   const tabFromUrl = location.pathname.split('/')[2];
-  const validTabs = ['search', 'favorites', 'visits', 'notifications'];
+  const validTabs = ['search', 'favorites', 'visits', 'notifications', 'dossier'];
   const activeTab = validTabs.includes(tabFromUrl) ? tabFromUrl as any : 'search';
   const [allProperties, setAllProperties] = useState<Property[]>([]);
   const [filtered, setFiltered] = useState<Property[]>([]);
@@ -329,6 +330,7 @@ export default function TenantDashboard() {
               { id: 'favorites', icon: Heart, label: 'Mes favoris', count: favoriteIds.length || undefined },
               { id: 'visits', icon: Calendar, label: 'Mes visites', count: pendingVisits || undefined },
               { id: 'notifications', icon: Bell, label: 'Notifications', count: unreadCount || undefined },
+              { id: 'dossier', icon: FileText, label: 'Mon Dossier', count: undefined },
             ].map(tab => (
               <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
                 aria-label={tab.label}
@@ -453,6 +455,13 @@ export default function TenantDashboard() {
               </div>
             )}
           </div>
+        )}
+
+        {/* ══════════════════════ MON DOSSIER ══════════════════════ */}
+        {activeTab === 'dossier' && (
+          <Suspense fallback={<PropertyGridSkeleton count={3} />}>
+            <TenantDossier />
+          </Suspense>
         )}
 
         {/* ══════════════════════ MES VISITES ══════════════════════ */}
