@@ -1,1410 +1,168 @@
-import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
-import {
-  Users, Home, Shield, FileCheck, AlertCircle, TrendingUp,
-  CheckCircle, XCircle, Activity, UserCog, RotateCcw,
-  MapPin, Calendar, Building2, Eye, Award, Copy, Plus, Loader as LoaderIcon,
-  Flag, Star, CalendarCheck, UserSearch, FileText, Megaphone,
-} from 'lucide-react';
-import { collection, getDocs, orderBy, query, limit, Timestamp, addDoc, updateDoc, doc, onSnapshot, getDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { useState, lazy, Suspense } from 'react';
+import { Shield, RotateCcw, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { propertyService } from '../services/propertyService';
-import type { Property } from '../types/property';
-import type { Profile } from '../contexts/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
-import AdminLoginHistory from './AdminLoginHistory';
-import AdminManagement from './AdminManagement';
-import { delegateService } from '../services/delegateService';
-import { emailService } from '../services/emailService';
+import { useAdminDashboard, AdminTab } from '../hooks/useAdminDashboard';
+import { KenteLine } from './ui/KenteLine';
+import { HColors, HAlpha } from '../styles/homeci-tokens';
 
-// ── Lazy-loaded admin tabs ──
+// Modular Components
+import { AdminTabs } from './admin/AdminTabs';
+import { OverviewSection, PropertiesSection } from './admin/OverviewSection';
+import { UsersSection, ModerationSection } from './admin/AdminSections';
+import { AdminNotairesTab } from './admin/AdminNotairesTab';
+import { UserDetailModal, PropertyDetailModal } from './admin/AdminModals';
+
+// Lazy-loaded tabs
 const AdminReportsTab = lazy(() => import('./AdminReportsTab'));
 const AdminSurveysTab = lazy(() => import('./AdminSurveysTab'));
 const AdminVisitsTab = lazy(() => import('./AdminVisitsTab'));
 const AdminUsersSearchTab = lazy(() => import('./AdminUsersSearchTab'));
 const AdminCGVTab = lazy(() => import('./AdminCGVTab'));
 const AdminAdsTab = lazy(() => import('./AdminAdsTab'));
-import { KenteLine } from './ui/KenteLine';
-import { HColors, HAlpha } from '../styles/homeci-tokens';
-import { TYPE_LABELS, ROLE_CFG } from '../constants/labels';
+const AdminLoginHistory = lazy(() => import('./AdminLoginHistory'));
+const AdminManagement = lazy(() => import('./AdminManagement'));
 
-interface Stats {
-  total_users: number;
-  total_properties: number;
-  pending_properties: number;
-  verified_properties: number;
-}
-
-
+const Loader = () => (
+  <div className="flex justify-center py-16">
+    <div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin"
+      style={{ borderColor: HAlpha.gold20, borderTopColor: HColors.gold }} />
+  </div>
+);
 
 export default function AdminDashboard() {
   const { profile } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Custom Hook
+  const api = useAdminDashboard(profile);
+  const { loading, stats, toast } = api;
+
   const tabFromUrl = location.pathname.split('/')[2];
-  type AdminTab = 'overview' | 'users' | 'properties' | 'verification' | 'notaires' | 'reports' | 'surveys' | 'visits' | 'user-search' | 'security' | 'admin-management' | 'cgv' | 'ads';
   const validTabs: AdminTab[] = ['overview', 'users', 'properties', 'verification', 'notaires', 'reports', 'surveys', 'visits', 'user-search', 'security', 'admin-management', 'cgv', 'ads'];
   const activeTab: AdminTab = validTabs.includes(tabFromUrl as AdminTab) ? tabFromUrl as AdminTab : 'overview';
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [users, setUsers] = useState<(Profile & { suspended?: boolean })[]>([]);
-  const [stats, setStats] = useState<Stats>({ total_users: 0, total_properties: 0, pending_properties: 0, verified_properties: 0 });
-  const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
-  const [filterRole, setFilterRole] = useState('');
-  const [filterDate, setFilterDate] = useState<'asc' | 'desc'>('desc');
-  const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
-  const [filterPropType, setFilterPropType] = useState('');
-  const [filterPropStatus, setFilterPropStatus] = useState('');
-  const [filterPropCity, setFilterPropCity] = useState('');
-  const [sortProp, setSortProp] = useState<'date_desc' | 'date_asc' | 'price_asc' | 'price_desc'>('date_desc');
-  const [filterModType, setFilterModType] = useState('');
-  const [sortMod, setSortMod] = useState<'date_desc' | 'date_asc' | 'price_asc' | 'price_desc'>('date_desc');
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
-  const [tokenInput, setTokenInput] = useState('');
-  const [consumingToken, setConsumingToken] = useState(false);
 
-  useEffect(() => {
-    setLoading(true);
-    
-    // 1. Écouteur pour les utilisateurs récents (50 derniers pour la liste)
-    const usersQuery = query(collection(db, 'users'), orderBy('created_at', 'desc'), limit(50));
-    const unsubUsers = onSnapshot(usersQuery, (snapshot) => {
-      const profiles = snapshot.docs.map(d => {
-        const data = d.data();
-        const toISO = (v: unknown) => {
-          if (!v) return new Date().toISOString();
-          if (v instanceof Timestamp) return v.toDate().toISOString();
-          return String(v);
-        };
-        return {
-          id: d.id, email: String(data.email ?? ''), full_name: String(data.full_name ?? ''),
-          phone: (data.phone as string | null) ?? null, role: (data.role as Profile['role']) ?? 'locataire',
-          avatar_url: (data.avatar_url as string | null) ?? null, company_name: (data.company_name as string | null) ?? null,
-          verified: Boolean(data.verified ?? false), suspended: Boolean(data.suspended ?? false),
-          created_at: toISO(data.created_at), updated_at: toISO(data.updated_at),
-        } as Profile & { suspended: boolean };
-      });
-      setUsers(profiles);
-      setLoading(false);
-    }, (err) => {
-      console.error('Error listening to users:', err);
-      setLoading(false);
-    });
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
 
-    // Compteur total réel des utilisateurs (sans limit)
-    getDocs(collection(db, 'users'))
-      .then(snap => setStats(prev => ({ ...prev, total_users: snap.size })))
-      .catch(console.error);
-
-    // 2. Écouteur pour tous les biens (pour stats et listes)
-    // Note: Pour une plateforme avec des milliers de biens, il faudrait limiter ou utiliser des agrégations.
-    const propsQuery = query(collection(db, 'properties'), orderBy('created_at', 'desc'));
-    const unsubProps = onSnapshot(propsQuery, (snapshot) => {
-      const allProperties = snapshot.docs.map(d => {
-        const data = d.data();
-        const toISO = (v: unknown) => {
-          if (!v) return new Date().toISOString();
-          if (v instanceof Timestamp) return v.toDate().toISOString();
-          return String(v);
-        };
-        return {
-          id: d.id,
-          owner_id: String(data.owner_id ?? ''),
-          title: String(data.title ?? ''),
-          property_type: (data.property_type as any) ?? 'appartement',
-          transaction_type: (data.transaction_type as any) ?? 'location',
-          price: Number(data.price ?? 0),
-          city: String(data.city ?? ''),
-          status: (data.status as any) ?? 'pending',
-          verified_notaire: Boolean(data.verified_notaire ?? false),
-          created_at: toISO(data.created_at),
-          images: Array.isArray(data.images) ? data.images : [],
-        } as Property;
-      });
-      
-      setProperties(allProperties);
-      setStats(prev => ({
-        ...prev,
-        total_properties: allProperties.length,
-        pending_properties: allProperties.filter(p => p.status === 'pending').length,
-        verified_properties: allProperties.filter(p => p.verified_notaire).length,
-      }));
-    }, (err) => {
-      console.error('Error listening to properties:', err);
-    });
-
-    return () => {
-      unsubUsers();
-      unsubProps();
-    };
-  }, []);
-
-  function showToast(msg: string, ok = true) {
-    setToast({ msg, ok }); setTimeout(() => setToast(null), 3000);
-  }
-
-  const rejectProperty = async (propertyId: string) => {
-    try {
-      await propertyService.updateProperty(propertyId, { status: 'rejected' });
-      showToast('Bien rejeté');
-      // Notifier le propriétaire par email
-      const prop = properties.find(p => p.id === propertyId);
-      if (prop?.owner_id) {
-        const ownerSnap = await getDoc(doc(db, 'users', prop.owner_id));
-        if (ownerSnap.exists() && ownerSnap.data().email) {
-          emailService.sendEmail({
-            to: ownerSnap.data().email,
-            subject: `Information concernant votre bien "${prop.title}"`,
-            html: `<p>Bonjour,</p><p>Votre bien <strong>${prop.title}</strong> a été rejeté par l'administration de HomeCI.</p><p>Veuillez vérifier vos documents et soumettre à nouveau si nécessaire.</p>`
-          }).catch(console.error);
-        }
-      }
-    }
-    catch { showToast('Erreur', false); }
-  };
-
-  const handleConsumeToken = async () => {
-    if (!tokenInput.trim()) return;
-    setConsumingToken(true);
-    try {
-      const result = await delegateService.consumeToken(tokenInput.trim(), profile!.id);
-      showToast(result.message);
-      setTokenInput('');
-    } catch (e: any) {
-      showToast(e.message || 'Erreur lors de la consommation du jeton', false);
-    } finally {
-      setConsumingToken(false);
-    }
-  };
-
-  const filteredUsers = useMemo(() => {
-    let list = [...users];
-    if (filterRole) list = list.filter(u => u.role === filterRole);
-    list.sort((a, b) => {
-      const d = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      return filterDate === 'desc' ? -d : d;
-    });
-    return list;
-  }, [users, filterRole, filterDate]);
-
-  const filteredProperties = useMemo(() => {
-    let list = [...properties];
-    if (filterPropType) list = list.filter(p => p.property_type === filterPropType);
-    if (filterPropStatus) list = list.filter(p => p.status === filterPropStatus);
-    if (filterPropCity) list = list.filter(p => p.city?.toLowerCase().includes(filterPropCity.toLowerCase()));
-    list.sort((a, b) => {
-      if (sortProp === 'price_asc') return a.price - b.price;
-      if (sortProp === 'price_desc') return b.price - a.price;
-      if (sortProp === 'date_asc') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
-    return list;
-  }, [properties, filterPropType, filterPropStatus, filterPropCity, sortProp]);
-
-  const pendingProperties = useMemo(() => properties.filter(p => p.status === 'pending'), [properties]);
-
-  const filteredPendingProperties = useMemo(() => {
-    let list = [...pendingProperties];
-    if (filterModType) list = list.filter(p => p.property_type === filterModType);
-    list.sort((a, b) => {
-      if (sortMod === 'price_asc') return a.price - b.price;
-      if (sortMod === 'price_desc') return b.price - a.price;
-      if (sortMod === 'date_asc') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
-    return list;
-  }, [pendingProperties, filterModType, sortMod]);
   const firstName = profile?.full_name?.split(' ')[0] || 'Admin';
 
-  const TABS = [
-    { id: 'overview', icon: TrendingUp, label: 'Vue d\'ensemble', count: undefined },
-    { id: 'users', icon: Users, label: 'Utilisateurs', count: stats.total_users },
-    { id: 'notaires', icon: Award, label: 'Codes Notaires', count: undefined },
-    { id: 'user-search', icon: UserSearch, label: 'Recherche & Suspension', count: undefined },
-    { id: 'properties', icon: Home, label: 'Biens', count: stats.total_properties },
-    { id: 'verification', icon: FileCheck, label: 'Modération', count: stats.pending_properties || undefined },
-    { id: 'reports', icon: Flag, label: 'Signalements', count: undefined },
-    { id: 'visits', icon: CalendarCheck, label: 'Visites', count: undefined },
-    { id: 'surveys', icon: Star, label: 'Satisfaction', count: undefined },
-    { id: 'cgv', icon: FileText, label: 'Docs Légaux', count: undefined },
-    { id: 'ads', icon: Megaphone, label: 'Publicités', count: undefined },
-    { id: 'security', icon: Activity, label: 'Sécurité', count: undefined },
-    { id: 'admin-management', icon: UserCog, label: 'Admins', count: undefined },
-  ] as const;
+  if (!profile || profile.role !== 'admin') {
+    return <div className="p-20 text-center font-bold text-red-600">Accès non autorisé.</div>;
+  }
 
   return (
     <div className="min-h-screen" style={{ background: HColors.creamBg }}>
-
       {/* ── Header ── */}
       <div style={{ background: `linear-gradient(135deg,${HColors.night},#1A0E00)`, borderBottom: `1px solid ${HAlpha.gold20}` }}>
         <KenteLine height={4} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-0">
           <div className="flex items-center justify-between gap-4 flex-wrap pb-4">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center"
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg transition-transform hover:scale-105"
                 style={{ background: HAlpha.bord20, border: `1px solid ${HAlpha.bord35}` }}>
-                <Shield className="w-5 h-5" style={{ color: HColors.cream }} />
+                <Shield className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="font-bold" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: '1.6rem' }}>
-                  Panneau Administrateur
-                </h1>
-                <p className="text-sm" style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
-                  Bonjour, {firstName} — Gestion & modération HOMECI
-                </p>
+                <h1 className="font-bold text-cream font-cormorant text-2xl">Panneau Administrateur</h1>
+                <p className="text-sm opacity-60 text-cream font-nunito">Bonjour, {firstName} — Gestion HOMECI</p>
               </div>
             </div>
+            
             <div className="flex items-center gap-3">
-              {/* Stats rapides */}
-              <div className="hidden md:flex items-center gap-2 text-xs" style={{ fontFamily: 'var(--font-nunito)' }}>
-                <span className="px-2.5 py-1 rounded-full font-semibold"
-                  style={{ background: HAlpha.gold10, color: HColors.gold, border: `1px solid ${HAlpha.gold30}` }}>
-                  {stats.total_users} utilisateurs
-                </span>
-                <span className="px-2.5 py-1 rounded-full font-semibold"
-                  style={{ background: HAlpha.vertCI10, color: HColors.vertCI, border: `1px solid ${HAlpha.vertCI25}` }}>
-                  {stats.verified_properties} certifiés
-                </span>
-                {stats.pending_properties > 0 && (
-                  <span className="px-2.5 py-1 rounded-full font-bold animate-pulse"
-                    style={{ background: HAlpha.bord20, color: HColors.cream, border: `1px solid ${HAlpha.bord35}` }}>
-                    {stats.pending_properties} en attente
-                  </span>
-                )}
+              <div className="hidden md:flex items-center gap-2 text-xs font-nunito font-bold">
+                <span className="px-2.5 py-1 rounded-full bg-gold/10 text-gold border border-gold/30">{stats.total_users} utilisateurs</span>
+                <span className="px-2.5 py-1 rounded-full bg-green-500/10 text-green-500 border border-green-500/30">{stats.verified_properties} certifiés</span>
+                {stats.pending_properties > 0 && <span className="px-2.5 py-1 rounded-full bg-red-500/20 text-white animate-pulse border border-red-500/30">{stats.pending_properties} en attente</span>}
               </div>
-              <button onClick={() => {}} aria-label="Actualiser"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80 opacity-50 cursor-not-allowed"
-                style={{ background: HAlpha.gold10, border: `1px solid ${HAlpha.gold25}`, color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
+              <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-brown/50 bg-gold/10 border border-gold/20">
                 <RotateCcw className="w-3.5 h-3.5" /> Temps réel actif
-              </button>
+              </div>
             </div>
           </div>
 
-          {/* Tabs */}
-          <nav className="flex space-x-1 overflow-x-auto homeci-tabs-scroll">
-            {TABS.map(tab => (
-              <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
-                aria-label={tab.label}
-                aria-current={activeTab === tab.id ? 'page' : undefined}
-                className="flex items-center gap-2 py-3 px-3 sm:px-4 border-b-2 text-xs sm:text-sm font-medium transition-all whitespace-nowrap"
-                style={activeTab === tab.id
-                  ? { borderColor: HColors.gold, color: HColors.gold, fontFamily: 'var(--font-nunito)' }
-                  : { borderColor: 'transparent', color: HAlpha.cream45, fontFamily: 'var(--font-nunito)' }}>
-                <tab.icon className="w-4 h-4" />
-                {tab.label}
-                {tab.count !== undefined && tab.count > 0 && (
-                  <span className="px-1.5 py-0.5 rounded-full text-xs font-bold"
-                    style={tab.id === 'verification'
-                      ? { background: HAlpha.bord20, color: HColors.cream }
-                      : { background: HAlpha.gold15, color: HColors.gold }}>
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            ))}
-          </nav>
+          <AdminTabs 
+            activeTab={activeTab} 
+            setActiveTab={(t) => navigate(`/dashboard/${t}`)} 
+            stats={stats} 
+          />
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
-
-        {/* ══ VUE D'ENSEMBLE ══ */}
-        {activeTab === 'overview' && (
-          <div>
-            <SectionTitle title="Vue d'ensemble" sub="Statistiques générales de la plateforme HOMECI" />
-            {loading ? (
-              <div className="flex justify-center py-16">
-                <div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin"
-                  style={{ borderColor: HAlpha.gold20, borderTopColor: HColors.gold }} />
-              </div>
-            ) : (
-              <>
-                {/* Stat cards */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-                  {[
-                    { icon: Users, label: 'Utilisateurs inscrits', value: stats.total_users, accent: HColors.navy, bg: HAlpha.navy08 },
-                    { icon: Home, label: 'Biens immobiliers', value: stats.total_properties, accent: HColors.vertCI, bg: HAlpha.vertCI10 },
-                    { icon: AlertCircle, label: 'En attente modération', value: stats.pending_properties, accent: HColors.gold, bg: HAlpha.gold10 },
-                    { icon: FileCheck, label: 'Vérifiés Notaire', value: stats.verified_properties, accent: HColors.orangeCI, bg: HAlpha.orange10 },
-                  ].map(({ icon: Icon, label, value, accent, bg }) => (
-                    <div key={label} className="rounded-2xl p-3 sm:p-5"
-                      style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}`, boxShadow: '0 2px 12px rgba(26,14,0,0.05)', minWidth: 0, overflow: 'hidden' }}>
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center mb-2 sm:mb-3"
-                        style={{ background: bg, border: `1px solid ${accent}30` }}>
-                        <Icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: accent }} />
-                      </div>
-                      <div className="text-xl sm:text-2xl font-bold mb-0.5"
-                        style={{ color: accent, fontFamily: 'var(--font-cormorant)' }}>{value}</div>
-                      <div className="text-[10px] sm:text-xs truncate" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>{label}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Biens récents */}
-                <div className="rounded-2xl overflow-hidden"
-                  style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
-                  <div className="flex items-center justify-between px-5 py-4"
-                    style={{ borderBottom: `1px solid ${HAlpha.gold10}` }}>
-                    <h3 className="font-bold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
-                      Biens récents
-                    </h3>
-                    <span className="text-xs px-2.5 py-1 rounded-full"
-                      style={{ background: HAlpha.gold08, color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                      {properties.length} affichés
-                    </span>
-                  </div>
-                  <div className="divide-y" style={{ borderColor: HAlpha.gold08 }}>
-                    {properties.slice(0, 5).map(p => (
-                      <div key={p.id} className="flex items-center gap-4 px-5 py-3">
-                        {p.images?.[0] ? (
-                          <img src={p.images[0]} alt={p.title} className="w-10 h-10 rounded-lg object-cover shrink-0"
-                            style={{ border: `1px solid ${HAlpha.gold15}` }} />
-                        ) : (
-                          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                            style={{ background: HAlpha.gold08 }}>
-                            <Building2 className="w-4 h-4" style={{ color: HAlpha.gold30 }} />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold truncate"
-                            style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>{p.title}</p>
-                          <p className="text-xs flex items-center gap-1"
-                            style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                            <MapPin className="w-3 h-3" style={{ color: HColors.orangeCI }} />
-                            {p.city} · {TYPE_LABELS[p.property_type] || p.property_type}
-                          </p>
-                        </div>
-                        <PropertyStatusBadge status={p.status} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 min-h-[60vh]">
+        {loading ? <Loader /> : (
+          <Suspense fallback={<Loader />}>
+            {activeTab === 'overview' && (
+              <OverviewSection 
+                stats={stats} 
+                properties={api.properties} 
+                onViewProperty={setSelectedProperty} 
+              />
             )}
-          </div>
-        )}
-
-        {/* ══ UTILISATEURS ══ */}
-        {activeTab === 'users' && (
-          <div>
-            <SectionTitle title="Gestion des Utilisateurs" sub="Liste des utilisateurs inscrits sur la plateforme" />
-            <div className="rounded-2xl overflow-hidden"
-              style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
-
-              {/* ── Barre filtres ── */}
-              <div className="flex items-center gap-3 px-5 py-3.5 flex-wrap"
-                style={{ borderBottom: `1px solid ${HAlpha.gold10}`, background: 'rgba(249,243,232,0.5)' }}>
-                <select value={filterRole} onChange={e => setFilterRole(e.target.value)}
-                  className="px-3 py-2 rounded-xl text-xs outline-none"
-                  style={{
-                    background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
-                    color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
-                  }}>
-                  <option value="">Tous les rôles</option>
-                  <option value="locataire">Locataire</option>
-                  <option value="proprietaire">Propriétaire</option>
-                  <option value="agent">Agent</option>
-                  <option value="notaire">Notaire</option>
-                  <option value="admin">Admin</option>
-                </select>
-
-                <button onClick={() => setFilterDate(d => d === 'desc' ? 'asc' : 'desc')}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80"
-                  style={{
-                    background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
-                    color: HColors.brownMid, fontFamily: 'var(--font-nunito)'
-                  }}>
-                  <Calendar className="w-3.5 h-3.5" style={{ color: HColors.orangeCI }} />
-                  {filterDate === 'desc' ? '↓ Plus récent' : '↑ Plus ancien'}
-                </button>
-
-                {filterRole && (
-                  <button onClick={() => setFilterRole('')}
-                    className="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs transition-all hover:opacity-80"
-                    style={{
-                      background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}`,
-                      color: HColors.bordeaux, fontFamily: 'var(--font-nunito)'
-                    }}>
-                    <XCircle className="w-3 h-3" /> Effacer filtre
-                  </button>
-                )}
-
-                <span className="ml-auto text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                  {filteredUsers.length} utilisateur{filteredUsers.length > 1 ? 's' : ''}
-                </span>
-              </div>
-
-              <div className="homeci-table-scroll">
-                <table className="min-w-full">
-                  <thead>
-                    <tr style={{ background: HColors.night }}>
-                      {['Utilisateur', 'Rôle', 'Statut', "Date d'inscription", 'Actions'].map(h => (
-                        <th key={h} className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider"
-                          style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredUsers.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="text-center py-10 text-sm"
-                          style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                          Aucun utilisateur pour ce filtre
-                        </td>
-                      </tr>
-                    ) : filteredUsers.map((user, i) => (
-                      <tr key={user.id}
-                        style={{
-                          background: i % 2 === 0 ? HColors.white : 'rgba(249,243,232,0.4)',
-                          borderBottom: `1px solid ${HAlpha.gold08}`
-                        }}>
-                        <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
-                              style={{
-                                background: HAlpha.gold10, color: HColors.gold,
-                                fontFamily: 'var(--font-cormorant)', border: `1px solid ${HAlpha.gold25}`
-                              }}>
-                              {user.full_name?.charAt(0).toUpperCase() || '?'}
-                            </div>
-                            <div>
-                              <div className="text-sm font-semibold"
-                                style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
-                                {user.full_name}
-                              </div>
-                              <div className="text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                                {user.email}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <RoleBadge role={user.role} />
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                            style={user.suspended
-                              ? { background: HAlpha.bord10, color: HColors.bordeaux, border: `1px solid ${HAlpha.bord20}`, fontFamily: 'var(--font-nunito)' }
-                              : { background: HAlpha.vertCI10, color: HColors.vertCI, border: `1px solid ${HAlpha.vertCI20}`, fontFamily: 'var(--font-nunito)' }
-                            }>
-                            {user.suspended ? 'Suspendu' : 'Actif'}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" style={{ color: HColors.orangeCI }} />
-                            {new Date(user.created_at).toLocaleDateString('fr-FR')}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <button onClick={() => setSelectedUser(user)}
-                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80"
-                            style={{
-                              background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}`,
-                              color: HColors.navy, fontFamily: 'var(--font-nunito)'
-                            }}>
-                            <Eye className="w-3.5 h-3.5" /> Détails
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ══ BIENS ══ */}
-        {activeTab === 'properties' && (
-          <div>
-            <SectionTitle title="Tous les Biens" sub="Vue complète de tous les biens immobiliers de la plateforme" />
-            <div className="rounded-2xl overflow-hidden"
-              style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
-
-              {/* ── Filtres ── */}
-              <div className="flex items-center gap-3 px-5 py-3.5 flex-wrap"
-                style={{ borderBottom: `1px solid ${HAlpha.gold10}`, background: 'rgba(249,243,232,0.5)' }}>
-
-                {/* Type */}
-                <select value={filterPropType} onChange={e => setFilterPropType(e.target.value)}
-                  className="px-3 py-2 rounded-xl text-xs outline-none"
-                  style={{
-                    background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
-                    color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
-                  }}>
-                  <option value="">Tous les types</option>
-                  {Object.entries(TYPE_LABELS).map(([k, v]) => (
-                    <option key={k} value={k}>{v}</option>
-                  ))}
-                </select>
-
-                {/* Statut */}
-                <select value={filterPropStatus} onChange={e => setFilterPropStatus(e.target.value)}
-                  className="px-3 py-2 rounded-xl text-xs outline-none"
-                  style={{
-                    background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
-                    color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
-                  }}>
-                  <option value="">Tous les statuts</option>
-                  <option value="published">Publié</option>
-                  <option value="pending">En attente</option>
-                  <option value="draft">Brouillon</option>
-                  <option value="rejected">Rejeté</option>
-                  <option value="rented">Loué</option>
-                  <option value="sold">Vendu</option>
-                </select>
-
-                {/* Ville */}
-                <div className="relative">
-                  <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3"
-                    style={{ color: HColors.orangeCI }} />
-                  <input type="text" value={filterPropCity}
-                    onChange={e => setFilterPropCity(e.target.value)}
-                    placeholder="Ville…"
-                    className="pl-7 pr-3 py-2 rounded-xl text-xs outline-none w-28"
-                    style={{
-                      background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
-                      color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
-                    }} />
-                </div>
-
-                {/* Tri */}
-                <select value={sortProp} onChange={e => setSortProp(e.target.value as typeof sortProp)}
-                  className="px-3 py-2 rounded-xl text-xs outline-none"
-                  style={{
-                    background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
-                    color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
-                  }}>
-                  <option value="date_desc">↓ Date (récent)</option>
-                  <option value="date_asc">↑ Date (ancien)</option>
-                  <option value="price_desc">↓ Prix (élevé)</option>
-                  <option value="price_asc">↑ Prix (bas)</option>
-                </select>
-
-                {/* Effacer */}
-                {(filterPropType || filterPropStatus || filterPropCity) && (
-                  <button onClick={() => { setFilterPropType(''); setFilterPropStatus(''); setFilterPropCity(''); }}
-                    className="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs transition-all hover:opacity-80"
-                    style={{
-                      background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}`,
-                      color: HColors.bordeaux, fontFamily: 'var(--font-nunito)'
-                    }}>
-                    <XCircle className="w-3 h-3" /> Effacer
-                  </button>
-                )}
-
-                <span className="ml-auto text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                  {filteredProperties.length} bien{filteredProperties.length > 1 ? 's' : ''}
-                </span>
-              </div>
-
-              <div className="homeci-table-scroll">
-                <table className="min-w-full">
-                  <thead>
-                    <tr style={{ background: HColors.night }}>
-                      {['Bien', 'Type', 'Ville', 'Prix', 'Statut', 'Date'].map(h => (
-                        <th key={h} className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider"
-                          style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredProperties.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="text-center py-10 text-sm"
-                          style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                          Aucun bien pour ces filtres
-                        </td>
-                      </tr>
-                    ) : filteredProperties.map((p, i) => (
-                      <tr key={p.id}
-                        style={{
-                          background: i % 2 === 0 ? HColors.white : 'rgba(249,243,232,0.4)',
-                          borderBottom: `1px solid ${HAlpha.gold08}`
-                        }}>
-                        <td className="px-5 py-3">
-                          <div className="flex items-center gap-2">
-                            {p.images?.[0] ? (
-                              <img src={p.images[0]} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0"
-                                style={{ border: `1px solid ${HAlpha.gold15}` }} />
-                            ) : (
-                              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                                style={{ background: HAlpha.gold08 }}>
-                                <Building2 className="w-3.5 h-3.5" style={{ color: HAlpha.gold30 }} />
-                              </div>
-                            )}
-                            <span className="text-sm font-medium truncate max-w-[120px] sm:max-w-[180px]"
-                              style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>{p.title}</span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-3 text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                          {TYPE_LABELS[p.property_type] || p.property_type}
-                        </td>
-                        <td className="px-5 py-3 text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" style={{ color: HColors.orangeCI }} />{p.city}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3 text-xs font-semibold" style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>
-                          {p.price.toLocaleString('fr-FR')} FCFA
-                        </td>
-                        <td className="px-5 py-3"><PropertyStatusBadge status={p.status} /></td>
-                        <td className="px-5 py-3 text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                          {new Date(p.created_at).toLocaleDateString('fr-FR')}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ══ MODÉRATION ══ */}
-        {activeTab === 'verification' && (
-          <div>
-            <SectionTitle title="Modération des Biens"
-              sub="Approuvez ou rejetez les nouvelles annonces soumises à validation" />
-
-            {/* Delegation Token Input */}
-            <div className="mb-8 p-6 rounded-2xl shadow-sm border border-dashed animate-in fade-in slide-in-from-top-4 duration-500"
-              style={{ background: HAlpha.orange08, borderColor: HAlpha.orange30 }}>
-              <div className="flex flex-col md:flex-row md:items-center gap-6">
-                <div className="flex-1">
-                  <h4 className="text-lg font-bold flex items-center gap-2 mb-1" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>
-                    <Shield className="w-5 h-5" style={{ color: HColors.orangeCI }} />
-                    Délégation Notaire
-                  </h4>
-                  <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                    Utilisez un jeton à usage unique fourni par un notaire pour finaliser une modération (Certification ou Rejet).
-                  </p>
-                </div>
-                <div className="flex gap-2 w-full sm:min-w-[300px]">
-                  <input type="text" value={tokenInput} onChange={e => setTokenInput(e.target.value.toUpperCase())}
-                    placeholder="JETON (ex: HC-XXXXXX)"
-                    className="flex-1 px-4 py-2.5 rounded-xl font-mono font-bold tracking-widest outline-none transition-all placeholder:font-sans placeholder:tracking-normal"
-                    style={{ background: HColors.white, border: `1px solid ${HAlpha.orange30}`, color: HColors.darkBrown }} />
-                  <button onClick={handleConsumeToken} disabled={consumingToken || !tokenInput}
-                    className="px-6 py-2.5 rounded-xl font-bold transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
-                    style={{ background: `linear-gradient(135deg,${HColors.orangeCI},${HColors.gold})`, color: HColors.white }}>
-                    {consumingToken ? <LoaderIcon className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
-                    Valider
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {pendingProperties.length === 0 ? (
-              <div className="rounded-2xl p-16 text-center"
-                style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
-                <CheckCircle className="w-14 h-14 mx-auto mb-4" style={{ color: HAlpha.vertCI15 }} />
-                <h3 className="font-bold mb-1"
-                  style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.3rem' }}>
-                  File vide
-                </h3>
-                <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                  Tous les biens ont été modérés
-                </p>
-              </div>
-            ) : (
-              <>
-                {/* ── Filtres modération ── */}
-                <div className="flex items-center gap-3 px-5 py-3.5 mb-4 flex-wrap rounded-2xl"
-                  style={{ background: 'rgba(249,243,232,0.7)', border: `1px solid ${HAlpha.gold15}` }}>
-
-                  <select value={filterModType} onChange={e => setFilterModType(e.target.value)}
-                    className="px-3 py-2 rounded-xl text-xs outline-none"
-                    style={{
-                      background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
-                      color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
-                    }}>
-                    <option value="">Tous les types</option>
-                    {Object.entries(TYPE_LABELS).map(([k, v]) => (
-                      <option key={k} value={k}>{v}</option>
-                    ))}
-                  </select>
-
-                  <select value={sortMod} onChange={e => setSortMod(e.target.value as typeof sortMod)}
-                    className="px-3 py-2 rounded-xl text-xs outline-none"
-                    style={{
-                      background: HColors.white, border: `1px solid ${HAlpha.gold20}`,
-                      color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
-                    }}>
-                    <option value="date_desc">↓ Date (récent)</option>
-                    <option value="date_asc">↑ Date (ancien)</option>
-                    <option value="price_desc">↓ Prix (élevé)</option>
-                    <option value="price_asc">↑ Prix (bas)</option>
-                  </select>
-
-                  {filterModType && (
-                    <button onClick={() => setFilterModType('')}
-                      className="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs transition-all hover:opacity-80"
-                      style={{
-                        background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}`,
-                        color: HColors.bordeaux, fontFamily: 'var(--font-nunito)'
-                      }}>
-                      <XCircle className="w-3 h-3" /> Effacer
-                    </button>
-                  )}
-
-                  <span className="ml-auto text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                    {filteredPendingProperties.length} bien{filteredPendingProperties.length > 1 ? 's' : ''} en attente
-                  </span>
-                </div>
-
-                {filteredPendingProperties.length === 0 ? (
-                  <div className="rounded-2xl p-10 text-center"
-                    style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
-                    <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                      Aucun bien ne correspond à ce filtre
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {filteredPendingProperties.map(p => (
-                      <div key={p.id} className="rounded-2xl overflow-hidden"
-                        style={{
-                          background: HColors.white, border: `1px solid ${HAlpha.gold25}`,
-                          boxShadow: '0 2px 12px rgba(26,14,0,0.05)'
-                        }}>
-                        <div className="h-1" style={{ background: 'linear-gradient(90deg,#FF6B00,#D4A017)', opacity: 0.5 }} />
-                        <div className="flex items-start gap-4 p-5">
-                          {p.images?.[0] ? (
-                            <img src={p.images[0]} alt={p.title} className="w-20 h-20 rounded-xl object-cover shrink-0"
-                              style={{ border: `1px solid ${HAlpha.gold20}` }} />
-                          ) : (
-                            <div className="w-20 h-20 rounded-xl flex items-center justify-center shrink-0"
-                              style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold15}` }}>
-                              <Building2 className="w-7 h-7" style={{ color: HAlpha.gold30 }} />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-bold mb-2"
-                              style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
-                              {p.title}
-                            </h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs mb-3"
-                              style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                              <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Type : </span>{TYPE_LABELS[p.property_type] || p.property_type}</span>
-                              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" style={{ color: HColors.orangeCI }} />{p.city}</span>
-                              <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Prix : </span>{p.price.toLocaleString('fr-FR')} FCFA</span>
-                              <span><span className="font-semibold" style={{ color: HColors.brownMid }}>Soumis : </span>{new Date(p.created_at).toLocaleDateString('fr-FR')}</span>
-                            </div>
-                          </div>
-                          <div className="flex flex-col gap-2 shrink-0">
-                            <button onClick={() => setSelectedProperty(p)}
-                              className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-xl transition-all hover:opacity-80"
-                              style={{
-                                background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}`,
-                                color: HColors.navy, fontFamily: 'var(--font-nunito)'
-                              }}>
-                              <Eye className="w-3.5 h-3.5" /> Voir détails
-                            </button>
-                            <button onClick={() => rejectProperty(p.id)}
-                              className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-xl transition-all hover:opacity-80"
-                              style={{
-                                background: HAlpha.bord10, border: `1px solid ${HAlpha.bord25}`,
-                                color: HColors.bordeaux, fontFamily: 'var(--font-nunito)'
-                              }}>
-                              <XCircle className="w-3.5 h-3.5" /> Rejeter
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
+            {activeTab === 'users' && (
+              <UsersSection 
+                users={api.filteredUsers}
+                filterRole={api.filterRole}
+                setFilterRole={api.setFilterRole}
+                filterDate={api.filterDate}
+                setFilterDate={api.setFilterDate}
+                onViewDetails={setSelectedUser}
+              />
             )}
-          </div>
-        )}
-
-        {activeTab === 'reports' && (
-          <Suspense fallback={<div className="flex justify-center py-16"><div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: HAlpha.gold20, borderTopColor: HColors.gold }} /></div>}>
-            <AdminReportsTab showToast={showToast} />
-          </Suspense>
-        )}
-        {activeTab === 'surveys' && (
-          <Suspense fallback={<div className="flex justify-center py-16"><div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: HAlpha.gold20, borderTopColor: HColors.gold }} /></div>}>
-            <AdminSurveysTab />
-          </Suspense>
-        )}
-        {activeTab === 'visits' && (
-          <Suspense fallback={<div className="flex justify-center py-16"><div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: HAlpha.gold20, borderTopColor: HColors.gold }} /></div>}>
-            <AdminVisitsTab />
-          </Suspense>
-        )}
-        {activeTab === 'user-search' && (
-          <Suspense fallback={<div className="flex justify-center py-16"><div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: HAlpha.gold20, borderTopColor: HColors.gold }} /></div>}>
-            <AdminUsersSearchTab showToast={showToast} />
-          </Suspense>
-        )}
-        {activeTab === 'notaires' && <NotairesTab showToast={showToast} />}
-        {activeTab === 'cgv' && (
-          <Suspense fallback={<div className="flex justify-center py-16"><div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: HAlpha.gold20, borderTopColor: HColors.gold }} /></div>}>
-            <AdminCGVTab />
-          </Suspense>
-        )}
-        {activeTab === 'security' && <AdminLoginHistory />}
-        {activeTab === 'admin-management' && <AdminManagement />}
-        {activeTab === 'ads' && (
-          <Suspense fallback={<div className="flex justify-center py-16"><div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: HAlpha.gold20, borderTopColor: HColors.gold }} /></div>}>
-            <AdminAdsTab />
+            {activeTab === 'properties' && (
+              <PropertiesSection 
+                properties={api.filteredProperties}
+                filterType={api.filterPropType}
+                setFilterType={api.setFilterPropType}
+                filterStatus={api.filterPropStatus}
+                setFilterStatus={api.setFilterPropStatus}
+                filterCity={api.filterPropCity}
+                setFilterCity={api.setFilterPropCity}
+                sort={api.sortProp}
+                setSort={api.setSortProp}
+                onViewDetails={setSelectedProperty}
+              />
+            )}
+            {activeTab === 'verification' && (
+              <ModerationSection 
+                properties={api.filteredPendingProperties}
+                onViewDetails={setSelectedProperty}
+                onReject={api.rejectProperty}
+                onConsumeToken={api.handleConsumeToken}
+              />
+            )}
+            {activeTab === 'notaires' && <AdminNotairesTab showToast={api.showToast} />}
+            {activeTab === 'user-search' && <AdminUsersSearchTab showToast={api.showToast} />}
+            {activeTab === 'reports' && <AdminReportsTab showToast={api.showToast} />}
+            {activeTab === 'surveys' && <AdminSurveysTab />}
+            {activeTab === 'visits' && <AdminVisitsTab />}
+            {activeTab === 'cgv' && <AdminCGVTab />}
+            {activeTab === 'ads' && <AdminAdsTab />}
+            {activeTab === 'security' && <AdminLoginHistory />}
+            {activeTab === 'admin-management' && <AdminManagement />}
           </Suspense>
         )}
       </div>
 
-      {/* ── Modal Détails Bien ── */}
-      {selectedProperty && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
-          style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}
-          onClick={() => setSelectedProperty(null)}>
-          <div className="w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
-            style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}
-            onClick={e => e.stopPropagation()}>
-            <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#FF6B00,#009E49,#FFFFFF,#D4A017)' }} />
-
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4"
-              style={{ borderBottom: `1px solid ${HAlpha.gold10}` }}>
-              <div>
-                <h3 className="font-bold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.4rem' }}>
-                  {selectedProperty.title}
-                </h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <PropertyStatusBadge status={selectedProperty.status} />
-                  <span className="text-xs" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                    {TYPE_LABELS[selectedProperty.property_type] || selectedProperty.property_type}
-                  </span>
-                </div>
-              </div>
-              <button onClick={() => setSelectedProperty(null)}
-                className="p-1.5 rounded-full hover:opacity-70 transition-all"
-                style={{ background: HAlpha.gold08, color: HColors.brown }}>
-                <XCircle className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Scrollable body */}
-            <div className="overflow-y-auto p-6 space-y-5">
-
-              {/* Photos */}
-              {selectedProperty.images && selectedProperty.images.length > 0 && (
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider mb-2"
-                    style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-                    Photos ({selectedProperty.images.length})
-                  </p>
-                  <div className="flex gap-2 overflow-x-auto pb-1">
-                    {selectedProperty.images.map((img, i) => (
-                      <img key={i} src={img} alt={`Photo ${i + 1}`}
-                        className="w-24 h-18 sm:w-32 sm:h-24 rounded-xl object-cover shrink-0"
-                        style={{ border: `1px solid ${HAlpha.gold20}` }} />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Infos principales */}
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider mb-2"
-                  style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-                  Informations générales
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { label: 'Type de bien', value: TYPE_LABELS[selectedProperty.property_type] || selectedProperty.property_type },
-                    { label: 'Transaction', value: selectedProperty.transaction_type === 'location' ? 'Location' : 'Vente' },
-                    { label: 'Prix', value: `${selectedProperty.price.toLocaleString('fr-FR')} FCFA${selectedProperty.transaction_type === 'location' ? '/mois' : ''}` },
-                    { label: 'Surface', value: selectedProperty.surface_area ? `${selectedProperty.surface_area} m²` : '—' },
-                    { label: 'Chambres', value: selectedProperty.bedrooms ?? '—' },
-                    { label: 'Salles de bain', value: selectedProperty.bathrooms ?? '—' },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="flex justify-between items-center py-2 px-3 rounded-xl"
-                      style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}` }}>
-                      <span className="text-xs font-semibold" style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>{label}</span>
-                      <span className="text-xs font-bold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>{String(value)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Localisation */}
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider mb-2"
-                  style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-                  Localisation
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { label: 'Ville', value: selectedProperty.city || '—' },
-                    { label: 'Quartier', value: selectedProperty.quartier || '—' },
-                    { label: 'Adresse', value: selectedProperty.address || '—' },
-                    { label: 'Pays', value: "Côte d'Ivoire" },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="flex justify-between items-center py-2 px-3 rounded-xl"
-                      style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}` }}>
-                      <span className="text-xs font-semibold" style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>{label}</span>
-                      <span className="text-xs text-right max-w-[100px] sm:max-w-[140px] truncate" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>{value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Équipements */}
-              {selectedProperty.amenities && selectedProperty.amenities.length > 0 && (
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider mb-2"
-                    style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-                    Équipements
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {selectedProperty.amenities.map((a: string) => (
-                      <span key={a} className="px-2.5 py-1 rounded-full text-xs"
-                        style={{
-                          background: HAlpha.gold08, color: HColors.brownMid,
-                          border: `1px solid ${HAlpha.gold20}`, fontFamily: 'var(--font-nunito)'
-                        }}>
-                        {a}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Métadonnées */}
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider mb-2"
-                  style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-                  Métadonnées
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { label: 'ID', value: selectedProperty.id },
-                    { label: 'Propriétaire', value: selectedProperty.owner_id || '—' },
-                    { label: 'Soumis le', value: new Date(selectedProperty.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) },
-                    { label: 'Modifié le', value: selectedProperty.updated_at ? new Date(selectedProperty.updated_at).toLocaleDateString('fr-FR') : '—' },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="flex justify-between items-center py-2 px-3 rounded-xl"
-                      style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}` }}>
-                      <span className="text-xs font-semibold" style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>{label}</span>
-                      <span className="text-xs text-right max-w-[100px] sm:max-w-[150px] truncate font-mono" style={{ color: HColors.darkBrown }}>{value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-2 px-6 py-4" style={{ borderTop: `1px solid ${HAlpha.gold10}` }}>
-              <button onClick={() => { rejectProperty(selectedProperty.id); setSelectedProperty(null); }}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80"
-                style={{
-                  background: HAlpha.bord10, border: `1px solid ${HAlpha.bord25}`,
-                  color: HColors.bordeaux, fontFamily: 'var(--font-nunito)'
-                }}>
-                <XCircle className="w-4 h-4" /> Rejeter
-              </button>
-              <button onClick={() => setSelectedProperty(null)}
-                className="px-5 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80"
-                style={{
-                  background: HAlpha.gold08, border: `1px solid ${HAlpha.gold20}`,
-                  color: HColors.brownMid, fontFamily: 'var(--font-nunito)'
-                }}>
-                Fermer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Modal Détails Utilisateur ── */}
-      {selectedUser && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
-          style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}
-          onClick={() => setSelectedUser(null)}>
-          <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
-            style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}
-            onClick={e => e.stopPropagation()}>
-            <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#FF6B00,#009E49,#FFFFFF,#D4A017)' }} />
-            <div className="p-6">
-              {/* Header */}
-              <div className="flex items-start justify-between mb-5">
-                <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-2xl"
-                    style={{
-                      background: HAlpha.gold15, color: HColors.gold,
-                      fontFamily: 'var(--font-cormorant)', border: `2px solid ${HAlpha.gold30}`
-                    }}>
-                    {selectedUser.full_name?.charAt(0).toUpperCase() || '?'}
-                  </div>
-                  <div>
-                    <h3 className="font-bold mb-1"
-                      style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.3rem' }}>
-                      {selectedUser.full_name}
-                    </h3>
-                    <RoleBadge role={selectedUser.role} />
-                  </div>
-                </div>
-                <button onClick={() => setSelectedUser(null)}
-                  className="p-1.5 rounded-full hover:opacity-70 transition-all"
-                  style={{ background: HAlpha.gold08, color: HColors.brown }}>
-                  <XCircle className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Infos */}
-              <div className="space-y-2">
-                {[
-                  { label: 'Email', value: selectedUser.email, icon: '✉' },
-                  { label: 'Téléphone', value: selectedUser.phone || '—', icon: '📞' },
-                  { label: 'Entreprise', value: selectedUser.company_name || '—', icon: '🏢' },
-                  { label: 'Vérifié', value: selectedUser.verified ? 'Oui ✓' : 'Non', icon: '🔒' },
-                  { label: 'Inscrit le', value: new Date(selectedUser.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }), icon: '📅' },
-                  { label: 'ID', value: selectedUser.id, icon: '#' },
-                ].map(({ label, value, icon }) => (
-                  <div key={label} className="flex items-center justify-between gap-3 py-2.5 px-3 rounded-xl"
-                    style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}` }}>
-                    <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider shrink-0"
-                      style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-                      <span>{icon}</span>{label}
-                    </span>
-                    <span className="text-xs text-right truncate max-w-[130px] sm:max-w-[200px]"
-                      style={{ color: HColors.darkBrown, fontFamily: label === 'ID' ? 'monospace' : 'var(--font-nunito)' }}>
-                      {value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2 mt-5">
-                <button onClick={() => setSelectedUser(null)}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
-                  style={{
-                    background: HAlpha.gold08, border: `1px solid ${HAlpha.gold20}`,
-                    color: HColors.brownMid, fontFamily: 'var(--font-nunito)'
-                  }}>
-                  Fermer
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modals */}
+      <UserDetailModal user={selectedUser} onClose={() => setSelectedUser(null)} />
+      <PropertyDetailModal 
+        property={selectedProperty} 
+        onReject={api.rejectProperty} 
+        onClose={() => setSelectedProperty(null)} 
+      />
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 overflow-hidden rounded-2xl shadow-2xl" style={{ minWidth: 260 }}>
+        <div className="fixed bottom-6 right-6 z-50 overflow-hidden rounded-2xl shadow-2xl animate-in slide-in-from-bottom-5 duration-300" style={{ minWidth: 260 }}>
           <KenteLine height={3} />
-          <div className="flex items-center gap-2 px-4 py-3"
-            style={{ background: toast.ok ? HColors.night : HColors.bordeaux }}>
-            {toast.ok
-              ? <CheckCircle className="w-4 h-4 shrink-0" style={{ color: HColors.gold }} />
-              : <XCircle className="w-4 h-4 shrink-0" style={{ color: HColors.cream }} />}
-            <span className="text-sm font-medium" style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
-              {toast.msg}
-            </span>
+          <div className="flex items-center gap-2 px-4 py-3" style={{ background: toast.ok ? HColors.night : HColors.bordeaux }}>
+            {toast.ok ? <CheckCircle className="w-4 h-4 text-gold" /> : <XCircle className="w-4 h-4 text-white" />}
+            <span className="text-sm font-bold text-white font-nunito">{toast.msg}</span>
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-// ── Sous-composants ────────────────────────────────────────────────────────────
-function SectionTitle({ title, sub }: { title: string; sub: string }) {
-  return (
-    <div className="mb-6">
-      <h2 className="font-bold mb-0.5" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.8rem' }}>
-        {title}
-      </h2>
-      <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>{sub}</p>
-    </div>
-  );
-}
-
-function RoleBadge({ role }: { role: string }) {
-  const cfg = ROLE_CFG[role] || ROLE_CFG.locataire;
-  return (
-    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
-      style={{ background: cfg.bg, border: `1px solid ${cfg.bd}`, color: cfg.text, fontFamily: 'var(--font-nunito)' }}>
-      {cfg.label}
-    </span>
-  );
-}
-
-function PropertyStatusBadge({ status }: { status: string }) {
-  const cfg: Record<string, { bg: string; bd: string; text: string; label: string }> = {
-    published: { bg: HAlpha.vertCI10, bd: HAlpha.vertCI25, text: HColors.vertCI, label: 'Publié' },
-    pending: { bg: HAlpha.gold10, bd: HAlpha.gold25, text: HColors.brownMid, label: 'En attente' },
-    draft: { bg: HAlpha.gold08, bd: HAlpha.gold15, text: HColors.brown, label: 'Brouillon' },
-    rejected: { bg: HAlpha.bord10, bd: HAlpha.bord25, text: HColors.bordeaux, label: 'Rejeté' },
-    rented: { bg: HAlpha.navy08, bd: HAlpha.navy20, text: HColors.navy, label: 'Loué' },
-    sold: { bg: HAlpha.orange10, bd: HAlpha.terra20, text: HColors.brownDeep, label: 'Vendu' },
-  };
-  const c = cfg[status] || cfg.draft;
-  return (
-    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
-      style={{ background: c.bg, border: `1px solid ${c.bd}`, color: c.text, fontFamily: 'var(--font-nunito)' }}>
-      {c.label}
-    </span>
-  );
-}
-
-// ── Onglet Notaires ────────────────────────────────────────────────────────────
-interface NotaireCode {
-  id: string;
-  code: string;
-  used: boolean;
-  used_at?: string;
-  created_at: string;
-  expires_at?: string;
-  note?: string | null;
-}
-
-function generateCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const array = new Uint8Array(10);
-  crypto.getRandomValues(array);
-  return Array.from(array, b => chars[b % chars.length]).join('');
-}
-
-function NotairesTab({ showToast }: { showToast: (msg: string, ok?: boolean) => void }) {
-  const [codes, setCodes] = useState<NotaireCode[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
-  const [note, setNote] = useState('');
-  const [expireDays, setExpireDays] = useState(7);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-
-  useEffect(() => { loadCodes(); }, []);
-
-  async function loadCodes() {
-    setLoading(true);
-    try {
-      const q = query(collection(db, 'notaire_codes'), orderBy('created_at', 'desc'));
-      const snap = await getDocs(q);
-      const toISO = (v: any) => {
-        if (!v) return undefined;
-        if (v instanceof Timestamp) return v.toDate().toISOString();
-        if (typeof v === 'string') return v;
-        if (v.toDate) return v.toDate().toISOString();
-        return String(v);
-      };
-      setCodes(snap.docs.map(d => {
-        const data = d.data();
-        return {
-          id: d.id,
-          ...data,
-          created_at: toISO(data.created_at),
-          expires_at: toISO(data.expires_at),
-          used_at: toISO(data.used_at),
-        } as NotaireCode;
-      }));
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
-  }
-
-  async function handleGenerate() {
-    setGenerating(true);
-    try {
-      const code = generateCode();
-      const expires = new Date();
-      expires.setDate(expires.getDate() + expireDays);
-      const data = {
-        code,
-        used: false,
-        created_at: new Date().toISOString(),
-        expires_at: expires,
-        note: note.trim() || null,
-      };
-      const ref = await addDoc(collection(db, 'notaire_codes'), data);
-      setCodes(prev => [{ id: ref.id, ...data, expires_at: expires.toISOString() }, ...prev]);
-      setNote('');
-      showToast(`Code notaire généré : ${code}`);
-    } catch { showToast('Erreur lors de la génération', false); }
-    finally { setGenerating(false); }
-  }
-
-  async function handleRevoke(id: string) {
-    try {
-      await updateDoc(doc(db, 'notaire_codes', id), { used: true, used_at: new Date().toISOString() });
-      setCodes(prev => prev.map(c => c.id === id ? { ...c, used: true } : c));
-      showToast('Code révoqué.');
-    } catch { showToast('Erreur', false); }
-  }
-
-  async function handleCopy(code: string, id: string) {
-    await navigator.clipboard.writeText(code);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
-  }
-
-  const isExpired = (c: NotaireCode) => c.expires_at ? new Date(c.expires_at) < new Date() : false;
-
-  return (
-    <div>
-      <SectionTitle title="Codes d'invitation Notaires" sub="Générez des codes à usage unique pour permettre l'inscription des notaires agréés" />
-
-      {/* Générateur */}
-      <div className="rounded-2xl p-6 mb-6"
-        style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}>
-        <h3 className="font-bold mb-4" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.2rem' }}>
-          Générer un nouveau code
-        </h3>
-        <div className="flex flex-wrap gap-3 items-end">
-          <div className="flex-1 min-w-48">
-            <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
-              style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-              Note (optionnel)
-            </label>
-            <input type="text" value={note} onChange={e => setNote(e.target.value)}
-              placeholder="Ex: Me Konaté, Cabinet Abidjan..."
-              className="w-full px-3 py-2.5 rounded-xl outline-none text-sm"
-              style={{
-                background: HColors.creamBg, border: `1px solid ${HAlpha.gold20}`,
-                color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
-              }} />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
-              style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-              Expire dans
-            </label>
-            <select value={expireDays} onChange={e => setExpireDays(Number(e.target.value))}
-              className="px-3 py-2.5 rounded-xl outline-none text-sm"
-              style={{
-                background: HColors.creamBg, border: `1px solid ${HAlpha.gold20}`,
-                color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
-              }}>
-              <option value={1}>1 jour</option>
-              <option value={3}>3 jours</option>
-              <option value={7}>7 jours</option>
-              <option value={30}>30 jours</option>
-            </select>
-          </div>
-          <button onClick={handleGenerate} disabled={generating}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:opacity-90 disabled:opacity-50"
-            style={{
-              background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF',
-              fontFamily: 'var(--font-nunito)'
-            }}>
-            {generating ? <LoaderIcon className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-            Générer un code
-          </button>
-        </div>
-      </div>
-
-      {/* Liste codes */}
-      <div className="rounded-2xl overflow-hidden"
-        style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
-        <div className="flex items-center justify-between px-5 py-4"
-          style={{ borderBottom: `1px solid ${HAlpha.gold10}` }}>
-          <h3 className="font-bold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
-            Codes générés
-          </h3>
-          <button onClick={loadCodes} className="text-xs flex items-center gap-1 hover:opacity-70 transition-all"
-            style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-            <RotateCcw className="w-3.5 h-3.5" /> Actualiser
-          </button>
-        </div>
-
-        {loading ? (
-          <div className="flex justify-center py-10">
-            <LoaderIcon className="w-6 h-6 animate-spin" style={{ color: HColors.gold }} />
-          </div>
-        ) : codes.length === 0 ? (
-          <div className="text-center py-12">
-            <Award className="w-10 h-10 mx-auto mb-3" style={{ color: HAlpha.gold20 }} />
-            <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-              Aucun code généré pour l'instant
-            </p>
-          </div>
-        ) : (
-          <div className="divide-y" style={{ borderColor: HAlpha.gold08 }}>
-            {codes.map((c, i) => {
-              const expired = isExpired(c);
-              const inactive = c.used || expired;
-              return (
-                <div key={c.id} className="flex items-center gap-4 px-5 py-3.5"
-                  style={{ background: i % 2 === 0 ? HColors.white : 'rgba(249,243,232,0.4)', opacity: inactive ? 0.6 : 1 }}>
-                  {/* Code */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono font-bold tracking-widest text-sm"
-                        style={{ color: inactive ? HColors.brown : HColors.darkBrown }}>
-                        {c.code}
-                      </span>
-                      {c.note && (
-                        <span className="text-xs px-2 py-0.5 rounded-full"
-                          style={{ background: HAlpha.gold08, color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-                          {c.note}
-                        </span>
-                      )}
-                      {/* Badge statut */}
-                      {c.used ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                          style={{ background: HAlpha.vertCI10, color: HColors.vertCI, border: `1px solid ${HAlpha.vertCI20}`, fontFamily: 'var(--font-nunito)' }}>
-                          Utilisé
-                        </span>
-                      ) : expired ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                          style={{ background: HAlpha.bord10, color: HColors.bordeaux, border: `1px solid ${HAlpha.bord20}`, fontFamily: 'var(--font-nunito)' }}>
-                          Expiré
-                        </span>
-                      ) : (
-                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                          style={{ background: HAlpha.gold10, color: HColors.brownMid, border: `1px solid ${HAlpha.gold25}`, fontFamily: 'var(--font-nunito)' }}>
-                          Actif
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex gap-3 text-xs mt-0.5" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" style={{ color: HColors.orangeCI }} />
-                        Créé le {c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '—'}
-                      </span>
-                      {c.expires_at && (
-                        <span>Expire le {new Date(c.expires_at).toLocaleDateString('fr-FR')}</span>
-                      )}
-                      {c.used_at && (
-                        <span>Utilisé le {new Date(c.used_at).toLocaleDateString('fr-FR')}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    {!inactive && (
-                      <>
-                        <button onClick={() => handleCopy(c.code, c.id)}
-                          className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80"
-                          style={{
-                            background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}`,
-                            color: copiedId === c.id ? HColors.vertCI : HColors.navy, fontFamily: 'var(--font-nunito)'
-                          }}>
-                          <Copy className="w-3 h-3" />
-                          {copiedId === c.id ? 'Copié !' : 'Copier'}
-                        </button>
-                        <button onClick={() => handleRevoke(c.id)}
-                          className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80"
-                          style={{
-                            background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}`,
-                            color: HColors.bordeaux, fontFamily: 'var(--font-nunito)'
-                          }}>
-                          <XCircle className="w-3 h-3" /> Révoquer
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
     </div>
   );
 }
