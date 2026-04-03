@@ -1,6 +1,6 @@
 import { useState, lazy, Suspense } from 'react';
 import { 
-  Heart, Calendar, Search, Bell, FileText, CheckCircle, Clock, XCircle, Star, MessageSquare 
+  Heart, Calendar, Search, Bell, FileText, CheckCircle, Clock
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -15,11 +15,11 @@ import { useTenantNotifications } from '../hooks/useTenantNotifications';
 import { PropertyGridSkeleton } from './Skeletons';
 import PropertyViewModal from './PropertyViewModal';
 import CGVLocataireModal from './CGVLocataireModal';
-import PaymentModal from './PaymentModal';
-import SatisfactionModal from './SatisfactionModal';
 import ChatBox from './ChatBox';
 import TutorialButton from './TutorialButton';
 import { KenteLine } from './ui/KenteLine';
+import Toast from './ui/Toast';
+import { useToast } from '../hooks/useToast';
 
 // Specialized Tab Components
 import SearchTab from './tenant/SearchTab';
@@ -41,9 +41,11 @@ export default function TenantDashboard() {
   const location = useLocation();
   const { favoriteIds, toggleFavorite, isFavorite } = useFavorites(user?.uid);
 
+  const { toast, showToast, hideToast } = useToast();
+  
   // Modular Hooks
   const { filtered, loading: propsLoading, handleFilterChange, allProperties } = useTenantProperties();
-  const { visitRequests, visitProperties, handleAcceptCounter, handleProposeCounter, requestVisit } = useTenantVisits(user?.uid, profile?.full_name);
+  const { visitRequests, visitProperties, handleAcceptCounter, handleProposeCounter, requestVisit } = useTenantVisits(user?.uid, profile?.full_name, showToast);
   const { notifications, unreadCount, handleMarkAllRead, loading: notifLoading } = useTenantNotifications(user?.uid);
 
   // UI State
@@ -157,6 +159,7 @@ export default function TenantDashboard() {
              unreadCount={unreadCount}
              onMarkAllRead={handleMarkAllRead}
              loading={notifLoading}
+             onNavigate={(tab: any) => navigate(`/dashboard/${tab}`)}
           />
         )}
 
@@ -187,14 +190,20 @@ export default function TenantDashboard() {
         <PropertyViewModal 
            propertyId={viewingPropertyId} 
            onClose={() => setViewingPropertyId(null)}
-           onContactClick={(prop) => { setPendingVisitProp(prop); setShowCGV(true); }}
+           onRequestVisit={() => { 
+             const prop = allProperties.find(p => p.id === viewingPropertyId);
+             if (prop) {
+               setPendingVisitProp(prop); 
+               setShowCGV(true); 
+             }
+           }}
         />
       )}
 
       {showCGV && pendingVisitProp && (
         <CGVLocataireModal 
            onAccept={() => { setShowCGV(false); setVisitModalProperty(pendingVisitProp); }}
-           onCancel={() => { setShowCGV(false); setPendingVisitProp(null); }}
+           onClose={() => { setShowCGV(false); setPendingVisitProp(null); }}
         />
       )}
 
@@ -206,15 +215,24 @@ export default function TenantDashboard() {
         />
       )}
 
-      {activeChat && (
+      {activeChat && user && (
         <ChatBox 
           chatId={activeChat.chatId}
-          otherName={activeChat.otherName}
-          otherRole={activeChat.otherRole}
+          currentUserId={user.uid}
+          otherUserName={activeChat.otherName}
+          otherUserRole={activeChat.otherRole}
           onClose={() => setActiveChat(null)}
         />
       )}
 
+      {/* Global Toast */}
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={hideToast} 
+        />
+      )}
     </div>
   );
 }

@@ -37,9 +37,13 @@ service firebase.storage {
     }
 
     // ── Dossier Locataire (justificatifs de revenus, etc.) ──
-    // SENSIBLE : uniquement le locataire lui-même, l'admin ou le PROPRIÉTAIRE (pour vérification comfort)
+    // SENSIBLE : uniquement le locataire lui-même, l'admin ou un PROPRIÉTAIRE AYANT UN LIEN D'ACCÈS
     match /tenant_dossiers/{userId}/{allPaths=**} {
-      allow read: if isAuth() && (request.auth.uid == userId || isAdmin() || isProprietaire());
+      allow read: if isAuth() && (
+        request.auth.uid == userId || 
+        isAdmin() || 
+        (isProprietaire() && firestore.exists(/databases/(default)/documents/dossier_access/$(userId)_$(request.auth.uid)))
+      );
       allow write: if isAuth() && request.auth.uid == userId
         && request.resource.size < 5 * 1024 * 1024
         && (request.resource.contentType.matches('application/pdf')
@@ -47,8 +51,13 @@ service firebase.storage {
     }
 
     // ── Pièces d'identité (CNI, passeport, etc.) ──
+    // SENSIBLE : Même protection que le dossier locataire
     match /identity/{userId}/{allPaths=**} {
-      allow read: if isAuth() && (request.auth.uid == userId || isAdmin() || isProprietaire());
+      allow read: if isAuth() && (
+        request.auth.uid == userId || 
+        isAdmin() || 
+        (isProprietaire() && firestore.exists(/databases/(default)/documents/dossier_access/$(userId)_$(request.auth.uid)))
+      );
       allow write: if isAuth() && request.auth.uid == userId
         && request.resource.size < 5 * 1024 * 1024
         && (request.resource.contentType.matches('application/pdf')

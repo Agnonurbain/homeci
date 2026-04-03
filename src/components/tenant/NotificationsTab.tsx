@@ -1,4 +1,4 @@
-import { Bell, Calendar, CheckCircle, XCircle, Star, MessageSquare, Clock } from 'lucide-react';
+import { Bell, Calendar, CheckCircle, XCircle, Star, MessageSquare, ChevronRight } from 'lucide-react';
 import type { Notification } from '../../services/notificationService';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
 
@@ -7,24 +7,35 @@ interface NotificationsTabProps {
   unreadCount: number;
   onMarkAllRead: () => void;
   loading: boolean;
+  onNavigate?: (tab: string) => void;
 }
 
-const NOTIF_ICON: Record<string, React.ReactNode> = {
-  visit_request: <Calendar className="w-4 h-4" style={{ color: HColors.navy }} />,
-  visit_accepted: <CheckCircle className="w-4 h-4" style={{ color: HColors.vertCI }} />,
-  visit_rejected: <XCircle className="w-4 h-4" style={{ color: HColors.bordeaux }} />,
-  visit_completed: <Star className="w-4 h-4" style={{ color: HColors.gold }} />,
-  notaire_approved: <CheckCircle className="w-4 h-4" style={{ color: HColors.vertCI }} />,
-  new_message: <MessageSquare className="w-4 h-4" style={{ color: HColors.orangeCI }} />,
-  system: <Bell className="w-4 h-4" style={{ color: HAlpha.brown50 }} />,
+const NOTIF_CONFIG: Record<string, { icon: React.ReactNode; color: string; tab: string }> = {
+  visit_request: { icon: <Calendar className="w-4 h-4" />, color: HColors.navy, tab: 'visits' },
+  visit_accepted: { icon: <CheckCircle className="w-4 h-4" />, color: HColors.vertCI, tab: 'visits' },
+  visit_rejected: { icon: <XCircle className="w-4 h-4" />, color: HColors.bordeaux, tab: 'visits' },
+  visit_completed: { icon: <Star className="w-4 h-4" />, color: HColors.gold, tab: 'visits' },
+  notaire_approved: { icon: <CheckCircle className="w-4 h-4" />, color: HColors.vertCI, tab: 'dossier' },
+  new_message: { icon: <MessageSquare className="w-4 h-4" />, color: HColors.orangeCI, tab: 'chat' },
+  system: { icon: <Bell className="w-4 h-4" />, color: HAlpha.brown50, tab: 'notifications' },
 };
 
 export default function NotificationsTab({
   notifications,
   unreadCount,
   onMarkAllRead,
-  loading
+  loading,
+  onNavigate
 }: NotificationsTabProps) {
+
+  const handleNotifClick = (n: Notification) => {
+    const config = NOTIF_CONFIG[n.type] || NOTIF_CONFIG.system;
+    const target = n.target_tab || config.tab;
+    if (target && onNavigate) {
+      onNavigate(target);
+    }
+  };
+
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-20 gap-3">
         <div className="w-8 h-8 border-4 border-gold border-b-transparent rounded-full animate-spin" />
@@ -33,7 +44,7 @@ export default function NotificationsTab({
   );
 
   return (
-    <div>
+    <div className="animate-in fade-in duration-500">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="font-bold mb-0.5"
@@ -46,47 +57,56 @@ export default function NotificationsTab({
         </div>
         {unreadCount > 0 && (
           <button onClick={onMarkAllRead}
-            className="px-4 py-2 text-sm font-medium rounded-xl transition-all hover:opacity-80"
-            style={{ background: HAlpha.gold10, border: '1px solid rgba(212,160,23,0.25)', color: HColors.brownMid }}>
+            className="px-4 py-2 text-sm font-bold rounded-xl transition-all hover:bg-gold/10"
+            style={{ border: `1.5px solid ${HAlpha.gold25}`, color: HColors.gold }}>
             Tout marquer lu
           </button>
         )}
       </div>
 
       {notifications.length === 0 ? (
-        <div className="rounded-2xl p-16 text-center"
-          style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
+        <div className="rounded-3xl p-16 text-center"
+          style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}`, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
           <Bell className="w-14 h-14 mx-auto mb-4" style={{ color: HAlpha.gold25 }} />
           <h3 className="text-lg font-semibold mb-1"
             style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>Aucune notification</h3>
-          <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>Vous serez notifié des activités importantes ici</p>
+          <p className="text-sm opacity-60" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>Vous serez notifié des activités importantes ici</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {notifications.map(n => (
-            <div key={n.id} className={`p-4 rounded-2xl flex gap-4 items-start transition-all ${!n.read ? 'bg-white shadow-md border-l-4' : 'opacity-70 grayscale-[0.5]'}`}
-              style={{
-                background: !n.read ? HColors.white : 'transparent',
-                borderColor: !n.read ? HColors.gold : 'transparent',
-                border: !n.read ? undefined : `1px solid ${HAlpha.gold12}`
-              }}>
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${!n.read ? 'bg-gold/10' : 'bg-gray-100'}`}
-                style={{ background: !n.read ? HAlpha.gold10 : undefined }}>
-                {NOTIF_ICON[n.type] || NOTIF_ICON.system}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm ${!n.read ? 'font-bold' : 'font-medium'}`} style={{ color: HColors.darkBrown }}>{n.title}</p>
-                <p className="text-xs mt-0.5 line-clamp-2" style={{ color: HColors.brown }}>{n.message}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <Clock className="w-3 h-3 text-gray-400" />
-                  <span className="text-[10px] text-gray-400 font-medium tracking-wider uppercase">
-                    {new Date(n.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                  </span>
+          {notifications.map(n => {
+            const config = NOTIF_CONFIG[n.type] || NOTIF_CONFIG.system;
+            return (
+              <div key={n.id} 
+                onClick={() => handleNotifClick(n)}
+                className={`group p-5 rounded-2xl flex gap-4 items-start transition-all cursor-pointer hover:shadow-md hover:bg-gold/[0.02] ${!n.read ? 'bg-white border-l-4' : 'opacity-75'}`}
+                style={{
+                  background: HColors.white,
+                  borderColor: !n.read ? HColors.gold : HAlpha.gold15,
+                  border: !n.read ? undefined : `1.5px solid ${HAlpha.gold12}`,
+                  transform: !n.read ? 'scale(1.01)' : 'none'
+                }}>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110`}
+                  style={{ background: `${config.color}15`, color: config.color, border: `1px solid ${config.color}30` }}>
+                  {config.icon}
                 </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className={`text-sm ${!n.read ? 'font-bold' : 'font-semibold'}`} style={{ color: HColors.darkBrown }}>{n.title}</p>
+                    <span className="text-[10px] text-gray-400 font-bold tracking-wider uppercase whitespace-nowrap">
+                      {new Date(n.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                    </span>
+                  </div>
+                  <p className="text-xs mt-1 leading-relaxed line-clamp-2" style={{ color: HColors.brown }}>{n.message}</p>
+                  
+                  <div className="mt-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-gold opacity-0 group-hover:opacity-100 transition-opacity">
+                    Voir les détails <ChevronRight className="w-3 h-3" />
+                  </div>
+                </div>
+                {!n.read && <div className="w-2.5 h-2.5 rounded-full bg-orange-600 mt-1.5 shrink-0 animate-pulse" />}
               </div>
-              {!n.read && <div className="w-2.5 h-2.5 rounded-full bg-orange-600 mt-1.5 shrink-0" />}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

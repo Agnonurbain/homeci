@@ -24,6 +24,7 @@ export interface SurveyData {
 export function useOwnerVisits(
   userId: string | undefined,
   flagNeedsStatusUpdate: (propertyId: string) => void,
+  onShowToast?: (msg: string, type: 'success' | 'error' | 'info' | 'warning') => void
 ) {
   const [visits, setVisits] = useState<VisitRequest[]>([]);
   const [filter, setFilter] = useState<VisitFilter>('all');
@@ -93,9 +94,17 @@ export function useOwnerVisits(
       setSelectedVisit(null);
       setCounterDate('');
       setCounterTime('');
+      if (onShowToast) {
+        const msg = action === 'accepted' ? 'Visite acceptée' : action === 'rejected' ? 'Visite refusée' : 'Contre-proposition envoyée';
+        onShowToast(msg, 'success');
+      }
     } catch (e: any) {
       console.error('[HOMECI] Erreur visite:', e);
-      alert(`Erreur : ${e?.message || 'Impossible de traiter la demande. Vérifiez votre connexion.'}`);
+      if (onShowToast) {
+        onShowToast(e?.message || 'Impossible de traiter la demande.', 'error');
+      } else {
+        alert(`Erreur : ${e?.message || 'Impossible de traiter la demande.'}`);
+      }
     } finally { setActionLoading(false); }
   }, [selectedVisit, actionLoading, counterDate, counterTime]);
 
@@ -108,8 +117,10 @@ export function useOwnerVisits(
       
       analyticsService.completeVisit(visit.id);
       setSurveyData({ trigger: 'visit_completed', propertyId: visit.property_id, propertyTitle: visit.property_title });
-    } catch (e) {
+      if (onShowToast) onShowToast('Visite marquée comme effectuée', 'success');
+    } catch (e: any) {
       console.error('[HOMECI] Erreur marquage visite:', e);
+      if (onShowToast) onShowToast('Erreur : ' + (e?.message || 'Action impossible'), 'error');
     } finally { setActionLoading(false); }
   }, [flagNeedsStatusUpdate]);
 

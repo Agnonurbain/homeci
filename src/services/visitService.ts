@@ -1,6 +1,6 @@
 import {
   collection, doc, addDoc, updateDoc, getDocs,
-  query, where, serverTimestamp, Timestamp, getDoc, onSnapshot
+  query, where, serverTimestamp, Timestamp, getDoc, onSnapshot, setDoc
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { notificationService } from './notificationService';
@@ -93,6 +93,19 @@ export const visitService = {
       created_at: serverTimestamp(),
       updated_at: serverTimestamp(),
     });
+
+    // Sécurité: Créer un lien d'accès au dossier pour le propriétaire
+    try {
+      const accessId = `${data.tenant_id}_${data.owner_id}`;
+      await setDoc(doc(db, 'dossier_access', accessId), {
+        tenant_id: data.tenant_id,
+        owner_id: data.owner_id,
+        visit_id: ref.id,
+        granted_at: serverTimestamp(),
+      });
+    } catch (e) {
+      console.warn('[HOMECI] Erreur création dossier_access:', e);
+    }
 
     if (options?.notify) {
       await notificationService.createNotification({

@@ -1,6 +1,6 @@
 import {
   collection, doc, addDoc, updateDoc, getDocs,
-  query, where, serverTimestamp, Timestamp, onSnapshot, orderBy
+  query, where, serverTimestamp, Timestamp, onSnapshot
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
@@ -11,6 +11,8 @@ export interface Notification {
   title: string;
   message: string;
   property_id?: string;
+  target_tab?: 'properties' | 'visits' | 'favorites' | 'notifications' | 'chat';
+  icon?: string;
   read: boolean;
   created_at: string;
 }
@@ -28,6 +30,8 @@ function docToNotif(id: string, data: Record<string, unknown>): Notification {
     title: String(data.title ?? ''),
     message: String(data.message ?? ''),
     property_id: data.property_id ? String(data.property_id) : undefined,
+    target_tab: (data.target_tab as Notification['target_tab']) ?? undefined,
+    icon: data.icon ? String(data.icon) : undefined,
     read: Boolean(data.read ?? false),
     created_at: toISO(data.created_at),
   };

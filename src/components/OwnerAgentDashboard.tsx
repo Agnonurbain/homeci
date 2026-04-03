@@ -20,6 +20,8 @@ import TutorialButton from './TutorialButton';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { BOOST_PRICES } from '../types/ad';
 import type { BoostDuration } from '../types/ad';
+import Toast from './ui/Toast';
+import { useToast } from '../hooks/useToast';
 
 // Hooks
 import { useOwnerProperties } from '../hooks/useOwnerProperties';
@@ -49,8 +51,9 @@ export default function OwnerAgentDashboard() {
   const activeTab: Tab = validTabs.includes(tabFromUrl as Tab) ? tabFromUrl as Tab : 'properties';
 
   // Core data hooks
+  const { toast, showToast, hideToast } = useToast();
   const props = useOwnerProperties(user?.uid);
-  const visits = useOwnerVisits(user?.uid, props.flagNeedsStatusUpdate);
+  const visits = useOwnerVisits(user?.uid, props.flagNeedsStatusUpdate, showToast);
   const notifs = useOwnerNotifications(user?.uid);
 
   // Modal states (CGV flow, forms, boost, chat, availability, status)
@@ -188,6 +191,10 @@ export default function OwnerAgentDashboard() {
             unreadCount={notifs.unreadCount}
             onMarkAsRead={notifs.markAsRead}
             onMarkAllRead={notifs.markAllAsRead}
+            onNavigate={(tab) => {
+              const tabId = tab === 'visits' ? 'requests' : tab;
+              navigate(`/dashboard/${tabId}`);
+            }}
           />
         )}
       </div>
@@ -300,7 +307,7 @@ export default function OwnerAgentDashboard() {
             setBoostPaymentConfig(null);
             setBoostProp(null);
             setBoostDuration(7);
-            alert("Sponsoring activé avec succès !");
+            showToast("Sponsoring activé avec succès !", "success");
           }}
           onClose={() => setBoostPaymentConfig(null)}
         />
@@ -348,6 +355,15 @@ export default function OwnerAgentDashboard() {
           trigger={visits.surveyData.trigger}
           propertyId={visits.surveyData.propertyId}
           propertyTitle={visits.surveyData.propertyTitle}
+        />
+      )}
+
+      {/* Global Toast */}
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={hideToast} 
         />
       )}
     </div>
