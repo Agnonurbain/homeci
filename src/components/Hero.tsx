@@ -130,7 +130,7 @@ export function Hero({ onSearch }: HeroProps) {
 
       {/* Éléphant watermark */}
       <HomeCIEmblem variant="watermark"
-        className="absolute right-[-5%] top-1/2 -translate-y-1/2 w-[200px] h-[200px] sm:w-[300px] sm:h-[300px] md:w-[450px] md:h-[450px]" />
+        className="absolute right-[-5%] top-1/2 -translate-y-1/2 w-[150px] h-[150px] sm:w-[300px] sm:h-[300px] md:w-[450px] md:h-[450px]" />
 
       <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 md:px-6 pt-10 md:pt-14 pb-8 md:pb-12">
 
@@ -142,8 +142,8 @@ export function Hero({ onSearch }: HeroProps) {
           </p>
 
           {/* Titre */}
-          <h1 className="text-center leading-tight mb-6"
-            style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(2.4rem,6vw,4.5rem)',
+          <h1 className="text-center leading-tight mb-4 sm:mb-6"
+            style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(1.8rem, 6vw, 4.5rem)',
                      fontWeight: 700, color: HColors.white, lineHeight: 1.1 }}>
             L'immobilier ivoirien,{' '}
             <br className="hidden md:block" />
@@ -167,7 +167,7 @@ export function Hero({ onSearch }: HeroProps) {
                 if (e.key === 'Enter') handleSearch();
               }}
               placeholder="Ex: 'Appartement Cocody 3 pièces' ou 'Villa > 500000'"
-              className="w-full rounded-2xl py-5 px-14 text-lg outline-none transition-all shadow-xl"
+              className="w-full rounded-2xl py-4 sm:py-5 px-11 sm:px-14 text-base sm:text-lg outline-none transition-all shadow-xl"
               style={{ 
                 background: 'rgba(255,255,255,0.12)', 
                 border: '1px solid rgba(212,160,23,0.3)',
@@ -247,7 +247,7 @@ export function Hero({ onSearch }: HeroProps) {
 
               {/* Bouton recherche */}
               <button onClick={handleSearch}
-                className="flex items-center justify-center gap-2 rounded-xl py-3 md:py-0 text-sm font-bold transition-all hover:scale-[1.02] active:scale-95"
+                className="flex items-center justify-center gap-2 rounded-xl py-3.5 md:py-0 text-sm font-bold transition-all hover:scale-[1.02] active:scale-95 min-h-[48px]"
                 style={{ background: HGradients.cta, color: HColors.white, fontFamily: 'var(--font-nunito)' }}>
                 <Search size={18} />
                 Rechercher
