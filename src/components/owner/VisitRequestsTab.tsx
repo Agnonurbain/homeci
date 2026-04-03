@@ -33,12 +33,12 @@ export default function VisitRequestsTab({
 
   return (
     <div>
-      <div className="mb-7">
+      <div className="mb-7 text-center sm:text-left">
         <h1 className="font-bold mb-1"
-          style={{ fontFamily: 'var(--font-cormorant)', fontSize: '2rem', color: HColors.darkBrown }}>
+          style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(1.5rem, 5vw, 2rem)', color: HColors.darkBrown }}>
           Demandes de Visite
         </h1>
-        <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+        <p className="text-xs sm:text-sm uppercase tracking-widest font-bold opacity-50" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
           {visits.length} demande(s) reçue(s)
         </p>
       </div>
@@ -79,78 +79,62 @@ export default function VisitRequestsTab({
                   background: HColors.white, border: `1px solid ${HAlpha.gold15}`,
                   boxShadow: '0 2px 10px rgba(26,14,0,0.05)'
                 }}>
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col xs:flex-row xs:items-center gap-2 mb-3">
+                      <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold w-fit"
                         style={{
                           background: vs.bg, color: vs.text, border: `1px solid ${vs.border}`,
                           fontFamily: 'var(--font-nunito)'
                         }}>
                         {vs.icon} {vs.label}
                       </span>
-                      <h3 className="font-bold text-sm" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1rem' }}>
+                      <h3 className="font-bold text-sm truncate" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1rem' }}>
                         {visit.property_title}
                       </h3>
                     </div>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm"
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-[11px] sm:text-sm"
                       style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 truncate">
                         <Users className="w-3.5 h-3.5" style={{ color: HColors.orangeDark }} />{visit.tenant_name}
                       </div>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 truncate">
                         <Calendar className="w-3.5 h-3.5" style={{ color: HColors.orangeDark }} />
                         {visit.status === 'counter_proposed' && visit.counter_proposed_by === 'tenant' && visit.counter_date
-                          ? <>{new Date(visit.counter_date).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'long' })} à {visit.counter_time}</>
+                          ? <>{new Date(visit.counter_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} à {visit.counter_time}</>
                           : <>{new Date(visit.preferred_date).toLocaleDateString('fr-FR')} à {visit.preferred_time}</>
                         }
                       </div>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 truncate">
                         <MapPin className="w-3.5 h-3.5" style={{ color: HColors.orangeDark }} />{visit.property_city}
                       </div>
-                      {/* NEW: Dossier Button */}
                       <button onClick={() => setViewingDossier({ id: visit.tenant_id, name: visit.tenant_name || 'Locataire' })}
                         className="flex items-center gap-1.5 px-2 py-1 rounded bg-navy-50 text-navy-700 hover:bg-navy-100 transition-colors w-fit group"
                         style={{ background: HAlpha.navy08, color: HColors.navy }}>
                         <FileText className="w-3 h-3 group-hover:scale-110 transition-transform" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider">Voir Dossier</span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider">Dossier</span>
                       </button>
                     </div>
 
                     {/* Counter proposals */}
                     {visit.status === 'counter_proposed' && visit.counter_proposed_by === 'tenant' && visit.counter_date && (
-                      <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl text-xs"
+                      <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] sm:text-xs"
                         style={{
                           background: HAlpha.orange10, border: '1px solid rgba(192,124,62,0.25)',
                           color: HColors.brownDeep, fontFamily: 'var(--font-nunito)'
                         }}>
                         <Calendar className="w-3.5 h-3.5 shrink-0" />
-                        Le locataire propose : <strong className="ml-1">
-                          {new Date(visit.counter_date).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'long' })} à {visit.counter_time}
+                        Proposition locataire : <strong className="ml-1">
+                          {new Date(visit.counter_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} à {visit.counter_time}
                         </strong>
-                        <span className="ml-2 opacity-60" style={{ textDecoration: 'line-through' }}>
-                          (initial : {new Date(visit.preferred_date).toLocaleDateString('fr-FR')} à {visit.preferred_time})
-                        </span>
-                      </div>
-                    )}
-                    {visit.status === 'counter_proposed' && visit.counter_proposed_by === 'owner' && visit.counter_date && (
-                      <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl text-xs"
-                        style={{
-                          background: HAlpha.navy08, border: '1px solid rgba(26,58,107,0.2)',
-                          color: HColors.navy, fontFamily: 'var(--font-nunito)'
-                        }}>
-                        <Calendar className="w-3.5 h-3.5 shrink-0" />
-                        Votre proposition : <strong className="ml-1">
-                          {new Date(visit.counter_date).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'long' })} à {visit.counter_time}
-                        </strong> — en attente du locataire
                       </div>
                     )}
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+                  <div className="flex flex-row sm:flex-col lg:flex-row gap-2 shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
                     {(visit.status === 'pending' || (visit.status === 'counter_proposed' && visit.counter_proposed_by === 'tenant')) && (
                       <button onClick={() => onRespond(visit)}
-                        className="px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
+                        className="flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all hover:opacity-90"
                         style={visit.status === 'counter_proposed'
                           ? { background: HColors.navyDark, color: HColors.cream, fontFamily: 'var(--font-nunito)' }
                           : {
@@ -163,27 +147,26 @@ export default function VisitRequestsTab({
                     {visit.status === 'accepted' && (
                       <button onClick={() => onMarkCompleted(visit)}
                         disabled={actionLoading}
-                        className="px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
+                        className="flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-1.5"
                         style={{ background: HColors.vertCI, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
-                        <CheckCircle className="w-3.5 h-3.5" /> Visite effectuée
+                        <CheckCircle className="w-3.5 h-3.5" /> <span className="hidden xs:inline">Visite effectuée</span><span className="xs:hidden">Effectuée</span>
                       </button>
                     )}
                     {visit.status !== 'rejected' && (
                       <button onClick={() => onOpenChat(visit)}
                         disabled={chatLoadingId === visit.id || (visit.status !== 'accepted' && visit.status !== 'completed')}
-                        className="px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-50"
+                        className="flex-1 sm:flex-none px-4 py-2 rounded-xl flex items-center justify-center gap-1.5 text-xs sm:text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-50"
                         style={{
                           background: (visit.status === 'accepted' || visit.status === 'completed')
                             ? 'linear-gradient(135deg,#FF6B00,#D4A017)'
                             : '#e5e7eb',
                           color: (visit.status === 'accepted' || visit.status === 'completed') ? '#FFFFFF' : '#9ca3af',
                           fontFamily: 'var(--font-nunito)'
-                        }}
-                        title={(visit.status !== 'accepted' && visit.status !== 'completed') ? "Le chat sera accessible dès que vous aurez accepté la visite." : ""}>
+                        }}>
                         {chatLoadingId === visit.id
                           ? <div className="w-3.5 h-3.5 animate-spin rounded-full border-b-2 border-white" />
                           : <MessageSquare className="w-3.5 h-3.5" />}
-                        Discuter
+                        <span className="hidden xs:inline">Discuter</span><span className="xs:hidden">Chat</span>
                       </button>
                     )}
                   </div>

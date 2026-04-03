@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { 
-  X, CheckCircle, Eye, 
+  X, CheckCircle, 
   AlertTriangle, ShieldCheck, UserCircle, Wallet,
   Briefcase, Users, ExternalLink
 } from 'lucide-react';
@@ -93,11 +93,11 @@ export default function DossierViewerModal({ tenantId, tenantName, onClose }: Do
               <UserCircle className="w-8 h-8" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>
+              <h2 className="text-lg sm:text-2xl font-bold truncate max-w-[150px] xs:max-w-none" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>
                 {hasConsented ? `Dossier de ${tenantName}` : "Engagement Légal"}
               </h2>
-              <p className="text-xs" style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
-                {hasConsented ? "Consultation du profil locataire (Étude de solvabilité)" : "Veuillez accepter les conditions pour continuer"}
+              <p className="text-[10px] sm:text-xs opacity-60" style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
+                {hasConsented ? "Consultation du profil" : "Conditions d'accès"}
               </p>
             </div>
           </div>
@@ -109,13 +109,13 @@ export default function DossierViewerModal({ tenantId, tenantName, onClose }: Do
         <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-gray-50/50">
           {!hasConsented ? (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500 py-4">
-              <div className="p-6 rounded-3xl bg-white border border-amber-200 shadow-sm space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 mb-2">
-                  <ShieldCheck className="w-10 h-10" />
+              <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border border-amber-200 shadow-sm space-y-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 mb-2">
+                  <ShieldCheck className="w-8 h-8 sm:w-10 sm:h-10" />
                 </div>
-                <h3 className="text-xl font-bold text-amber-900" style={{ fontFamily: 'var(--font-cormorant)' }}>Protection des Données Personnelles</h3>
-                <p className="text-sm leading-relaxed text-amber-900/80">
-                  En accédant au dossier de <strong>{tenantName}</strong>, vous vous engagez à respecter strictement la <strong>Loi n°2013-450 du 19 juin 2013</strong> relative à la protection des données à caractère personnel en Côte d'Ivoire.
+                <h3 className="text-lg sm:text-xl font-bold text-amber-900 leading-tight" style={{ fontFamily: 'var(--font-cormorant)' }}>Protection des Données</h3>
+                <p className="text-xs sm:text-sm leading-relaxed text-amber-900/80">
+                  En accédant au dossier de <strong>{tenantName}</strong>, vous vous engagez à respecter strictement la <strong>Loi n°2013-450</strong> sur la protection des données en Côte d'Ivoire.
                 </p>
                 <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-100 space-y-2">
                   <p className="text-[11px] font-semibold text-amber-800">Je reconnais et j'accepte que :</p>
@@ -196,9 +196,9 @@ export default function DossierViewerModal({ tenantId, tenantName, onClose }: Do
         </div>
 
         {/* Footer */}
-        <div className="p-6 bg-white border-t flex justify-end">
+        <div className="p-4 sm:p-6 bg-white border-t flex justify-center sm:justify-end">
           <button onClick={onClose}
-            className="px-8 py-3 rounded-2xl text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="w-full sm:w-auto px-8 py-3 rounded-2xl text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98]"
             style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #D4A017 100%)', color: '#FFF' }}>
             {hasConsented ? "Fermer le dossier" : "Annuler"}
           </button>

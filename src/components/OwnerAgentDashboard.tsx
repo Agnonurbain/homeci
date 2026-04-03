@@ -109,23 +109,23 @@ export default function OwnerAgentDashboard() {
           <div className="flex items-center gap-2">
             <nav className="flex space-x-1 homeci-tabs-scroll flex-1" style={{ minWidth: 0 }}>
             {[
-              { id: 'properties', icon: Home, label: 'Mes Biens', count: props.stats.total },
-              { id: 'requests', icon: Calendar, label: 'Demandes', count: visits.pendingCount },
-              { id: 'stats', icon: BarChart3, label: 'Statistiques' },
-              { id: 'notifications', icon: Bell, label: 'Notif.', count: notifs.unreadCount },
+              { id: 'properties', icon: Home, label: 'Biens', fullLabel: 'Mes Biens', count: props.stats.total },
+              { id: 'requests', icon: Calendar, label: 'Visites', fullLabel: 'Demandes', count: visits.pendingCount },
+              { id: 'stats', icon: BarChart3, label: 'Stats', fullLabel: 'Statistiques' },
+              { id: 'notifications', icon: Bell, label: 'Notif.', fullLabel: 'Notifications', count: notifs.unreadCount },
             ].map(tab => (
               <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
-                aria-label={tab.label}
+                aria-label={tab.fullLabel}
                 aria-current={activeTab === tab.id ? 'page' : undefined}
-                className="py-4 px-3 sm:px-4 border-b-2 text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex items-center gap-1.5 sm:gap-2"
+                className="py-4 px-2 sm:px-4 border-b-2 text-[11px] sm:text-sm font-medium transition-all whitespace-nowrap flex items-center gap-1.5 sm:gap-2"
                 style={activeTab === tab.id
                   ? { borderColor: HColors.orangeCI, color: HColors.orangeDark, fontFamily: 'var(--font-nunito)' }
                   : { borderColor: 'transparent', color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
                 <tab.icon className="w-4 h-4 shrink-0" />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="hidden sm:inline">{tab.fullLabel}</span>
                 <span className="sm:hidden">{tab.label}</span>
                 {tab.count !== undefined && tab.count > 0 && (
-                  <span className="px-1.5 py-0.5 rounded-full text-xs font-bold"
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold"
                     style={tab.id === 'notifications'
                       ? { background: HColors.bordeaux, color: HColors.cream }
                       : { background: HAlpha.orange20, color: HColors.orangeDark }}>

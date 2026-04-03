@@ -31,29 +31,29 @@ export default function PropertiesTab({
 }: PropertiesTabProps) {
   return (
     <div className="animate-in fade-in duration-500">
-      <div className="flex justify-between items-center mb-7">
-        <div>
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-7">
+        <div className="text-center sm:text-left">
           <h1 className="font-bold mb-1"
-            style={{ fontFamily: 'var(--font-cormorant)', fontSize: '2rem', color: HColors.darkBrown }}>
+            style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(1.5rem, 5vw, 2rem)', color: HColors.darkBrown }}>
             Mes Biens
           </h1>
-          <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+          <p className="text-xs sm:text-sm uppercase tracking-widest font-bold opacity-50" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
             {stats.total} bien(s) enregistré(s)
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button onClick={onExportCSV}
-            className="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-all hover:bg-gray-100 border border-gray-200"
+            className="flex-1 sm:flex-none justify-center px-3 sm:px-4 py-2.5 rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-widest flex items-center gap-2 transition-all hover:bg-gray-100 border border-gray-200"
             style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)', background: HColors.white }}>
-            <Download className="w-4 h-4" /> Exporter
+            <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> <span className="hidden xs:inline">Exporter</span><span className="xs:hidden">Export</span>
           </button>
           <button onClick={onAddProperty}
-            className="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-lg"
+            className="flex-[2] sm:flex-none justify-center px-3 sm:px-5 py-2.5 rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-widest flex items-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-lg whitespace-nowrap"
             style={{
               background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF',
               fontFamily: 'var(--font-nunito)'
             }}>
-            <Plus className="w-4 h-4" /> Ajouter un bien
+            <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Ajouter
           </button>
         </div>
       </div>

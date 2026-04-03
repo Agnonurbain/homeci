@@ -99,22 +99,22 @@ export default function VisitResponseModal({
               style={{ color: HAlpha.cream70, fontFamily: 'var(--font-nunito)' }}>
               Proposer une autre date (optionnel)
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs mb-1" style={{ color: 'rgba(212,160,23,0.6)', fontFamily: 'var(--font-nunito)' }}>
+                <label className="block text-[10px] sm:text-xs mb-1 uppercase font-bold tracking-wider" style={{ color: 'rgba(212,160,23,0.6)', fontFamily: 'var(--font-nunito)' }}>
                   Nouvelle date
                 </label>
                 <input type="date" value={counterDate}
                   min={new Date().toISOString().split('T')[0]}
                   onChange={e => onCounterDateChange(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                  className="w-full px-3 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm outline-none"
                   style={{
                     background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.2)',
                     color: HColors.cream, fontFamily: 'var(--font-nunito)'
                   }} />
               </div>
               <div>
-                <label className="block text-xs mb-1" style={{ color: 'rgba(212,160,23,0.6)', fontFamily: 'var(--font-nunito)' }}>Heure</label>
+                <label className="block text-[10px] sm:text-xs mb-1 uppercase font-bold tracking-wider" style={{ color: 'rgba(212,160,23,0.6)', fontFamily: 'var(--font-nunito)' }}>Heure</label>
                 <ScrollTimePicker value={counterTime} onChange={onCounterTimeChange} />
               </div>
             </div>

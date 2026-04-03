@@ -106,16 +106,16 @@ export default function PropertyRow({
       </td>
 
       <td className="px-5 py-4">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 sm:gap-1.5">
           <button onClick={() => onView(property.id)}
-            className="p-2 rounded-xl transition-all hover:bg-gold/10"
+            className="p-1.5 sm:p-2 rounded-xl transition-all hover:bg-gold/10"
             style={{ color: HColors.brown, border: `1px solid ${HAlpha.gold15}` }} 
             title="Détails">
             <Eye className="w-4 h-4" />
           </button>
           
           <button onClick={() => onEdit(property.id)}
-            className="p-2 rounded-xl transition-all hover:bg-emerald-50"
+            className="p-1.5 sm:p-2 rounded-xl transition-all hover:bg-emerald-50"
             style={{ color: HColors.vertCI, border: `1px solid ${HAlpha.vertCI20}` }} 
             title="Modifier">
             <Edit className="w-4 h-4" />
@@ -123,15 +123,15 @@ export default function PropertyRow({
 
           {property.status === 'published' && property.needs_status_update && (
             <button onClick={() => onStatusUpdate(property)}
-              className="px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all hover:shadow-md animate-pulse"
+              className="px-2 py-1.5 sm:px-3 sm:py-2 rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all hover:shadow-md animate-pulse"
               style={{ background: HAlpha.orange10, color: HColors.orangeDark, border: `1px solid ${HAlpha.orange25}` }} 
               title="Mettre à jour le statut">
-              <AlertTriangle className="w-3.5 h-3.5" /> Statut
+              <AlertTriangle className="w-3.5 h-3.5" /> <span className="hidden xs:inline">Statut</span>
             </button>
           )}
 
           <button onClick={() => onAvailability(property)}
-            className="p-2 rounded-xl transition-all hover:bg-gold/10"
+            className="p-1.5 sm:p-2 rounded-xl transition-all hover:bg-gold/10"
             style={{ color: HColors.gold, border: `1px solid ${HAlpha.gold20}` }} 
             title="Disponibilités">
             <Calendar className="w-4 h-4" />
@@ -139,10 +139,10 @@ export default function PropertyRow({
 
           {property.status === 'published' && (
             <button onClick={() => onBoost(property)}
-              className="px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all hover:bg-gold hover:text-white"
+              className="px-2 py-1.5 sm:px-3 sm:py-2 rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all hover:bg-gold hover:text-white"
               style={{ background: HAlpha.gold10, color: HColors.gold, border: `1.5px solid ${HAlpha.gold25}` }} 
               title="Booster l'annonce">
-              <Zap className="w-3.5 h-3.5" /> Booster
+              <Zap className="w-3.5 h-3.5" /> <span className="hidden xs:inline">Booster</span>
             </button>
           )}
         </div>
