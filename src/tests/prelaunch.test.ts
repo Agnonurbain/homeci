@@ -335,7 +335,7 @@ describe('8. Composants critiques — Existence', () => {
     { file: 'src/components/AdminUsersSearchTab.tsx', contains: ['handleSuspend', 'handleReactivate', 'searchQuery'] },
     { file: 'src/components/AdminDashboard.tsx', contains: ['AdminReportsTab', 'AdminSurveysTab', 'AdminVisitsTab', 'AdminUsersSearchTab'] },
     { file: 'src/components/AuthModal.tsx', contains: ['analyticsService', 'resetPassword'] },
-    { file: 'src/components/TenantDashboard.tsx', contains: ['PropertyGridSkeleton', 'analyticsService', 'requestVisit'] },
+    { file: 'src/components/TenantDashboard.tsx', contains: ['PropertyGridSkeleton', 'useTenantVisits', 'requestVisit'] },
     { file: 'src/components/OwnerAgentDashboard.tsx', contains: ['useOwnerProperties', 'useOwnerVisits', 'PropertiesTab', 'VisitRequestsTab'] },
     { file: 'src/components/NotaireDashboard.tsx', contains: ['NotaireListSkeleton', 'analyticsService', 'certifyProperty'] },
     { file: 'src/components/SatisfactionModal.tsx', contains: ['analyticsService', 'submitSurvey'] },

@@ -7,15 +7,21 @@ import { vi } from 'vitest';
 // ─── Firestore mock ─────────────────────────────────────────────────────────────
 
 const mockDocData = new Map<string, Record<string, unknown>>();
+const mockCollectionData = new Map<string, Array<{ id: string; data: Record<string, unknown> }>>();
 
 export const mockFirestore = {
   /** Injecte des données fictives pour un document */
   setMockDoc(path: string, data: Record<string, unknown>) {
     mockDocData.set(path, data);
   },
+  /** Injecte des données fictives pour une collection */
+  setMockCollection(path: string, docs: Array<{ id: string; data: Record<string, unknown> }>) {
+    mockCollectionData.set(path, docs);
+  },
   /** Réinitialise toutes les données */
   reset() {
     mockDocData.clear();
+    mockCollectionData.clear();
   },
 };
 
@@ -41,15 +47,30 @@ export const firestoreMocks = {
       id: ref.path.split('/').pop(),
     };
   }),
-  getDocs: vi.fn(async () => ({
-    docs: [] as any[],
-    empty: true,
-    size: 0,
-  })),
+  getDocs: vi.fn(async (ref: { path: string }) => {
+    const docs = mockCollectionData.get(ref.path) || [];
+    return {
+      docs: docs.map(d => ({ id: d.id, data: () => d.data })),
+      empty: docs.length === 0,
+      size: docs.length,
+    };
+  }),
+  onSnapshot: vi.fn((ref: { path: string }, callback: (snap: any) => void) => {
+    const docs = mockCollectionData.get(ref.path) || [];
+    callback({
+      docs: docs.map(d => ({ id: d.id, data: () => d.data })),
+      empty: docs.length === 0,
+      size: docs.length,
+      forEach: (cb: any) => docs.forEach(d => cb({ id: d.id, data: () => d.data })),
+    });
+    return vi.fn(); // Unsubscribe mock
+  }),
   query: vi.fn((...args: unknown[]) => args[0]),
   where: vi.fn(() => ({})),
   orderBy: vi.fn(() => ({})),
   limit: vi.fn(() => ({})),
+  increment: vi.fn((n) => ({ _type: 'increment', n })),
+  arrayUnion: vi.fn((...args) => ({ _type: 'arrayUnion', args })),
   serverTimestamp: vi.fn(() => ({ _type: 'serverTimestamp' })),
   Timestamp: class MockTimestamp {
     _seconds: number;
