@@ -1,5 +1,5 @@
 import {
-  collection, doc, setDoc, addDoc, query, orderBy, onSnapshot, getDoc, serverTimestamp
+  collection, doc, setDoc, addDoc, query, orderBy, onSnapshot, getDoc, updateDoc, serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
@@ -8,7 +8,7 @@ export interface ChatMessage {
   chat_id: string;
   sender_id: string;
   content: string;
-  created_at: string;
+  created_at: any; // Firestore Timestamp
   read: boolean;
 }
 
@@ -18,17 +18,16 @@ export interface Chat {
   tenant_id: string;
   owner_id: string;
   visit_id: string;
-  updated_at: string;
+  updated_at: any;
   tenant_name?: string;
   owner_name?: string;
   property_title?: string;
 }
 
-// Filtre basique pour expurger les emails (on garde les numéros de téléphone accessibles)
+// Filtre d'emails uniquement (les numéros de téléphone restent visibles selon le choix HomeCI)
 const filterMessage = (msg: string): string => {
-  // Regex basique pour emails
   const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi;
-  return msg.replace(emailRegex, ' [Email masqué par sécurité] ').trim();
+  return msg.replace(emailRegex, ' [Email masqué] ').trim();
 };
 
 export const chatService = {
@@ -44,13 +43,12 @@ export const chatService = {
     }
 
     try {
-      // Créer un nouveau chat avec visitId comme ID
       await setDoc(chatRef, {
         property_id: propertyId,
         tenant_id: tenantId,
         owner_id: ownerId,
         visit_id: visitId,
-        updated_at: new Date().toISOString()
+        updated_at: serverTimestamp()
       });
       return visitId;
     } catch (err) {
@@ -102,12 +100,24 @@ export const chatService = {
       });
 
       // Mettre à jour le chat parent pour les tris
-      await setDoc(doc(db, 'chats', chatId), {
+      await updateDoc(doc(db, 'chats', chatId), {
         updated_at: serverTimestamp()
-      }, { merge: true });
+      });
     } catch (err) {
       console.error('[chatService] Error sending message:', err);
       throw err;
+    }
+  },
+
+  /**
+   * Marque un message comme lu
+   */
+  async markMessageAsRead(chatId: string, messageId: string): Promise<void> {
+    try {
+      const msgRef = doc(db, 'chats', chatId, 'messages', messageId);
+      await updateDoc(msgRef, { read: true });
+    } catch (err) {
+      console.error('[chatService] Error marking as read:', err);
     }
   }
 };

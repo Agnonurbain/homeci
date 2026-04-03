@@ -162,17 +162,25 @@ service cloud.firestore {
     }
 
     // ── CHATS & MESSAGES ──
+    function isChatParticipant(chatId) {
+      let chat = get(/databases/$(database)/documents/chats/$(chatId));
+      return isAuth() && (chat.data.owner_id == request.auth.uid || chat.data.tenant_id == request.auth.uid);
+    }
+
     match /chats/{chatId} {
+      // Lecture : Participants, Admin ou Notaire
       allow read: if isAuth() && (
         resource == null || 
         resource.data.owner_id == request.auth.uid ||
         resource.data.tenant_id == request.auth.uid ||
         isAdmin() || isNotaire()
       );
+      // Création : L'un des participants
       allow create: if isAuth() && (
         request.resource.data.owner_id == request.auth.uid ||
         request.resource.data.tenant_id == request.auth.uid
       );
+      // Mise à jour : Participants (pour updated_at) ou Admin
       allow update: if isAuth() && (
         resource.data.owner_id == request.auth.uid ||
         resource.data.tenant_id == request.auth.uid ||
@@ -180,15 +188,16 @@ service cloud.firestore {
       );
 
       match /messages/{msgId} {
-        allow read: if isAuth() && (
-          get(/databases/$(database)/documents/chats/$(chatId)).data.owner_id == request.auth.uid ||
-          get(/databases/$(database)/documents/chats/$(chatId)).data.tenant_id == request.auth.uid ||
-          isAdmin() || isNotaire()
-        );
-        allow create: if isAuth() && (
-          get(/databases/$(database)/documents/chats/$(chatId)).data.owner_id == request.auth.uid ||
-          get(/databases/$(database)/documents/chats/$(chatId)).data.tenant_id == request.auth.uid
-        ) && request.resource.data.sender_id == request.auth.uid;
+        allow read: if isChatParticipant(chatId) || isAdmin() || isNotaire();
+        
+        // Création : Participant + sender_id valide
+        allow create: if isChatParticipant(chatId) && request.resource.data.sender_id == request.auth.uid;
+        
+        // Mise à jour : Autorisé uniquement pour marquer comme 'lu' par le destinataire (pas l'expéditeur)
+        allow update: if isChatParticipant(chatId) 
+          && resource.data.sender_id != request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
+          && request.resource.data.read == true;
       }
     }
 
