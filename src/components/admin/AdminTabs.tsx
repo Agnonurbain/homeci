@@ -1,6 +1,6 @@
-import React from 'react';
+import { FC } from 'react';
 import { 
-  Users, Home, FileCheck, AlertCircle, TrendingUp,
+  Users, Home, FileCheck, TrendingUp,
   Activity, UserCog, Award, Flag, Star, CalendarCheck, 
   UserSearch, FileText, Megaphone 
 } from 'lucide-react';
@@ -13,21 +13,21 @@ interface AdminTabsProps {
   stats: AdminStats;
 }
 
-export const AdminTabs: React.FC<AdminTabsProps> = ({ activeTab, setActiveTab, stats }) => {
+export const AdminTabs: FC<AdminTabsProps> = ({ activeTab, setActiveTab, stats }) => {
   const TABS = [
-    { id: 'overview', icon: TrendingUp, label: 'Vue d\'ensemble', count: undefined },
-    { id: 'users', icon: Users, label: 'Utilisateurs', count: stats.total_users },
-    { id: 'notaires', icon: Award, label: 'Codes Notaires', count: undefined },
-    { id: 'user-search', icon: UserSearch, label: 'Recherche & Suspension', count: undefined },
-    { id: 'properties', icon: Home, label: 'Biens', count: stats.total_properties },
-    { id: 'verification', icon: FileCheck, label: 'Modération', count: stats.pending_properties || undefined },
-    { id: 'reports', icon: Flag, label: 'Signalements', count: undefined },
-    { id: 'visits', icon: CalendarCheck, label: 'Visites', count: undefined },
-    { id: 'surveys', icon: Star, label: 'Satisfaction', count: undefined },
-    { id: 'cgv', icon: FileText, label: 'Docs Légaux', count: undefined },
-    { id: 'ads', icon: Megaphone, label: 'Publicités', count: undefined },
-    { id: 'security', icon: Activity, label: 'Sécurité', count: undefined },
-    { id: 'admin-management', icon: UserCog, label: 'Admins', count: undefined },
+    { id: 'overview', icon: TrendingUp, label: 'Vue d\'ensemble', shortLabel: 'Accueil', count: undefined },
+    { id: 'users', icon: Users, label: 'Utilisateurs', shortLabel: 'Users', count: stats.total_users },
+    { id: 'notaires', icon: Award, label: 'Codes Notaires', shortLabel: 'Notaires', count: undefined },
+    { id: 'user-search', icon: UserSearch, label: 'Recherche & Suspension', shortLabel: 'Recherche', count: undefined },
+    { id: 'properties', icon: Home, label: 'Biens', shortLabel: 'Biens', count: stats.total_properties },
+    { id: 'verification', icon: FileCheck, label: 'Modération', shortLabel: 'Modé.', count: stats.pending_properties || undefined },
+    { id: 'reports', icon: Flag, label: 'Signalements', shortLabel: 'Signal.', count: undefined },
+    { id: 'visits', icon: CalendarCheck, label: 'Visites', shortLabel: 'Visites', count: undefined },
+    { id: 'surveys', icon: Star, label: 'Satisfaction', shortLabel: 'Stats', count: undefined },
+    { id: 'cgv', icon: FileText, label: 'Docs Légaux', shortLabel: 'CGV', count: undefined },
+    { id: 'ads', icon: Megaphone, label: 'Publicités', shortLabel: 'Pubs', count: undefined },
+    { id: 'security', icon: Activity, label: 'Sécurité', shortLabel: 'Logins', count: undefined },
+    { id: 'admin-management', icon: UserCog, label: 'Admins', shortLabel: 'Admins', count: undefined },
   ] as const;
 
   return (
@@ -40,8 +40,9 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ activeTab, setActiveTab, s
           style={activeTab === tab.id
             ? { borderColor: HColors.gold, color: HColors.gold, fontFamily: 'var(--font-nunito)' }
             : { borderColor: 'transparent', color: HAlpha.cream45, fontFamily: 'var(--font-nunito)' }}>
-          <tab.icon className="w-4 h-4" />
-          {tab.label}
+          <tab.icon className="w-4 h-4 shrink-0" />
+          <span className="hidden sm:inline">{tab.label}</span>
+          <span className="sm:hidden">{tab.shortLabel}</span>
           {tab.count !== undefined && tab.count > 0 && (
             <span className="px-1.5 py-0.5 rounded-full text-xs font-bold transition-all"
               style={tab.id === 'verification'

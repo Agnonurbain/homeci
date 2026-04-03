@@ -58,25 +58,25 @@ export default function AdminDashboard() {
       <div style={{ background: `linear-gradient(135deg,${HColors.night},#1A0E00)`, borderBottom: `1px solid ${HAlpha.gold20}` }}>
         <KenteLine height={4} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-0">
-          <div className="flex items-center justify-between gap-4 flex-wrap pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg transition-transform hover:scale-105"
+          <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 flex-wrap pb-4">
+            <div className="flex items-center gap-3 text-center sm:text-left">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg transition-transform hover:scale-105 shrink-0"
                 style={{ background: HAlpha.bord20, border: `1px solid ${HAlpha.bord35}` }}>
                 <Shield className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="font-bold text-cream font-cormorant text-2xl">Panneau Administrateur</h1>
-                <p className="text-sm opacity-60 text-cream font-nunito">Bonjour, {firstName} — Gestion HOMECI</p>
+                <h1 className="font-bold text-cream font-cormorant text-xl sm:text-2xl">Panneau Administrateur</h1>
+                <p className="text-[10px] sm:text-sm opacity-60 text-cream font-nunito">Bonjour, {firstName} — Gestion HOMECI</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
-              <div className="hidden md:flex items-center gap-2 text-xs font-nunito font-bold">
-                <span className="px-2.5 py-1 rounded-full bg-gold/10 text-gold border border-gold/30">{stats.total_users} utilisateurs</span>
-                <span className="px-2.5 py-1 rounded-full bg-green-500/10 text-green-500 border border-green-500/30">{stats.verified_properties} certifiés</span>
-                {stats.pending_properties > 0 && <span className="px-2.5 py-1 rounded-full bg-red-500/20 text-white animate-pulse border border-red-500/30">{stats.pending_properties} en attente</span>}
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+              <div className="flex items-center gap-2 text-[9px] sm:text-xs font-nunito font-bold overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+                <span className="px-2.5 py-1 rounded-full bg-gold/10 text-gold border border-gold/30 whitespace-nowrap">{stats.total_users} users</span>
+                <span className="px-2.5 py-1 rounded-full bg-green-500/10 text-green-500 border border-green-500/30 whitespace-nowrap">{stats.verified_properties} certs</span>
+                {stats.pending_properties > 0 && <span className="px-2.5 py-1 rounded-full bg-red-500/20 text-white animate-pulse border border-red-500/30 whitespace-nowrap">{stats.pending_properties} mod</span>}
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-brown/50 bg-gold/10 border border-gold/20">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-bold text-gold/60 bg-gold/5 border border-gold/10 whitespace-nowrap">
                 <RotateCcw className="w-3.5 h-3.5" /> Temps réel actif
               </div>
             </div>
@@ -129,7 +129,10 @@ export default function AdminDashboard() {
                 properties={api.filteredPendingProperties}
                 onViewDetails={setSelectedProperty}
                 onReject={api.rejectProperty}
-                onConsumeToken={api.handleConsumeToken}
+                onConsumeToken={async (token: string) => {
+                  const res = await api.handleConsumeToken(token);
+                  return !!res;
+                }}
               />
             )}
             {activeTab === 'notaires' && <AdminNotairesTab showToast={api.showToast} />}
