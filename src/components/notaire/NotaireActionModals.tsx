@@ -80,21 +80,21 @@ export function DelegationModal({ token, onClose, action, propertyTitle }: any) 
           </p>
         </div>
 
-        <div className="p-6 rounded-3xl space-y-4 shadow-inner" style={{ background: 'rgba(255,255,255,0.5)', border: `1px dashed ${HColors.gold}` }}>
-          <code className="block text-2xl font-mono font-black break-all select-all tracking-wider" style={{ color: HColors.gold }}>{token}</code>
-          <div className="flex gap-2 justify-center">
-            <button onClick={copyToClipboard} className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:bg-white"
+        <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl space-y-4 shadow-inner" style={{ background: 'rgba(255,255,255,0.5)', border: `1px dashed ${HColors.gold}` }}>
+          <code className="block text-lg sm:text-2xl font-mono font-black break-all select-all tracking-wider" style={{ color: HColors.gold }}>{token}</code>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+            <button onClick={copyToClipboard} className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:bg-white"
               style={{ background: HAlpha.gold10, color: HColors.gold }}>
               {copied ? 'Copié !' : <><Clipboard className="w-3.5 h-3.5" /> Copier le code</>}
             </button>
-            <button onClick={() => {}} className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:bg-white"
+            <button onClick={() => {}} className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:bg-white"
               style={{ background: HAlpha.vertCI10, color: HColors.vertCI }}>
               <Share2 className="w-3.5 h-3.5" /> Partager
             </button>
           </div>
         </div>
 
-        <button onClick={onClose} className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest text-white shadow-xl"
+        <button onClick={onClose} className="w-full py-3.5 sm:py-4 rounded-2xl font-black text-sm uppercase tracking-widest text-white shadow-xl transition-all active:scale-95"
           style={{ background: HColors.darkBrown }}>Fermer et Terminer</button>
       </div>
     </div>

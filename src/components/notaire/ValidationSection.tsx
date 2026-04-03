@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   FileText, CheckCircle, XCircle, Clock, Loader, ThumbsUp, ThumbsDown, 
-  RotateCcw, BadgeCheck, ExternalLink, X 
+  BadgeCheck, ExternalLink, X 
 } from 'lucide-react';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
 import { DOC_LABELS, REQUIRED_DOCS } from '../../constants/labels';
@@ -46,35 +46,37 @@ export function ValidationSection({
           return (
             <div key={docItem.type} className="rounded-xl overflow-hidden"
               style={{ background: '#FFFFFF', border: `1px solid ${HAlpha.gold15}` }}>
-              <div className="flex items-center gap-3 p-3">
-                <FileText className="w-4 h-4 shrink-0" style={{ color: HColors.gold }} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-bold uppercase tracking-wider"
-                      style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>
-                      {DOC_LABELS[docItem.type] || docItem.type}
-                    </span>
-                    {isRequired && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full font-black uppercase"
-                        style={{ background: HAlpha.orange10, color: HColors.orangeCI, border: `1px solid ${HAlpha.orange25}` }}>Requis</span>
+              <div className="flex flex-col xs:flex-row xs:items-center gap-3 p-3">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <FileText className="w-4 h-4 shrink-0" style={{ color: HColors.gold }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider truncate"
+                        style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>
+                        {DOC_LABELS[docItem.type] || docItem.type}
+                      </span>
+                      {isRequired && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full font-black uppercase"
+                          style={{ background: HAlpha.orange10, color: HColors.orangeCI, border: `1px solid ${HAlpha.orange25}` }}>Req.</span>
+                      )}
+                      <DocStatusBadge status={docItem.status} />
+                    </div>
+                    {docItem.rejection_reason && docItem.status === 'refuse' && (
+                      <p className="text-[10px] mt-1 italic" style={{ color: HColors.bordeaux }}>Motif : {docItem.rejection_reason}</p>
                     )}
-                    <DocStatusBadge status={docItem.status} />
                   </div>
-                  {docItem.rejection_reason && docItem.status === 'refuse' && (
-                    <p className="text-[10px] mt-1 italic" style={{ color: HColors.bordeaux }}>Motif : {docItem.rejection_reason}</p>
-                  )}
                 </div>
                 
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0 justify-end mt-2 xs:mt-0">
                   <a href={fixDocUrl(docItem.url)} target="_blank" rel="noopener noreferrer"
-                    className="p-1.5 rounded-lg transition-all hover:opacity-70"
+                    className="p-1.5 rounded-lg transition-all hover:opacity-70 flex items-center justify-center"
                     style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold15}`, color: HColors.brownMid }}>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                   
                   {docItem.status !== 'valide' && (
                     <button onClick={() => onDocAction(docItem.type, 'valide')} disabled={isLoading}
-                      className="p-1.5 rounded-lg transition-all hover:scale-110"
+                      className="p-1.5 rounded-lg transition-all hover:scale-110 flex items-center justify-center"
                       style={{ background: HAlpha.vertCI10, border: `1px solid ${HAlpha.vertCI25}`, color: HColors.vertCI }}>
                       {isLoading ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <ThumbsUp className="w-3.5 h-3.5" />}
                     </button>
@@ -82,7 +84,7 @@ export function ValidationSection({
                   
                   {docItem.status !== 'refuse' && (
                     <button onClick={() => setShowRefusalInput(isShowingRefusal ? null : actionKey)} disabled={isLoading}
-                      className="p-1.5 rounded-lg transition-all hover:scale-110"
+                      className="p-1.5 rounded-lg transition-all hover:scale-110 flex items-center justify-center"
                       style={{ background: 'rgba(139,29,29,0.08)', border: '1px solid rgba(139,29,29,0.25)', color: HColors.bordeaux }}>
                       <ThumbsDown className="w-3.5 h-3.5" />
                     </button>
@@ -91,18 +93,23 @@ export function ValidationSection({
               </div>
 
               {isShowingRefusal && (
-                <div className="px-3 pb-3 flex gap-2 border-t pt-3" style={{ borderColor: HAlpha.gold05 }}>
-                  <input type="text" placeholder="Motif du refus (obligatoire)..."
-                    value={refusalReasons[actionKey] || ''}
-                    onChange={e => setRefusalReasons(prev => ({ ...prev, [actionKey]: e.target.value }))}
-                    className="flex-1 px-3 py-1.5 rounded-lg text-xs outline-none"
-                    style={{ background: 'rgba(139,29,29,0.05)', color: HColors.darkBrown, border: `1px solid ${HAlpha.bord20}` }} />
+                <div className="px-3 pb-3 flex flex-col sm:flex-row gap-2 border-t pt-3" style={{ borderColor: HAlpha.gold05 }}>
+                  <div className="flex-1 flex gap-2">
+                    <input type="text" placeholder="Motif du refus..."
+                      value={refusalReasons[actionKey] || ''}
+                      onChange={e => setRefusalReasons(prev => ({ ...prev, [actionKey]: e.target.value }))}
+                      className="flex-1 px-3 py-2 rounded-lg text-xs outline-none"
+                      style={{ background: 'rgba(139,29,29,0.05)', color: HColors.darkBrown, border: `1px solid ${HAlpha.bord20}` }} />
+                    <button onClick={() => setShowRefusalInput(null)} className="p-2 text-brown sm:hidden">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                   <button onClick={() => onDocAction(docItem.type, 'refuse')} disabled={isLoading}
-                    className="px-3 py-1.5 bg-bordeaux text-white rounded-lg text-xs font-bold transition-all hover:opacity-90"
+                    className="w-full sm:w-auto px-4 py-2 bg-bordeaux text-white rounded-lg text-xs font-bold transition-all hover:opacity-90"
                     style={{ background: HColors.bordeaux }}>
-                    Confirmer
+                    Confirmer le refus
                   </button>
-                  <button onClick={() => setShowRefusalInput(null)} className="p-1.5 text-brown">
+                  <button onClick={() => setShowRefusalInput(null)} className="hidden sm:block p-1.5 text-brown">
                     <X className="w-4 h-4" />
                   </button>
                 </div>

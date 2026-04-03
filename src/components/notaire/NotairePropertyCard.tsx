@@ -37,61 +37,61 @@ export function NotairePropertyCard({
       style={{ background: '#FFFFFF', border: `1px solid ${stColors.border}`, boxShadow: '0 2px 12px rgba(26,14,0,0.05)' }}>
       <div className="h-1" style={{ background: stColors.bar, opacity: 0.45 }} />
 
-      <div className="flex gap-4 p-4 items-start">
-        {property.images?.[0] ? (
-          <img src={property.images[0]} alt={property.title}
-            className="w-16 h-16 rounded-xl object-cover shrink-0"
-            style={{ border: `1px solid ${HAlpha.gold15}` }} />
-        ) : (
-          <div className="w-16 h-16 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold15}` }}>
-            <Building2 className="w-6 h-6" style={{ color: HAlpha.gold30 }} />
-          </div>
-        )}
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2 mb-1">
-            <div>
-              <h3 className="font-bold text-sm leading-tight"
+        <div className="flex flex-col sm:flex-row gap-4 p-4 items-stretch sm:items-start">
+        <div className="flex items-start gap-3 flex-1 min-w-0">
+          {property.images?.[0] ? (
+            <img src={property.images[0]} alt={property.title}
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover shrink-0"
+              style={{ border: `1px solid ${HAlpha.gold15}` }} />
+          ) : (
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold15}` }}>
+              <Building2 className="w-6 h-6" style={{ color: HAlpha.gold30 }} />
+            </div>
+          )}
+  
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <h3 className="font-bold text-sm leading-tight truncate"
                 style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1rem' }}>
                 {property.title}
               </h3>
-              <div className="flex items-center gap-2 mt-0.5 flex-wrap text-xs"
-                style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                <span className="flex items-center gap-1"><Building2 className="w-3 h-3" />{TYPE_LABELS[property.property_type]}</span>
-                <span className="flex items-center gap-1"><MapPin className="w-3 h-3" style={{ color: HColors.orangeCI }} />{property.city}</span>
-                {owner && <span className="flex items-center gap-1"><User className="w-3 h-3" />{owner.full_name}</span>}
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shrink-0"
+                style={{ background: stColors.bar, color: '#FFFFFF', boxShadow: `0 2px 8px ${stColors.bar}40` }}>
+                {stColors.label}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap text-[10px] sm:text-xs"
+              style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
+              <span className="flex items-center gap-1"><Building2 className="w-3 h-3" />{TYPE_LABELS[property.property_type]}</span>
+              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" style={{ color: HColors.orangeCI }} />{property.city}</span>
+              {owner && <span className="flex items-center gap-1 truncate"><User className="w-3 h-3" />{owner.full_name}</span>}
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: HAlpha.gold08 }}>
+                <div className="h-full rounded-full transition-all"
+                  style={{ width: `${pct}%`, background: pct === 100 ? HColors.vertCI : pct > 0 ? HColors.gold : HAlpha.gold20 }} />
               </div>
+              <span className="text-[10px] font-bold shrink-0" style={{ color: HColors.brown }}>{pct}%</span>
             </div>
-            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider"
-              style={{ background: stColors.bar, color: '#FFFFFF', boxShadow: `0 2px 8px ${stColors.bar}40` }}>
-              {stColors.label}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 mt-2">
-            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: HAlpha.gold08 }}>
-              <div className="h-full rounded-full transition-all"
-                style={{ width: `${pct}%`, background: pct === 100 ? HColors.vertCI : pct > 0 ? HColors.gold : HAlpha.gold20 }} />
-            </div>
-            <span className="text-[10px] font-bold shrink-0" style={{ color: HColors.brown }}>{pct}%</span>
           </div>
         </div>
 
         {activeTab === 'disponible' ? (
           <button onClick={() => onTakeCharge(property)} disabled={takingId === property.id}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl shrink-0 self-start transition-all hover:opacity-90 disabled:opacity-50"
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold rounded-xl transition-all hover:opacity-90 disabled:opacity-50 w-full sm:w-auto"
             style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF' }}>
             {takingId === property.id ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <FileCheck className="w-3.5 h-3.5" />}
             Prendre en charge
           </button>
         ) : (
           <button onClick={onToggleExpand}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl shrink-0 self-start transition-all hover:opacity-80"
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold rounded-xl transition-all hover:opacity-80 w-full sm:w-auto"
             style={isExpanded
               ? { background: HAlpha.vertCI10, border: `1px solid ${HAlpha.vertCI25}`, color: HColors.vertCI }
               : { background: HAlpha.gold08, border: `1px solid ${HAlpha.gold20}`, color: HColors.brownMid }}>
             <Eye className="w-3.5 h-3.5" />
-            {isExpanded ? 'Fermer' : 'Examiner'}
+            {isExpanded ? 'Masquer' : 'Examiner'}
             <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
           </button>
         )}

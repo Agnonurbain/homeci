@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useNotaireDashboard, TabId } from '../hooks/useNotaireDashboard';
 import { NotaireStats } from './notaire/NotaireStats';
 import { NotaireTabs } from './notaire/NotaireTabs';
@@ -16,7 +16,6 @@ import { TYPE_LABELS } from '../constants/labels';
 export default function NotaireDashboard() {
   const { profile } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const showToast = (msg: string, ok = true) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3500); };
 
@@ -71,20 +70,20 @@ export default function NotaireDashboard() {
   return (
     <div className="min-h-screen pb-20" style={{ background: HColors.creamBg }}>
       <header className="pt-8 pb-4 px-4 sm:px-6 lg:px-8 border-b" style={{ background: HColors.night, borderColor: HAlpha.gold15 }}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-4">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
+          <div className="flex items-center gap-4 text-center sm:text-left">
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" 
                  style={{ background: HAlpha.gold15, border: `1px solid ${HAlpha.gold25}` }}>
               <Stamp className="w-6 h-6" style={{ color: HColors.gold }} />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-cream" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>Espace Notaire</h1>
-              <p className="text-xs font-medium opacity-60 text-cream">Maître {profile?.full_name}</p>
+              <h1 className="text-xl sm:text-2xl font-black" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>Espace Notaire</h1>
+              <p className="text-[10px] sm:text-xs font-medium opacity-60 text-cream">Maître {profile?.full_name}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <TutorialButton />
-            <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold"
+            <button className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-[10px] sm:text-xs font-bold whitespace-nowrap"
                     style={{ background: HAlpha.gold10, color: HColors.gold }}>
               <RotateCcw className="w-3 h-3" /> Temps réel actif
             </button>
