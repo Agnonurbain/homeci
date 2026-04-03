@@ -34,3 +34,13 @@ export const ROLE_CFG: Record<string, { label: string; bg: string; bd: string; t
     notaire: { label: 'Notaire', bg: HAlpha.orange10, bd: HAlpha.terra20, text: HColors.brownDeep },
     admin: { label: 'Admin', bg: HAlpha.bord10, bd: HAlpha.bord25, text: HColors.bordeaux },
 };
+
+/* ── Documents requis par type de bien ────────────────────────────────────── */
+export const REQUIRED_DOCS: Record<string, string[]> = {
+    appartement: ['titre_foncier', 'permis_construire'],
+    maison: ['titre_foncier', 'permis_construire'],
+    villa: ['titre_foncier', 'permis_construire'],
+    terrain: ['titre_foncier'],
+    hotel: ['titre_foncier', 'autorisation_exploitation', 'registre_commerce'],
+    appart_hotel: ['titre_foncier', 'autorisation_exploitation', 'registre_commerce'],
+};

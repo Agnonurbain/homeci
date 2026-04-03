@@ -1,1258 +1,183 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { getDoc, doc, collection, query, orderBy, onSnapshot } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
-import { db, functions } from '../lib/firebase';
+import { useState, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { propertyService } from '../services/propertyService';
-import { notificationService } from '../services/notificationService';
-import { visitService } from '../services/visitService';
+import { useNotaireDashboard, TabId } from '../hooks/useNotaireDashboard';
+import { NotaireStats } from './notaire/NotaireStats';
+import { NotaireTabs } from './notaire/NotaireTabs';
+import { NotairePropertyCard } from './notaire/NotairePropertyCard';
+import { RevokeModal, DelegationModal } from './notaire/NotaireActionModals';
 import { NotaireListSkeleton, StatGridSkeleton } from './Skeletons';
-import { analyticsService } from '../services/analyticsService';
-import type { Property } from '../services/propertyService';
-import {
-  FileCheck, CheckCircle, XCircle, Clock, FileText, Building2,
-  MapPin, ExternalLink, Search, AlertCircle, X, Eye,
-  RotateCcw, Stamp, ChevronDown, Phone, User, Calendar,
-  ThumbsUp, ThumbsDown, Loader, BadgeCheck, Share2
-} from 'lucide-react';
-import { delegateService } from '../services/delegateService';
-import { emailService } from '../services/emailService';
-import { KenteLine } from './ui/KenteLine';
+import { Search, Building2, FileCheck, RotateCcw, Stamp, X } from 'lucide-react';
 import CGVNotaireModal from './CGVNotaireModal';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
-import { fixDocUrl } from '../utils/fixDocUrl';
 import TutorialButton from './TutorialButton';
-import { TYPE_LABELS, DOC_LABELS } from '../constants/labels';
-
-
-const REQUIRED_DOCS: Record<string, string[]> = {
-  appartement: ['titre_foncier', 'permis_construire'],
-  maison: ['titre_foncier', 'permis_construire'],
-  villa: ['titre_foncier', 'permis_construire'],
-  terrain: ['titre_foncier'],
-  hotel: ['titre_foncier', 'autorisation_exploitation', 'registre_commerce'],
-  appart_hotel: ['titre_foncier', 'autorisation_exploitation', 'registre_commerce'],
-};
-
-type DocStatus = 'en_attente' | 'valide' | 'refuse';
-type TabId = 'disponible' | 'en_cours' | 'pret' | 'certifie';
-
-function isReadyToCertify(p: Property) {
-  const req = REQUIRED_DOCS[p.property_type] || ['titre_foncier'];
-  const hasRequiredDocs = req.every(r => p.documents?.find(d => d.type === r)?.status === 'valide');
-  const identityTypes = ['cni', 'passeport', 'attestation_residence', 'carte_sejour', 'registre_commerce_proprio'];
-  const hasIdentity = p.documents?.some(d => identityTypes.includes(d.type) && d.status === 'valide');
-  return hasRequiredDocs && !!hasIdentity;
-}
-function getDocStatus(p: Property): 'aucun' | 'partiel' | 'complet' | 'certifie' {
-  if (p.verified_notaire) return 'certifie';
-  if (!p.documents?.length) return 'aucun';
-  return isReadyToCertify(p) ? 'complet' : p.documents.some(d => d.status === 'valide') ? 'partiel' : 'aucun';
-}
-interface OwnerProfile { full_name: string; phone?: string; email?: string; }
+import { TYPE_LABELS } from '../constants/labels';
 
 export default function NotaireDashboard() {
   const { profile } = useAuth();
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [owners, setOwners] = useState<Record<string, OwnerProfile>>({});
-  const [loading, setLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  const tabFromUrl = location.pathname.split('/')[2];
-  const validTabs = ['disponible', 'en_cours', 'pret', 'certifie'];
-  const activeTab = validTabs.includes(tabFromUrl) ? tabFromUrl as TabId : 'disponible';
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const showToast = (msg: string, ok = true) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3500); };
+
+  const {
+    loading,
+    owners,
+    stats,
+    actionLoading,
+    takingId,
+    certifyingId,
+    revokeModal,
+    setRevokeModal,
+    delegationToken,
+    setDelegationToken,
+    handleDocAction,
+    handleCertify,
+    doTakeCharge,
+    handleRevoke
+  } = useNotaireDashboard(profile, showToast);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [certifyingId, setCertifyingId] = useState<string | null>(null);
-  const [takingId, setTakingId] = useState<string | null>(null);
-  const [legacyProperties, setLegacyProperties] = useState<Property[]>([]);
-  const [refusalReasons, setRefusalReasons] = useState<Record<string, string>>({});
-  const [showRefusalInput, setShowRefusalInput] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const [showCGVNotaire, setShowCGVNotaire] = useState(false);
-  const [pendingTakeChargeProperty, setPendingTakeChargeProperty] = useState<Property | null>(null);
-  const [revokeModal, setRevokeModal] = useState<{
-    property: Property;
-    reason: string;
-    hasActiveVisit: boolean;
-    loading: boolean;
-  } | null>(null);
-  const [delegationToken, setDelegationToken] = useState<{ token: string; action: 'certify' | 'reject'; propertyTitle: string } | null>(null);
-  const [delegateRejectInput, setDelegateRejectInput] = useState<string | null>(null);
-  const [delegateRejectReason, setDelegateRejectReason] = useState('');
-  const expandedCardRef = useRef<HTMLDivElement>(null);
-  const ownersRef = useRef(owners);
-  ownersRef.current = owners;
+  const [pendingTakeChargeProperty, setPendingTakeChargeProperty] = useState<any>(null);
 
-  useEffect(() => {
-    if (!profile?.id) return;
-    setLoading(true);
+  const tabFromUrl = location.pathname.split('/')[2];
+  const validTabs: TabId[] = ['disponible', 'en_cours', 'pret', 'certifie'];
+  const activeTab = validTabs.includes(tabFromUrl as TabId) ? tabFromUrl as TabId : 'disponible';
 
-    // Écouteur en temps réel sur les propriétés
-    const q = query(collection(db, 'properties'), orderBy('created_at', 'desc'));
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
-      const all = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Property));
-      
-      // Charger les documents pour tous les biens (nécessaire pour isReadyToCertify)
-      // Note: On limite aux biens qui concernent le notaire pour éviter trop de requêtes
-      const relevant = all.filter(p => 
-        p.notaire_id === profile.id || 
-        (!p.notaire_id && !p.verified_notaire && p.status === 'pending')
-      );
-
-      // Pour chaque bien pertinent, on charge les docs si pas déjà présents ou si mise à jour
-      const withDocs = await Promise.all(relevant.map(async (p) => {
-        try {
-          p.documents = await propertyService.getDocuments(p.id);
-        } catch { p.documents = []; }
-        return p;
-      }));
-
-      // Legacy
-      const legacy = all.filter(p =>
-        !p.notaire_id &&
-        (p.verified_notaire || p.status === 'published') // Simplifié pour legacy
-      );
-      setLegacyProperties(legacy);
-      setProperties(withDocs);
-      
-      // Charger les proprios manquants
-      const missingOwnerIds = [...new Set(withDocs.map(p => p.owner_id))].filter(id => !ownersRef.current[id]);
-      if (missingOwnerIds.length > 0) {
-        const newEntries = await Promise.all(missingOwnerIds.map(async id => {
-          try {
-            const snap = await getDoc(doc(db, 'users', id));
-            if (snap.exists()) { 
-              const d = snap.data(); 
-              return [id, { full_name: d.full_name || 'Propriétaire', phone: d.phone, email: d.email }] as [string, OwnerProfile]; 
-            }
-          } catch { /* ignored */ }
-          return [id, { full_name: 'Propriétaire' }] as [string, OwnerProfile];
-        }));
-        setOwners(prev => ({ ...prev, ...Object.fromEntries(newEntries) }));
-      }
-
-      setLoading(false);
-    }, (err) => {
-      console.error('Notaire listener error:', err);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [profile?.id]);
-
-  function showToast(msg: string, ok = true) { setToast({ msg, ok }); setTimeout(() => setToast(null), 3500); }
-
-  async function handleDocAction(property: Property, docType: string, newStatus: DocStatus) {
-    const key = `${docType}:${property.id}`;
-    // Motif de refus obligatoire (CGV Notaire Art. 4d)
-    if (newStatus === 'refuse') {
-      const reason = refusalReasons[key]?.trim();
-      if (!reason) {
-        showToast('Veuillez indiquer le motif du refus avant de refuser.', false);
-        setShowRefusalInput(key);
-        return;
-      }
-    }
-    setActionLoading(key);
-    try {
-      const reason = refusalReasons[key] || '';
-      // Mettre à jour via sous-collection
-      await propertyService.updateDocumentStatus(property.id, docType, newStatus, {
-        validated_by: profile?.id,
-        ...(newStatus === 'refuse' && reason ? { rejection_reason: reason } : {}),
-      });
-      const lbl = DOC_LABELS[docType] || docType;
-      const stLbl = newStatus === 'valide' ? 'validé ✅' : newStatus === 'refuse' ? 'refusé ❌' : 'remis en attente';
-      await notificationService.createNotification({
-        user_id: property.owner_id, type: 'notaire_approved',
-        title: `📄 Document ${newStatus === 'valide' ? 'validé' : newStatus === 'refuse' ? 'refusé' : 'en attente'}`,
-        message: `Votre ${lbl} pour "${property.title}" a été ${stLbl}${reason ? ` : ${reason}` : ''}`,
-        property_id: property.id,
-      });
-      // Plus besoin de recharger manuellement, onSnapshot s'en occupe
-      showToast(`${lbl} ${stLbl}`);
-      setShowRefusalInput(null);
-    } catch (e) { 
-      console.error('handleDocAction error:', e);
-      showToast(`Erreur : ${(e as any).message || 'Mise à jour échouée'}`, false); 
-    }
-    finally { setActionLoading(null); }
-  }
-
-  async function handleTitleAction(property: Property, newStatus: 'valide' | 'refuse' | 'en_attente') {
-    const key = `title:${property.id}`;
-    // Motif de refus obligatoire (CGV Notaire Art. 4d)
-    if (newStatus === 'refuse') {
-      const reason = refusalReasons[key]?.trim();
-      if (!reason) {
-        showToast('Veuillez indiquer le motif du refus avant de refuser.', false);
-        setShowRefusalInput(key);
-        return;
-      }
-    }
-    setActionLoading(key);
-    try {
-      const titleStatus: Partial<Property> = newStatus === 'valide' ? { title_status: 'valide', title_validated_at: new Date().toISOString() }
-        : newStatus === 'refuse' ? { title_status: 'refuse', title_rejection_reason: refusalReasons[key] || '' }
-          : { title_status: 'en_attente', title_validated_at: null };
-      await propertyService.updateProperty(property.id, titleStatus);
-      const stLbl = newStatus === 'valide' ? 'validé ✅' : newStatus === 'refuse' ? 'refusé ❌' : 'remis en attente';
-      await notificationService.createNotification({
-        user_id: property.owner_id, type: 'system',
-        title: `📋 Titre de l'annonce ${newStatus === 'valide' ? 'validé' : newStatus === 'refuse' ? 'refusé' : 'en attente'}`,
-        message: `Le titre de votre annonce "${property.title}" a été ${stLbl}.`,
-        property_id: property.id,
-      });
-      setProperties(prev => prev.map(p => p.id === property.id ? { ...p, ...titleStatus } : p));
-      setShowRefusalInput(null);
-      showToast(`Titre ${stLbl}`);
-    } catch (e) { 
-      console.error('handleTitleAction error:', e);
-      showToast(`Erreur : ${(e as any).message || 'Mise à jour du titre échouée'}`, false); 
-    }
-    finally { setActionLoading(null); }
-  }
-
-  async function handleCertify(property: Property) {
-    if (!isReadyToCertify(property)) return;
-    setCertifyingId(property.id);
-    try {
-      // Appel Cloud Function sécurisé (vérifie notaire_id, documents, crée le log + notification)
-      const certifyPropertyFn = httpsCallable(functions, 'certifyProperty');
-      await certifyPropertyFn({ propertyId: property.id, action: 'certify' });
-
-      setProperties(prev => prev.map(p => p.id === property.id ? { ...p, verified_notaire: true, status: 'published' } : p));
-      setExpandedId(null);
-      navigate('/dashboard/certifie');
-      analyticsService.certifyProperty(property.id);
-      showToast('Bien certifié avec succès ! 🏆');
-      setCertifyingId(null);
-      // Notification Email
-      const owner = owners[property.owner_id];
-      if (owner?.email) {
-        emailService.notifyPropertyApproval(owner.email, property.title).catch(console.error);
-      }
-    } catch (e) {
-      console.error('handleCertify error:', e);
-      showToast(`Erreur : ${(e as any).message || 'Certification échouée'}`, false);
-      setCertifyingId(null);
-    }
-  }
-
-  async function handleDelegateAction(property: Property, action: 'certify' | 'reject') {
-    if (action === 'reject') {
-      const reason = delegateRejectReason.trim();
-      if (!reason) {
-        showToast('Indiquez un motif de rejet avant de déléguer.', false);
-        setDelegateRejectInput(property.id);
-        return;
-      }
-    }
-
-    setCertifyingId(property.id);
-    try {
-      const reason = action === 'reject' ? delegateRejectReason.trim() : undefined;
-      const token = await delegateService.createToken({
-        notary_id: profile!.id,
-        property_id: property.id,
-        property_title: property.title,
-        action,
-        rejection_reason: reason,
-      });
-      setDelegationToken({ token, action, propertyTitle: property.title });
-      setDelegateRejectInput(null);
-      setDelegateRejectReason('');
-      showToast(`Jeton de délégation généré pour ${action === 'certify' ? 'certification' : 'rejet'}.`);
-    } catch (e) {
-      console.error('handleDelegateAction error:', e);
-      showToast(`Erreur : ${(e as any).message || 'Génération du jeton échouée'}`, false);
-    } finally {
-      setCertifyingId(null);
-    }
-  }
-
-  async function handleRevoke(property: Property) {
-    // Ouvrir le modal de décertification — vérifier s'il y a une visite active
-    setCertifyingId(property.id);
-    try {
-      const hasActive = await visitService.hasActiveVisit(property.id);
-      setRevokeModal({ property, reason: '', hasActiveVisit: hasActive, loading: false });
-    } catch (e) { 
-      console.error('handleRevoke error:', e);
-      setRevokeModal({ property, reason: '', hasActiveVisit: false, loading: false }); 
-    }
-    finally { setCertifyingId(null); }
-  }
-
-  async function confirmRevoke() {
-    if (!revokeModal || !revokeModal.reason.trim()) {
-      showToast('Veuillez indiquer le motif de la décertification.', false);
-      return;
-    }
-    setRevokeModal(prev => prev ? { ...prev, loading: true } : null);
-    try {
-      const { property, reason, hasActiveVisit } = revokeModal;
-
-      // 1. Appel Cloud Function sécurisé pour retirer la certification
-      const certifyPropertyFn = httpsCallable(functions, 'certifyProperty');
-      await certifyPropertyFn({ propertyId: property.id, action: 'reject', reason: reason.trim() });
-
-      // 2. Si visite active → annuler les visites + notifier le locataire
-      if (hasActiveVisit) {
-        const ownerVisits = await visitService.getVisitRequestsByOwner(property.owner_id);
-        const activeVisits = ownerVisits.filter(
-          v => v.property_id === property.id && (v.status === 'accepted' || v.status === 'completed')
-        );
-        for (const visit of activeVisits) {
-          await visitService.updateVisitStatus(visit.id, 'rejected');
-          await notificationService.createNotification({
-            user_id: visit.tenant_id,
-            type: 'visit_rejected',
-            title: '⚠️ Visite annulée — Certification retirée',
-            message: `La visite de "${property.title}" a été annulée car la certification du bien a été retirée par le notaire. Motif : ${reason.trim()}. Vous serez recrédité si des frais ont été prélevés.`,
-            property_id: property.id,
-          });
-        }
-      }
-
-      // 3. Mettre à jour l'état local
-      setProperties(prev => prev.map(p =>
-        p.id === property.id ? { ...p, verified_notaire: false, status: 'pending' } : p
-      ));
-      setRevokeModal(null);
-      analyticsService.decertifyProperty(property.id, reason.trim());
-      showToast('Certification retirée. Le propriétaire et les locataires concernés ont été notifiés.');
-    } catch (e) {
-      console.error('confirmRevoke error:', e);
-      showToast(`Erreur : ${(e as any).message || 'Décertification échouée'}`, false);
-      setRevokeModal(prev => prev ? { ...prev, loading: false } : null);
-    }
-  }
-
-  function handleTakeCharge(property: Property) {
-    if (!profile?.id) return;
-    // Conflit d'intérêts : le notaire ne peut pas certifier un bien dont il est propriétaire
-    if (property.owner_id === profile.id) {
-      showToast('Conflit d\'intérêts — vous ne pouvez pas certifier votre propre bien.', false);
-      return;
-    }
-    // Toujours afficher la charte avant chaque nouvelle prise en charge (Conformité Légale)
-    setPendingTakeChargeProperty(property);
-    setShowCGVNotaire(true);
-  }
-
-  async function doTakeCharge(property: Property) {
-    if (!profile?.id) return;
-    setTakingId(property.id);
-    try {
-      await propertyService.updateProperty(property.id, {
-        notaire_id: profile.id,
-        notaire_taken_at: new Date().toISOString(),
-      });
-      // Notifier le propriétaire
-      await notificationService.createNotification({
-        user_id: property.owner_id,
-        type: 'system',
-        title: '📋 Dossier pris en charge par un notaire',
-        message: `Votre bien "${property.title}" est désormais examiné par Me ${profile.full_name || 'un notaire agréé'}. Vous serez notifié de l'avancement.`,
-        property_id: property.id,
-      });
-      // Retirer des legacy si c'était un bien antérieur
-      setLegacyProperties(prev => prev.filter(p => p.id !== property.id));
-      // Mettre à jour la propriété dans l'état local (onSnapshot s'occupera de la mise à jour complète)
-      setProperties(prev => prev.map(p => p.id === property.id ? { ...p, notaire_id: profile!.id } : p));
-      showToast('Bien pris en charge. Vous pouvez maintenant examiner les documents.');
-      // Naviguer vers l'onglet "En cours" pour que l'utilisateur retrouve le bien
-      navigate('/dashboard/en_cours');
-      setExpandedId(property.id);
-    } catch (e) {
-      console.error('doTakeCharge error:', e);
-      showToast(`Erreur : ${(e as any).message || 'Prise en charge échouée'}`, false);
-    }
-    finally { setTakingId(null); }
-  }
-
-  const { disponible, enCours, pret, certifie } = useMemo(() => {
-    const di: Property[] = [], ec: Property[] = [], pr: Property[] = [], ce: Property[] = [];
-    for (const p of properties) {
-      if (!p.notaire_id) {
-        // Disponible : docs soumis, pas validés, pas certifié (filtré en amont)
-        di.push(p);
-        continue;
-      }
-      if (p.notaire_id === profile?.id) {
-        const s = getDocStatus(p);
-        if (s === 'certifie') ce.push(p);
-        else if (s === 'complet') pr.push(p);
-        else ec.push(p);
-      }
-    }
-    return { disponible: di, enCours: ec, pret: pr, certifie: ce };
-  }, [properties, profile?.id]);
-
-  const currentList = activeTab === 'disponible' ? disponible : activeTab === 'en_cours' ? enCours : activeTab === 'pret' ? pret : certifie;
   const filtered = useMemo(() => {
-    let list = [...currentList];
-    if (searchQuery) { const q = searchQuery.toLowerCase(); list = list.filter(p => p.title.toLowerCase().includes(q) || p.city?.toLowerCase().includes(q) || (owners[p.owner_id]?.full_name || '').toLowerCase().includes(q)); }
+    let list = [...(stats.lists[activeTab as keyof typeof stats.lists] || [])];
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(p => 
+        p.title.toLowerCase().includes(q) || 
+        p.city?.toLowerCase().includes(q) || 
+        (owners[p.owner_id]?.full_name || '').toLowerCase().includes(q)
+      );
+    }
     if (filterType) list = list.filter(p => p.property_type === filterType);
     return list;
-  }, [currentList, searchQuery, filterType, owners]);
-
-  const stats = useMemo(() => {
-    // Uniquement les dossiers actifs (en cours + prêts) — pas les certifiés
-    const activeProp = [...enCours, ...pret];
-    return {
-      disponible: disponible.length, enCours: enCours.length, pret: pret.length, certifie: certifie.length,
-      docsAttente: activeProp.flatMap(p => p.documents || []).filter(d => d.status === 'en_attente').length,
-      docsValides: activeProp.flatMap(p => p.documents || []).filter(d => d.status === 'valide').length,
-    };
-  }, [disponible, enCours, pret, certifie]);
+  }, [stats.lists, activeTab, searchQuery, filterType, owners]);
 
   if (loading) return (
-    <div className="min-h-screen" style={{ background: HColors.creamBg }}>
-      <div className="max-w-6xl mx-auto px-4 py-10 space-y-8">
-        <StatGridSkeleton count={4} />
-        <NotaireListSkeleton count={4} />
-      </div>
+    <div className="min-h-screen p-10 space-y-8" style={{ background: HColors.creamBg }}>
+      <StatGridSkeleton count={4} />
+      <NotaireListSkeleton count={4} />
     </div>
   );
 
   return (
-    <div className="min-h-screen" style={{ background: HColors.creamBg }}>
-
-      {/* ── Header ── */}
-      <div style={{ background: HColors.night, borderBottom: `1px solid ${HAlpha.gold20}` }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-0">
-          <div className="flex items-center justify-between gap-4 flex-wrap pb-4">
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: HAlpha.gold15, border: `1px solid ${HAlpha.gold30}` }}>
-                <Stamp className="w-5 h-5" style={{ color: HColors.gold }} />
-              </div>
-              <div className="min-w-0">
-                <h1 className="font-bold truncate" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(1.2rem, 4vw, 1.6rem)' }}>
-                  Espace Notaire
-                </h1>
-                <p className="text-xs sm:text-sm flex items-center gap-2 flex-wrap" style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
-                  Bonjour, {profile?.full_name?.split(' ')[0] || 'Notaire'}
-                  {stats.docsAttente > 0 && (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-bold"
-                      style={{ background: HAlpha.gold20, color: HColors.gold, border: `1px solid ${HAlpha.gold35}` }}>
-                      {stats.docsAttente} doc{stats.docsAttente > 1 ? 's' : ''} à examiner
-                    </span>
-                  )}
-                  {stats.pret > 0 && (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-bold"
-                      style={{ background: HAlpha.navy08, color: HColors.navy, border: `1px solid ${HAlpha.navy20}` }}>
-                      {stats.pret} prêt{stats.pret > 1 ? 's' : ''} à certifier
-                    </span>
-                  )}
-                </p>
-              </div>
+    <div className="min-h-screen pb-20" style={{ background: HColors.creamBg }}>
+      <header className="pt-8 pb-4 px-4 sm:px-6 lg:px-8 border-b" style={{ background: HColors.night, borderColor: HAlpha.gold15 }}>
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" 
+                 style={{ background: HAlpha.gold15, border: `1px solid ${HAlpha.gold25}` }}>
+              <Stamp className="w-6 h-6" style={{ color: HColors.gold }} />
             </div>
-            <div className="flex items-center gap-3">
-              <TutorialButton />
-              <div className="hidden md:flex items-center gap-2 text-xs" style={{ fontFamily: 'var(--font-nunito)' }}>
-                <span className="px-2.5 py-1 rounded-full font-semibold"
-                  style={{ background: HAlpha.gold10, color: HColors.brownMid, border: `1px solid ${HAlpha.gold25}` }}>
-                  {stats.docsAttente} doc{stats.docsAttente > 1 ? 's' : ''} en attente
-                </span>
-                <span className="px-2.5 py-1 rounded-full font-semibold"
-                  style={{ background: HAlpha.vertCI10, color: HColors.vertCI, border: `1px solid ${HAlpha.vertCI25}` }}>
-                  {stats.pret} prêt{stats.pret > 1 ? 's' : ''} à certifier
-                </span>
-                <span className="px-2.5 py-1 rounded-full font-semibold"
-                  style={{ background: HAlpha.navy08, color: HColors.navy, border: `1px solid ${HAlpha.navy20}` }}>
-                  {stats.certifie} certifié{stats.certifie > 1 ? 's' : ''}
-                </span>
-              </div>
-              <button onClick={() => {}} aria-label="Actualiser"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all opacity-50 cursor-not-allowed"
-                style={{ background: HAlpha.gold10, border: `1px solid ${HAlpha.gold25}`, color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-                <RotateCcw className="w-3.5 h-3.5" /> Temps réel actif
-              </button>
+            <div>
+              <h1 className="text-2xl font-black text-cream" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>Espace Notaire</h1>
+              <p className="text-xs font-medium opacity-60 text-cream">Maître {profile?.full_name}</p>
             </div>
           </div>
-
-          {/* Tabs */}
-          <nav className="flex gap-1 overflow-x-auto homeci-tabs-scroll">
-            {([
-              { id: 'disponible', label: 'Disponibles', count: stats.disponible, accent: HColors.orangeCI, bg: HAlpha.orange10, bd: HAlpha.orange25 },
-              { id: 'en_cours', label: 'En cours', count: stats.enCours, accent: HColors.gold, bg: HAlpha.gold10, bd: HAlpha.gold25 },
-              { id: 'pret', label: 'Prêts à certifier', count: stats.pret, accent: HColors.navy, bg: HAlpha.navy08, bd: HAlpha.navy20 },
-              { id: 'certifie', label: 'Certifiés', count: stats.certifie, accent: HColors.vertCI, bg: HAlpha.vertCI10, bd: HAlpha.vertCI25 },
-            ] as const).map(tab => (
-              <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
-                aria-label={tab.label} aria-current={activeTab === tab.id ? 'page' : undefined}
-                className="flex items-center gap-2 px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap"
-                style={activeTab === tab.id
-                  ? { borderColor: HColors.gold, color: HColors.gold, fontFamily: 'var(--font-nunito)' }
-                  : { borderColor: 'transparent', color: HAlpha.cream45, fontFamily: 'var(--font-nunito)' }}>
-                {tab.label}
-                <span className="px-1.5 py-0.5 rounded-full text-xs font-bold"
-                  style={activeTab === tab.id
-                    ? { background: tab.bg, color: tab.accent, border: `1px solid ${tab.bd}` }
-                    : { background: HAlpha.gold08, color: HAlpha.cream50 }}>
-                  {tab.count}
-                </span>
-              </button>
-            ))}
-          </nav>
+          <div className="flex items-center gap-3">
+            <TutorialButton />
+            <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold"
+                    style={{ background: HAlpha.gold10, color: HColors.gold }}>
+              <RotateCcw className="w-3 h-3" /> Temps réel actif
+            </button>
+          </div>
         </div>
-      </div>
+        
+        <div className="max-w-7xl mx-auto mt-8">
+          <NotaireTabs activeTab={activeTab} stats={stats} />
+        </div>
+      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <NotaireStats stats={stats} />
 
-        {/* Recherche + filtre */}
-        <div className="flex gap-3 mb-5 flex-wrap">
-          <div className="relative flex-1 min-w-48">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: HColors.brown }} />
+        <div className="flex gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40" />
             <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Bien, ville, propriétaire…"
-              className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm outline-none"
-              style={{ background: 'rgba(255,255,255,0.85)', border: `1px solid ${HAlpha.gold20}`, color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }} />
+                   placeholder="Rechercher un dossier..."
+                   className="w-full pl-10 pr-4 py-3 rounded-2xl text-sm outline-none shadow-sm"
+                   style={{ background: '#FFFFFF', border: `1px solid ${HAlpha.gold15}` }} />
           </div>
           <select value={filterType} onChange={e => setFilterType(e.target.value)}
-            className="px-3 py-2.5 rounded-xl text-sm outline-none"
-            style={{ background: 'rgba(255,255,255,0.85)', border: `1px solid ${HAlpha.gold20}`, color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
-            <option value="">Tous les types</option>
-            {Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  className="px-4 py-3 rounded-2xl text-sm outline-none shadow-sm font-bold"
+                  style={{ background: '#FFFFFF', border: `1px solid ${HAlpha.gold15}`, color: HColors.darkBrown }}>
+            <option value="">Tous les biens</option>
+            {Object.entries(TYPE_LABELS).map(([k,v]) => <option key={k} value={k}>{v}</option>)}
           </select>
-          {(searchQuery || filterType) && (
-            <button onClick={() => { setSearchQuery(''); setFilterType(''); }}
-              className="flex items-center gap-1.5 px-3 py-2.5 text-sm rounded-xl transition-all hover:opacity-80"
-              style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord25}`, color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
-              <X className="w-3.5 h-3.5" /> Effacer
-            </button>
+        </div>
+
+        <div className="space-y-3">
+          {filtered.length === 0 ? (
+            <div className="p-20 text-center rounded-[2.5rem]" style={{ background: '#FFFFFF', border: `1px dashed ${HAlpha.gold30}` }}>
+              <Building2 className="w-12 h-12 mx-auto mb-4 opacity-20" />
+              <p className="text-sm font-bold opacity-40">Aucun dossier trouvé dans cette section</p>
+            </div>
+          ) : (
+            filtered.map(property => (
+              <NotairePropertyCard 
+                key={property.id} 
+                property={property} 
+                owners={owners} 
+                activeTab={activeTab}
+                isExpanded={expandedId === property.id}
+                onToggleExpand={() => setExpandedId(expandedId === property.id ? null : property.id)}
+                onTakeCharge={(p: any) => { setPendingTakeChargeProperty(p); setShowCGVNotaire(true); }}
+                takingId={takingId}
+                actionLoading={actionLoading}
+                handleDocAction={handleDocAction}
+                handleCertify={handleCertify}
+                certifyingId={certifyingId}
+                isReadyToCertify={(p: any) => p.documents?.length > 0} // Simplify prop check
+              />
+            ))
           )}
-          <p className="self-center text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-            {filtered.length} dossier{filtered.length > 1 ? 's' : ''}
-          </p>
         </div>
+      </main>
 
-        {/* Banner disponibles */}
-        {activeTab === 'disponible' && filtered.length > 0 && (
-          <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl"
-            style={{ background: HAlpha.orange10, border: `1px solid ${HAlpha.terra28}` }}>
-            <FileCheck className="w-4 h-4 shrink-0" style={{ color: HColors.orangeCI }} />
-            <span className="text-sm" style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>
-              Ces dossiers sont disponibles — cliquez <strong>Prendre en charge</strong> pour les assigner à votre espace.
-            </span>
-          </div>
-        )}
+      <RevokeModal 
+        isOpen={!!revokeModal} 
+        onClose={() => setRevokeModal(null)} 
+        onConfirm={(reason: string) => revokeModal && handleRevoke(revokeModal.property, reason)}
+        loading={revokeModal?.loading}
+        property={revokeModal?.property}
+        hasActiveVisit={revokeModal?.hasActiveVisit}
+      />
 
-        {/* Banner prêts à certifier */}
-        {activeTab === 'pret' && filtered.length > 0 && (
-          <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl"
-            style={{ background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}` }}>
-            <BadgeCheck className="w-4 h-4 shrink-0" style={{ color: HColors.navy }} />
-            <span className="text-sm" style={{ color: HColors.navy, fontFamily: 'var(--font-nunito)' }}>
-              Ces biens ont tous leurs documents validés — accordez leur le badge <strong>Vérifié Notaire</strong>.
-            </span>
-          </div>
-        )}
+      <DelegationModal 
+        token={delegationToken?.token} 
+        action={delegationToken?.action} 
+        propertyTitle={delegationToken?.propertyTitle}
+        onClose={() => setDelegationToken(null)}
+      />
 
-        {/* Liste vide */}
-        {filtered.length === 0 ? (
-          <div className="rounded-2xl p-16 text-center"
-            style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
-            <FileCheck className="w-12 h-12 mx-auto mb-3" style={{ color: HAlpha.gold20 }} />
-            <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-              {activeTab === 'disponible' ? 'Aucun dossier disponible' : activeTab === 'en_cours' ? 'Aucun dossier en cours' : activeTab === 'pret' ? 'Aucun dossier prêt à certifier' : "Aucun bien certifié pour l'instant"}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filtered.map(property => {
-              const docSt = getDocStatus(property);
-              const isExpanded = expandedId === property.id;
-              const required = REQUIRED_DOCS[property.property_type] || ['titre_foncier'];
-              const ready = isReadyToCertify(property);
-              const owner = owners[property.owner_id];
-              const validatedReq = required.filter(r => property.documents?.find(d => d.type === r)?.status === 'valide').length;
-              const pct = required.length > 0 ? Math.round((validatedReq / required.length) * 100) : 0;
-              const stColors = {
-                certifie: { border: HAlpha.vertCI30, bar: HColors.vertCI },
-                complet: { border: HAlpha.navy20, bar: HColors.navy },
-                partiel: { border: HAlpha.gold35, bar: HColors.gold },
-                aucun: { border: HAlpha.gold15, bar: HAlpha.gold20 },
-              }[docSt];
-
-              return (
-                <div key={property.id} className="rounded-2xl overflow-hidden transition-all"
-                  style={{ background: HColors.white, border: `1px solid ${stColors.border}`, boxShadow: '0 2px 12px rgba(26,14,0,0.05)' }}>
-                  <div className="h-1" style={{ background: stColors.bar, opacity: 0.45 }} />
-
-                  <div className="flex gap-4 p-4 items-start">
-                    {property.images?.[0] ? (
-                      <img src={property.images[0]} alt={property.title}
-                        className="w-16 h-16 rounded-xl object-cover shrink-0"
-                        style={{ border: `1px solid ${HAlpha.gold15}` }} />
-                    ) : (
-                      <div className="w-16 h-16 rounded-xl flex items-center justify-center shrink-0"
-                        style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold15}` }}>
-                        <Building2 className="w-6 h-6" style={{ color: HAlpha.gold30 }} />
-                      </div>
-                    )}
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <div>
-                          <h3 className="font-bold text-sm leading-tight"
-                            style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1rem' }}>
-                            {property.title}
-                          </h3>
-                          <div className="flex items-center gap-2 mt-0.5 flex-wrap text-xs"
-                            style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                            <span className="flex items-center gap-1"><Building2 className="w-3 h-3" />{TYPE_LABELS[property.property_type]}</span>
-                            <span className="flex items-center gap-1"><MapPin className="w-3 h-3" style={{ color: HColors.orangeCI }} />{[property.city, property.commune, property.quartier].filter(Boolean).join(', ')}</span>
-                            {owner && <span className="flex items-center gap-1"><User className="w-3 h-3" />{owner.full_name}</span>}
-                          </div>
-                        </div>
-                        <DocStatusBadgeFull status={docSt} />
-                      </div>
-                      <div className="flex items-center gap-2 mt-2">
-                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: HAlpha.gold08 }}>
-                          <div className="h-full rounded-full transition-all"
-                            style={{ width: `${pct}%`, background: pct === 100 ? HColors.vertCI : pct > 0 ? HColors.gold : HAlpha.gold20 }} />
-                        </div>
-                        <span className="text-xs shrink-0" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                          {validatedReq}/{required.length} requis
-                        </span>
-                        <span className="text-xs" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>
-                          {property.documents?.length || 0} soumis
-                        </span>
-                      </div>
-                    </div>
-
-                    {activeTab === 'disponible' ? (
-                      <button onClick={() => handleTakeCharge(property)}
-                        disabled={takingId === property.id}
-                        className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl shrink-0 self-start transition-all hover:opacity-90 disabled:opacity-50"
-                        style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
-                        {takingId === property.id ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <FileCheck className="w-3.5 h-3.5" />}
-                        Prendre en charge
-                      </button>
-                    ) : (
-                      <button onClick={() => {
-                          const newId = isExpanded ? null : property.id;
-                          setExpandedId(newId);
-                          // Reset états intermédiaires quand on change de propriété
-                          setShowRefusalInput(null);
-                          setDelegateRejectInput(null);
-                          setDelegateRejectReason('');
-                          if (newId) setTimeout(() => expandedCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
-                        }}
-                        aria-label={isExpanded ? 'Fermer' : `Examiner ${property.title}`}
-                        aria-expanded={isExpanded}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl shrink-0 self-start transition-all hover:opacity-80"
-                        style={isExpanded
-                          ? { background: HAlpha.vertCI10, border: `1px solid ${HAlpha.vertCI25}`, color: HColors.vertCI, fontFamily: 'var(--font-nunito)' }
-                          : { background: HAlpha.gold08, border: `1px solid ${HAlpha.gold20}`, color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-                        <Eye className="w-3.5 h-3.5" />
-                        {isExpanded ? 'Fermer' : 'Examiner'}
-                        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                      </button>
-                    )}
-                  </div>
-
-                  {isExpanded && (
-                    <div ref={expandedCardRef} className="border-t p-4 space-y-4"
-                      style={{ borderColor: HAlpha.gold15, background: 'rgba(249,243,232,0.5)' }}>
-
-                      {owner && (
-                        <div className="flex items-center gap-3 p-3 rounded-xl"
-                          style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
-                          <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                            style={{ background: HAlpha.vertCI10, border: `1px solid ${HAlpha.vertCI20}` }}>
-                            <User className="w-4 h-4" style={{ color: HColors.vertCI }} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>{owner.full_name}</p>
-                            <div className="flex gap-3 text-xs flex-wrap" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                              {owner.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" style={{ color: HColors.orangeCI }} />{owner.phone}</span>}
-                              {owner.email && <span>{owner.email}</span>}
-                            </div>
-                          </div>
-                          {property.verification_date && (
-                            <div className="text-xs flex items-center gap-1 shrink-0" style={{ color: HColors.vertCI, fontFamily: 'var(--font-nunito)' }}>
-                              <Calendar className="w-3 h-3" />
-                              Certifié le {new Date(property.verification_date).toLocaleDateString('fr-FR')}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* ── Titre de l'annonce ── */}
-                      {(() => {
-                        const titleKey = `title:${property.id}`;
-                        const titleStatus = (property as any).title_status || 'en_attente';
-                        const isLoadingTitle = actionLoading === titleKey;
-                        const isShowingTitleRefusal = showRefusalInput === titleKey;
-                        const titleSt = titleStatus === 'valide'
-                          ? { bg: 'rgba(45,106,79,0.08)', bd: 'rgba(45,106,79,0.3)', text: HColors.vertCI, label: 'Validé' }
-                          : titleStatus === 'refuse'
-                            ? { bg: 'rgba(139,29,29,0.08)', bd: 'rgba(139,29,29,0.25)', text: HColors.bordeaux, label: 'Refusé' }
-                            : { bg: HAlpha.gold08, bd: HAlpha.gold20, text: HColors.brownMid, label: 'En attente' };
-                        return (
-                          <div className="rounded-xl overflow-hidden"
-                            style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
-                            <div className="flex items-center gap-3 p-3">
-                              <FileText className="w-4 h-4 shrink-0" style={{ color: HColors.gold }} />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-xs font-bold uppercase tracking-wider"
-                                    style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>Titre de l'annonce</span>
-                                  <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
-                                    style={{ background: titleSt.bg, color: titleSt.text, border: `1px solid ${titleSt.bd}` }}>
-                                    {titleSt.label}
-                                  </span>
-                                </div>
-                                <p className="text-sm font-semibold mt-0.5"
-                                  style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
-                                  {property.title}
-                                </p>
-                                {titleStatus === 'valide' && (property as any).title_validated_at && (
-                                  <p className="text-xs mt-0.5" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>
-                                    Validé le {new Date((property as any).title_validated_at).toLocaleDateString('fr-FR')}
-                                  </p>
-                                )}
-                                {titleStatus === 'refuse' && (property as any).title_rejection_reason && (
-                                  <p className="text-xs mt-0.5" style={{ color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
-                                    Motif : {(property as any).title_rejection_reason}
-                                  </p>
-                                )}
-                              </div>
-                              {!property.verified_notaire && (
-                                <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
-                                  {titleStatus !== 'valide' && (
-                                    <button onClick={() => handleTitleAction(property, 'valide')}
-                                      disabled={isLoadingTitle}
-                                      className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80 disabled:opacity-50"
-                                      style={{ background: HAlpha.vertCI10, border: `1px solid ${HAlpha.vertCI25}`, color: HColors.vertCI }}>
-                                      {isLoadingTitle ? <Loader className="w-3 h-3 animate-spin" /> : <ThumbsUp className="w-3 h-3" />}
-                                      Valider
-                                    </button>
-                                  )}
-                                  {titleStatus !== 'refuse' && (
-                                    <button onClick={() => setShowRefusalInput(isShowingTitleRefusal ? null : titleKey)}
-                                      disabled={isLoadingTitle}
-                                      className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80 disabled:opacity-50"
-                                      style={{ background: 'rgba(139,29,29,0.08)', border: '1px solid rgba(139,29,29,0.25)', color: HColors.bordeaux }}>
-                                      <ThumbsDown className="w-3 h-3" /> Refuser
-                                    </button>
-                                  )}
-                                  {titleStatus !== 'en_attente' && (
-                                    <button onClick={() => handleTitleAction(property, 'en_attente')}
-                                      disabled={isLoadingTitle}
-                                      className="p-1.5 rounded-lg transition-all hover:opacity-80"
-                                      style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold15}`, color: HColors.brownMid }}>
-                                      <RotateCcw className="w-3 h-3" />
-                                    </button>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                            {isShowingTitleRefusal && (
-                              <div className="px-3 pb-3 flex gap-2">
-                                <input type="text" placeholder="Motif du refus (obligatoire)"
-                                  value={refusalReasons[titleKey] || ''}
-                                  onChange={e => setRefusalReasons(prev => ({ ...prev, [titleKey]: e.target.value }))}
-                                  className="flex-1 px-3 py-1.5 rounded-lg text-xs outline-none"
-                                  style={{
-                                    background: 'rgba(139,29,29,0.06)', border: '1px solid rgba(139,29,29,0.2)',
-                                    color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
-                                  }} />
-                                <button onClick={() => handleTitleAction(property, 'refuse')}
-                                  disabled={isLoadingTitle}
-                                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all hover:opacity-80 disabled:opacity-50"
-                                  style={{ background: HColors.bordeaux, color: HColors.cream }}>
-                                  {isLoadingTitle ? <Loader className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
-                                  Confirmer
-                                </button>
-                                <button onClick={() => setShowRefusalInput(null)} aria-label="Annuler"
-                                  className="p-1.5 rounded-lg transition-all hover:opacity-70"
-                                  style={{ color: HColors.brown }}>
-                                  <X className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })()}
-                      {/* Title & Docs Section */}
-                      <div>
-                        <h4 className="text-xs font-bold uppercase tracking-wider mb-2"
-                          style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>Documents soumis</h4>
-                        <div className="space-y-2">
-                          {(property.documents || []).map(docItem => {
-                            const actionKey = `${docItem.type}:${property.id}`;
-                            const isLoadingDoc = actionLoading === actionKey;
-                            const isRequired = required.includes(docItem.type);
-                            const isShowingRefusal = showRefusalInput === actionKey;
-                            return (
-                              <div key={docItem.type} className="rounded-xl overflow-hidden"
-                                style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
-                                <div className="flex items-center gap-3 p-3">
-                                  <FileText className="w-4 h-4 shrink-0" style={{ color: HColors.brown }} />
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <span className="text-sm font-medium" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
-                                        {docItem.label || DOC_LABELS[docItem.type] || docItem.type}
-                                      </span>
-                                      {isRequired && (
-                                        <span className="text-xs px-1.5 py-0.5 rounded font-medium"
-                                          style={{ background: HAlpha.navy08, color: HColors.navy }}>Requis</span>
-                                      )}
-                                      <DocStatusBadge status={docItem.status as DocStatus} />
-                                    </div>
-                                    {docItem.status === 'valide' && docItem.validated_at && (
-                                      <p className="text-xs mt-0.5" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>
-                                        Validé le {new Date(docItem.validated_at).toLocaleDateString('fr-FR')}
-                                      </p>
-                                    )}
-                                    {docItem.status === 'refuse' && (docItem as any).rejection_reason && (
-                                      <p className="text-xs mt-0.5" style={{ color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
-                                        Motif : {(docItem as any).rejection_reason}
-                                      </p>
-                                    )}
-                                  </div>
-                                  <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
-                                    {docItem.url && (
-                                      <a href={fixDocUrl(docItem.url)} target="_blank" rel="noopener noreferrer"
-                                        className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80"
-                                        style={{ background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}`, color: HColors.navy }}>
-                                        <ExternalLink className="w-3 h-3" /> Consulter
-                                      </a>
-                                    )}
-                                    {!property.verified_notaire && (
-                                      <>
-                                        {docItem.status !== 'valide' && (
-                                          <button onClick={() => handleDocAction(property, docItem.type, 'valide')}
-                                            disabled={isLoadingDoc}
-                                            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80 disabled:opacity-50"
-                                            style={{ background: HAlpha.vertCI10, border: `1px solid ${HAlpha.vertCI25}`, color: HColors.vertCI }}>
-                                            {isLoadingDoc ? <Loader className="w-3 h-3 animate-spin" /> : <ThumbsUp className="w-3 h-3" />}
-                                            Valider
-                                          </button>
-                                        )}
-                                        {docItem.status !== 'refuse' && (
-                                          <button onClick={() => setShowRefusalInput(isShowingRefusal ? null : actionKey)}
-                                            disabled={isLoadingDoc}
-                                            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80 disabled:opacity-50"
-                                            style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord25}`, color: HColors.bordeaux }}>
-                                            <ThumbsDown className="w-3 h-3" /> Refuser
-                                          </button>
-                                        )}
-                                        {docItem.status !== 'en_attente' && (
-                                          <button onClick={() => handleDocAction(property, docItem.type, 'en_attente')}
-                                            disabled={isLoadingDoc} aria-label="Remettre en attente"
-                                            className="p-1.5 rounded-lg transition-all hover:opacity-70"
-                                            style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold20}`, color: HColors.brownMid }}>
-                                            <RotateCcw className="w-3 h-3" />
-                                          </button>
-                                        )}
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                                {isShowingRefusal && !property.verified_notaire && (
-                                  <div className="border-t flex gap-2 px-3 pb-3 pt-2"
-                                    style={{ borderColor: HAlpha.bord15, background: HAlpha.bord10 }}>
-                                    <input type="text" value={refusalReasons[actionKey] || ''}
-                                      onChange={e => setRefusalReasons(r => ({ ...r, [actionKey]: e.target.value }))}
-                                      placeholder="Motif de refus (ex : document illisible, non conforme…)"
-                                      className="flex-1 px-3 py-1.5 text-xs rounded-lg outline-none"
-                                      style={{ background: HColors.white, border: `1px solid ${HAlpha.bord25}`, color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }} />
-                                    <button onClick={() => handleDocAction(property, docItem.type, 'refuse')}
-                                      disabled={isLoadingDoc}
-                                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
-                                      style={{ background: HColors.bordeaux, color: HColors.cream }}>
-                                      {isLoadingDoc ? <Loader className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
-                                      Confirmer
-                                    </button>
-                                    <button onClick={() => setShowRefusalInput(null)} aria-label="Annuler"
-                                      className="p-1.5 rounded-lg transition-all hover:opacity-70"
-                                      style={{ color: HColors.brown }}>
-                                      <X className="w-3.5 h-3.5" />
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        {(() => {
-                          const missing = required.filter(r => !property.documents?.find(d => d.type === r));
-                          if (!missing.length) return null;
-                          return (
-                            <div className="flex items-start gap-2 mt-2 p-3 rounded-xl"
-                              style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold25}` }}>
-                              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: HColors.gold }} />
-                              <div className="text-xs" style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-                                <span className="font-semibold">Documents requis non soumis : </span>
-                                {missing.map(m => DOC_LABELS[m] || m).join(', ')}
-                              </div>
-                            </div>
-                          );
-                        })()}
-                      </div>
-
-                      {/* Delegation Section — après documents */}
-                      {!property.verified_notaire && (
-                        <div className="p-4 rounded-xl" style={{ background: HAlpha.orange08, border: `1px solid ${HAlpha.orange20}` }}>
-                          <div className="flex items-center justify-between gap-4 flex-wrap">
-                            <div>
-                              <h4 className="text-sm font-bold flex items-center gap-2" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>
-                                <Share2 className="w-4 h-4" style={{ color: HColors.orangeCI }} />
-                                Déléguer la modération à l'Administrateur
-                              </h4>
-                              <p className="text-xs mt-1" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                                Si vous êtes dans l'incapacité de finaliser, envoyez un jeton à usage unique à l'Admin.
-                              </p>
-                            </div>
-                            <div className="flex gap-2 flex-wrap">
-                              {isReadyToCertify(property) && (
-                                <button onClick={() => handleDelegateAction(property, 'certify')}
-                                  disabled={certifyingId === property.id}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
-                                  style={{ background: HColors.vertCI, color: '#FFFFFF' }}>
-                                  {certifyingId === property.id ? <Loader className="w-3 h-3 animate-spin" /> : <Share2 className="w-3 h-3" />}
-                                  Déléguer Certification
-                                </button>
-                              )}
-                              <button onClick={() => handleDelegateAction(property, 'reject')}
-                                disabled={certifyingId === property.id}
-                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
-                                style={{ background: HColors.bordeaux, color: '#FFFFFF' }}>
-                                {certifyingId === property.id ? <Loader className="w-3 h-3 animate-spin" /> : <Share2 className="w-3 h-3" />}
-                                Déléguer Rejet
-                              </button>
-                            </div>
-                          </div>
-                          {delegateRejectInput === property.id && (
-                            <div className="mt-3 flex gap-2">
-                              <input type="text" value={delegateRejectReason}
-                                onChange={e => setDelegateRejectReason(e.target.value)}
-                                placeholder="Motif du rejet (obligatoire)"
-                                className="flex-1 px-3 py-1.5 text-xs rounded-lg outline-none"
-                                style={{ background: HColors.white, border: `1px solid ${HAlpha.bord25}`, color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }} />
-                              <button onClick={() => handleDelegateAction(property, 'reject')}
-                                disabled={certifyingId === property.id}
-                                className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
-                                style={{ background: HColors.bordeaux, color: HColors.cream }}>
-                                Confirmer
-                              </button>
-                              <button onClick={() => { setDelegateRejectInput(null); setDelegateRejectReason(''); }}
-                                className="p-1.5 rounded-lg transition-all hover:opacity-70"
-                                style={{ color: HColors.brown }}>
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between gap-3 p-4 rounded-xl"
-                        style={ready && !property.verified_notaire
-                          ? { background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}` }
-                          : { background: HAlpha.gold05, border: `1px solid ${HAlpha.gold15}` }}>
-                        <div className="text-xs flex items-center gap-1.5" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                          {property.verified_notaire ? (
-                            <><BadgeCheck className="w-4 h-4" style={{ color: HColors.vertCI }} /> Badge "Vérifié Notaire" accordé</>
-                          ) : ready ? (
-                            <><CheckCircle className="w-4 h-4 shrink-0" style={{ color: HColors.navy }} /> Tous les documents requis validés — prêt à certifier</>
-                          ) : (
-                            <><AlertCircle className="w-4 h-4 shrink-0" style={{ color: HColors.brown }} /> Documents requis manquants ou non encore tous validés</>
-                          )}
-                        </div>
-                        {property.verified_notaire ? (
-                          <button onClick={() => handleRevoke(property)} disabled={certifyingId === property.id}
-                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl transition-all hover:opacity-80 disabled:opacity-50"
-                            style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord25}`, color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
-                            <XCircle className="w-3.5 h-3.5" /> Retirer la certification
-                          </button>
-                        ) : (
-                          <button onClick={() => handleCertify(property)} disabled={!ready || certifyingId === property.id}
-                            className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-                            style={{
-                              background: ready ? 'linear-gradient(135deg,#FF6B00,#D4A017)' : HAlpha.gold10,
-                              color: ready ? HColors.night : HColors.brown, fontFamily: 'var(--font-nunito)'
-                            }}>
-                            {certifyingId === property.id ? <Loader className="w-4 h-4 animate-spin" /> : <Stamp className="w-4 h-4" />}
-                            Certifier ce bien
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* ── Section Dossiers Legacy ── */}
-      {legacyProperties.length > 0 && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-          <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl"
-            style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold25}` }}>
-            <AlertCircle className="w-4 h-4 shrink-0" style={{ color: HColors.gold }} />
-            <div className="text-sm" style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
-              <strong>{legacyProperties.length} dossier{legacyProperties.length > 1 ? 's' : ''} antérieur{legacyProperties.length > 1 ? 's' : ''}</strong> — Ces biens ont été traités avant la mise à jour du système.
-              Prenez-les en charge pour les gérer depuis votre espace.
-            </div>
-          </div>
-          <div className="space-y-3">
-            {legacyProperties.map(p => {
-              const docSt = getDocStatus(p);
-              return (
-                <div key={p.id} className="rounded-2xl overflow-hidden"
-                  style={{
-                    background: HColors.white, border: `1px solid ${HAlpha.gold25}`,
-                    boxShadow: '0 2px 8px rgba(26,14,0,0.04)', opacity: 0.9
-                  }}>
-                  <div className="h-1" style={{ background: HColors.gold, opacity: 0.3 }} />
-                  <div className="flex items-center gap-4 p-4">
-                    {p.images?.[0] ? (
-                      <img src={p.images[0]} alt={p.title}
-                        className="w-14 h-14 rounded-xl object-cover shrink-0"
-                        style={{ border: `1px solid ${HAlpha.gold15}` }} />
-                    ) : (
-                      <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0"
-                        style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold15}` }}>
-                        <Building2 className="w-5 h-5" style={{ color: HAlpha.gold30 }} />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-sm leading-tight mb-1"
-                        style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1rem' }}>
-                        {p.title}
-                      </h3>
-                      <div className="flex items-center gap-2 text-xs flex-wrap"
-                        style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                        <span className="flex items-center gap-1">
-                          <Building2 className="w-3 h-3" />{TYPE_LABELS[p.property_type] || p.property_type}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" style={{ color: HColors.orangeCI }} />{p.city}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-full font-medium"
-                          style={{ background: HAlpha.gold08, border: `1px solid ${HAlpha.gold20}`, color: HColors.brownMid }}>
-                          Dossier antérieur
-                        </span>
-                        <DocStatusBadgeFull status={docSt} />
-                      </div>
-                    </div>
-                    <button onClick={() => handleTakeCharge(p)}
-                      disabled={takingId === p.id}
-                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl shrink-0 transition-all hover:opacity-90 disabled:opacity-50"
-                      style={{
-                        background: 'linear-gradient(135deg,#FF6B00,#D4A017)',
-                        color: '#FFFFFF', fontFamily: 'var(--font-nunito)'
-                      }}>
-                      {takingId === p.id
-                        ? <Loader className="w-3.5 h-3.5 animate-spin" />
-                        : <FileCheck className="w-3.5 h-3.5" />}
-                      Reprendre
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Toast */}
-      {toast && (
-        <div className="fixed bottom-6 right-6 z-50 overflow-hidden rounded-2xl shadow-2xl" style={{ minWidth: 260 }}>
-          <KenteLine height={3} />
-          <div className="flex items-center gap-2 px-4 py-3"
-            style={{ background: toast.ok ? HColors.night : HColors.bordeaux }}>
-            {toast.ok ? <CheckCircle className="w-4 h-4 shrink-0" style={{ color: HColors.gold }} />
-              : <XCircle className="w-4 h-4 shrink-0" style={{ color: HColors.cream }} />}
-            <span className="text-sm font-medium" style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>{toast.msg}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de décertification */}
-      {revokeModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center px-4"
-          style={{ background: 'rgba(10,61,31,0.7)', backdropFilter: 'blur(6px)' }}>
-          <div className="w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl"
-            style={{ background: HColors.night, border: `1px solid ${HAlpha.bord25}` }}>
-            <KenteLine height={3} />
-            <div className="px-6 pt-5 pb-6">
-              <div className="w-14 h-14 mx-auto mb-4 rounded-full flex items-center justify-center"
-                style={{ background: HAlpha.bord10, border: `2px solid ${HAlpha.bord25}` }}>
-                <XCircle className="w-7 h-7" style={{ color: HColors.bordeaux }} />
-              </div>
-              <h2 className="text-center text-lg font-bold mb-3"
-                style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: '1.4rem' }}>
-                Retirer la certification
-              </h2>
-              <p className="text-center text-sm mb-4" style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
-                Bien : <strong style={{ color: HColors.orangeCI }}>« {revokeModal.property.title} »</strong>
-              </p>
-
-              {/* Avertissement visite active */}
-              {revokeModal.hasActiveVisit && (
-                <div className="p-3 rounded-xl mb-4"
-                  style={{ background: 'rgba(255,107,0,0.08)', border: `1px solid ${HAlpha.orange20}` }}>
-                  <p className="text-xs font-semibold mb-1" style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>
-                    ⚠️ Visite en cours détectée
-                  </p>
-                  <p className="text-xs leading-relaxed" style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
-                    Ce bien a une visite confirmée. Si vous retirez la certification :
-                  </p>
-                  <ul className="text-xs mt-1.5 space-y-1" style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
-                    <li className="flex items-start gap-1.5">
-                      <span style={{ color: HColors.bordeaux }}>•</span>
-                      La visite sera <strong style={{ color: HColors.bordeaux }}>automatiquement annulée</strong>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span style={{ color: HColors.orangeCI }}>•</span>
-                      Le <strong>locataire sera notifié</strong> de l'annulation et du motif
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span style={{ color: HColors.orangeCI }}>•</span>
-                      Les frais de visite éventuels seront <strong>recrédités</strong> au locataire
-                    </li>
-                  </ul>
-                </div>
-              )}
-
-              {/* Conséquences */}
-              <div className="p-3 rounded-xl mb-4" style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord20}` }}>
-                <p className="text-xs leading-relaxed" style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
-                  Le badge "Vérifié Notaire" sera retiré. L'annonce repassera en <strong style={{ color: HColors.cream }}>attente de vérification</strong> et
-                  ne sera plus visible par les locataires tant qu'elle n'aura pas été re-certifiée.
-                  Le propriétaire sera notifié.
-                </p>
-              </div>
-
-              {/* Motif obligatoire */}
-              <div className="mb-4">
-                <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
-                  style={{ color: HColors.bordeaux, fontFamily: 'var(--font-nunito)' }}>
-                  Motif de la décertification *
-                </label>
-                <textarea value={revokeModal.reason}
-                  onChange={e => setRevokeModal(prev => prev ? { ...prev, reason: e.target.value } : null)}
-                  placeholder="Expliquez la raison du retrait de certification..."
-                  rows={3} maxLength={500}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none"
-                  style={{
-                    background: 'rgba(10,61,31,0.6)', border: `1px solid ${HAlpha.bord20}`,
-                    color: HColors.cream, fontFamily: 'var(--font-nunito)'
-                  }} />
-                <p className="text-right text-xs mt-1" style={{ color: HAlpha.cream40 }}>
-                  {revokeModal.reason.length}/500
-                </p>
-              </div>
-
-              <div className="flex gap-3">
-                <button onClick={() => setRevokeModal(null)}
-                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80"
-                  style={{ border: `1px solid ${HAlpha.gold20}`, color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
-                  Annuler
-                </button>
-                <button onClick={confirmRevoke}
-                  disabled={!revokeModal.reason.trim() || revokeModal.loading}
-                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center gap-1.5"
-                  style={{ background: HColors.bordeaux, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
-                  {revokeModal.loading
-                    ? <Loader className="w-4 h-4 animate-spin" />
-                    : <XCircle className="w-4 h-4" />}
-                  Retirer la certification
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* CGV Notaire */}
       {showCGVNotaire && (
-        <CGVNotaireModal
+        <CGVNotaireModal 
+          onClose={() => setShowCGVNotaire(false)}
           onAccept={() => {
+            if (pendingTakeChargeProperty) doTakeCharge(pendingTakeChargeProperty);
             setShowCGVNotaire(false);
-            if (pendingTakeChargeProperty) {
-              doTakeCharge(pendingTakeChargeProperty);
-              setPendingTakeChargeProperty(null);
-            }
           }}
-          onClose={() => { setShowCGVNotaire(false); setPendingTakeChargeProperty(null); }}
         />
       )}
-      {/* Delegation Token Modal */}
-      {delegationToken && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300"
-            style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}` }}>
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-[#F9F3E8] flex items-center justify-center mx-auto mb-4 border border-[#D4A017]/20">
-                <Share2 className="w-8 h-8 text-[#FF6B00]" />
-              </div>
-              <h3 className="text-xl font-bold mb-2" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>
-                Jeton de Délégation Généré
-              </h3>
-              <p className="text-sm mb-6" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                Copiez ce code et envoyez-le à l'administrateur pour qu'il puisse {delegationToken.action === 'certify' ? 'certifier' : 'rejeter'} le bien <strong>{delegationToken.propertyTitle}</strong>.
-              </p>
-              
-              <div className="p-4 rounded-2xl mb-6 text-2xl font-mono font-bold tracking-widest select-all"
-                style={{ background: HAlpha.gold08, border: `2px dashed ${HAlpha.gold30}`, color: HColors.darkBrown }}>
-                {delegationToken.token}
-              </div>
 
-              <button onClick={() => setDelegationToken(null)}
-                className="w-full py-3 rounded-xl font-bold transition-all hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
-                J'ai compris
-              </button>
-            </div>
+      {toast && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-5 duration-500">
+          <div className={`px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md`}
+               style={{ background: toast.ok ? 'rgba(45,106,79,0.95)' : 'rgba(139,29,29,0.95)', color: '#FFFFFF' }}>
+            {toast.ok ? <FileCheck className="w-5 h-5" /> : <X className="w-5 h-5" />}
+            <span className="text-sm font-bold">{toast.msg}</span>
           </div>
         </div>
       )}
     </div>
-  );
-}
-
-function DocStatusBadgeFull({ status }: { status: 'aucun' | 'partiel' | 'complet' | 'certifie' }) {
-  const cfg = {
-    certifie: { bg: HAlpha.vertCI10, bd: HAlpha.vertCI25, text: HColors.vertCI, label: 'Certifié', icon: <Stamp className="w-3 h-3" /> },
-    complet: { bg: HAlpha.navy08, bd: HAlpha.navy20, text: HColors.navy, label: 'Prêt à certifier', icon: <CheckCircle className="w-3 h-3" /> },
-    partiel: { bg: HAlpha.orange10, bd: HAlpha.orange20, text: HColors.orangeCI, label: 'En cours', icon: <Clock className="w-3 h-3" /> },
-    aucun: { bg: HAlpha.gold08, bd: HAlpha.gold15, text: HColors.brown, label: 'En attente', icon: <Clock className="w-3 h-3" /> },
-  }[status];
-  return (
-    <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold shrink-0"
-      style={{ background: cfg.bg, border: `1px solid ${cfg.bd}`, color: cfg.text, fontFamily: 'var(--font-nunito)' }}>
-      {cfg.icon} {cfg.label}
-    </span>
-  );
-}
-
-function DocStatusBadge({ status }: { status: DocStatus }) {
-  const cfg: Record<DocStatus, { bg: string; bd: string; text: string; label: string }> = {
-    en_attente: { bg: HAlpha.orange10, bd: HAlpha.orange20, text: HColors.orangeCI, label: 'En attente' },
-    valide: { bg: HAlpha.vertCI10, bd: HAlpha.vertCI25, text: HColors.vertCI, label: 'Validé' },
-    refuse: { bg: HAlpha.bord10, bd: HAlpha.bord25, text: HColors.bordeaux, label: 'Refusé' },
-  };
-  const { bg, bd, text, label } = cfg[status] || cfg.en_attente;
-  return (
-    <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-      style={{ background: bg, border: `1px solid ${bd}`, color: text, fontFamily: 'var(--font-nunito)' }}>
-      {label}
-    </span>
   );
 }
