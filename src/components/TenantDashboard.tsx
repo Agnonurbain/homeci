@@ -1,354 +1,116 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import {
-  Heart, Calendar, Search, Map, List, X, Phone, CheckCircle,
-  XCircle, Clock, Bell, MapPin, Bed, Maximize, Eye,
-  ChevronLeft, ChevronRight, Star, AlertCircle,
-  MessageSquare, FileText
+import { useState, lazy, Suspense } from 'react';
+import { 
+  Heart, Calendar, Search, Bell, FileText, CheckCircle, Clock, XCircle, Star, MessageSquare 
 } from 'lucide-react';
-import { propertyService } from '../services/propertyService';
-import { visitService } from '../services/visitService';
-import ScrollTimePicker from './ScrollTimePicker';
-import { notificationService } from '../services/notificationService';
-import type { VisitRequest } from '../services/visitService';
-import type { Notification } from '../services/notificationService';
-import { PropertyCard } from './PropertyCard';
-import { PropertyFilters } from './PropertyFilters';
-import { PropertyGridSkeleton } from './Skeletons';
-const MapDisplay = lazy(() => import('./MapDisplay'));
-const TenantDossier = lazy(() => import('./TenantDossier'));
-import PropertyViewModal from './PropertyViewModal';
+import { useNavigate, useLocation } from 'react-router-dom';
+
+// Hooks
 import { useAuth } from '../contexts/AuthContext';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { useFavorites } from '../hooks/useFavorites';
-import type { Property } from '../services/propertyService';
-import type { FilterValues } from './PropertyFilters';
-import { KenteLine } from './ui/KenteLine';
+import { useTenantProperties } from '../hooks/useTenantProperties';
+import { useTenantVisits } from '../hooks/useTenantVisits';
+import { useTenantNotifications } from '../hooks/useTenantNotifications';
+
+// Components
+import { PropertyGridSkeleton } from './Skeletons';
+import PropertyViewModal from './PropertyViewModal';
 import CGVLocataireModal from './CGVLocataireModal';
 import PaymentModal from './PaymentModal';
 import SatisfactionModal from './SatisfactionModal';
 import ChatBox from './ChatBox';
-import { surveyService } from '../services/surveyService';
-import { HColors, HAlpha } from '../styles/homeci-tokens';
-import { analyticsService } from '../services/analyticsService';
-import { availabilityService, type PropertyAvailability } from '../services/availabilityService';
-import { chatService } from '../services/chatService';
-import { VISIT_STATUS_TENANT as VISIT_STATUS } from '../constants/visitStatus';
 import TutorialButton from './TutorialButton';
+import { KenteLine } from './ui/KenteLine';
 
-const PER_PAGE = 9;
+// Specialized Tab Components
+import SearchTab from './tenant/SearchTab';
+import VisitsTab from './tenant/VisitsTab';
+import FavoritesTab from './tenant/FavoritesTab';
+import NotificationsTab from './tenant/NotificationsTab';
+import VisitRequestModal from './tenant/VisitRequestModal';
 
-function formatPrice(p: number) {
-  return new Intl.NumberFormat('fr-FR').format(p) + ' FCFA';
-}
+// Styles
+import { HColors, HAlpha } from '../styles/homeci-tokens';
+import { chatService } from '../services/chatService';
 
-/* ── Icônes notifications ─────────────────────────────────────────────────── */
-const NOTIF_ICON: Record<string, React.ReactNode> = {
-  visit_request: <Calendar className="w-4 h-4" style={{ color: HColors.navy }} />,
-  visit_accepted: <CheckCircle className="w-4 h-4" style={{ color: HColors.vertCI }} />,
-  visit_rejected: <XCircle className="w-4 h-4" style={{ color: HColors.bordeaux }} />,
-  visit_completed: <Star className="w-4 h-4" style={{ color: HColors.gold }} />,
-  notaire_approved: <CheckCircle className="w-4 h-4" style={{ color: HColors.vertCI }} />,
-  new_message: <MessageSquare className="w-4 h-4" style={{ color: HColors.orangeCI }} />,
-  system: <Bell className="w-4 h-4" style={{ color: HAlpha.brown50 }} />,
-};
-
+const TenantDossier = lazy(() => import('./TenantDossier'));
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
 export default function TenantDashboard() {
   const { user, profile } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { favoriteIds, toggleFavorite, isFavorite } = useFavorites(user?.uid);
 
-  const location = useLocation();
-  const navigate = useNavigate();
+  // Modular Hooks
+  const { filtered, loading: propsLoading, handleFilterChange, allProperties } = useTenantProperties();
+  const { visitRequests, visitProperties, handleAcceptCounter, handleProposeCounter, requestVisit } = useTenantVisits(user?.uid, profile?.full_name);
+  const { notifications, unreadCount, handleMarkAllRead, loading: notifLoading } = useTenantNotifications(user?.uid);
+
+  // UI State
   const tabFromUrl = location.pathname.split('/')[2];
   const validTabs = ['search', 'favorites', 'visits', 'notifications', 'dossier'];
   const activeTab = validTabs.includes(tabFromUrl) ? tabFromUrl as any : 'search';
-  const [allProperties, setAllProperties] = useState<Property[]>([]);
-  const [filtered, setFiltered] = useState<Property[]>([]);
-  const [favoriteProperties, setFavoriteProperties] = useState<Property[]>([]);
-  const [visitRequests, setVisitRequests] = useState<VisitRequest[]>([]);
-  const [visitProperties, setVisitProperties] = useState<Record<string, Property>>({});
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-
-  const [propertyAvailability, setPropertyAvailability] = useState<PropertyAvailability | null>(null);
-  const [activeChat, setActiveChat] = useState<{ chatId: string; otherName: string; otherRole: 'Propriétaire' | 'Agent' | 'Locataire' | 'Acheteur' } | null>(null);
-  const [chatLoadingId, setChatLoadingId] = useState<string | null>(null);
 
   const [viewingPropertyId, setViewingPropertyId] = useState<string | null>(null);
-  const [visitRequestPropertyId, setVisitRequestPropertyId] = useState<string | null>(null);
+  const [visitModalProperty, setVisitModalProperty] = useState<any | null>(null);
+  const [showCGV, setShowCGV] = useState(false);
+  const [pendingVisitProp, setPendingVisitProp] = useState<any | null>(null);
+  
+  const [activeChat, setActiveChat] = useState<{ chatId: string; otherName: string; otherRole: any } | null>(null);
+  const [chatLoadingId, setChatLoadingId] = useState<string | null>(null);
 
-  const [visitModalProperty, setVisitModalProperty] = useState<Property | null>(null);
-  const [visitForm, setVisitForm] = useState({ preferred_date: '', preferred_time: '' });
-  const [submittingVisit, setSubmittingVisit] = useState(false);
-  const [visitSuccess, setVisitSuccess] = useState(false);
-  const [visitError, setVisitError] = useState('');
-  const [counterForm, setCounterForm] = useState<{ visitId: string; date: string; time: string } | null>(null);
-  const [counterLoading, setCounterLoading] = useState(false);
-  const visitSuccessTimer = useRef<ReturnType<typeof setTimeout>>();
-  const [showCGVLocataire, setShowCGVLocataire] = useState(false);
-  const [showVisitPayment, setShowVisitPayment] = useState(false);
-  const [surveyData, setSurveyData] = useState<{ trigger: 'visit_accepted' | 'visit_completed'; propertyId?: string; propertyTitle?: string } | null>(null);
-  const [pendingVisitProperty, setPendingVisitProperty] = useState<Property | null>(null);
-
-  useEffect(() => {
-    // 1. Chargement initial des propriétés (statique car moins fréquent ou géré autrement)
-    propertyService.getProperties({ status: 'published' }).then(data => {
-      setAllProperties(data); setFiltered(data); setLoading(false);
-    }).catch(() => { setLoading(false); });
-
-    if (user) {
-      // 2. Écouteur des visites
-      const unsubVisits = visitService.listenToVisitRequestsByTenant(user.uid, (visits) => {
-        setVisitRequests(visits);
-        const ids = [...new Set(visits.map(v => v.property_id))];
-        Promise.all(ids.map(id => propertyService.getProperty(id))).then(props => {
-          const map: Record<string, Property> = {};
-          props.forEach(p => { if (p) map[p.id] = p; });
-          setVisitProperties(map);
-        }).catch(console.error);
-      });
-
-      // 3. Écouteur des notifications
-      const unsubNotifs = notificationService.listenToNotifications(user.uid, setNotifications);
-
-      return () => {
-        unsubVisits();
-        unsubNotifs();
-      };
-    }
-  }, [user]);
-
-  // Déclencher l'enquête quand une visite est marquée "effectuée" par le propriétaire
-  useEffect(() => {
-    if (!user || surveyData) return;
-    const completedVisit = visitRequests.find(v => v.status === 'completed');
-    if (!completedVisit) return;
-    surveyService.hasAlreadyResponded(user.uid, 'visit_completed', completedVisit.property_id)
-      .then(already => {
-        if (!already) {
-          setSurveyData({
-            trigger: 'visit_completed',
-            propertyId: completedVisit.property_id,
-            propertyTitle: completedVisit.property_title,
-          });
-        }
-      })
-      .catch(console.error);
-  }, [visitRequests, user, surveyData]);
-
-  useEffect(() => {
-    if (favoriteIds.length === 0) { setFavoriteProperties([]); return; }
-    setFavoriteProperties(allProperties.filter(p => favoriteIds.includes(p.id)));
-  }, [favoriteIds, allProperties]);
-
-  useEffect(() => {
-    if (visitRequestPropertyId) {
-      const prop = allProperties.find(p => p.id === visitRequestPropertyId);
-      if (prop) { handleRequestVisit(prop); setViewingPropertyId(null); setVisitRequestPropertyId(null); }
-    }
-  }, [visitRequestPropertyId, allProperties]);
-
-  useEffect(() => {
-    if (visitModalProperty) {
-      availabilityService.getAvailability(visitModalProperty.id).then(setPropertyAvailability).catch(console.error);
-    } else {
-      setPropertyAvailability(null);
-    }
-  }, [visitModalProperty]);
-
-  // Cleanup timer on unmount
-  useEffect(() => () => { clearTimeout(visitSuccessTimer.current); }, []);
-
-  /** Flux : CGV (1ère fois) → Paiement 500 FCFA → Formulaire visite */
-  const [propertyInTransaction, setPropertyInTransaction] = useState(false);
-
-  const handleRequestVisit = async (property: Property) => {
-    // Vérifier si le bien est déjà en cours de transaction
-    try {
-      const active = await visitService.hasActiveVisit(property.id);
-      if (active) {
-        setPropertyInTransaction(true);
-        setPendingVisitProperty(property);
-        return;
-      }
-    } catch (e) { console.error(e); }
-
-    // Toujours afficher les CGU avant chaque nouvelle demande de visite (Conformité Légale)
-    setPendingVisitProperty(property);
-    setShowCGVLocataire(true);
-  };
-
-  const handleOpenChat = async (visit: VisitRequest) => {
+  // Handlers
+  const handleOpenChat = async (visit: any) => {
     if (!user) return;
     setChatLoadingId(visit.id);
     try {
       const chatId = await chatService.getOrCreateChat(visit.id, visit.property_id, user.uid, visit.owner_id);
-      setActiveChat({
-        chatId,
-        otherName: 'Propriétaire / Agent',
-        otherRole: 'Propriétaire'
-      });
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setChatLoadingId(null);
-    }
-  };
-
-  const handleFilterChange = (filters: FilterValues) => {
-    let r = [...allProperties];
-    if (filters.propertyType) r = r.filter(p => p.property_type === filters.propertyType);
-    if (filters.transactionType) r = r.filter(p => p.transaction_type === filters.transactionType || p.transaction_type === 'both');
-    if (filters.district) r = r.filter(p => p.district === filters.district);
-    if (filters.region) r = r.filter(p => p.region === filters.region);
-    if (filters.departement) r = r.filter(p => p.departement === filters.departement);
-    if (filters.city) r = r.filter(p => p.city === filters.city);
-    if (filters.commune) r = r.filter(p => p.commune === filters.commune);
-    if (filters.quartier) r = r.filter(p => p.quartier?.toLowerCase().includes(filters.quartier.toLowerCase()));
-    if (filters.minPrice) r = r.filter(p => p.price >= Number(filters.minPrice));
-    if (filters.maxPrice) r = r.filter(p => p.price <= Number(filters.maxPrice));
-    if (filters.bedrooms) r = r.filter(p => p.bedrooms >= Number(filters.bedrooms));
-    if (filters.furnished) r = r.filter(p => p.furnished);
-    if (filters.parking) r = r.filter(p => p.parking);
-    if (filters.verifiedOnly) r = r.filter(p => p.verified_notaire);
-    if (filters.advancedQuery) {
-      const q = filters.advancedQuery.toLowerCase();
-      r = r.filter(p => 
-        p.title.toLowerCase().includes(q) || 
-        p.city.toLowerCase().includes(q) ||
-        p.commune?.toLowerCase().includes(q) ||
-        p.quartier?.toLowerCase().includes(q) ||
-        p.amenities?.some(a => a.toLowerCase().includes(q))
-      );
-    }
-    setFiltered(r); setPage(1);
-    if (Object.values(filters).some(v => v)) analyticsService.search('filter', r.length);
-  };
-
-  const handleSubmitVisit = async () => {
-    if (!user || !visitModalProperty || !visitForm.preferred_date || !visitForm.preferred_time) return;
-    setSubmittingVisit(true); setVisitError('');
-    try {
-      if (propertyAvailability) {
-        const d = new Date(visitForm.preferred_date);
-        const slots = availabilityService.getAvailableSlots(propertyAvailability, d);
-        if (slots.length === 0) {
-          setVisitError("Le propriétaire n'est pas disponible à cette date (vérifiez ses disponibilités via le bouton Info). Veuillez choisir un autre jour.");
-          setSubmittingVisit(false);
-          return;
-        }
-      }
-
-      const existing = visitRequests.find(v => v.property_id === visitModalProperty.id && v.status !== 'rejected');
-      if (existing) { setVisitError('Vous avez déjà une demande de visite pour ce bien.'); setSubmittingVisit(false); return; }
-      await visitService.createVisitRequest({
-        property_id: visitModalProperty.id, property_title: visitModalProperty.title,
-        property_city: visitModalProperty.city, owner_id: visitModalProperty.owner_id,
-        tenant_id: user.uid, tenant_name: profile?.full_name || 'Locataire',
-        tenant_phone: profile?.phone || '', tenant_email: user.email || '',
-        preferred_date: visitForm.preferred_date, preferred_time: visitForm.preferred_time,
-      }, { notify: true, tenantName: profile?.full_name || 'Un locataire' });
-
-      analyticsService.requestVisit(visitModalProperty.id);
-      setVisitSuccess(true);
-      visitSuccessTimer.current = setTimeout(() => {
-        setVisitModalProperty(null); setVisitSuccess(false);
-        setVisitForm({ preferred_date: '', preferred_time: '' });
-      }, 2500);
-    } catch (e) {
-      setVisitError('Une erreur est survenue. Veuillez réessayer.');
-    } finally { setSubmittingVisit(false); }
-  };
-
-  const handleAcceptCounter = async (visit: VisitRequest) => {
-    try {
-      await visitService.acceptCounterDate(visit.id, { notify: true, acceptorName: profile?.full_name || 'Le locataire' });
-      // La mise à jour est gérée par onSnapshot
+      setActiveChat({ chatId, otherName: 'Propriétaire / Agent', otherRole: 'Propriétaire' });
     } catch (e) { console.error(e); }
+    finally { setChatLoadingId(null); }
   };
 
-  const handleTenantCounter = async () => {
-    if (!counterForm || !user) return;
-    setCounterLoading(true);
-    try {
-      await visitService.proposeCounterDate(counterForm.visitId, counterForm.date, counterForm.time, 'tenant', { notify: true, proposerName: profile?.full_name || 'Le locataire' });
-      setCounterForm(null);
-    } catch (e) { console.error(e); }
-    finally { setCounterLoading(false); }
-  };
-
-  const handleMarkAllRead = async () => {
-    if (!user) return;
-    try {
-      await notificationService.markAllAsRead(user.uid);
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    } catch (e) {
-      console.error('Failed to mark all as read:', e);
-    }
-  };
-
-  const unreadCount = notifications.filter(n => !n.read).length;
-  const pendingVisits = visitRequests.filter(v => v.status === 'pending').length;
-  const acceptedVisits = visitRequests.filter(v => v.status === 'accepted').length;
-  const totalPages = Math.ceil(filtered.length / PER_PAGE);
-  const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
   const firstName = profile?.full_name?.split(' ')[0] || 'vous';
+  const pendingVisitsCount = visitRequests.filter(v => v.status === 'pending').length;
+  const acceptedVisitsCount = visitRequests.filter(v => v.status === 'accepted').length;
 
-  /* ────────────────────────────────────────────────────────────────────────── */
   return (
     <div className="min-h-screen" style={{ background: HColors.creamBg }}>
 
-      {/* ── Header personnalisé ── */}
-      <div style={{ background: HColors.night, borderBottom: '1px solid rgba(212,160,23,0.2)' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4" style={{ overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{ background: HColors.night, borderBottom: `1px solid ${HAlpha.gold20}` }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">
           <div className="flex items-start justify-between gap-3 flex-wrap mb-5">
-            <div style={{ minWidth: 0 }}>
-              <h1 className="font-bold mb-0.5"
-                style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(1.3rem, 5vw, 1.8rem)' }}>
+            <div>
+              <h1 className="font-bold mb-0.5 text-cream" style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(1.3rem, 5vw, 1.8rem)' }}>
                 Bonjour, {firstName} 👋
               </h1>
-              <p className="text-xs sm:text-sm" style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
-                Trouvez, sauvegardez et planifiez vos visites
-              </p>
+              <p className="text-xs sm:text-sm text-cream/50">Trouvez et planifiez vos visites</p>
             </div>
             <div className="flex gap-2 flex-wrap items-center">
               <TutorialButton />
               <StatBadge icon={<Heart className="w-3.5 h-3.5" />} label="Favoris" value={favoriteIds.length} accent="#FF6B00" onClick={() => navigate('/dashboard/favorites')} />
-              <StatBadge icon={<Clock className="w-3.5 h-3.5" />} label="En attente" value={pendingVisits} accent="#D4A017" onClick={() => navigate('/dashboard/visits')} />
-              {acceptedVisits > 0 && <StatBadge icon={<CheckCircle className="w-3.5 h-3.5" />} label="Acceptées" value={acceptedVisits} accent="#009E49" onClick={() => navigate('/dashboard/visits')} />}
-              {unreadCount > 0 && <StatBadge icon={<Bell className="w-3.5 h-3.5" />} label="Notifs" value={unreadCount} accent="#8B1D1D" onClick={() => navigate('/dashboard/notifications')} />}
+              <StatBadge icon={<Clock className="w-3.5 h-3.5" />} label="En attente" value={pendingVisitsCount} accent="#D4A017" onClick={() => navigate('/dashboard/visits')} />
+              {acceptedVisitsCount > 0 && <StatBadge icon={<CheckCircle className="w-3.5 h-3.5" />} label="Acceptées" value={acceptedVisitsCount} accent="#009E49" onClick={() => navigate('/dashboard/visits')} />}
             </div>
           </div>
 
-          {/* Tabs */}
+          {/* Navigation Tabs */}
           <nav className="flex space-x-1 homeci-tabs-scroll">
             {[
-              { id: 'search', icon: Search, label: 'Rechercher', count: undefined },
-              { id: 'favorites', icon: Heart, label: 'Mes favoris', count: favoriteIds.length || undefined },
-              { id: 'visits', icon: Calendar, label: 'Mes visites', count: pendingVisits || undefined },
-              { id: 'notifications', icon: Bell, label: 'Notifications', count: unreadCount || undefined },
-              { id: 'dossier', icon: FileText, label: 'Mon Dossier', count: undefined },
+              { id: 'search', icon: Search, label: 'Rechercher' },
+              { id: 'favorites', icon: Heart, label: 'Mes favoris' },
+              { id: 'visits', icon: Calendar, label: 'Mes visites' },
+              { id: 'notifications', icon: Bell, label: 'Notifications', count: unreadCount },
+              { id: 'dossier', icon: FileText, label: 'Mon Dossier' },
             ].map(tab => (
               <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
-                aria-label={tab.label}
-                aria-current={activeTab === tab.id ? 'page' : undefined}
-                className="py-3 px-4 border-b-2 text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2"
-                style={activeTab === tab.id
-                  ? { borderColor: HColors.gold, color: HColors.gold, fontFamily: 'var(--font-nunito)' }
-                  : { borderColor: 'transparent', color: HAlpha.cream45, fontFamily: 'var(--font-nunito)' }}>
+                className={`py-3 px-4 border-b-2 text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === tab.id ? 'border-gold text-gold' : 'border-transparent text-cream/50'}`}>
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
-                {tab.count !== undefined && (
-                  <span className="px-1.5 py-0.5 rounded-full text-xs font-bold"
-                    style={tab.id === 'notifications'
-                      ? { background: HColors.bordeaux, color: HColors.cream }
-                      : { background: HAlpha.gold25, color: HColors.gold }}>
-                    {tab.count}
-                  </span>
-                )}
+                {tab.count ? (
+                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-bordeaux text-cream">{tab.count}</span>
+                ) : null}
               </button>
             ))}
           </nav>
@@ -356,773 +118,114 @@ export default function TenantDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
-
-        {/* ══════════════════════ RECHERCHE ══════════════════════ */}
+        
         {activeTab === 'search' && (
-          <div>
-            <div className="flex items-center justify-between mb-5">
-              <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                {loading ? 'Chargement…' : (
-                  <><span className="font-bold" style={{ color: HColors.darkBrown }}>{filtered.length}</span> bien(s) disponible(s)</>
-                )}
-              </p>
-              <div className="flex gap-2">
-                {(['list', 'map'] as const).map(m => (
-                  <button key={m} onClick={() => setViewMode(m)}
-                    aria-label={m === 'list' ? 'Vue liste' : 'Vue carte'}
-                    aria-pressed={viewMode === m}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all"
-                    style={viewMode === m
-                      ? { background: HColors.navyDark, color: HColors.cream, fontFamily: 'var(--font-nunito)' }
-                      : { background: 'rgba(255,255,255,0.7)', color: HColors.brown, border: '1px solid rgba(212,160,23,0.2)', fontFamily: 'var(--font-nunito)' }}>
-                    {m === 'list' ? <List className="w-4 h-4" /> : <Map className="w-4 h-4" />}
-                    {m === 'list' ? 'Liste' : 'Carte'}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <PropertyFilters onFilterChange={handleFilterChange} />
-
-            {loading ? (
-              <PropertyGridSkeleton count={6} />
-            ) : viewMode === 'map' ? (
-              <Suspense fallback={<PropertyGridSkeleton count={6} />}>
-                <MapDisplay mode="multi" properties={filtered} />
-              </Suspense>
-            ) : filtered.length === 0 ? (
-              <div className="rounded-2xl p-20 text-center"
-                style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
-                <Search className="w-14 h-14 mx-auto mb-4" style={{ color: HAlpha.gold25 }} />
-                <p className="text-lg font-semibold mb-1"
-                  style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>Aucun bien trouvé</p>
-                <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                  Essayez d'élargir vos critères de recherche
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {paginated.map(property => (
-                    <PropertyCard key={property.id} property={property}
-                      onFavorite={() => toggleFavorite(property.id)}
-                      isFavorite={isFavorite(property.id)}
-                      onContactClick={() => setViewingPropertyId(property.id)}
-                    />
-                  ))}
-                </div>
-                {totalPages > 1 && <Pagination page={page} totalPages={totalPages} onPage={setPage} />}
-              </>
-            )}
-          </div>
+          <SearchTab 
+            loading={propsLoading}
+            properties={filtered}
+            onFilterChange={handleFilterChange}
+            onFavorite={toggleFavorite}
+            isFavorite={isFavorite}
+            onViewProperty={setViewingPropertyId}
+          />
         )}
 
-        {/* ══════════════════════ FAVORIS ══════════════════════ */}
         {activeTab === 'favorites' && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="font-bold mb-0.5"
-                  style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.8rem' }}>Mes Favoris</h2>
-                <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                  {favoriteProperties.length} bien(s) sauvegardé(s)
-                </p>
-              </div>
-            </div>
-            {favoriteProperties.length === 0 ? (
-              <div className="rounded-2xl p-16 text-center"
-                style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
-                <Heart className="w-14 h-14 mx-auto mb-4" style={{ color: HAlpha.terra20 }} />
-                <h3 className="text-lg font-semibold mb-1"
-                  style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>Aucun favori</h3>
-                <p className="text-sm mb-6" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                  Cliquez sur le ❤ d'un bien pour le sauvegarder
-                </p>
-                <button onClick={() => navigate('/dashboard/search')}
-                  className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
-                  style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
-                  Découvrir les biens
-                </button>
-              </div>
-            ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {favoriteProperties.map(property => (
-                  <PropertyCard key={property.id} property={property}
-                    onFavorite={() => toggleFavorite(property.id)} isFavorite={true}
-                    onContactClick={() => setViewingPropertyId(property.id)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          <FavoritesTab 
+             favoriteProperties={allProperties.filter(p => favoriteIds.includes(p.id))}
+             onFavorite={toggleFavorite}
+             onViewProperty={setViewingPropertyId}
+          />
         )}
 
-        {/* ══════════════════════ MON DOSSIER ══════════════════════ */}
+        {activeTab === 'visits' && (
+          <VisitsTab 
+             visitRequests={visitRequests}
+             visitProperties={visitProperties}
+             onViewProperty={setViewingPropertyId}
+             onOpenChat={handleOpenChat}
+             chatLoadingId={chatLoadingId}
+             onAcceptCounter={handleAcceptCounter}
+             onProposeCounter={handleProposeCounter}
+             onReplan={(p) => { setPendingVisitProp(p); setShowCGV(true); }}
+          />
+        )}
+
+        {activeTab === 'notifications' && (
+          <NotificationsTab 
+             notifications={notifications}
+             unreadCount={unreadCount}
+             onMarkAllRead={handleMarkAllRead}
+             loading={notifLoading}
+          />
+        )}
+
         {activeTab === 'dossier' && (
-          <Suspense fallback={<PropertyGridSkeleton count={3} />}>
+          <Suspense fallback={<PropertyGridSkeleton count={2} />}>
             <TenantDossier />
           </Suspense>
         )}
 
-        {/* ══════════════════════ MES VISITES ══════════════════════ */}
-        {activeTab === 'visits' && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="font-bold mb-0.5"
-                  style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.8rem' }}>
-                  Mes Demandes de Visite
-                </h2>
-                <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                  {visitRequests.length} demande(s)
-                </p>
-              </div>
-              {visitRequests.length > 0 && (
-                <div className="flex gap-2 text-xs">
-                  <span className="px-2.5 py-1 rounded-full font-semibold"
-                    style={{ background: HAlpha.gold12, color: HColors.brownMid, border: '1px solid rgba(212,160,23,0.3)', fontFamily: 'var(--font-nunito)' }}>
-                    {pendingVisits} en attente
-                  </span>
-                  {acceptedVisits > 0 && (
-                    <span className="px-2.5 py-1 rounded-full font-semibold"
-                      style={{ background: HAlpha.vertCI10, color: HColors.vertCI, border: '1px solid rgba(45,106,79,0.3)', fontFamily: 'var(--font-nunito)' }}>
-                      {acceptedVisits} acceptée{acceptedVisits > 1 ? 's' : ''}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {visitRequests.length === 0 ? (
-              <div className="rounded-2xl p-16 text-center"
-                style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
-                <Calendar className="w-14 h-14 mx-auto mb-4" style={{ color: HAlpha.gold25 }} />
-                <h3 className="text-lg font-semibold mb-1"
-                  style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>Aucune demande</h3>
-                <p className="text-sm mb-6" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                  Ouvrez la fiche d'un bien pour planifier une visite
-                </p>
-                <button onClick={() => navigate('/dashboard/search')}
-                  className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
-                  style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
-                  Rechercher un bien
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {visitRequests
-                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                  .map(visit => {
-                    const vsKey = visit.status === 'counter_proposed' && visit.counter_proposed_by === 'tenant'
-                      ? 'counter_waiting' : visit.status;
-                    const vs = VISIT_STATUS[vsKey] || VISIT_STATUS['pending'];
-                    const prop = visitProperties[visit.property_id];
-                    const img = prop?.images?.[0];
-                    return (
-                      <div key={visit.id} className="rounded-2xl overflow-hidden transition-all hover:-translate-y-0.5"
-                        style={{
-                          background: HColors.white, border: `1px solid ${vs.border}`,
-                          boxShadow: '0 2px 12px rgba(26,14,0,0.06)'
-                        }}>
-
-                        {/* Bande Kente fine en haut selon statut */}
-                        <div className="h-1" style={{ background: vs.bg }} />
-
-                        <div className="flex gap-4 p-4">
-                          {/* Image bien */}
-                          {img ? (
-                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden shrink-0">
-                              <img src={img} alt={visit.property_title} className="w-full h-full object-cover" />
-                            </div>
-                          ) : (
-                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl flex items-center justify-center shrink-0"
-                              style={{ background: 'rgba(212,160,23,0.07)', border: `1px solid ${HAlpha.gold15}` }}>
-                              <MapPin className="w-7 h-7" style={{ color: HAlpha.gold40 }} />
-                            </div>
-                          )}
-
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2 mb-1.5">
-                              <h3 className="font-bold text-sm leading-tight truncate"
-                                style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1rem' }}>
-                                {visit.property_title}
-                              </h3>
-                              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold shrink-0"
-                                style={{
-                                  background: vs.bg, color: vs.text, border: `1px solid ${vs.border}`,
-                                  fontFamily: 'var(--font-nunito)'
-                                }}>
-                                {vs.icon} {vs.label}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-3 text-xs mb-1.5 flex-wrap"
-                              style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                              <span className="flex items-center gap-1">
-                                <MapPin className="w-3 h-3" style={{ color: HColors.orangeCI }} />{visit.property_city}
-                              </span>
-                              {prop?.price && (
-                                <span className="font-bold" style={{ color: HColors.orangeCI }}>
-                                  {formatPrice(prop.price)}{prop.transaction_type !== 'vente' ? '/mois' : ''}
-                                </span>
-                              )}
-                              {prop && prop.bedrooms > 0 && (
-                                <span className="flex items-center gap-1">
-                                  <Bed className="w-3 h-3" />{prop.bedrooms} ch.
-                                </span>
-                              )}
-                              {prop?.surface_area && (
-                                <span className="flex items-center gap-1">
-                                  <Maximize className="w-3 h-3" />{prop.surface_area} m²
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="flex items-center gap-1.5 text-xs"
-                              style={{ fontFamily: 'var(--font-nunito)' }}>
-                              <Calendar className="w-3.5 h-3.5" style={{ color: HColors.orangeCI }} />
-                              <span className="font-medium" style={{ color: HColors.brownDark }}>
-                                {visit.status === 'counter_proposed' && visit.counter_date
-                                  ? <>{new Date(visit.counter_date).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'long' })} à {visit.counter_time}</>
-                                  : <>{new Date(visit.preferred_date).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'long' })} à {visit.preferred_time}</>
-                                }
-                              </span>
-                              <span className="ml-auto" style={{ color: HAlpha.brown50 }}>
-                                Envoyé le {new Date(visit.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* ── Contre-proposition DU PROPRIÉTAIRE ── */}
-                        {visit.status === 'counter_proposed' && visit.counter_proposed_by === 'owner' && (
-                          <div className="mx-4 mb-4 p-4 rounded-xl"
-                            style={{ background: HAlpha.terra08, border: '1px solid rgba(192,124,62,0.3)' }}>
-                            <p className="text-xs font-semibold mb-1 flex items-center gap-1.5"
-                              style={{ color: HColors.brownDeep, fontFamily: 'var(--font-nunito)' }}>
-                              <Calendar className="w-3.5 h-3.5" /> Le propriétaire propose une nouvelle date
-                            </p>
-                            <p className="text-base font-bold mb-3"
-                              style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
-                              {visit.counter_date
-                                ? new Date(visit.counter_date).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long' })
-                                : ''} à {visit.counter_time}
-                            </p>
-
-                            {counterForm?.visitId === visit.id ? (
-                              <div className="space-y-2 pt-2" style={{ borderTop: '1px solid rgba(192,124,62,0.25)' }}>
-                                <p className="text-xs font-semibold" style={{ color: HColors.brownDeep, fontFamily: 'var(--font-nunito)' }}>
-                                  Proposer une autre date :
-                                </p>
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div>
-                                    <label className="block text-xs mb-0.5" style={{ color: 'rgba(122,85,0,0.6)', fontFamily: 'var(--font-nunito)' }}>Date</label>
-                                    <input type="date" value={counterForm.date}
-                                      min={new Date().toISOString().split('T')[0]}
-                                      onChange={e => setCounterForm(f => f ? { ...f, date: e.target.value } : f)}
-                                      className="w-full px-2 py-1.5 rounded-xl text-xs outline-none"
-                                      style={{
-                                        background: 'rgba(255,255,255,0.8)', border: '1px solid rgba(192,124,62,0.3)',
-                                        color: HColors.darkBrown, fontFamily: 'var(--font-nunito)'
-                                      }} />
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs mb-0.5" style={{ color: 'rgba(122,85,0,0.6)', fontFamily: 'var(--font-nunito)' }}>Heure</label>
-                                    <ScrollTimePicker value={counterForm.time} onChange={v => setCounterForm(f => f ? { ...f, time: v } : f)} />
-                                  </div>
-                                </div>
-                                <div className="flex gap-2 pt-1">
-                                  <button onClick={() => setCounterForm(null)}
-                                    aria-label="Annuler la contre-proposition"
-                                    className="flex-1 px-3 py-2 text-xs rounded-xl font-medium transition-all hover:opacity-80"
-                                    style={{ border: '1px solid rgba(192,124,62,0.3)', color: HColors.brownDeep, background: 'transparent', fontFamily: 'var(--font-nunito)' }}>
-                                    Annuler
-                                  </button>
-                                  <button onClick={handleTenantCounter}
-                                    disabled={!counterForm.date || !counterForm.time || counterLoading}
-                                    className="flex-1 px-3 py-2 text-xs rounded-xl font-semibold flex items-center justify-center gap-1 transition-all hover:opacity-90 disabled:opacity-50"
-                                    style={{ background: HColors.navy, color: HColors.cream, fontFamily: 'var(--font-nunito)' }}>
-                                    {counterLoading
-                                      ? <div className="w-3 h-3 animate-spin rounded-full border-b border-current" />
-                                      : <Calendar className="w-3 h-3" />}
-                                    Envoyer ma proposition
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="flex gap-2">
-                                <button onClick={() => handleAcceptCounter(visit)}
-                                  className="flex-1 px-3 py-2.5 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all hover:opacity-90"
-                                  style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
-                                  <CheckCircle className="w-3.5 h-3.5" /> Confirmer cette date
-                                </button>
-                                <button onClick={() => setCounterForm({ visitId: visit.id, date: '', time: '' })}
-                                  className="flex-1 px-3 py-2.5 text-xs font-medium rounded-xl flex items-center justify-center gap-1.5 transition-all hover:opacity-80"
-                                  style={{ border: '1px solid rgba(192,124,62,0.4)', color: HColors.brownDeep, background: HAlpha.terra08, fontFamily: 'var(--font-nunito)' }}>
-                                  <Calendar className="w-3.5 h-3.5" /> Proposer une autre date
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* ── Locataire a proposé une date, attend réponse ── */}
-                        {visit.status === 'counter_proposed' && visit.counter_proposed_by === 'tenant' && visit.counter_date && (
-                          <div className="mx-4 mb-4 px-4 py-3 rounded-xl flex items-center gap-3"
-                            style={{ background: HAlpha.navy08, border: '1px solid rgba(26,58,107,0.2)' }}>
-                            <Clock className="w-4 h-4 shrink-0" style={{ color: HColors.navy }} />
-                            <div>
-                              <p className="text-xs font-semibold" style={{ color: HColors.navy, fontFamily: 'var(--font-nunito)' }}>
-                                Votre proposition envoyée au propriétaire
-                              </p>
-                              <p className="text-sm font-bold mt-0.5"
-                                style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1rem' }}>
-                                {new Date(visit.counter_date).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long' })} à {visit.counter_time}
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* ── Actions ── */}
-                        <div className="px-4 pb-4 flex items-center gap-2 flex-wrap">
-                          <button onClick={() => setViewingPropertyId(visit.property_id)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80"
-                            style={{
-                              background: HAlpha.gold08, border: '1px solid rgba(212,160,23,0.2)',
-                              color: HColors.brownMid, fontFamily: 'var(--font-nunito)'
-                            }}>
-                            <Eye className="w-3.5 h-3.5" /> Voir le bien
-                          </button>
-
-                          {visit.status === 'accepted' && (
-                            <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg"
-                              style={{
-                                background: 'rgba(45,106,79,0.08)', border: '1px solid rgba(45,106,79,0.25)',
-                                color: HColors.vertCI, fontFamily: 'var(--font-nunito)'
-                              }}>
-                              <Phone className="w-3.5 h-3.5" /> Contact révélé après paiement caution
-                            </div>
-                          )}
-
-                          {visit.status !== 'rejected' && (
-                            <button onClick={() => handleOpenChat(visit)}
-                              disabled={chatLoadingId === visit.id || (visit.status !== 'accepted' && visit.status !== 'completed')}
-                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
-                              style={{
-                                background: (visit.status === 'accepted' || visit.status === 'completed')
-                                  ? 'linear-gradient(135deg,#FF6B00,#D4A017)'
-                                  : '#e5e7eb',
-                                border: '1px solid rgba(212,160,23,0.3)',
-                                color: (visit.status === 'accepted' || visit.status === 'completed') ? '#FFFFFF' : '#9ca3af',
-                                fontFamily: 'var(--font-nunito)'
-                              }}
-                              title={ (visit.status !== 'accepted' && visit.status !== 'completed') ? "Le chat sera accessible dès que le propriétaire aura confirmé votre visite." : "" }
-                            >
-                              {chatLoadingId === visit.id
-                                ? <div className="w-3.5 h-3.5 animate-spin rounded-full border-b-2 border-white" />
-                                : <MessageSquare className="w-3.5 h-3.5" />}
-                              Discuter avec le propriétaire
-                            </button>
-                          )}
-
-                          {visit.status === 'rejected' && (
-                            <button onClick={() => {
-                              const p = allProperties.find(pr => pr.id === visit.property_id);
-                              if (p) handleRequestVisit(p);
-                            }}
-                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-80"
-                              style={{
-                                background: HAlpha.navy08, border: '1px solid rgba(26,58,107,0.25)',
-                                color: HColors.navy, fontFamily: 'var(--font-nunito)'
-                              }}>
-                              <Calendar className="w-3.5 h-3.5" /> Replanifier
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            )}
-
-            {/* Bannière paiements africaine */}
+        {/* Africa Kente Banner (Shared) */}
+        {(activeTab === 'search' || activeTab === 'visits') && (
             <div className="mt-6 rounded-2xl overflow-hidden">
-              <KenteLine />
-              <div className="p-5 flex items-center gap-4 flex-wrap"
-                style={{ background: 'linear-gradient(135deg,#0D1F12,#1A0E00)' }}>
-                <div className="flex-1">
-                  <h3 className="font-bold mb-1" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
-                    💳 Paiements mobiles — Bientôt disponibles
-                  </h3>
-                  <p className="text-sm" style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
-                    Payez cautions et loyers via Orange Money, MTN MoMo, Wave, Flooz et Djamo.
-                  </p>
-                </div>
-                <span className="px-4 py-1.5 rounded-full text-sm font-semibold shrink-0"
-                  style={{
-                    background: HAlpha.gold15, color: HColors.gold, border: '1px solid rgba(212,160,23,0.3)',
-                    fontFamily: 'var(--font-nunito)'
-                  }}>
-                  🚀 Prochainement
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ══════════════════════ NOTIFICATIONS ══════════════════════ */}
-        {activeTab === 'notifications' && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="font-bold mb-0.5"
-                  style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.8rem' }}>
-                  Notifications
-                </h2>
-                <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                  {unreadCount > 0 ? `${unreadCount} non lue(s)` : 'Tout est lu'}
-                </p>
-              </div>
-              {unreadCount > 0 && (
-                <button aria-label="Marquer toutes les notifications comme lues" onClick={handleMarkAllRead}
-                  className="px-4 py-2 text-sm font-medium rounded-xl transition-all hover:opacity-80"
-                  style={{
-                    background: HAlpha.gold10, border: '1px solid rgba(212,160,23,0.25)',
-                    color: HColors.brownMid, fontFamily: 'var(--font-nunito)'
-                  }}>
-                  Tout marquer lu
-                </button>
-              )}
-            </div>
-
-            {notifications.length === 0 ? (
-              <div className="rounded-2xl p-16 text-center"
-                style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
-                <Bell className="w-14 h-14 mx-auto mb-4" style={{ color: HAlpha.gold25 }} />
-                <p className="text-lg font-semibold mb-1"
-                  style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>Aucune notification</p>
-                <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                  Vous serez notifié des réponses à vos demandes de visite
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {notifications
-                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                  .map(notif => (
-                    <div key={notif.id}
-                      onClick={() => !notif.read && notificationService.markAsRead(notif.id).then(() =>
-                        setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n))
-                      )}
-                      role="button"
-                      tabIndex={notif.read ? -1 : 0}
-                      aria-label={notif.read ? notif.title : `Marquer comme lu : ${notif.title}`}
-                      className="flex items-start gap-3 p-4 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5"
-                      style={{
-                        background: HColors.white,
-                        border: `1px solid ${notif.read ? HAlpha.gold10 : HAlpha.gold35}`,
-                        opacity: notif.read ? 0.65 : 1,
-                        boxShadow: notif.read ? 'none' : '0 2px 10px rgba(212,160,23,0.08)'
-                      }}>
-                      <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                        style={{
-                          background: notif.read ? HAlpha.gold05 : HAlpha.gold12,
-                          border: `1px solid ${notif.read ? HAlpha.gold10 : HAlpha.gold25}`
-                        }}>
-                        {NOTIF_ICON[notif.type] || NOTIF_ICON['system']}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="font-semibold text-sm leading-tight"
-                            style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
-                            {notif.title}
-                          </p>
-                          <span className="text-xs shrink-0 mt-0.5"
-                            style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>
-                            {new Date(notif.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                        <p className="text-sm mt-0.5 leading-relaxed"
-                          style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
-                          {notif.message}
-                        </p>
-                        {!notif.read && (
-                          <span className="inline-block mt-1.5 w-2 h-2 rounded-full" style={{ background: HColors.gold }} />
-                        )}
-                      </div>
+                <KenteLine />
+                <div className="p-5 flex items-center gap-4 flex-wrap" style={{ background: 'linear-gradient(135deg,#0D1F12,#1A0E00)' }}>
+                    <div className="flex-1">
+                        <h3 className="font-bold mb-1 text-cream" style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
+                            💳 Paiements mobiles — Bientôt disponibles
+                        </h3>
+                        <p className="text-sm text-cream/60">Payez cautions et loyers via Orange Money, MTN MoMo, Wave...</p>
                     </div>
-                  ))}
-              </div>
-            )}
-          </div>
+                </div>
+            </div>
         )}
       </div>
 
-      {/* ── Modal Fiche bien ── */}
+      {/* Modals */}
       {viewingPropertyId && (
-        <PropertyViewModal
-          propertyId={viewingPropertyId}
-          onClose={() => setViewingPropertyId(null)}
-          onRequestVisit={() => setVisitRequestPropertyId(viewingPropertyId)}
+        <PropertyViewModal 
+           propertyId={viewingPropertyId} 
+           onClose={() => setViewingPropertyId(null)}
+           onContactClick={(prop) => { setPendingVisitProp(prop); setShowCGV(true); }}
         />
       )}
 
-      {/* ── Modal Demande de visite ── */}
+      {showCGV && pendingVisitProp && (
+        <CGVLocataireModal 
+           onAccept={() => { setShowCGV(false); setVisitModalProperty(pendingVisitProp); }}
+           onCancel={() => { setShowCGV(false); setPendingVisitProp(null); }}
+        />
+      )}
+
       {visitModalProperty && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
-          style={{ background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(4px)' }}>
-          <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
-            style={{
-              background: 'linear-gradient(160deg,#0D1F12,#1A0E00)',
-              border: '1px solid rgba(212,160,23,0.25)'
-            }}>
-            <KenteLine />
-            <div className="p-6">
-              {visitSuccess ? (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                    style={{ background: HAlpha.vertCI20, border: '2px solid rgba(45,106,79,0.5)' }}>
-                    <CheckCircle className="w-8 h-8" style={{ color: HColors.vertCI }} />
-                  </div>
-                  <h3 className="font-bold mb-2"
-                    style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: '1.4rem' }}>
-                    Demande envoyée !
-                  </h3>
-                  <p className="text-sm" style={{ color: HAlpha.cream60, fontFamily: 'var(--font-nunito)' }}>
-                    Le propriétaire vous contactera rapidement pour confirmer la visite.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-start justify-between mb-5">
-                    <div>
-                      <h3 className="font-bold mb-0.5"
-                        style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: '1.3rem' }}>
-                        Demander une visite
-                      </h3>
-                      <p className="text-sm truncate max-w-xs"
-                        style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
-                        {visitModalProperty.title} — {visitModalProperty.city}
-                      </p>
-                    </div>
-                    <button aria-label="Fermer" onClick={() => { setVisitModalProperty(null); setVisitError(''); }}
-                      className="p-1.5 rounded-full transition-all hover:opacity-70"
-                      style={{ background: HAlpha.gold10, border: '1px solid rgba(212,160,23,0.2)' }}>
-                      <X className="w-4 h-4" style={{ color: HColors.gold }} />
-                    </button>
-                  </div>
-
-                  {visitError && (
-                    <div className="flex items-center gap-2 mb-4 p-3 rounded-xl text-sm"
-                      style={{
-                        background: HAlpha.bord20, border: '1px solid rgba(139,29,29,0.35)',
-                        color: HColors.errorText, fontFamily: 'var(--font-nunito)'
-                      }}>
-                      <AlertCircle className="w-4 h-4 shrink-0" /> {visitError}
-                    </div>
-                  )}
-
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-bold mb-1.5 uppercase tracking-wider"
-                          style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
-                          Date souhaitée *
-                        </label>
-                        <input type="date" value={visitForm.preferred_date}
-                          min={new Date().toISOString().split('T')[0]}
-                          onChange={e => setVisitForm(f => ({ ...f, preferred_date: e.target.value }))}
-                          className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                          style={{
-                            background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.2)',
-                            color: HColors.cream, fontFamily: 'var(--font-nunito)'
-                          }} />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold mb-1.5 uppercase tracking-wider"
-                          style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
-                          Heure *
-                        </label>
-                        <ScrollTimePicker value={visitForm.preferred_time}
-                          onChange={v => setVisitForm(f => ({ ...f, preferred_time: v }))} />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3 mt-5">
-                    <button onClick={() => { setVisitModalProperty(null); setVisitError(''); }}
-                      className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80"
-                      style={{
-                        border: '1px solid rgba(212,160,23,0.25)', color: HAlpha.cream60,
-                        fontFamily: 'var(--font-nunito)'
-                      }}>
-                      Annuler
-                    </button>
-                    <button onClick={handleSubmitVisit}
-                      disabled={!visitForm.preferred_date || !visitForm.preferred_time || submittingVisit}
-                      className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
-                      style={{
-                        background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#FFFFFF',
-                        fontFamily: 'var(--font-nunito)'
-                      }}>
-                      {submittingVisit
-                        ? <div className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        : <Calendar className="w-4 h-4" />}
-                      Envoyer
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* CGV Locataire (1ère demande) */}
-      {showCGVLocataire && (
-        <CGVLocataireModal
-          onAccept={() => { setShowCGVLocataire(false); setShowVisitPayment(true); }}
-          onClose={() => { setShowCGVLocataire(false); setPendingVisitProperty(null); }}
+        <VisitRequestModal 
+           property={visitModalProperty}
+           onClose={() => setVisitModalProperty(null)}
+           onSubmit={(date, time) => requestVisit(visitModalProperty, date, time, profile)}
         />
       )}
 
-      {/* Paiement visite 500 FCFA */}
-      {showVisitPayment && pendingVisitProperty && (
-        <PaymentModal
-          config={{
-            title: 'Frais de visite',
-            description: `Visite de « ${pendingVisitProperty.title} »`,
-            amount: 500,
-          }}
-          onSuccess={() => {
-            setShowVisitPayment(false);
-            setVisitModalProperty(pendingVisitProperty);
-            setPendingVisitProperty(null);
-          }}
-          onClose={() => { setShowVisitPayment(false); setPendingVisitProperty(null); }}
-        />
-      )}
-
-      {/* Modal — Bien en cours de transaction */}
-      {propertyInTransaction && pendingVisitProperty && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center px-4"
-          style={{ background: 'rgba(10,61,31,0.7)', backdropFilter: 'blur(6px)' }}>
-          <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
-            style={{ background: HColors.night, border: `1px solid ${HAlpha.orange20}` }}>
-            <div className="px-6 pt-6 pb-5 text-center">
-              <div className="w-14 h-14 mx-auto mb-4 rounded-full flex items-center justify-center"
-                style={{ background: HAlpha.orange10, border: `2px solid ${HAlpha.orange25}` }}>
-                <AlertCircle className="w-7 h-7" style={{ color: HColors.orangeCI }} />
-              </div>
-              <h2 className="text-lg font-bold mb-2"
-                style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)', fontSize: '1.4rem' }}>
-                Bien en cours de transaction
-              </h2>
-              <p className="text-sm mb-1" style={{ color: HAlpha.cream70, fontFamily: 'var(--font-nunito)' }}>
-                Le bien <strong style={{ color: HColors.orangeCI }}>« {pendingVisitProperty.title} »</strong> fait
-                actuellement l'objet d'une visite confirmée avec un autre utilisateur.
-              </p>
-              <p className="text-sm mb-5" style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
-                Il n'est pas possible de demander une visite pour le moment.
-                Ce bien redeviendra disponible si la transaction n'aboutit pas.
-              </p>
-              <button onClick={() => { setPropertyInTransaction(false); setPendingVisitProperty(null); }}
-                className="w-full py-3 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
-                style={{ background: HColors.orangeCI, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
-                J'ai compris
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ChatBox */}
-      {activeChat && user && (
-        <ChatBox
+      {activeChat && (
+        <ChatBox 
           chatId={activeChat.chatId}
-          currentUserId={user.uid}
-          otherUserName={activeChat.otherName}
-          otherUserRole={activeChat.otherRole}
+          otherName={activeChat.otherName}
+          otherRole={activeChat.otherRole}
           onClose={() => setActiveChat(null)}
         />
       )}
 
-      {/* Enquête de satisfaction */}
-      {surveyData && user && (
-        <SatisfactionModal
-          isOpen={true}
-          onClose={() => setSurveyData(null)}
-          userId={user.uid}
-          userRole={profile?.role || 'locataire'}
-          trigger={surveyData.trigger}
-          propertyId={surveyData.propertyId}
-          propertyTitle={surveyData.propertyTitle}
-        />
-      )}
     </div>
   );
 }
 
-/* ── Sous-composants ─────────────────────────────────────────────────────── */
-
-function StatBadge({ icon, label, value, accent, onClick }: {
-  icon: React.ReactNode; label: string; value: number; accent: string; onClick: () => void;
-}) {
-  if (value === 0) return null;
+function StatBadge({ icon, label, value, accent, onClick }: any) {
   return (
-    <button onClick={onClick}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all hover:opacity-80"
-      style={{
-        background: `${accent}18`, border: `1px solid ${accent}35`, color: accent,
-        fontFamily: 'var(--font-nunito)'
-      }}>
-      {icon} {value} {label}
+    <button onClick={onClick} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all hover:scale-105"
+      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: HColors.cream }}>
+      <span style={{ color: accent }}>{icon}</span>
+      <span className="opacity-50">{label}</span>
+      <span className="px-1.5 py-0.5 rounded-full bg-white/10">{value}</span>
     </button>
-  );
-}
-
-function Pagination({ page, totalPages, onPage }: { page: number; totalPages: number; onPage: (p: number) => void }) {
-  // Fenêtre glissante autour de la page courante (max 7 boutons)
-  const maxVisible = 7;
-  let start = Math.max(1, page - Math.floor(maxVisible / 2));
-  const end = Math.min(totalPages, start + maxVisible - 1);
-  start = Math.max(1, end - maxVisible + 1);
-  const pages: (number | 'dots')[] = [];
-  if (start > 1) { pages.push(1); if (start > 2) pages.push('dots'); }
-  for (let i = start; i <= end; i++) pages.push(i);
-  if (end < totalPages) { if (end < totalPages - 1) pages.push('dots'); pages.push(totalPages); }
-
-  return (
-    <div className="flex items-center justify-center gap-2 mt-8">
-      <button disabled={page === 1} onClick={() => onPage(page - 1)}
-        aria-label="Page précédente"
-        className="w-9 h-9 flex items-center justify-center rounded-xl transition-all disabled:opacity-30 hover:opacity-80"
-        style={{ background: HAlpha.gold10, border: '1px solid rgba(212,160,23,0.2)' }}>
-        <ChevronLeft className="w-4 h-4" style={{ color: HColors.gold }} />
-      </button>
-      {pages.map((p, i) => p === 'dots' ? (
-        <span key={`dots-${i}`} className="w-9 h-9 flex items-center justify-center text-sm"
-          style={{ color: HColors.brown }}>…</span>
-      ) : (
-        <button key={p} onClick={() => onPage(p)}
-          aria-label={`Page ${p}`}
-          aria-current={page === p ? 'page' : undefined}
-          className="w-9 h-9 rounded-xl text-sm font-medium transition-all"
-          style={page === p
-            ? { background: HColors.navyDark, color: HColors.cream, fontFamily: 'var(--font-nunito)' }
-            : { background: HAlpha.gold08, color: HColors.brown, border: `1px solid ${HAlpha.gold15}`, fontFamily: 'var(--font-nunito)' }}>
-          {p}
-        </button>
-      ))}
-      <button disabled={page === totalPages} onClick={() => onPage(page + 1)}
-        aria-label="Page suivante"
-        className="w-9 h-9 flex items-center justify-center rounded-xl transition-all disabled:opacity-30 hover:opacity-80"
-        style={{ background: HAlpha.gold10, border: '1px solid rgba(212,160,23,0.2)' }}>
-        <ChevronRight className="w-4 h-4" style={{ color: HColors.gold }} />
-      </button>
-      <span className="text-xs ml-1" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}>
-        {page}/{totalPages}
-      </span>
-    </div>
   );
 }
