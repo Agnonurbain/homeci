@@ -249,13 +249,8 @@ export default function TenantDashboard() {
         tenant_id: user.uid, tenant_name: profile?.full_name || 'Locataire',
         tenant_phone: profile?.phone || '', tenant_email: user.email || '',
         preferred_date: visitForm.preferred_date, preferred_time: visitForm.preferred_time,
-      });
-      await notificationService.createNotification({
-        user_id: visitModalProperty.owner_id, type: 'visit_request',
-        title: '📅 Nouvelle demande de visite',
-        message: `${profile?.full_name || 'Un locataire'} souhaite visiter "${visitModalProperty.title}" le ${visitForm.preferred_date} à ${visitForm.preferred_time}.`,
-        property_id: visitModalProperty.id,
-      });
+      }, { notify: true, tenantName: profile?.full_name || 'Un locataire' });
+
       analyticsService.requestVisit(visitModalProperty.id);
       setVisitSuccess(true);
       visitSuccessTimer.current = setTimeout(() => {
@@ -269,13 +264,7 @@ export default function TenantDashboard() {
 
   const handleAcceptCounter = async (visit: VisitRequest) => {
     try {
-      await visitService.acceptCounterDate(visit.id);
-      await notificationService.createNotification({
-        user_id: visit.owner_id, type: 'visit_request',
-        title: 'Contre-proposition acceptée ✅',
-        message: `${profile?.full_name || 'Le locataire'} a accepté la date proposée pour "${visit.property_title}" : ${visit.counter_date ? new Date(visit.counter_date).toLocaleDateString('fr-FR') : ''} à ${visit.counter_time}.`,
-        property_id: visit.property_id,
-      });
+      await visitService.acceptCounterDate(visit.id, { notify: true, acceptorName: profile?.full_name || 'Le locataire' });
       // La mise à jour est gérée par onSnapshot
     } catch (e) { console.error(e); }
   };
@@ -284,15 +273,7 @@ export default function TenantDashboard() {
     if (!counterForm || !user) return;
     setCounterLoading(true);
     try {
-      const visit = visitRequests.find(v => v.id === counterForm.visitId);
-      if (!visit) return;
-      await visitService.proposeCounterDate(counterForm.visitId, counterForm.date, counterForm.time, 'tenant');
-      await notificationService.createNotification({
-        user_id: visit.owner_id, type: 'visit_request',
-        title: '📅 Nouvelle date proposée par le locataire',
-        message: `${profile?.full_name || 'Le locataire'} propose le ${new Date(counterForm.date).toLocaleDateString('fr-FR')} à ${counterForm.time} pour "${visit.property_title}".`,
-        property_id: visit.property_id,
-      });
+      await visitService.proposeCounterDate(counterForm.visitId, counterForm.date, counterForm.time, 'tenant', { notify: true, proposerName: profile?.full_name || 'Le locataire' });
       setCounterForm(null);
     } catch (e) { console.error(e); }
     finally { setCounterLoading(false); }

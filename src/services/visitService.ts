@@ -3,6 +3,8 @@ import {
   query, where, serverTimestamp, Timestamp, getDoc, onSnapshot
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { notificationService } from './notificationService';
+import { emailService } from './emailService';
 
 export interface VisitRequest {
   id: string;
@@ -80,7 +82,10 @@ function docToVisit(id: string, data: Record<string, unknown>): VisitRequest {
 }
 
 export const visitService = {
-  async createVisitRequest(data: Omit<VisitRequest, 'id' | 'created_at' | 'updated_at' | 'status' | 'owner_notes'>): Promise<string> {
+  async createVisitRequest(
+    data: Omit<VisitRequest, 'id' | 'created_at' | 'updated_at' | 'status' | 'owner_notes'>,
+    options?: { notify?: boolean; tenantName?: string }
+  ): Promise<string> {
     const ref = await addDoc(collection(db, 'visits'), {
       ...data,
       status: 'pending',
@@ -88,6 +93,17 @@ export const visitService = {
       created_at: serverTimestamp(),
       updated_at: serverTimestamp(),
     });
+
+    if (options?.notify) {
+      await notificationService.createNotification({
+        user_id: data.owner_id,
+        type: 'visit_request',
+        title: '📅 Nouvelle demande de visite',
+        message: `${options.tenantName || 'Un locataire'} souhaite visiter "${data.property_title || 'votre bien'}" le ${data.preferred_date} à ${data.preferred_time}.`,
+        property_id: data.property_id,
+      });
+    }
+
     return ref.id;
   },
 
@@ -132,32 +148,66 @@ export const visitService = {
     return Boolean(snap.data().has_active_visit);
   },
 
-  async updateVisitStatus(visitId: string, status: 'accepted' | 'rejected' | 'completed', notes?: string): Promise<void> {
+  async updateVisitStatus(
+    visitId: string,
+    status: 'accepted' | 'rejected' | 'completed',
+    notes?: string,
+    options?: { notify?: boolean }
+  ): Promise<void> {
+    const visitSnap = await getDoc(doc(db, 'visits', visitId));
+    if (!visitSnap.exists()) throw new Error('Visite introuvable');
+    const visitData = visitSnap.data() as VisitRequest;
+
     await updateDoc(doc(db, 'visits', visitId), {
       status,
       owner_notes: notes || '',
       updated_at: serverTimestamp(),
+      // Si on accepte, on s'assure que les champs counter sont vidés
+      ...(status === 'accepted' && {
+        counter_date: null,
+        counter_time: null,
+        counter_proposed_by: null,
+      })
     });
 
-    const visitSnap = await getDoc(doc(db, 'visits', visitId));
-    if (visitSnap.exists()) {
-      const propId = visitSnap.data().property_id;
-      if (status === 'accepted') {
-        await updateDoc(doc(db, 'properties', propId), { has_active_visit: true });
-      } else if (status === 'completed' || status === 'rejected') {
-        const data = visitSnap.data();
-        const ownerId = data.owner_id;
-        // Find if there are other active visits
-        const qOther = query(
-          collection(db, 'visits'),
-          where('property_id', '==', propId),
-          where('owner_id', '==', ownerId)
-        );
-        const snapOther = await getDocs(qOther);
-        const hasOtherActive = snapOther.docs.some(d => d.id !== visitId && (d.data().status === 'accepted' || d.data().status === 'completed'));
-        if (!hasOtherActive) {
-          await updateDoc(doc(db, 'properties', propId), { has_active_visit: false });
-        }
+    const propId = visitData.property_id;
+
+    // Mise à jour du flag sur la propriété
+    if (status === 'accepted') {
+      await updateDoc(doc(db, 'properties', propId), { has_active_visit: true });
+    } else if (status === 'completed' || status === 'rejected') {
+      // Vérifier s'il reste d'autres visites actives
+      const qOther = query(
+        collection(db, 'visits'),
+        where('property_id', '==', propId),
+        where('status', 'in', ['accepted', 'completed'])
+      );
+      const snapOther = await getDocs(qOther);
+      const hasOtherActive = snapOther.docs.some(d => d.id !== visitId);
+      if (!hasOtherActive) {
+        await updateDoc(doc(db, 'properties', propId), { has_active_visit: false });
+      }
+    }
+
+    // Notifications et Emails
+    if (options?.notify) {
+      const propertyTitle = visitData.property_title || 'votre bien';
+      
+      await notificationService.createNotification({
+        user_id: visitData.tenant_id,
+        type: status === 'accepted' ? 'visit_accepted' : status === 'rejected' ? 'visit_rejected' : 'visit_completed',
+        title: status === 'accepted' ? 'Visite confirmée ✅' : status === 'rejected' ? 'Visite refusée' : 'Visite effectuée ✅',
+        message: status === 'accepted'
+          ? `Votre visite pour "${propertyTitle}" le ${new Date(visitData.preferred_date).toLocaleDateString('fr-FR')} à ${visitData.preferred_time} est confirmée.`
+          : status === 'rejected'
+          ? `Votre demande de visite pour "${propertyTitle}" a été refusée.`
+          : `Votre visite de "${propertyTitle}" a été marquée comme effectuée. Merci de partager votre avis !`,
+        property_id: propId,
+      });
+
+      if (visitData.tenant_email) {
+        const emailStatus = status === 'accepted' ? 'approved' : status === 'rejected' ? 'rejected' : 'completed';
+        await emailService.notifyVisitUpdate(visitData.tenant_email, propertyTitle, emailStatus).catch(console.error);
       }
     }
   },
@@ -167,7 +217,12 @@ export const visitService = {
     counterDate: string,
     counterTime: string,
     proposedBy: 'owner' | 'tenant',
+    options?: { notify?: boolean; proposerName?: string }
   ): Promise<void> {
+    const visitSnap = await getDoc(doc(db, 'visits', visitId));
+    if (!visitSnap.exists()) throw new Error('Visite introuvable');
+    const visitData = visitSnap.data() as VisitRequest;
+
     await updateDoc(doc(db, 'visits', visitId), {
       status: 'counter_proposed',
       counter_date: counterDate,
@@ -175,16 +230,32 @@ export const visitService = {
       counter_proposed_by: proposedBy,
       updated_at: serverTimestamp(),
     });
+
+    if (options?.notify) {
+      const targetId = proposedBy === 'owner' ? visitData.tenant_id : visitData.owner_id;
+      await notificationService.createNotification({
+        user_id: targetId,
+        type: 'visit_request',
+        title: '📅 Nouvelle date proposée',
+        message: `${options.proposerName || 'L\'autre partie'} propose le ${new Date(counterDate).toLocaleDateString('fr-FR')} à ${counterTime} pour "${visitData.property_title || 'le bien'}".`,
+        property_id: visitData.property_id,
+      });
+    }
   },
 
-  async acceptCounterDate(visitId: string): Promise<void> {
+  async acceptCounterDate(visitId: string, options?: { notify?: boolean; acceptorName?: string }): Promise<void> {
     const snap = await getDoc(doc(db, 'visits', visitId));
-    if (!snap.exists()) return;
+    if (!snap.exists()) throw new Error('Visite introuvable');
     const data = snap.data();
+    
+    const newDate = data.counter_date || data.preferred_date;
+    const newTime = data.counter_time || data.preferred_time;
+    const proposedBy = data.counter_proposed_by;
+
     await updateDoc(doc(db, 'visits', visitId), {
       status: 'accepted',
-      preferred_date: data.counter_date || data.preferred_date,
-      preferred_time: data.counter_time || data.preferred_time,
+      preferred_date: newDate,
+      preferred_time: newTime,
       counter_date: null,
       counter_time: null,
       counter_proposed_by: null,
@@ -192,6 +263,21 @@ export const visitService = {
     });
     
     await updateDoc(doc(db, 'properties', data.property_id), { has_active_visit: true });
+
+    if (options?.notify) {
+      const targetId = proposedBy === 'tenant' ? data.owner_id : data.tenant_id;
+      await notificationService.createNotification({
+        user_id: targetId,
+        type: 'visit_accepted',
+        title: 'Visite confirmée ✅',
+        message: `${options.acceptorName || 'L\'autre partie'} a accepté la date proposée pour "${data.property_title || 'le bien'}" : le ${new Date(newDate).toLocaleDateString('fr-FR')} à ${newTime}.`,
+        property_id: data.property_id,
+      });
+
+      if (targetId === data.tenant_id && data.tenant_email) {
+        await emailService.notifyVisitUpdate(data.tenant_email, data.property_title || 'votre bien', 'approved').catch(console.error);
+      }
+    }
   },
 
   /** Récupère toutes les visites (admin) */
