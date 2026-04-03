@@ -55,8 +55,8 @@ export function RevokeModal({ isOpen, onClose, onConfirm, property, hasActiveVis
 }
 
 export function DelegationModal({ token, onClose, action, propertyTitle }: any) {
-  if (!token) return null;
   const [copied, setCopied] = useState(false);
+  if (!token) return null;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(token);

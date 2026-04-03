@@ -25,7 +25,6 @@ describe('useNotaireDashboard', () => {
     ]);
     mockFirestore.setMockDoc('users/o1', { full_name: 'Proprio A' });
     
-    // @ts-ignore
     vi.mocked(propertyService.getDocuments).mockResolvedValue([]);
 
     const { result } = renderHook(() => useNotaireDashboard(mockProfile, mockShowToast));
