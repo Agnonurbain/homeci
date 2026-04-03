@@ -82,23 +82,23 @@ export default function TenantDashboard() {
       {/* Header */}
       <div style={{ background: HColors.night, borderBottom: `1px solid ${HAlpha.gold20}` }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">
-          <div className="flex items-start justify-between gap-3 flex-wrap mb-5">
-            <div>
-              <h1 className="font-bold mb-0.5 text-cream" style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(1.3rem, 5vw, 1.8rem)' }}>
+          <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 mb-5">
+            <div className="text-center sm:text-left">
+              <h1 className="font-bold mb-0.5 text-cream" style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(1.2rem, 5vw, 1.8rem)' }}>
                 Bonjour, {firstName} 👋
               </h1>
-              <p className="text-xs sm:text-sm text-cream/50">Trouvez et planifiez vos visites</p>
+              <p className="text-[10px] sm:text-sm text-cream/50 uppercase tracking-widest font-bold">Trouvez et planifiez vos visites</p>
             </div>
-            <div className="flex gap-2 flex-wrap items-center">
+            <div className="flex gap-2 flex-wrap justify-center sm:justify-start items-center">
               <TutorialButton />
-              <StatBadge icon={<Heart className="w-3.5 h-3.5" />} label="Favoris" value={favoriteIds.length} accent="#FF6B00" onClick={() => navigate('/dashboard/favorites')} />
-              <StatBadge icon={<Clock className="w-3.5 h-3.5" />} label="En attente" value={pendingVisitsCount} accent="#D4A017" onClick={() => navigate('/dashboard/visits')} />
-              {acceptedVisitsCount > 0 && <StatBadge icon={<CheckCircle className="w-3.5 h-3.5" />} label="Acceptées" value={acceptedVisitsCount} accent="#009E49" onClick={() => navigate('/dashboard/visits')} />}
+              <StatBadge icon={<Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />} label="Favoris" value={favoriteIds.length} accent="#FF6B00" onClick={() => navigate('/dashboard/favorites')} />
+              <StatBadge icon={<Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />} label="En attente" value={pendingVisitsCount} accent="#D4A017" onClick={() => navigate('/dashboard/visits')} />
+              {acceptedVisitsCount > 0 && <StatBadge icon={<CheckCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5" />} label="Acceptées" value={acceptedVisitsCount} accent="#009E49" onClick={() => navigate('/dashboard/visits')} />}
             </div>
           </div>
 
           {/* Navigation Tabs */}
-          <nav className="flex space-x-1 homeci-tabs-scroll">
+          <nav className="flex space-x-1 sm:space-x-2 homeci-tabs-scroll">
             {[
               { id: 'search', icon: Search, label: 'Rechercher' },
               { id: 'favorites', icon: Heart, label: 'Mes favoris' },
@@ -239,11 +239,11 @@ export default function TenantDashboard() {
 
 function StatBadge({ icon, label, value, accent, onClick }: any) {
   return (
-    <button onClick={onClick} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all hover:scale-105"
+    <button onClick={onClick} className="flex items-center gap-1 sm:gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-bold transition-all hover:scale-105"
       style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: HColors.cream }}>
       <span style={{ color: accent }}>{icon}</span>
       <span className="opacity-50">{label}</span>
-      <span className="px-1.5 py-0.5 rounded-full bg-white/10">{value}</span>
+      <span className="px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded-full bg-white/10">{value}</span>
     </button>
   );
 }

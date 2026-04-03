@@ -1,4 +1,4 @@
-import { Calendar, MapPin, Bed, Maximize, CheckCircle, Clock, Eye, Phone, MessageSquare } from 'lucide-react';
+import { Calendar, MapPin, Bed, Maximize, CheckCircle, Eye, Phone, MessageSquare } from 'lucide-react';
 import type { VisitRequest } from '../../services/visitService';
 import type { Property } from '../../services/propertyService';
 import { VISIT_STATUS_TENANT as VISIT_STATUS } from '../../constants/visitStatus';
@@ -130,7 +130,7 @@ export default function VisitsTab({
 
               {/* Counter Propositions */}
               {visit.status === 'counter_proposed' && visit.counter_proposed_by === 'owner' && (
-                <div className="mx-4 mb-4 p-4 rounded-xl"
+                <div className="mx-2 sm:mx-4 mb-4 p-4 rounded-xl"
                   style={{ background: HAlpha.terra08, border: '1px solid rgba(192,124,62,0.3)' }}>
                   <p className="text-xs font-semibold mb-1 flex items-center gap-1.5"
                     style={{ color: HColors.brownDeep, fontFamily: 'var(--font-nunito)' }}>
@@ -142,16 +142,20 @@ export default function VisitsTab({
                   </p>
 
                   {counterForm?.visitId === visit.id ? (
-                    <div className="space-y-2 pt-2" style={{ borderTop: '1px solid rgba(192,124,62,0.25)' }}>
-                      <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-3 pt-3" style={{ borderTop: '1px solid rgba(192,124,62,0.25)' }}>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
+                          <label className="text-[10px] font-bold text-terra-dark uppercase mb-1 block">Nouvelle Date</label>
                           <input type="date" value={counterForm.date}
                             min={new Date().toISOString().split('T')[0]}
                             onChange={e => setCounterForm(f => f ? { ...f, date: e.target.value } : f)}
-                            className="w-full px-2 py-1.5 rounded-xl text-xs outline-none"
+                            className="w-full px-3 py-2 rounded-xl text-xs outline-none"
                             style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid rgba(192,124,62,0.3)' }} />
                         </div>
-                        <ScrollTimePicker value={counterForm.time} onChange={v => setCounterForm(f => f ? { ...f, time: v } : f)} />
+                        <div>
+                          <label className="text-[10px] font-bold text-terra-dark uppercase mb-1 block">Nouvelle Heure</label>
+                          <ScrollTimePicker value={counterForm.time} onChange={v => setCounterForm(f => f ? { ...f, time: v } : f)} />
+                        </div>
                       </div>
                       <div className="flex gap-2">
                         <button onClick={() => setCounterForm(null)} className="flex-1 px-3 py-2 text-xs rounded-xl font-medium border border-gray-200">Annuler</button>

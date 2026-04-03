@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { 
-  FileText, Upload, CheckCircle, Clock, X, Eye, 
+  Upload, CheckCircle, Clock, Eye, 
   AlertTriangle, ShieldCheck, Wallet,
   Briefcase, Users, ArrowRight
 } from 'lucide-react';
@@ -124,12 +124,12 @@ export default function TenantDossier() {
     
     return (
       <div className="space-y-4">
-        <div className="flex items-end justify-between border-b pb-2" style={{ borderColor: HAlpha.gold15 }}>
+        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between border-b pb-2" style={{ borderColor: HAlpha.gold15 }}>
           <div>
-            <h3 className="text-xl font-bold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>{title}</h3>
-            <p className="text-xs" style={{ color: HColors.brownMid }}>{sub}</p>
+            <h3 className="text-lg sm:text-xl font-bold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>{title}</h3>
+            <p className="text-[10px] sm:text-xs" style={{ color: HColors.brownMid }}>{sub}</p>
           </div>
-          <div className="text-[10px] font-bold tracking-widest uppercase opacity-40">Section {sectionId}</div>
+          <div className="text-[8px] sm:text-[10px] font-bold tracking-widest uppercase opacity-40 mt-1 sm:mt-0">Section {sectionId}</div>
         </div>
         
         <div className="grid gap-3">
@@ -141,21 +141,21 @@ export default function TenantDossier() {
               <div key={docDef.id} className="group relative rounded-xl p-4 transition-all bg-white border"
                 style={{ borderColor: url ? HAlpha.vertCI20 : HAlpha.gold10 }}>
                 
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0"
                       style={{ background: HAlpha.gold05, color: HColors.gold }}>
                       {docDef.icon}
                     </div>
                     <div className="min-w-0">
-                      <h4 className="font-bold text-sm truncate" style={{ color: HColors.darkBrown }}>
+                      <h4 className="font-bold text-xs sm:text-sm truncate" style={{ color: HColors.darkBrown }}>
                         {docDef.label} {docDef.required && <span className="text-red-500 font-normal">*</span>}
                       </h4>
-                      <p className="text-[10px]" style={{ color: HColors.brownMid }}>{docDef.hint}</p>
+                      <p className="text-[9px] sm:text-[10px]" style={{ color: HColors.brownMid }}>{docDef.hint}</p>
                       
                       {url && (
                         <div className="mt-1 flex flex-wrap items-center gap-2">
-                          <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                          <span className="flex items-center gap-1 text-[8px] sm:text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                             <CheckCircle className="w-2.5 h-2.5" /> DOCUMENT FOURNI
                           </span>
                         </div>
@@ -163,7 +163,7 @@ export default function TenantDossier() {
                     </div>
                   </div>
 
-                  <div className="shrink-0">
+                  <div className="shrink-0 flex justify-end">
                     {url ? (
                       <div className="flex items-center gap-1">
                         <a href={url} target="_blank" rel="noopener noreferrer"
@@ -200,38 +200,38 @@ export default function TenantDossier() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header with Progress */}
-      <div className="rounded-3xl p-6 md:p-8 relative overflow-hidden"
+      <div className="rounded-2xl sm:rounded-3xl p-5 sm:p-8 relative overflow-hidden"
         style={{ background: 'linear-gradient(135deg, #0D1F12 0%, #1A0E00 100%)', border: `1px solid ${HAlpha.gold20}` }}>
-        <div className="relative z-10 flex flex-col md:flex-row gap-6 items-center">
+        <div className="relative z-10 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center">
           {/* Progress Ring */}
-          <div className="relative w-24 h-24 shrink-0">
+          <div className="relative w-16 h-16 sm:w-24 sm:h-24 shrink-0">
             <svg className="w-full h-full transform -rotate-90">
-              <circle cx="48" cy="48" r="42" stroke="currentColor" strokeWidth="8" fill="transparent"
+              <circle cx="50%" cy="50%" r="40%" stroke="currentColor" strokeWidth="6" fill="transparent"
                 className="text-white/5" />
-              <circle cx="48" cy="48" r="42" stroke="currentColor" strokeWidth="8" fill="transparent"
-                strokeDasharray={264} strokeDashoffset={264 - (264 * stats.progress) / 100}
+              <circle cx="50%" cy="50%" r="40%" stroke="currentColor" strokeWidth="6" fill="transparent"
+                strokeDasharray="251" strokeDashoffset={251 - (251 * stats.progress) / 100}
                 strokeLinecap="round" style={{ color: HColors.gold }} className="transition-all duration-1000 ease-out" />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-xl font-bold" style={{ color: HColors.cream }}>{stats.progress}%</span>
-              <span className="text-[8px] tracking-widest uppercase" style={{ color: HAlpha.cream50 }}>Complet</span>
+              <span className="text-sm sm:text-xl font-bold" style={{ color: HColors.cream }}>{stats.progress}%</span>
+              <span className="text-[6px] sm:text-[8px] tracking-widest uppercase font-bold text-cream/40">Complet</span>
             </div>
           </div>
 
-          <div className="flex-1 text-center md:text-left">
-            <h2 className="text-3xl font-bold mb-2" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>
+          <div className="flex-1 text-center sm:text-left">
+            <h2 className="text-xl sm:text-3xl font-bold mb-1.5" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>
               Finalisez votre Dossier
             </h2>
             <div className="flex flex-wrap justify-center md:justify-start gap-4">
                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
                  <CheckCircle className={`w-4 h-4 ${stats.completedRequired === stats.totalRequired ? 'text-emerald-500' : 'text-white/20'}`} />
-                 <span className="text-[10px] font-bold" style={{ color: HAlpha.cream80 }}>
+                 <span className="text-[10px] font-bold" style={{ color: HAlpha.white70 }}>
                    {stats.completedRequired} / {stats.totalRequired} documents requis
                  </span>
                </div>
                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
                  <ShieldCheck className="w-4 h-4" style={{ color: HColors.vertCI }} />
-                 <span className="text-[10px] font-bold" style={{ color: HAlpha.cream80 }}>Confidentialité Garantie</span>
+                 <span className="text-[10px] font-bold" style={{ color: HAlpha.white70 }}>Confidentialité Garantie</span>
                </div>
             </div>
           </div>
