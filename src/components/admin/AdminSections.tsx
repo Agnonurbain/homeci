@@ -1,7 +1,7 @@
 import { FC, useState } from 'react';
-import { 
-  MapPin, Calendar, Eye, 
-  XCircle, Shield, Loader as LoaderIcon 
+import {
+  MapPin, Calendar, Eye, Download,
+  XCircle, Shield, Loader as LoaderIcon
 } from 'lucide-react';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
 import { TYPE_LABELS, ROLE_CFG } from '../../constants/labels';
@@ -54,24 +54,52 @@ interface UsersSectionProps {
   onViewDetails: (user: Profile) => void;
 }
 
-export const UsersSection: FC<UsersSectionProps> = ({ 
-  users, filterRole, setFilterRole, filterDate, setFilterDate, onViewDetails 
-}) => (
+export const UsersSection: FC<UsersSectionProps> = ({
+  users, filterRole, setFilterRole, filterDate, setFilterDate, onViewDetails
+}) => {
+  const handleExportCSV = () => {
+    if (users.length === 0) return;
+    const clean = (s: string | null) => (s || '').replace(/[";,]/g, ' ');
+    const headers = ['Nom complet', 'Email', 'Téléphone', 'Rôle', 'Entreprise', 'Statut', 'Vérifié', 'Inscription'];
+    const rows = users.map(u => [
+      `"${clean(u.full_name)}"`,
+      `"${clean(u.email)}"`,
+      u.phone || '',
+      u.role,
+      `"${clean(u.company_name)}"`,
+      u.suspended ? 'Suspendu' : 'Actif',
+      u.verified ? 'Oui' : 'Non',
+      new Date(u.created_at).toLocaleDateString('fr-FR'),
+    ]);
+    const csv = "\uFEFF" + [headers, ...rows].map(r => r.join(';')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `homeci_utilisateurs_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
   <div className="animate-in fade-in duration-500">
     <SectionTitle title="Gestion des Utilisateurs" sub="Liste des utilisateurs inscrits sur la plateforme" />
     <div className="rounded-2xl overflow-hidden shadow-sm" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
-      <div className="flex flex-col sm:flex-row items-center gap-3 px-4 sm:px-5 py-3.5" style={{ borderBottom: `1px solid ${HAlpha.gold10}`, background: 'rgba(249,243,232,0.5)' }}>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <select value={filterRole} onChange={e => setFilterRole(e.target.value)} className="flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs outline-none" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`, color: HColors.darkBrown }}>
-            <option value="">Tous les rôles</option>
-            {['locataire', 'proprietaire', 'agent', 'notaire', 'admin'].map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
-          </select>
-          <button onClick={() => setFilterDate(filterDate === 'desc' ? 'asc' : 'desc')} className="flex-1 sm:flex-none flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:bg-white/50" style={{ border: `1px solid ${HAlpha.gold20}`, color: HColors.brownMid }}>
-            <Calendar className="w-3.5 h-3.5" style={{ color: HColors.orangeCI }} />
-            {filterDate === 'desc' ? '↓ Date' : '↑ Date'}
-          </button>
-        </div>
-        <span className="sm:ml-auto text-[10px] sm:text-xs font-bold opacity-60" style={{ color: HColors.brown }}>{users.length} utilisateur(s)</span>
+      <div className="flex flex-wrap items-center gap-2 px-4 sm:px-5 py-3.5" style={{ borderBottom: `1px solid ${HAlpha.gold10}`, background: 'rgba(249,243,232,0.5)' }}>
+        <select value={filterRole} onChange={e => setFilterRole(e.target.value)} className="min-w-0 flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs outline-none" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`, color: HColors.darkBrown }}>
+          <option value="">Tous les rôles</option>
+          {['locataire', 'proprietaire', 'agent', 'notaire', 'admin'].map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
+        </select>
+        <button onClick={() => setFilterDate(filterDate === 'desc' ? 'asc' : 'desc')} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:bg-white/50" style={{ border: `1px solid ${HAlpha.gold20}`, color: HColors.brownMid }}>
+          <Calendar className="w-3.5 h-3.5" style={{ color: HColors.orangeCI }} />
+          {filterDate === 'desc' ? '↓ Date' : '↑ Date'}
+        </button>
+        <span className="hidden sm:inline text-xs font-bold opacity-60 sm:ml-auto" style={{ color: HColors.brown }}>{users.length} utilisateur(s)</span>
+        <button onClick={handleExportCSV} disabled={users.length === 0}
+          className="ml-auto sm:ml-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80 disabled:opacity-40"
+          style={{ background: HAlpha.vertCI10, border: `1px solid ${HAlpha.vertCI25}`, color: HColors.vertCI }}>
+          <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Exporter</span> CSV
+        </button>
       </div>
       <div className="homeci-table-scroll">
         <table className="min-w-full">
@@ -105,7 +133,8 @@ export const UsersSection: FC<UsersSectionProps> = ({
       </div>
     </div>
   </div>
-);
+  );
+};
 
 // --- Moderation Section ---
 interface ModerationSectionProps {
