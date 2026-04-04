@@ -1,0 +1,64 @@
+{
+  "permissions": {
+    "allow": [
+      "Read src/**",
+      "Read public/**",
+      "Read functions/**",
+      "Read *.json",
+      "Read *.rules",
+      "Read *.md",
+      "Read *.ts",
+      "Read *.tsx",
+      "Write src/**",
+      "Write public/**",
+      "Write functions/src/**",
+      "Write CLAUDE.md",
+      "Write ARCHITECTURE.md",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git branch *)",
+      "Bash(npx vitest run *)",
+      "Bash(npx vite build *)",
+      "Bash(npx tsc --noEmit *)",
+      "Bash(grep *)",
+      "Bash(find *)",
+      "Bash(wc *)",
+      "Bash(cat *)",
+      "Bash(ls *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(sed *)"
+    ],
+    "deny": [
+      "Write .env",
+      "Write .env.local",
+      "Write package.json",
+      "Write tsconfig*.json",
+      "Write firestore.rules",
+      "Write storage.rules",
+      "Write functions/package.json",
+      "Bash(rm -rf *)",
+      "Bash(git push *)",
+      "Bash(git commit *)",
+      "Bash(firebase deploy *)",
+      "Bash(npm install *)",
+      "Bash(npm uninstall *)"
+    ]
+  },
+  "context": {
+    "always_include": [
+      "CLAUDE.md",
+      "src/styles/homeci-tokens.ts",
+      "src/types/property.ts"
+    ],
+    "exclude": [
+      "node_modules/**",
+      "dist/**",
+      "package-lock.json",
+      ".git/**",
+      "functions/node_modules/**",
+      "functions/lib/**"
+    ]
+  }
+}
