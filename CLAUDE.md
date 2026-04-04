@@ -1,15 +1,57 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # HOMECI — Manifeste Développeur IA
 
-> Plateforme immobilière certifiée par notaire pour la Côte d'Ivoire.
-> **Toujours lire ce fichier en premier avant toute modification.**
+> Plateforme immobilière certifiée par notaire pour la Côte d'Ivoire (Abidjan).
+> Voir `ARCHITECTURE.md` pour les schémas Firestore et flux de données détaillés.
+> Voir `WORKFLOW.md` pour les protocoles de session et checklists de déploiement.
 
-## Identité du projet
+## Commandes essentielles
 
-- **Stack** : React 18 + TypeScript strict + Vite 5 + Tailwind 3 + Firebase (Blaze, europe-west1) + React Router DOM
-- **Déploiement** : Vercel (frontend) + Firebase Cloud Functions v2 (backend)
-- **Firebase project** : `homeci-prod-72e4b` (variables via `.env`)
-- **GitHub** : `github.com/agnonurbain/homeci` (branche `main`)
-- **Région cible** : Côte d'Ivoire (Abidjan) — connexions lentes, Mobile Money, droit ivoirien
+```bash
+# Développement
+npm run dev              # Serveur Vite local (HMR)
+npm run build            # Build production (vite build)
+npm run preview          # Preview du build local
+
+# Tests
+npm test                 # Tous les tests (vitest run)
+npm run test:watch       # Mode watch (vitest)
+npx vitest run src/components/__tests__/AuthModal.test.tsx  # Un seul fichier
+npm run test:coverage    # Couverture (utils, services, hooks uniquement)
+
+# Qualité
+npm run lint             # ESLint
+npm run typecheck        # tsc --noEmit -p tsconfig.app.json
+
+# Cloud Functions (depuis functions/)
+cd functions && npm run build    # Compile TS → lib/
+cd functions && npm run serve    # Build + emulators
+```
+
+## Stack et déploiement
+
+- **Frontend** : React 18 + TypeScript strict + Vite 5 + Tailwind 3 + React Router DOM v7
+- **Backend** : Firebase (Auth + Firestore + Storage + FCM) + Cloud Functions v2 (europe-west1)
+- **Déploiement** : Vercel (frontend) + Firebase (functions). Firebase project : `homeci-prod-72e4b`
+- **Monitoring** : Sentry (`@sentry/react`)
+- **Validation** : Zod
+- **Cartes** : Leaflet + react-leaflet (chunked séparément dans le build)
+- **Graphiques** : Recharts (chunked séparément dans le build)
+- **SEO** : react-helmet-async
+- **CI** : GitHub Actions (`.github/workflows/test.yml`) — lint → build → test → coverage. Node 24.
+
+## Architecture — Vue d'ensemble
+
+**SPA** (Vercel) ↔ **Firebase** (Auth + Firestore + Storage + FCM) + **Cloud Functions v2**.
+
+**Flux principal** : Propriétaire soumet un bien (formulaire 5 étapes) → admin modère (checklist 10 critères) → notaire certifie → bien publié. Visites à 1000 FCFA, auto-reset après 3 jours via Cloud Function scheduler.
+
+**Routing par rôle** : `AuthContext` (seul React Context) détermine le rôle. `/dashboard/*` rend l'un des 4 dashboards (TenantDashboard, OwnerAgentDashboard, NotaireDashboard, AdminDashboard) selon `user.role`. Admin : `/portail-securise` derrière un code d'accès.
+
+**4 rôles** : `locataire`, `proprietaire`, `notaire` (code invitation), `admin` (code accès + 11 onglets).
 
 ## Règles de code (IMPÉRATIVES)
 
@@ -25,9 +67,10 @@
 - Lazy loading obligatoire pour les routes/dashboards (`React.lazy` + `Suspense`).
 
 ### Styles
-- Utiliser **exclusivement** les tokens de `src/styles/homeci-tokens.ts`.
-- Couleurs : `HColors.orangeCI` (#FF6B00), `HColors.vertCI` (#009E49), `HColors.gold` (#D4A017).
-- **INTERDIT** : `HColors.green`, `HColors.terracotta` — couleurs obsolètes, utiliser `vertCI`/`orangeCI`.
+- Utiliser **exclusivement** les tokens de `src/styles/homeci-tokens.ts` (`HColors`, `HAlpha`, `HFonts`, `HGradients`, `HS`).
+- Couleurs primaires : `HColors.orangeCI` (#FF6B00), `HColors.vertCI` (#009E49), `HColors.gold` (#D4A017).
+- **NE PAS utiliser dans les nouveaux composants** : `HColors.green`, `HColors.terracotta` — préférer `vertCI`/`orangeCI`.
+- Styles inline réutilisables via `HS.*` (ex: `HS.btnPrimary`, `HS.input`, `HS.card`).
 - Font families : `var(--font-cormorant)` (titres), `var(--font-nunito)` (corps).
 
 ### Firebase / Firestore
@@ -39,7 +82,8 @@
 ### Tests
 - Tout nouveau composant/service → au moins 1 fichier de test.
 - Tests dans `__tests__/` au même niveau que le fichier testé.
-- Mock Firebase via `src/tests/firebase.mock.ts` — ne jamais connecter aux vrais services.
+- Firebase est **entièrement mocké** dans `src/tests/setup.ts` (global setup via `vite.config.ts`). Ne jamais connecter aux vrais services Firebase dans les tests.
+- Coverage limitée à `src/utils/`, `src/services/`, `src/hooks/` (configuré dans `vite.config.ts`).
 - Lancer avant tout commit : `npx vitest run`.
 
 ### Git
@@ -47,90 +91,19 @@
 - Types : `feat`, `fix`, `perf`, `refactor`, `test`, `docs`, `ci`.
 - Un commit par fonctionnalité. Pas de commits monolithiques.
 
-## Architecture
-
-```
-src/
-├── App.tsx                    # Routes (React Router DOM)
-├── components/                # Composants UI
-│   ├── admin/                 # Sous-composants AdminDashboard
-│   ├── chat/                  # Messagerie (si activée)
-│   ├── notaire/               # Composants spécifiques notaire
-│   ├── owner/                 # Composants propriétaire
-│   │   └── propertyForm/      # Formulaire ajout/édition bien
-│   ├── tenant/                # Composants locataire
-│   ├── ui/                    # Composants réutilisables (KenteLine, etc.)
-│   └── __tests__/             # Tests composants
-├── contexts/                  # AuthContext (seul context)
-├── hooks/                     # Hooks métier (useAdminDashboard, useOwnerVisits, etc.)
-├── lib/                       # firebase.ts (config + exports)
-├── services/                  # Services Firestore (1 par collection)
-├── styles/                    # homeci-tokens.ts (palette CI)
-├── types/                     # Interfaces TypeScript
-├── utils/                     # Utilitaires purs
-└── tests/                     # Setup tests + prelaunch.test.ts
-
-functions/src/                 # Cloud Functions v2
-public/                        # Assets statiques (logos, favicons, manifest, sw.js)
-```
-
-## Rôles utilisateur
-
-| Rôle | Auth | Dashboard | Pouvoirs |
-|------|------|-----------|----------|
-| `locataire` | Email, Google | TenantDashboard | Rechercher, favoris, demander visite, signaler |
-| `proprietaire` | Email, Google | OwnerAgentDashboard | Publier biens, gérer visites, statut loué/vendu |
-| `notaire` | Email, Google + code invitation | NotaireDashboard | Vérifier documents, certifier/décertifier |
-| `admin` | Email + code accès | AdminDashboard (11 onglets) | Tout modérer, suspendre, gérer codes |
-
-## Routes
-
-| Route | Composant | Layout | Auth requise |
-|-------|-----------|--------|--------------|
-| `/` | PublicPropertyList + Hero | PublicLayout | Non |
-| `/bien/:id` | PropertyViewModal | PublicLayout | Non |
-| `/faq` | FAQPage | PublicLayout | Non |
-| `/cgv` | CGVPage | PublicLayout | Non |
-| `/tutoriel` | TutorialPage | PublicLayout | Non |
-| `/dashboard/*` | *Dashboard (selon rôle) | DashboardLayout | Oui |
-| `/portail-securise` | AdminDashboard | AdminLayout | Admin + code |
-
-## Collections Firestore
-
-| Collection | Sous-collections | Accès |
-|------------|-----------------|-------|
-| `users/{uid}` | `favorites/`, `fcm_tokens/` | Owner + Admin |
-| `properties/{id}` | — | Lecture publique, écriture owner |
-| `visits/{id}` | — | Lecture auth, écriture owner/tenant |
-| `notifications/{id}` | — | Lecture owner, écriture auth |
-| `reports/{id}` | — | Lecture reporter+admin, écriture auth, update admin |
-| `surveys/{id}` | — | Lecture admin, écriture auth |
-| `notaire_codes/{id}` | — | Lecture auth, écriture limitée |
-| `chats/{id}` | `messages/` | Participants uniquement |
-
-## Cloud Functions
-
-| Fonction | Trigger | Description |
-|----------|---------|-------------|
-| `autoResetPropertyStatus` | Scheduler (1h) | Reset biens après 3j sans mise à jour |
-| `sendPushNotification` | Firestore onCreate `/notifications` | Push FCM au destinataire |
-| `assignNotaireRole` | onCall | Assigne le rôle notaire avec code |
-| `certifyProperty` | onCall | Certifie un bien (notaire) |
-| `createAdmin` | onCall | Crée un compte admin |
-| `onNewChatMessage` | Firestore onCreate `/chats/messages` | Notification nouveau message |
-
 ## Checklist pré-commit
 
 1. `npx vitest run` — 0 échec
-2. `npx vite build` — 0 erreur
-3. Pas de `HColors.green` ni `HColors.terracotta`
+2. `npm run build` — 0 erreur
+3. Pas de `HColors.green` ni `HColors.terracotta` dans du code nouveau
 4. Pas de `any` non justifié
 5. Pas de doublon d'import
 6. Nouveau composant → test associé
 
-## Contraintes CI/Abidjan
+## Contraintes Côte d'Ivoire / Abidjan
 
-- **Pas d'auth téléphone Firebase** (SMS non supporté en CI, désactivé).
+- **Pas d'auth téléphone Firebase** (SMS non supporté en CI, désactivé — erreur 503).
 - **Connexions lentes** — lazy loading, images < 200KB, skeletons obligatoires.
 - **Mobile Money** — Orange Money, MTN MoMo, Wave, Moov Flooz, Djamo.
 - **Droit ivoirien** — CGV conformes loi n°2013-546 et n°2014-138 (notaires).
+- **reCAPTCHA retiré** — timeout sur connexions lentes.
