@@ -140,7 +140,7 @@ export default function AdminDashboard() {
             {activeTab === 'reports' && <AdminReportsTab showToast={api.showToast} />}
             {activeTab === 'surveys' && <AdminSurveysTab />}
             {activeTab === 'visits' && <AdminVisitsTab />}
-            {activeTab === 'cgv' && <AdminCGVTab />}
+            {activeTab === 'cgv' && <AdminCGVTab users={api.users} />}
             {activeTab === 'ads' && <AdminAdsTab />}
             {activeTab === 'security' && <AdminLoginHistory />}
             {activeTab === 'admin-management' && <AdminManagement />}
