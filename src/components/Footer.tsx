@@ -120,7 +120,7 @@ export function Footer() {
             © 2026 HOMECI — Côte d'Ivoire. Tous droits réservés.
           </p>
           <div className="flex gap-6">
-            <a href="/faq" className="text-xs transition-colors hover:opacity-100"
+            <a href="/cgv" className="text-xs transition-colors hover:opacity-100"
               style={{ color: 'rgba(245,230,200,0.35)', fontFamily: 'var(--font-nunito)' }}>
               Conditions d'utilisation
             </a>

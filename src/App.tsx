@@ -23,6 +23,7 @@ const OwnerAgentDashboard = lazy(() => import('./components/OwnerAgentDashboard'
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 const NotaireDashboard = lazy(() => import('./components/NotaireDashboard'));
 const FAQPage = lazy(() => import('./components/FAQPage'));
+const CGVPage = lazy(() => import('./components/CGVPage'));
 const TutorialPage = lazy(() => import('./components/TutorialPage'));
 
 interface HeroFilters {
@@ -231,6 +232,13 @@ function AppContent() {
         <Route path="/faq" element={
           <PublicLayout>
             <Suspense fallback={LazyFallback}><FAQPage /></Suspense>
+          </PublicLayout>
+        } />
+
+        {/* CGV / Conditions Générales */}
+        <Route path="/cgv" element={
+          <PublicLayout>
+            <Suspense fallback={LazyFallback}><CGVPage /></Suspense>
           </PublicLayout>
         } />
 
