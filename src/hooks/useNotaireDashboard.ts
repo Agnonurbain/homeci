@@ -79,7 +79,7 @@ export function useNotaireDashboard(notaryProfile: any, showToast: (msg: string,
           // Pas besoin de charger la sous-collection /documents/ qui n'est pas utilisée par le formulaire
           setProperties([...relevant]);
           
-          const missingIds = [...new Set(withDocs.map(p => p.owner_id))].filter(id => !ownersRef.current?.[id]);
+          const missingIds = [...new Set(relevant.map(p => p.owner_id))].filter(id => !ownersRef.current?.[id]);
           if (missingIds.length > 0) {
             const newEntries = await Promise.all(missingIds.map(async id => {
               try {
