@@ -263,7 +263,7 @@ export function useNotaireDashboard(notaryProfile: any, showToast: (msg: string,
     return {
       disponible: di.length, enCours: ec.length, pret: pr.length, certifie: ce.length,
       docsAttente: activeProp.flatMap(p => p.documents || []).filter(d => d.status === 'en_attente').length,
-      lists: { disponible: di, enCours: ec, pret: pr, certifie: ce }
+      lists: { disponible: di, en_cours: ec, pret: pr, certifie: ce }
     };
   }, [properties, notaryProfile?.id]);
 
