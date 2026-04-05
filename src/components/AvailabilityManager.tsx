@@ -68,6 +68,7 @@ export default function AvailabilityManager({ propertyId, ownerId }: Props) {
   const handleTimeChange = (day: number, rangeIndex: number, newValue: string) => {
     setSchedule(prev => {
       const newSchedule = { ...prev };
+      newSchedule[day] = [...newSchedule[day]];
       newSchedule[day][rangeIndex] = newValue;
       return newSchedule;
     });
@@ -84,7 +85,8 @@ export default function AvailabilityManager({ propertyId, ownerId }: Props) {
       });
       alert('Disponibilités mises à jour.');
     } catch (e) {
-      console.error(e);
+      console.error('Erreur sauvegarde disponibilités:', e);
+      alert('Erreur lors de la sauvegarde. Veuillez réessayer.');
     } finally {
       setSaving(false);
     }

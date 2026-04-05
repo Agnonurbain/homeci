@@ -221,6 +221,19 @@ service cloud.firestore {
       allow update: if isAdmin() || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['impressions', 'clicks']);
     }
 
+    // ── PROPERTY AVAILABILITIES ──
+    match /property_availabilities/{propertyId} {
+      // Lecture : publique (les locataires voient les créneaux disponibles)
+      allow read: if true;
+      // Écriture : vérifie que l'auteur est bien le propriétaire du bien référencé
+      allow create, update: if isAuth() && (
+        isAdmin() ||
+        (request.resource.data.owner_id == request.auth.uid &&
+         get(/databases/$(database)/documents/properties/$(propertyId)).data.owner_id == request.auth.uid)
+      );
+      allow delete: if isAdmin();
+    }
+
     // ── DELEGATION TOKENS ──
     match /delegation_tokens/{tokenId} {
       allow read: if true;
