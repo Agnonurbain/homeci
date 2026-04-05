@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { doc, updateDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp, collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
@@ -30,7 +30,14 @@ async function validateNotaireCode(code: string): Promise<{ valid: boolean; docI
     if (snap.empty) return { valid: false };
     const d = snap.docs[0];
     const data = d.data();
-    if (data.expires_at && data.expires_at.toDate() < new Date()) return { valid: false };
+    // Robuste aux Timestamps Firestore ET strings ISO
+    let expiresAt: Date | null = null;
+    if (data.expires_at) {
+      if (data.expires_at instanceof Timestamp) expiresAt = data.expires_at.toDate();
+      else if (typeof data.expires_at === 'string') expiresAt = new Date(data.expires_at);
+      else if (data.expires_at?.toDate) expiresAt = data.expires_at.toDate();
+    }
+    if (expiresAt && expiresAt < new Date()) return { valid: false };
     return { valid: true, docId: d.id };
   } catch { return { valid: false }; }
 }
