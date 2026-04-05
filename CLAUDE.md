@@ -49,9 +49,35 @@ cd functions && npm run serve    # Build + emulators
 
 **Flux principal** : Propriétaire soumet un bien (formulaire 5 étapes) → admin modère (checklist 10 critères) → notaire certifie → bien publié. Visites à 1000 FCFA, auto-reset après 3 jours via Cloud Function scheduler.
 
-**Routing par rôle** : `AuthContext` (seul React Context) détermine le rôle. `/dashboard/*` rend l'un des 4 dashboards (TenantDashboard, OwnerAgentDashboard, NotaireDashboard, AdminDashboard) selon `user.role`. Admin : `/portail-securise` derrière un code d'accès.
-
 **4 rôles** : `locataire`, `proprietaire`, `notaire` (code invitation), `admin` (code accès + 11 onglets).
+
+### Routing (App.tsx)
+
+Toutes les routes sont définies dans `App.tsx` (pas de fichier routes séparé) :
+- `/` — page publique (Hero + PropertyList + Features). Redirige vers `/dashboard` si connecté.
+- `/bien/:id` — détail d'un bien (accessible connecté ou non).
+- `/dashboard/*` — redirige vers `/` si non connecté. Rend un des 4 dashboards via `renderDashboard()` selon `profile.role`.
+- `/portail-securise` — admin portal : authentification en 2 étapes (AdminLogin → AdminAccessCode) + session timeout via AdminSessionManager.
+- `/faq`, `/cgv`, `/tutoriel` — pages publiques lazy-loaded.
+
+**Auth flow admin/notaire** : AdminLogin (email/password) → AdminAccessCode (code d'accès) → AdminSessionManager (timeout configurable, default 30min). Les notaires passent aussi par AdminAccessCode avec `role="notaire"`.
+
+### Organisation des composants
+
+- `src/components/` — composants globaux (Header, Footer, AuthModal, etc.)
+- `src/components/admin/` — sous-composants du dashboard admin (onglets, stats, modals)
+- `src/components/owner/` — sous-composants propriétaire (formulaire 5 étapes dans `owner/propertyForm/`)
+- `src/components/notaire/` — sous-composants notaire (validation, cards, stats)
+- `src/components/chat/` — composants de messagerie (ChatInput, MessageBubble)
+
+### Fichiers clés
+
+- `src/lib/firebase.ts` — init Firebase (auth, db, storage, functions) — point d'import unique.
+- `src/contexts/AuthContext.tsx` — seul React Context. Exporte `useAuth()` (user, profile, loading, signIn, signUp, etc.).
+- `src/styles/homeci-tokens.ts` — design tokens (HColors, HAlpha, HFonts, HGradients, HS).
+- `src/data/coteIvoireGeo.ts` — données géographiques CI (régions, départements, communes, quartiers).
+- `src/constants/labels.ts`, `src/constants/visitStatus.ts` — labels et statuts réutilisables.
+- `functions/src/index.ts` — toutes les Cloud Functions (une seule entrée).
 
 ## Règles de code (IMPÉRATIVES)
 
