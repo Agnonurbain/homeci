@@ -191,8 +191,8 @@ export const HS: Record<string, CSSProperties> = {
     fontWeight: 600,
   },
   headerDark: {
-    background:  HColors.night,
-    borderBottom:'1px solid rgba(212,160,23,0.15)',
+    background:  HColors.forest,
+    borderBottom:'1px solid rgba(212,160,23,0.25)',
   },
   bgCream: { background: HColors.creamBg },
   overlay: {

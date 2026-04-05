@@ -55,7 +55,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen" style={{ background: HColors.creamBg }}>
       {/* ── Header ── */}
-      <div style={{ background: `linear-gradient(135deg,${HColors.night},#1A0E00)`, borderBottom: `1px solid ${HAlpha.gold20}` }}>
+      <div style={{ background: `linear-gradient(135deg,${HColors.forest},#2A1A08)`, borderBottom: `1px solid ${HAlpha.gold25}` }}>
         <KenteLine height={4} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-0">
           <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 flex-wrap pb-4">

@@ -103,7 +103,7 @@ export const UsersSection: FC<UsersSectionProps> = ({
       </div>
       <div className="homeci-table-scroll">
         <table className="min-w-full">
-          <thead style={{ background: HColors.night }}>
+          <thead style={{ background: HColors.forest }}>
             <tr>{['Utilisateur', 'Rôle', 'Statut', 'Inscription', 'Actions'].map(h => <th key={h} className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider" style={{ color: HAlpha.cream60 }}>{h}</th>)}</tr>
           </thead>
           <tbody className="divide-y" style={{ borderColor: HAlpha.gold08 }}>

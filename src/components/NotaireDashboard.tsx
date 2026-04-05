@@ -69,7 +69,7 @@ export default function NotaireDashboard() {
 
   return (
     <div className="min-h-screen pb-20" style={{ background: HColors.creamBg }}>
-      <header className="pt-8 pb-4 px-4 sm:px-6 lg:px-8 border-b" style={{ background: HColors.night, borderColor: HAlpha.gold15 }}>
+      <header className="pt-8 pb-4 px-4 sm:px-6 lg:px-8 border-b" style={{ background: HColors.forest, borderColor: HAlpha.gold25 }}>
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
           <div className="flex items-center gap-4 text-center sm:text-left">
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" 

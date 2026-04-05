@@ -102,8 +102,8 @@ export default function OwnerAgentDashboard() {
       {/* ── Tab navigation ── */}
       <div className="sticky top-14 z-10"
         style={{
-          background: 'rgba(3,10,6,0.98)', backdropFilter: 'blur(16px)',
-          borderBottom: `1.5px solid ${HAlpha.gold15}`,
+          background: 'rgba(27,94,58,0.97)', backdropFilter: 'blur(16px)',
+          borderBottom: `1.5px solid ${HAlpha.gold25}`,
         }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">

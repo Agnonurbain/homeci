@@ -80,7 +80,7 @@ export default function TenantDashboard() {
     <div className="min-h-screen" style={{ background: HColors.creamBg }}>
 
       {/* Header */}
-      <div style={{ background: HColors.night, borderBottom: `1px solid ${HAlpha.gold20}` }}>
+      <div style={{ background: HColors.forest, borderBottom: `1px solid ${HAlpha.gold25}` }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">
           <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 mb-5">
             <div className="text-center sm:text-left">
