@@ -85,7 +85,7 @@ export default function AdminAccessCode({ onSuccess, role = 'admin' }: AdminAcce
         setConfirmed(true);
         setTimeout(() => onSuccess(), 800);
       } else {
-        setError('Code incorrect. Recopiez exactement le code affiché ci-dessus.');
+        setError('Code incorrect. Copiez le code ci-dessus et collez-le.');
         setInput('');
         inputRef.current?.focus();
       }
@@ -149,12 +149,12 @@ export default function AdminAccessCode({ onSuccess, role = 'admin' }: AdminAcce
                     Votre code de session
                   </p>
 
-                  {/* Code en grandes lettres */}
+                  {/* Code masqué — copiable uniquement */}
                   <div className="flex items-center justify-center gap-1.5 mb-4">
-                    {sessionCode.split('').map((char, i) => (
+                    {sessionCode.split('').map((_, i) => (
                       <div key={i} className="w-9 h-11 rounded-lg flex items-center justify-center font-mono font-bold text-xl"
                         style={{ background: HAlpha.gold10, border: `1px solid ${HAlpha.gold30}`, color: HColors.gold }}>
-                        {char}
+                        •
                       </div>
                     ))}
                   </div>
@@ -189,7 +189,7 @@ export default function AdminAccessCode({ onSuccess, role = 'admin' }: AdminAcce
                   style={{ background: HAlpha.navy08, border: `1px solid ${HAlpha.navy20}` }}>
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: HColors.navy }} />
                   <p className="text-xs" style={{ color: HColors.navy, fontFamily: 'var(--font-nunito)' }}>
-                    Ce code est généré automatiquement pour cette session. Recopiez-le dans le champ ci-dessous pour confirmer votre identité.
+                    Ce code est généré automatiquement pour cette session. Copiez-le puis collez-le dans le champ ci-dessous pour confirmer votre identité.
                   </p>
                 </div>
 
