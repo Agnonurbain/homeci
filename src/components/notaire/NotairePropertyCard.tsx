@@ -109,9 +109,9 @@ export function NotairePropertyCard({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold" style={{ color: HColors.darkBrown }}>{owner.full_name}</p>
-                <div className="flex gap-3 text-xs" style={{ color: HColors.brown }}>
+                <div className="flex flex-col sm:flex-row sm:gap-3 gap-0.5 text-xs" style={{ color: HColors.brown }}>
                   {owner.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{owner.phone}</span>}
-                  {owner.email && <span>{owner.email}</span>}
+                  {owner.email && <span className="truncate">{owner.email}</span>}
                 </div>
               </div>
             </div>

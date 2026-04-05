@@ -61,7 +61,7 @@ export default function NotaireDashboard() {
   }, [stats.lists, activeTab, searchQuery, filterType, owners]);
 
   if (loading) return (
-    <div className="min-h-screen p-10 space-y-8" style={{ background: HColors.creamBg }}>
+    <div className="min-h-screen p-4 sm:p-10 space-y-6 sm:space-y-8" style={{ background: HColors.creamBg }}>
       <StatGridSkeleton count={4} />
       <NotaireListSkeleton count={4} />
     </div>
@@ -98,8 +98,8 @@ export default function NotaireDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <NotaireStats stats={stats} />
 
-        <div className="flex gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-[200px]">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40" />
             <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                    placeholder="Rechercher un dossier..."
@@ -116,9 +116,9 @@ export default function NotaireDashboard() {
 
         <div className="space-y-3">
           {filtered.length === 0 ? (
-            <div className="p-20 text-center rounded-[2.5rem]" style={{ background: '#FFFFFF', border: `1px dashed ${HAlpha.gold30}` }}>
-              <Building2 className="w-12 h-12 mx-auto mb-4 opacity-20" />
-              <p className="text-sm font-bold opacity-40">Aucun dossier trouvé dans cette section</p>
+            <div className="p-10 sm:p-20 text-center rounded-2xl sm:rounded-[2.5rem]" style={{ background: '#FFFFFF', border: `1px dashed ${HAlpha.gold30}` }}>
+              <Building2 className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 opacity-20" />
+              <p className="text-xs sm:text-sm font-bold opacity-40">Aucun dossier trouvé dans cette section</p>
             </div>
           ) : (
             filtered.map(property => (

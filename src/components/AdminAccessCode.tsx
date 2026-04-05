@@ -150,9 +150,9 @@ export default function AdminAccessCode({ onSuccess, role = 'admin' }: AdminAcce
                   </p>
 
                   {/* Code masqué — copiable uniquement */}
-                  <div className="flex items-center justify-center gap-1.5 mb-4">
+                  <div className="flex items-center justify-center gap-1 sm:gap-1.5 mb-4">
                     {sessionCode.split('').map((_, i) => (
-                      <div key={i} className="w-9 h-11 rounded-lg flex items-center justify-center font-mono font-bold text-xl"
+                      <div key={i} className="w-7 h-9 sm:w-9 sm:h-11 rounded-lg flex items-center justify-center font-mono font-bold text-lg sm:text-xl"
                         style={{ background: HAlpha.gold10, border: `1px solid ${HAlpha.gold30}`, color: HColors.gold }}>
                         •
                       </div>
