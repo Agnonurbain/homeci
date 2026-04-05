@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
 const mockSignOut = vi.fn();
 const mockUser = { current: null as any };
@@ -36,26 +37,26 @@ beforeEach(() => {
 
 describe('Header (non connecté)', () => {
   it('affiche le logo HOMECI', () => {
-    render(<Header />);
+    render(<MemoryRouter><Header /></MemoryRouter>);
     expect(screen.getByText('HOMECI')).toBeInTheDocument();
   });
 
   it('affiche Connexion et Inscription', () => {
-    render(<Header />);
+    render(<MemoryRouter><Header /></MemoryRouter>);
     expect(screen.getByText('Connexion')).toBeInTheDocument();
     expect(screen.getByText("S'inscrire")).toBeInTheDocument();
   });
 
   it('appelle onLoginClick au clic sur Connexion', () => {
     const onLoginClick = vi.fn();
-    render(<Header onLoginClick={onLoginClick} />);
+    render(<MemoryRouter><Header onLoginClick={onLoginClick} /></MemoryRouter>);
     fireEvent.click(screen.getByText('Connexion'));
     expect(onLoginClick).toHaveBeenCalledTimes(1);
   });
 
   it('appelle onSignupClick au clic sur Inscription', () => {
     const onSignupClick = vi.fn();
-    render(<Header onSignupClick={onSignupClick} />);
+    render(<MemoryRouter><Header onSignupClick={onSignupClick} /></MemoryRouter>);
     fireEvent.click(screen.getByText("S'inscrire"));
     expect(onSignupClick).toHaveBeenCalledTimes(1);
   });
@@ -68,12 +69,12 @@ describe('Header (connecté)', () => {
   });
 
   it('affiche Déconnexion quand connecté', () => {
-    render(<Header />);
+    render(<MemoryRouter><Header /></MemoryRouter>);
     expect(screen.getByText('Déconnexion')).toBeInTheDocument();
   });
 
   it('n\'affiche pas Connexion quand connecté', () => {
-    render(<Header />);
+    render(<MemoryRouter><Header /></MemoryRouter>);
     expect(screen.queryByText('Connexion')).not.toBeInTheDocument();
   });
 });
