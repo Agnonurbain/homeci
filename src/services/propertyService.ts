@@ -356,7 +356,7 @@ export const propertyService = {
       return {
         ...d,
         status,
-        ...(status === 'valide' ? { validated_at: new Date().toISOString(), rejection_reason: undefined } : {}),
+        ...(status === 'valide' ? { validated_at: new Date().toISOString() } : {}),
         ...(extra?.validated_by ? { validated_by: extra.validated_by } : {}),
         ...(extra?.rejection_reason ? { rejection_reason: extra.rejection_reason } : {}),
       };
