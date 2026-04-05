@@ -58,7 +58,7 @@ export interface Property {
   amenities: string[];
   images: string[];
   videos: string[];
-  /** Documents légaux — chargés séparément via getDocuments() */
+  /** Documents légaux — stockés comme champ array dans le document principal */
   documents: PropertyDocument[];
   status: 'draft' | 'pending' | 'published' | 'rented' | 'sold' | 'rejected' | 'failed';
   verified_notaire: boolean;
@@ -346,15 +346,23 @@ export const propertyService = {
     status: PropertyDocument['status'],
     extra?: { validated_by?: string; rejection_reason?: string }
   ): Promise<void> {
-    const docRef = doc(db, 'properties', propertyId, 'documents', docType);
-    await updateDoc(docRef, {
-      status,
-      ...(status === 'valide' && { validated_at: new Date().toISOString() }),
-      ...(extra?.validated_by && { validated_by: extra.validated_by }),
-      ...(extra?.rejection_reason && { rejection_reason: extra.rejection_reason }),
-      // Nettoyer le motif si on valide
-      ...(status === 'valide' && { rejection_reason: null }),
+    const propRef = doc(db, 'properties', propertyId);
+    const snap = await getDoc(propRef);
+    if (!snap.exists()) return;
+
+    const documents: PropertyDocument[] = snap.data().documents || [];
+    const updated = documents.map(d => {
+      if (d.type !== docType) return d;
+      return {
+        ...d,
+        status,
+        ...(status === 'valide' ? { validated_at: new Date().toISOString(), rejection_reason: undefined } : {}),
+        ...(extra?.validated_by ? { validated_by: extra.validated_by } : {}),
+        ...(extra?.rejection_reason ? { rejection_reason: extra.rejection_reason } : {}),
+      };
     });
+
+    await updateDoc(propRef, { documents: updated, updated_at: serverTimestamp() });
   },
 
   /** Supprime un document légal */

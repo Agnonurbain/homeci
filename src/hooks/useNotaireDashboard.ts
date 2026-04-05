@@ -75,17 +75,9 @@ export function useNotaireDashboard(notaryProfile: any, showToast: (msg: string,
             return;
           }
 
-          const withDocs = await Promise.all(relevant.map(async (p) => {
-            try {
-              p.documents = await propertyService.getDocuments(p.id);
-            } catch (e) {
-              console.error('[HOMECI] getDocuments failed for', p.id, e);
-              p.documents = [];
-            }
-            return p;
-          }));
-
-          setProperties([...withDocs]);
+          // Les documents sont déjà inclus dans le snapshot (champ array du document principal)
+          // Pas besoin de charger la sous-collection /documents/ qui n'est pas utilisée par le formulaire
+          setProperties([...relevant]);
           
           const missingIds = [...new Set(withDocs.map(p => p.owner_id))].filter(id => !ownersRef.current?.[id]);
           if (missingIds.length > 0) {
