@@ -78,8 +78,9 @@ export function useNotaireDashboard(notaryProfile: any, showToast: (msg: string,
           const withDocs = await Promise.all(relevant.map(async (p) => {
             try {
               p.documents = await propertyService.getDocuments(p.id);
-            } catch (e) { 
-              p.documents = []; 
+            } catch (e) {
+              console.error('[HOMECI] getDocuments failed for', p.id, e);
+              p.documents = [];
             }
             return p;
           }));
