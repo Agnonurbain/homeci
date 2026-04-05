@@ -56,6 +56,10 @@ service cloud.firestore {
       allow update: if isAuth() && (
         isAdmin() ||
         (isNotaire() && resource.data.notaire_id == request.auth.uid) ||
+        // Prise en charge : notaire assigne son ID sur un bien sans notaire assigné
+        (isNotaire() && resource.data.notaire_id == null
+          && request.resource.data.notaire_id == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['notaire_id', 'notaire_taken_at', 'updated_at'])) ||
         (
           resource.data.owner_id == request.auth.uid 
           && request.resource.data.owner_id == request.auth.uid 

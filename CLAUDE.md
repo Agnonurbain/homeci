@@ -41,7 +41,7 @@ cd functions && npm run serve    # Build + emulators
 - **Cartes** : Leaflet + react-leaflet (chunked séparément dans le build)
 - **Graphiques** : Recharts (chunked séparément dans le build)
 - **SEO** : react-helmet-async
-- **CI** : GitHub Actions (`.github/workflows/test.yml`) — lint → build → test → coverage. Node 24.
+- **CI** : GitHub Actions (`.github/workflows/test.yml`) — lint → build → test → coverage. Node 24. Note : `typecheck` n'est pas encore dans le pipeline CI.
 
 ## Architecture — Vue d'ensemble
 
@@ -78,6 +78,7 @@ Toutes les routes sont définies dans `App.tsx` (pas de fichier routes séparé)
 - `src/data/coteIvoireGeo.ts` — données géographiques CI (régions, départements, communes, quartiers).
 - `src/constants/labels.ts`, `src/constants/visitStatus.ts` — labels et statuts réutilisables.
 - `functions/src/index.ts` — toutes les Cloud Functions (une seule entrée).
+- `src/services/` — un service par domaine Firestore (15 services : property, visit, chat, payment, notification, storage, etc.).
 
 ## Règles de code (IMPÉRATIVES)
 
@@ -108,7 +109,8 @@ Toutes les routes sont définies dans `App.tsx` (pas de fichier routes séparé)
 ### Tests
 - Tout nouveau composant/service → au moins 1 fichier de test.
 - Tests dans `__tests__/` au même niveau que le fichier testé.
-- Firebase est **entièrement mocké** dans `src/tests/setup.ts` (global setup via `vite.config.ts`). Ne jamais connecter aux vrais services Firebase dans les tests.
+- Firebase est **entièrement mocké** dans `src/tests/setup.ts` (global setup via `vite.config.ts`). Ne jamais connecter aux vrais services Firebase dans les tests. Le setup mocke aussi `ResizeObserver`, `window.scrollTo`, et `firebase/app-check`.
+- Pour mocker un service Firebase spécifique dans un test, le re-mocker localement — le mock global retourne des valeurs minimales (`null`, `{}`, `vi.fn()`).
 - Coverage limitée à `src/utils/`, `src/services/`, `src/hooks/` (configuré dans `vite.config.ts`).
 - Lancer avant tout commit : `npx vitest run`.
 

@@ -187,7 +187,8 @@ export function useNotaireDashboard(notaryProfile: any, showToast: (msg: string,
       });
 
       showToast('Dossier pris en charge.');
-    } catch (e) {
+    } catch (e: any) {
+      console.error('[HOMECI] Prise en charge échouée:', e?.code, e?.message, e);
       showToast('Échec de la prise en charge.', false);
     } finally {
       setTakingId(null);
