@@ -24,8 +24,6 @@ describe('useNotaireDashboard', () => {
       { id: 'p1', data: { title: 'Villa A', owner_id: 'o1', status: 'pending' } }
     ]);
     mockFirestore.setMockDoc('users/o1', { full_name: 'Proprio A' });
-    
-    vi.mocked(propertyService.getDocuments).mockResolvedValue([]);
 
     const { result } = renderHook(() => useNotaireDashboard(mockProfile, mockShowToast));
 

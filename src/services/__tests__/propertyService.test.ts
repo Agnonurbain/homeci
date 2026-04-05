@@ -140,27 +140,69 @@ describe('propertyService', () => {
   });
 
   describe('updateDocumentStatus', () => {
-    it('met à jour le statut d\'un document à "valide" avec validated_at', async () => {
+    it('met à jour le statut d\'un document à "valide" dans le champ array', async () => {
+      // Mock getDoc pour retourner une propriété avec un tableau documents
+      firestoreMocks.getDoc.mockResolvedValueOnce({
+        exists: () => true,
+        data: () => ({
+          documents: [
+            { type: 'titre_foncier', label: 'Titre foncier', url: 'https://storage.com/doc.pdf', status: 'en_attente' },
+            { type: 'cni', label: 'CNI', url: 'https://storage.com/cni.pdf', status: 'en_attente' },
+          ],
+        }),
+        id: 'prop-1',
+      });
+
       await propertyService.updateDocumentStatus('prop-1', 'titre_foncier', 'valide', {
         validated_by: 'notaire-42',
       });
 
       expect(firestoreMocks.updateDoc).toHaveBeenCalledTimes(1);
       const calledWith = firestoreMocks.updateDoc.mock.calls[0][1];
-      expect(calledWith.status).toBe('valide');
-      expect(calledWith.validated_at).toBeDefined();
-      expect(calledWith.validated_by).toBe('notaire-42');
-      expect(calledWith.rejection_reason).toBeNull(); // Nettoyé quand on valide
+      expect(calledWith.documents).toHaveLength(2);
+      // Le titre_foncier est mis à jour
+      const updatedDoc = calledWith.documents.find((d: any) => d.type === 'titre_foncier');
+      expect(updatedDoc.status).toBe('valide');
+      expect(updatedDoc.validated_at).toBeDefined();
+      expect(updatedDoc.validated_by).toBe('notaire-42');
+      // Le CNI reste inchangé
+      const untouchedDoc = calledWith.documents.find((d: any) => d.type === 'cni');
+      expect(untouchedDoc.status).toBe('en_attente');
+      // updated_at est inclus
+      expect(calledWith.updated_at).toBeDefined();
     });
 
     it('met à jour le statut d\'un document à "refuse" avec une raison', async () => {
+      firestoreMocks.getDoc.mockResolvedValueOnce({
+        exists: () => true,
+        data: () => ({
+          documents: [
+            { type: 'titre_foncier', label: 'Titre foncier', url: 'https://storage.com/doc.pdf', status: 'en_attente' },
+          ],
+        }),
+        id: 'prop-1',
+      });
+
       await propertyService.updateDocumentStatus('prop-1', 'titre_foncier', 'refuse', {
         rejection_reason: 'Document illisible',
       });
 
-      const calledWith = (firestoreMocks.updateDoc.mock.calls[0][1] || {}) as any;
-      expect(calledWith.status).toBe('refuse');
-      expect(calledWith.rejection_reason).toBe('Document illisible');
+      const calledWith = firestoreMocks.updateDoc.mock.calls[0][1];
+      const updatedDoc = calledWith.documents.find((d: any) => d.type === 'titre_foncier');
+      expect(updatedDoc.status).toBe('refuse');
+      expect(updatedDoc.rejection_reason).toBe('Document illisible');
+    });
+
+    it('ne fait rien si la propriété n\'existe pas', async () => {
+      firestoreMocks.getDoc.mockResolvedValueOnce({
+        exists: () => false,
+        data: () => ({}),
+        id: 'nope',
+      });
+
+      await propertyService.updateDocumentStatus('nope', 'titre_foncier', 'valide');
+
+      expect(firestoreMocks.updateDoc).not.toHaveBeenCalled();
     });
   });
 
