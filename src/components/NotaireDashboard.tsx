@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
-import { useNotaireDashboard, TabId } from '../hooks/useNotaireDashboard';
+import { useNotaireDashboard, TabId, isReadyToCertify } from '../hooks/useNotaireDashboard';
 import { NotaireStats } from './notaire/NotaireStats';
 import { NotaireTabs } from './notaire/NotaireTabs';
 import { NotairePropertyCard } from './notaire/NotairePropertyCard';
@@ -135,7 +135,7 @@ export default function NotaireDashboard() {
                 handleDocAction={handleDocAction}
                 handleCertify={handleCertify}
                 certifyingId={certifyingId}
-                isReadyToCertify={(p: any) => p.documents?.length > 0} // Simplify prop check
+                isReadyToCertify={isReadyToCertify}
               />
             ))
           )}
