@@ -184,16 +184,19 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
 
     setIsSubmitting(true);
     try {
-      const finalData: any = {
+      const raw: Record<string, unknown> = {
         ...formData,
         owner_id: user?.uid || 'unknown',
-        status: mode === 'create' ? 'pending' : undefined,
         documents: docs,
-        // Start with existing ones, hook will update them
-        images: existingImages, 
+        images: existingImages,
         videos: existingVideos,
         updated_at: new Date().toISOString(),
       };
+      if (mode === 'create') raw.status = 'pending';
+      // Firestore rejette les valeurs undefined — on les supprime
+      const finalData: any = Object.fromEntries(
+        Object.entries(raw).filter(([, v]) => v !== undefined)
+      );
 
       let id = propertyId;
       if (mode === 'create') {

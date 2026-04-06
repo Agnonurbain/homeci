@@ -39,7 +39,7 @@ export const availabilityService = {
       await setDoc(docRef, {
         ...data,
         updated_at: new Date().toISOString()
-      }, { merge: true });
+      });
     } catch (error) {
       console.error('Error setting availability:', error);
       throw error;
