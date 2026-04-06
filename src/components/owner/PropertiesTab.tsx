@@ -1,4 +1,4 @@
-import { Plus, Home, Download } from 'lucide-react';
+import { Plus, Home, Download, AlertTriangle } from 'lucide-react';
 import type { Property } from '../../types/property';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
 import { StatGridSkeleton, PropertyTableSkeleton } from '../Skeletons';
@@ -66,6 +66,30 @@ export default function PropertiesTab({
       ) : (
         <>
           <PropertyStats stats={stats} />
+
+          {/* Bannière d'alerte pour les biens nécessitant une mise à jour de statut */}
+          {properties.filter(p => p.status === 'published' && p.needs_status_update).map(p => (
+            <button key={p.id} onClick={() => onStatusUpdate(p)}
+              className="w-full flex items-center gap-3 p-3 sm:p-4 mb-4 rounded-xl text-left transition-all hover:shadow-md active:scale-[0.99]"
+              style={{ background: HAlpha.orange08, border: `1.5px solid ${HAlpha.orange25}` }}>
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0"
+                style={{ background: HColors.orangeCI }}>
+                <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#FFFFFF' }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-bold truncate" style={{ color: HColors.orangeDark, fontFamily: 'var(--font-nunito)' }}>
+                  Visite effectuée — «&nbsp;{p.title}&nbsp;»
+                </p>
+                <p className="text-[10px] sm:text-xs mt-0.5" style={{ color: HAlpha.brown60, fontFamily: 'var(--font-nunito)' }}>
+                  Indiquez le résultat : loué, vendu ou transaction non aboutie
+                </p>
+              </div>
+              <span className="shrink-0 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-[9px] sm:text-[10px] font-bold uppercase tracking-wider"
+                style={{ background: HColors.orangeCI, color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
+                Mettre à jour
+              </span>
+            </button>
+          ))}
 
           {properties.length === 0 ? (
             <div className="rounded-3xl p-14 text-center"
