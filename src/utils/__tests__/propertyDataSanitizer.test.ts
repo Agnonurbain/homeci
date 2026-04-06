@@ -138,22 +138,56 @@ describe('sanitizePropertyData', () => {
       property_type: 'hotel',
       hotel_stars: '4',
       rooms_count: '50',
+      surface_area: '1200',
+      bedrooms: '30',
+      bathrooms: '30',
+      annee_construction: '2018',
+      nb_etages: '3',
+      nb_restaurants: '2',
+      has_conference_room: true,
     }));
     expect(result.hotel_stars).toBe(4);
     expect(result.rooms_count).toBe(50);
+    expect(result.surface_area).toBe(1200);
+    expect(result.bedrooms).toBe(30);
+    expect(result.bathrooms).toBe(30);
+    expect(result.annee_construction).toBe(2018);
+    expect(result.nb_etages).toBe(3);
+    expect(result.nb_restaurants).toBe(2);
+    expect(result.has_conference_room).toBe(true);
     expect(result.etage_appartement).toBeNull();
     expect(result.surface_par_unite).toBeNull();
   });
 
+  it('retourne nb_etages null pour un hôtel sans niveaux', () => {
+    const result = sanitizePropertyData(makeForm({
+      property_type: 'hotel',
+      nb_etages: '',
+    }));
+    expect(result.nb_etages).toBeNull();
+  });
+
   // ── Type Appart-Hôtel ──
 
-  it('inclut surface_par_unite pour un appart-hôtel', () => {
+  it('inclut tous les champs pour un appart-hôtel', () => {
     const result = sanitizePropertyData(makeForm({
       property_type: 'appart_hotel',
+      surface_area: '800',
+      bedrooms: '20',
+      bathrooms: '20',
+      hotel_stars: '3',
+      annee_construction: '2015',
+      nb_etages: '2',
       surface_par_unite: '45',
       chambres_par_unite: '2',
       cuisine_par_unite: true,
     }));
+    expect(result.surface_area).toBe(800);
+    expect(result.bedrooms).toBe(20);
+    expect(result.bathrooms).toBe(20);
+    expect(result.hotel_stars).toBe(3);
+    expect(result.annee_construction).toBe(2015);
+    expect(result.nb_etages).toBe(2);
     expect(result.surface_par_unite).toBe(45);
     expect(result.chambres_par_unite).toBe(2);
     expect(result.cuisine_par_unite).toBe(true);

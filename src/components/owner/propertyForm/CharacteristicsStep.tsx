@@ -65,7 +65,14 @@ export default function CharacteristicsStep({ formData, onChange, toggleAmenity 
                 </FieldGroup>
               ) : (
                 <FieldGroup label="Nombre de niveaux">
-                  <input type="number" name="nb_etages" value={formData.nb_etages} onChange={onChange} className={inputCls} style={S.input} min="1" placeholder="Ex: 1" />
+                  <div className="relative">
+                    <input type="number" name="nb_etages" value={formData.nb_etages ?? 0} onChange={onChange} className={inputCls} style={S.input} min="0" />
+                    {(!formData.nb_etages || formData.nb_etages === 0) && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold pointer-events-none" style={{ color: HAlpha.brown60 }}>
+                        Rez-de-chaussée
+                      </span>
+                    )}
+                  </div>
                 </FieldGroup>
               )}
             </div>
@@ -153,15 +160,56 @@ export default function CharacteristicsStep({ formData, onChange, toggleAmenity 
 
       {(isHotel || isAppartHotel) && (
         <div className="space-y-5">
-          <SubSection title="Hôtellerie" color="gold">
+          <SubSection title="Établissement" color="vert">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <FieldGroup label="Surface totale (m²) *">
+                <input type="number" name="surface_area" value={formData.surface_area} onChange={onChange} className={inputCls} style={S.input} min="0" placeholder="0" />
+              </FieldGroup>
+              <FieldGroup label="Nombre de chambres">
+                <input type="number" name="bedrooms" value={formData.bedrooms} onChange={onChange} className={inputCls} style={S.input} min="0" />
+              </FieldGroup>
+              <FieldGroup label="Salles de bain">
+                <input type="number" name="bathrooms" value={formData.bathrooms} onChange={onChange} className={inputCls} style={S.input} min="0" />
+              </FieldGroup>
+              <FieldGroup label="Étoiles">
+                <select name="hotel_stars" value={formData.hotel_stars ?? ''} onChange={onChange} className={inputCls} style={S.input}>
+                  <option value="">Non classé</option>
+                  <option value="1">1 étoile</option>
+                  <option value="2">2 étoiles</option>
+                  <option value="3">3 étoiles</option>
+                  <option value="4">4 étoiles</option>
+                  <option value="5">5 étoiles</option>
+                </select>
+              </FieldGroup>
+              <FieldGroup label="Année de construction">
+                <input type="number" name="annee_construction" value={formData.annee_construction} onChange={onChange} className={inputCls} style={S.input} min="1900" max="2030" placeholder="Ex: 2022" />
+              </FieldGroup>
+              <FieldGroup label="Nombre de niveaux">
+                <div className="relative">
+                  <input type="number" name="nb_etages" value={formData.nb_etages ?? 0} onChange={onChange} className={inputCls} style={S.input} min="0" />
+                  {(!formData.nb_etages || formData.nb_etages === 0) && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold pointer-events-none" style={{ color: HAlpha.brown60 }}>
+                      Rez-de-chaussée
+                    </span>
+                  )}
+                </div>
+              </FieldGroup>
+            </div>
+          </SubSection>
+
+          <SubSection title="Services & Équipements" color="gold">
             <div className="grid md:grid-cols-2 gap-4">
               <FieldGroup label="Nombre de restaurants">
                 <input type="number" name="nb_restaurants" value={formData.nb_restaurants} onChange={onChange} className={inputCls} style={S.input} min="0" />
               </FieldGroup>
-              <div className="flex items-center pt-2">
+              <div className="flex flex-col justify-center gap-2 pt-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" name="has_conference_room" checked={formData.has_conference_room} onChange={onChange} className="w-4 h-4 accent-amber-600" />
                   <span className="text-sm font-medium" style={{ color: HColors.brownDark, fontFamily: 'var(--font-nunito)' }}>Salles de conférence</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="cuisine_par_unite" checked={formData.cuisine_par_unite} onChange={onChange} className="w-4 h-4 accent-amber-600" />
+                  <span className="text-sm font-medium" style={{ color: HColors.brownDark, fontFamily: 'var(--font-nunito)' }}>Cuisine équipée</span>
                 </label>
               </div>
             </div>

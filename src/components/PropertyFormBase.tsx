@@ -38,6 +38,8 @@ export interface PropertyFormData {
   bathrooms: number;
   amenities: string[];
   annee_construction?: number;
+  hotel_stars?: number;
+  cuisine_par_unite?: boolean;
   // Dynamic fields
   nb_etages?: number;
   etage_appartement?: number;
@@ -124,6 +126,8 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
           bathrooms: p.bathrooms || 1,
           amenities: p.amenities || [],
           annee_construction: p.annee_construction,
+          hotel_stars: p.hotel_stars,
+          cuisine_par_unite: p.cuisine_par_unite,
           nb_etages: p.nb_etages,
           etage_appartement: p.etage_appartement,
           nb_etages_immeuble: p.nb_etages_immeuble,
