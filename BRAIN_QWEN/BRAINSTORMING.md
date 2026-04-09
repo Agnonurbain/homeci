@@ -115,18 +115,19 @@ cd functions && npm run serve    # Build + emulators
 4. ~~Cloud Functions monolithique~~ ✅ RÉSOLU — 6 fichiers modulaires
 5. ~~Pas de branche `develop`~~ ✅ RÉSOLU
 6. ~~Version `0.0.0`~~ ✅ RÉSOLU — 1.0.0
+7. ~~Gitignore `lint_output.txt`~~ ✅ RÉSOLU
 
-⚠️ **Restants :** `lint_output.txt` à gitignore, tests Cloud Functions, paiement Mobile Money réel
+⚠️ **Restants :** Tests composants (act() React 18 prod), paiement Mobile Money réel, notifications messages offline
 
 ---
 
 ## 📊 Prochaines étapes prioritaires
 
-1. **Tests Cloud Functions** — Tests unitaires pour chaque fonction modulaire
-2. **Tests dashboard owner** — Couverture des écrans propriétaire
-3. **Intégration paiement Mobile Money réelle** — Wave, Orange Money, MTN, Moov, Djamo
-4. **Gitignore `lint_output.txt`** — Nettoyage repo
-5. **Modération automatique** — Cloud Function détection contenu suspect
+1. **Tests dashboard locataire** — SearchTab, FavoritesTab, VisitsTab
+2. **Notifications messages offline** — Push FCM quand message reçu et destinataire hors ligne
+3. **Pièces jointes dans chat** — Envoi images/documents dans les conversations
+4. **Intégration paiement Mobile Money réelle** — Wave, Orange Money, MTN, Moov, Djamo
+5. **Historique chat paginé** — Pagination + recherche dans l'historique
 
 ---
 

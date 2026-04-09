@@ -230,12 +230,13 @@ CI/CD : ████████████████░░░░░░░░
 
 ## 🚧 Prochaines étapes recommandées
 
-1. **Tests Cloud Functions** — Tests unitaires pour chaque fonction modulaire
-2. **Tests dashboard owner** — Améliorer couverture
-3. **Intégration paiement réelle** — Wave, Orange Money, MTN, Moov, Djamo
-4. **Messagerie temps réel complète** — Chat propriétaire/locataire avec notifications offline
-5. **Gitignore `lint_output.txt`** — Nettoyage repo
-6. **Modération automatique** — Cloud Function détection contenu suspect
+1. **Tests dashboard locataire** — SearchTab, FavoritesTab, VisitsTab
+2. **Intégration paiement réelle** — Wave, Orange Money, MTN, Moov, Djamo
+3. **Notifications messages offline** — Push FCM quand message reçu et destinataire hors ligne
+4. **Pièces jointes dans chat** — Envoi images/documents dans les conversations
+5. **Historique chat paginé** — Pagination + recherche dans l'historique
+6. **Dossier locataire complet** — Upload et gestion des documents
+7. **Husky pre-commit hooks** — lint + test automatiques
 
 ---
 

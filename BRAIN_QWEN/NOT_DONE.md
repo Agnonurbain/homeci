@@ -11,10 +11,15 @@
 | 1 | ~~**Ajouter `typecheck` à la CI**~~ | ✅ FAIT | Ajouté dans `.github/workflows/test.yml` après `npm run lint`. |
 | 2 | ~~**Créer branche `develop`**~~ | ✅ FAIT | Branch `develop` créée depuis `main`. |
 | 3 | ~~**Versioning sémantique**~~ | ✅ FAIT | `package.json` passé de `0.0.0` à `1.0.0`. |
-| 4 | **Gitignore `lint_output.txt`** | 🟢 Basse | Fichier de debug accidentellement dans le repo. |
+| 4 | ~~**Gitignore `lint_output.txt`**~~ | ✅ FAIT | Ajouté au `.gitignore`. |
 | 5 | ~~**Nettoyer/migrer `BRAIN_QWEN/`**~~ | ✅ FAIT | Documentation réécrite pour HOMECI. |
 | 10 | ~~**Modulariser Cloud Functions**~~ | ✅ FAIT | 6 fichiers : `firebase-admin.ts`, `scheduler.ts`, `notifications.ts`, `notaire.ts`, `admin.ts`, `chat.ts`. |
-| 60 | ~~**Chat temps réel complet**~~ | ✅ FAIT | Audit confirmé : `onSnapshot` + `onNewChatMessage` + règles Firestore = fonctionnel. |
+| 20 | ~~**Tests PropertiesTab**~~ | ✅ FAIT | Déjà couvert (7 tests existants). |
+| 22 | ~~**Gestion vidéo**~~ | ✅ FAIT | Vérifié — intégration complète. |
+| 40 | ~~**Tests composants notaire**~~ | ✅ FAIT | 3 fichiers créés (ValidationSection, NotaireActionModals, NotairePropertyCard). |
+| 60 | ~~**Chat temps réel complet**~~ | ✅ FAIT | `chatService.test.ts` créé (8 tests passent). |
+| 83 | ~~**Tests chatService**~~ | ✅ FAIT | 8 tests — getOrCreateChat, subscribeToMessages, sendMessage, etc. |
+| 85 | ~~**Tests Cloud Functions**~~ | ✅ FAIT | Couverts par `prelaunch.test.ts`. |
 
 ---
 
@@ -155,20 +160,20 @@
 | 🔴 Haute | 6 |
 | 🟡 Moyenne | 28 |
 | 🟢 Basse | 14 |
-| **TOTAL** | **42 tâches** (6 résolues dans session haute priorité) |
+| **TOTAL** | **35 tâches** (13 résolues depuis session précédente) |
 
 ---
 
 ## ✅ Progression
 
 ```
-Frontend : ██████████████████████████████  ~85%
+Frontend : ██████████████████████████████░░  ~88%
 Backend (Firebase) : ████████████████████████████  ~90%
-Tests : ████████████████████░░░░░░  ~70%
+Tests : ██████████████████████░░░░  ~75%
 CI/CD : ████████████████████████░░  ~80%
 Sécurité : ████████████████████████░░  ~80%
 
-Global : ██████████████████████████████  ~87%
+Global : ██████████████████████████████░░  ~89%
 ```
 
 ---

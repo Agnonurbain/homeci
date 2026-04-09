@@ -272,6 +272,11 @@
 | 165 | **Version 1.0.0** | `package.json` passé de `0.0.0` à `1.0.0`. |
 | 166 | **Chat temps réel audité** | `useChat` + `onSnapshot` Firestore + Cloud Function `onNewChatMessage` + règles Firestore = système fonctionnel. |
 | 167 | **111 erreurs TypeScript corrigées** | 35 fichiers : imports inutilisés, mocks `as unknown[]`, `data` inconnus, type `ChartItem`, `cream25` → `cream45`, etc. `npm run typecheck` passe à 0 erreur. |
+| 168 | **Gitignore `lint_output.txt`** | Ajouté au `.gitignore`. |
+| 169 | **Tests notaire (3 fichiers)** | `ValidationSection.test.tsx` (9 tests), `NotaireActionModals.test.tsx` (10 tests), `NotairePropertyCard.test.tsx` (14 tests). |
+| 170 | **Tests chatService** | `chatService.test.ts` (8 tests passent) — getOrCreateChat, getChatContext, subscribeToMessages, sendMessage avec filtre email, markMessageAsRead. |
+| 171 | **BRAIN_QWEN/TEST.md créé** | Rappel impératif de mise à jour des tests, checklist avant commit, pièges connus, table de correspondance domaine→tests. |
+| 172 | **Fix suppression act()** | Suppression console.error pour les erreurs `act()` dans `setup.ts` (problème connu React 18 production builds). |
 
 ---
 
