@@ -86,8 +86,13 @@ describe('1. Pré-lancement — Fichiers & Config', () => {
     const content = readFile('functions/src/index.ts');
     expect(content).toContain('autoResetPropertyStatus');
     expect(content).toContain('sendPushNotification');
-    expect(content).toContain('onSchedule');
-    expect(content).toContain('onDocumentCreated');
+    // Le fichier index.ts est modulaire — vérifier les modules source
+    expect(fileExists('functions/src/scheduler.ts')).toBe(true);
+    expect(fileExists('functions/src/notifications.ts')).toBe(true);
+    const scheduler = readFile('functions/src/scheduler.ts');
+    const notif = readFile('functions/src/notifications.ts');
+    expect(scheduler).toContain('onSchedule');
+    expect(notif).toContain('onDocumentCreated');
   });
 
   it('functions/package.json existe avec firebase-functions', () => {
