@@ -4,6 +4,9 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('development'),
+  },
   build: {
     rollupOptions: {
       output: {
@@ -22,10 +25,6 @@ export default defineConfig({
     coverage: {
       reporter: ['text', 'html'],
       include: ['src/utils/**', 'src/services/**', 'src/hooks/**'],
-    },
-    // Force React to use dev mode for act() support
-    define: {
-      'process.env.NODE_ENV': JSON.stringify('development'),
     },
   },
 });

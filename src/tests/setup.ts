@@ -1,14 +1,16 @@
 import { vi } from 'vitest';
 import '@testing-library/jest-dom';
 
+// Force React into dev mode to support act() in tests
+// Must be set BEFORE any React import
+process.env.NODE_ENV = 'development';
+
 // Fix React act() error in production builds
 // Must be set before any React code is imported
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
-if (typeof window !== 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).IS_REACT_ACT_ENVIRONMENT = true;
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+if (typeof window !== 'undefined') (window as any).IS_REACT_ACT_ENVIRONMENT = true;
 
 // Suppress act() errors — known issue with React 18 production builds in jsdom
 const _origErr = console.error;
