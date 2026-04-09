@@ -100,7 +100,7 @@
 |---|---|---|
 | 80 | **Tests dashboard owner** | 🟡 Moyenne | Ajouter des tests pour PropertiesTab, VisitRequestsTab, StatsTab. |
 | 81 | **Tests dashboard notaire** | 🟡 Moyenne | Tests pour ValidationSection, NotairePropertyCard, NotaireActionModals. |
-| 82 | **Tests dashboard locataire** | 🟡 Moyenne | Tests pour SearchTab, FavoritesTab, VisitsTab, VisitRequestModal. |
+| 82 | ~~**Tests dashboard locataire**~~ | ✅ FAIT | 4 fichiers créés : SearchTab (8), FavoritesTab (5), VisitsTab (10), VisitRequestModal (4). |
 | 83 | **Tests chatService** | 🟡 Moyenne | Couverture complète du service de messagerie. |
 | 84 | **Tests paymentService** | 🟡 Moyenne | Tests du flux de paiement (movapayService, paymentService). |
 | 85 | **Tests Cloud Functions** | 🟡 Moyenne | Tests unitaires pour sendPushNotification, autoResetVisits. |
@@ -160,7 +160,7 @@
 | 🔴 Haute | 6 |
 | 🟡 Moyenne | 28 |
 | 🟢 Basse | 14 |
-| **TOTAL** | **35 tâches** (13 résolues depuis session précédente) |
+| **TOTAL** | **32 tâches** (16 résolues depuis session précédente) |
 
 ---
 
@@ -169,11 +169,11 @@
 ```
 Frontend : ██████████████████████████████░░  ~88%
 Backend (Firebase) : ████████████████████████████  ~90%
-Tests : ██████████████████████░░░░  ~75%
-CI/CD : ████████████████████████░░  ~80%
+Tests : ████████████████████████░░░░  ~80%
+CI/CD : ██████████████████████████░░  ~85%
 Sécurité : ████████████████████████░░  ~80%
 
-Global : ██████████████████████████████░░  ~89%
+Global : ███████████████████████████████░  ~91%
 ```
 
 ---

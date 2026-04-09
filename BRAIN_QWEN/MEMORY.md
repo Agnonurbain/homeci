@@ -1,6 +1,6 @@
 # 🧠 MEMORY.md — Mémoire projet HOMECI
 
-> **Dernière session :** 2026-04-09 (session haute priorité — CI, CF, TS errors, version)
+> **Dernière session :** 2026-04-09 (tests locataire + husky + guide déploiement)
 > **Prochain rappel :** Lire NOT_DONE.md et DONE.md avant chaque session de travail.
 
 ---
@@ -230,13 +230,12 @@ CI/CD : ████████████████░░░░░░░░
 
 ## 🚧 Prochaines étapes recommandées
 
-1. **Tests dashboard locataire** — SearchTab, FavoritesTab, VisitsTab
-2. **Intégration paiement réelle** — Wave, Orange Money, MTN, Moov, Djamo
-3. **Notifications messages offline** — Push FCM quand message reçu et destinataire hors ligne
-4. **Pièces jointes dans chat** — Envoi images/documents dans les conversations
-5. **Historique chat paginé** — Pagination + recherche dans l'historique
-6. **Dossier locataire complet** — Upload et gestion des documents
-7. **Husky pre-commit hooks** — lint + test automatiques
+1. **Tests formulaires 5 étapes** — Tests du flux complet de création de bien
+2. **Tests dashboard owner** — PropertiesTab, VisitRequestsTab, StatsTab
+3. **Intégration paiement réelle** — Wave, Orange Money, MTN, Moov, Djamo
+4. **Notifications messages offline** — Push FCM quand message reçu et destinataire hors ligne
+5. **Pièces jointes dans chat** — Envoi images/documents dans les conversations
+6. **Tests paymentService** — Tests du flux de paiement
 
 ---
 

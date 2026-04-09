@@ -277,6 +277,10 @@
 | 170 | **Tests chatService** | `chatService.test.ts` (8 tests passent) — getOrCreateChat, getChatContext, subscribeToMessages, sendMessage avec filtre email, markMessageAsRead. |
 | 171 | **BRAIN_QWEN/TEST.md créé** | Rappel impératif de mise à jour des tests, checklist avant commit, pièges connus, table de correspondance domaine→tests. |
 | 172 | **Fix suppression act()** | Suppression console.error pour les erreurs `act()` dans `setup.ts` (problème connu React 18 production builds). |
+| 173 | **Tests dashboard locataire (4 fichiers, 27 tests)** | `SearchTab.test.tsx` (8 tests), `FavoritesTab.test.tsx` (5 tests), `VisitsTab.test.tsx` (10 tests), `VisitRequestModal.test.tsx` (4 tests). |
+| 174 | **Mock IntersectionObserver** | Ajouté dans `setup.ts` pour le lazy loading et PropertyCard. |
+| 175 | **Husky pre-commit hooks** | `.husky/pre-commit` — lance `npm run lint` et `npm run typecheck` avant chaque commit. Script `prepare` ajouté à `package.json`. |
+| 176 | **Guide de déploiement** | `DEPLOY.md` créé — Vercel frontend, Cloud Functions, Firestore rules, Storage rules, monitoring Sentry, checklist post-déploiement, rollback. |
 
 ---
 
