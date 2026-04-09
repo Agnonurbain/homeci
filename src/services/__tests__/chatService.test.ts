@@ -12,6 +12,8 @@ vi.mock('../../lib/firebase', () => ({
 }));
 
 vi.mock('firebase/firestore', () => ({
+  collection: vi.fn(() => ({})),
+  doc: vi.fn(() => ({})),
   setDoc: vi.fn(async () => {}),
   addDoc: vi.fn(async () => ({ id: 'msg-1' })),
   query: vi.fn(() => []),
@@ -34,7 +36,6 @@ vi.mock('firebase/firestore', () => ({
   serverTimestamp: vi.fn(() => ({ __type: 'serverTimestamp' })),
 }));
 
-// Re-import mocked functions for test usage
 import * as fs from 'firebase/firestore';
 const { setDoc, addDoc, getDoc, updateDoc, onSnapshot } = fs;
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { NotairePropertyCard } from '../NotairePropertyCard';
 
+// Mock hooks FIRST (before component import)
 vi.mock('../../hooks/useNotaireDashboard', () => ({
   getDocStatus: () => 'partiel',
   isReadyToCertify: () => false,
@@ -13,9 +13,15 @@ vi.mock('../../constants/labels', () => ({
   TYPE_LABELS: { maison: 'Maison', appartement: 'Appartement' },
 }));
 
+vi.mock('../../utils/fixDocUrl', () => ({
+  fixDocUrl: (url: string) => url,
+}));
+
 vi.mock('./ValidationSection', () => ({
   ValidationSection: () => <div data-testid="validation-section">Validation</div>,
 }));
+
+import { NotairePropertyCard } from '../NotairePropertyCard';
 
 const mockProperty = {
   id: 'prop-1',
