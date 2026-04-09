@@ -1,7 +1,5 @@
 import React from 'react';
-import { 
-  Home, MapPin, Building2, TrendingUp, Flag, CalendarCheck, Star 
-} from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
 import { TYPE_LABELS } from '../../constants/labels';
 import { SectionTitle, PropertyStatusBadge } from './AdminSections';
@@ -59,7 +57,7 @@ interface PropertiesSectionProps {
 }
 
 export const PropertiesSection: React.FC<PropertiesSectionProps> = ({
-  properties, filterType, setFilterType, filterStatus, setFilterStatus, filterCity, setFilterCity, sort, setSort, onViewDetails
+  properties, filterType, setFilterType, filterStatus, setFilterStatus, filterCity, setFilterCity, sort, setSort
 }) => (
   <div className="animate-in fade-in duration-500">
     <SectionTitle title="Tous les Biens" sub="Vue complète de tous les biens immobiliers de la plateforme" />

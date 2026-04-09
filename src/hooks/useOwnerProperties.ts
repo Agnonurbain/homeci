@@ -84,7 +84,7 @@ export function useOwnerProperties(userId: string | undefined) {
       const key = new Date(p.created_at).toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
       if (key in months) months[key]++;
     });
-    return Object.entries(months).map(([mois, biens]) => ({ mois, biens }));
+    return Object.entries(months).map(([mois, biens]) => ({ name: mois, value: biens }));
   }, [properties]);
 
   /* ── Handlers ── */

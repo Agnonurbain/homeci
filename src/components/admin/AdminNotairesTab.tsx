@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Award, Calendar, Copy, XCircle, RotateCcw, Plus, Loader as LoaderIcon 
+import {
+  Award, Copy, XCircle, RotateCcw, Plus, Loader as LoaderIcon
 } from 'lucide-react';
 import { collection, query, orderBy, getDocs, addDoc, updateDoc, doc, Timestamp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
@@ -137,7 +137,7 @@ export const AdminNotairesTab: React.FC<AdminNotairesTabProps> = ({ showToast })
           <div className="text-center py-12"><Award className="w-10 h-10 mx-auto mb-3 opacity-20" /><p className="text-sm font-semibold text-gray-400">Aucun code généré pour l'instant</p></div>
         ) : (
           <div className="divide-y">
-            {codes.map((c, i) => {
+            {codes.map((c, _i) => {
               const expired = isExpired(c);
               const inactive = c.used || expired;
               return (

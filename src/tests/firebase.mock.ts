@@ -32,7 +32,7 @@ export const firestoreMocks = {
   doc: vi.fn((_db: unknown, ...segments: string[]) => mockDocRef(segments.join('/'))),
   collection: vi.fn((_db: unknown, ...segments: string[]) => mockCollectionRef(segments.join('/'))),
   collectionGroup: vi.fn((_db: unknown, name: string) => mockCollectionRef(name)),
-  addDoc: vi.fn(async (_ref: unknown, data: unknown) => {
+  addDoc: vi.fn(async (_ref: unknown, _data: unknown) => {
     const id = `mock_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     return { id };
   }),
@@ -53,6 +53,10 @@ export const firestoreMocks = {
       docs: docs.map(d => ({ id: d.id, data: () => d.data })),
       empty: docs.length === 0,
       size: docs.length,
+    } as {
+      docs: { id?: string; data?: () => Record<string, unknown>; }[];
+      empty?: boolean;
+      size?: number;
     };
   }),
   onSnapshot: vi.fn((ref: { path: string }, callback: (snap: any) => void) => {

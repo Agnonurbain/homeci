@@ -1,5 +1,5 @@
 import React from 'react';
-import { XCircle, MapPin, Building2, Calendar, Eye, Shield, CheckCircle } from 'lucide-react';
+import { XCircle } from 'lucide-react';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
 import { TYPE_LABELS, ROLE_CFG } from '../../constants/labels';
 import type { Property } from '../../types/property';

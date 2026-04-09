@@ -1,6 +1,6 @@
-# CLAUDE.md
+# Qwen.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Qwen Code (qwen.ai/code) when working with code in this repository.
 
 # HOMECI — Manifeste Développeur IA
 
@@ -41,7 +41,36 @@ cd functions && npm run serve    # Build + emulators
 - **Cartes** : Leaflet + react-leaflet (chunked séparément dans le build)
 - **Graphiques** : Recharts (chunked séparément dans le build)
 - **SEO** : react-helmet-async
-- **CI** : GitHub Actions (`.github/workflows/test.yml`) — lint → build → test → coverage. Node 24. Note : `typecheck` n'est pas encore dans le pipeline CI.
+- **CI** : GitHub Actions (`.github/workflows/test.yml`) — lint → **typecheck** → build → test → coverage. Node 24.
+  - ✅ Branche `develop` créée pour les PRs
+  - ✅ Version `1.0.0`
+
+## Audit du répertoire (2026-04-09)
+
+### État global : ~87% complété
+
+| Domaine | Progression |
+|---|---|
+| Frontend (4 dashboards, formulaires, PWA) | ~85% |
+| Backend Firebase (Auth, Firestore, Storage, Functions) | ~90% |
+| Tests (44 fichiers, coverage utils/services/hooks) | ~70% |
+| CI/CD (GitHub Actions + Vercel, typecheck ajouté) | ~80% |
+| Sécurité (règles Firestore, portail admin 2 étapes) | ~80% |
+
+### ✅ Résolu session haute priorité
+
+- `typecheck` ajouté à la CI
+- Branche `develop` créée
+- Cloud Functions modularisées (6 fichiers)
+- Version 1.0.0
+- 111 erreurs TypeScript corrigées (35 fichiers)
+- Chat temps réel audité et confirmé fonctionnel
+
+### Points d'attention restants
+
+- `lint_output.txt` dans le repo → à ajouter au `.gitignore`
+- Cloud Functions : tests unitaires à écrire
+- Intégration paiement Mobile Money réel à finaliser
 
 ## Architecture — Vue d'ensemble
 
@@ -123,10 +152,11 @@ Toutes les routes sont définies dans `App.tsx` (pas de fichier routes séparé)
 
 1. `npx vitest run` — 0 échec
 2. `npm run build` — 0 erreur
-3. Pas de `HColors.green` ni `HColors.terracotta` dans du code nouveau
-4. Pas de `any` non justifié
-5. Pas de doublon d'import
-6. Nouveau composant → test associé
+3. `npm run typecheck` — 0 erreur TypeScript (**nouveau**)
+4. Pas de `HColors.green` ni `HColors.terracotta` dans du code nouveau
+5. Pas de `any` non justifié
+6. Pas de doublon d'import
+7. Nouveau composant → test associé
 
 ## Contraintes Côte d'Ivoire / Abidjan
 

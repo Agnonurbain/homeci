@@ -19,8 +19,8 @@ describe('availabilityService', () => {
       });
 
       expect(firestoreMocks.setDoc).toHaveBeenCalledOnce();
-      const args = firestoreMocks.setDoc.mock.calls[0];
-      const data = args[1];
+      const args = firestoreMocks.setDoc.mock.calls[0] as unknown[];
+      const data = args[1] as Record<string, unknown> | undefined;
       // Pas de 3e argument { merge: true } — le document est écrasé
       expect(args[2]).toBeUndefined();
       expect(data).toMatchObject({
@@ -29,7 +29,7 @@ describe('availabilityService', () => {
         weekly_schedule: { 1: ['09:00-12:00'], 2: ['10:00-17:00'] },
         blocked_dates: [],
       });
-      expect(data.updated_at).toBeDefined();
+      expect(data?.updated_at).toBeDefined();
     });
   });
 

@@ -54,7 +54,7 @@ export default function NotFoundPage() {
         </div>
 
         <p className="mt-10 text-xs"
-          style={{ color: HAlpha.cream25, fontFamily: 'var(--font-nunito)' }}>
+          style={{ color: HAlpha.cream45, fontFamily: 'var(--font-nunito)' }}>
           HOMECI — L'immobilier ivoirien, certifié et sécurisé
         </p>
       </div>

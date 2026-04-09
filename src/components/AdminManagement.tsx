@@ -22,10 +22,10 @@ interface CredentialRequest {
 }
 
 export default function AdminManagement() {
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
   const [isAdminPrincipal, setIsAdminPrincipal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [credentialRequests, setCredentialRequests] = useState<CredentialRequest[]>([]);
+  const [_credentialRequests, _setCredentialRequests] = useState<CredentialRequest[]>([]);
 
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -124,7 +124,7 @@ export default function AdminManagement() {
     }
   };
 
-  const handleRequestAction = async (requestId: string, action: 'approved' | 'rejected') => {
+  const handleRequestAction = async (action: 'approved' | 'rejected') => {
     setMessage(`Demande ${action === 'approved' ? 'approuvée' : 'rejetée'}`);
   };
 
@@ -347,18 +347,18 @@ export default function AdminManagement() {
             </form>
           </div>
 
-          {credentialRequests.length > 0 && (
+          {_credentialRequests.length > 0 && (
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
               <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <Shield className="w-5 h-5" />
                 Demandes de modification en attente
                 <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs font-semibold ml-2">
-                  {credentialRequests.length}
+                {_credentialRequests.length}
                 </span>
               </h3>
 
               <div className="space-y-4">
-                {credentialRequests.map((request) => (
+                {_credentialRequests.map((request) => (
                   <div key={request.id} className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div>
@@ -385,14 +385,14 @@ export default function AdminManagement() {
 
                     <div className="flex gap-3">
                       <button
-                        onClick={() => handleRequestAction(request.id, 'approved')}
+                        onClick={() => handleRequestAction('approved')}
                         className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 font-medium"
                       >
                         <CheckCircle className="w-4 h-4" />
                         Approuver
                       </button>
                       <button
-                        onClick={() => handleRequestAction(request.id, 'rejected', 'Demande rejetée')}
+                        onClick={() => handleRequestAction('rejected')}
                         className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 font-medium"
                       >
                         <XCircle className="w-4 h-4" />

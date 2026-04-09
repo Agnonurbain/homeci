@@ -16,7 +16,7 @@ export interface ChunkedUploadOptions {
 export const uploadLargeFile = async (
   file: File,
   folder: string,
-  fileName: string,
+  _fileName: string,
   options?: ChunkedUploadOptions
 ): Promise<string> => {
   const { onProgress } = options || {};

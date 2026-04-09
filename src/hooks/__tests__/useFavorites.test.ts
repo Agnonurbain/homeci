@@ -21,7 +21,7 @@ describe('useFavorites', () => {
 
   it('charge les favoris depuis la sous-collection', async () => {
     firestoreMocks.getDocs.mockResolvedValueOnce({
-      docs: [{ id: 'prop-1' }, { id: 'prop-2' }, { id: 'prop-3' }],
+      docs: [{ id: 'prop-1', data: () => ({}) }, { id: 'prop-2', data: () => ({}) }, { id: 'prop-3', data: () => ({}) }],
     });
 
     const { result } = renderHook(() => useFavorites('user-1'));
@@ -33,7 +33,7 @@ describe('useFavorites', () => {
 
   it('isFavorite retourne true pour un ID dans la liste', async () => {
     firestoreMocks.getDocs.mockResolvedValueOnce({
-      docs: [{ id: 'prop-1' }, { id: 'prop-2' }],
+      docs: [{ id: 'prop-1', data: () => ({}) }, { id: 'prop-2', data: () => ({}) }],
     });
 
     const { result } = renderHook(() => useFavorites('user-1'));
@@ -46,7 +46,7 @@ describe('useFavorites', () => {
 
   it('ajoute un favori via toggleFavorite', async () => {
     firestoreMocks.getDocs.mockResolvedValueOnce({
-      docs: [{ id: 'prop-1' }],
+      docs: [{ id: 'prop-1', data: () => ({}) }],
     });
 
     const { result } = renderHook(() => useFavorites('user-1'));
@@ -66,7 +66,7 @@ describe('useFavorites', () => {
 
   it('retire un favori via toggleFavorite', async () => {
     firestoreMocks.getDocs.mockResolvedValueOnce({
-      docs: [{ id: 'prop-1' }, { id: 'prop-2' }],
+      docs: [{ id: 'prop-1', data: () => ({}) }, { id: 'prop-2', data: () => ({}) }],
     });
 
     const { result } = renderHook(() => useFavorites('user-1'));

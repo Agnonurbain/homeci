@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, CheckCircle, Clock, XCircle, TrendingUp, Users, Eye, Bell } from 'lucide-react';
+import { Calendar, CheckCircle, Clock, TrendingUp, Users, Eye, Bell } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { visitService } from '../services/visitService';
 import { emailService } from '../services/emailService';

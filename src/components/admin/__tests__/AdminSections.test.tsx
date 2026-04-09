@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { UsersSection, ModerationSection, SectionTitle, RoleBadge, PropertyStatusBadge } from '../AdminSections';
-import { HColors } from '../../../styles/homeci-tokens';
 import type { Profile } from '../../../contexts/AuthContext';
 
 beforeEach(() => vi.clearAllMocks());

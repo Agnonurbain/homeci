@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useTenantVisits } from '../useTenantVisits';
-import { propertyService } from '../../services/propertyService';
 import { visitService } from '../../services/visitService';
 
 // Mock services

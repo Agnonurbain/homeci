@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Shield, CheckCircle, XCircle, Clock, Monitor, RotateCcw, Loader } from 'lucide-react';
-import { collection, getDocs, orderBy, query, limit, where } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';

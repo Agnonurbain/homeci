@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { propertyService, type Property } from '../services/propertyService';
 import type { FilterValues } from '../components/PropertyFilters';
 import { analyticsService } from '../services/analyticsService';

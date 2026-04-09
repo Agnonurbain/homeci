@@ -35,6 +35,7 @@ describe('EditPropertyForm', () => {
     firestoreMocks.getDoc.mockResolvedValueOnce({
       exists: () => false,
       data: () => ({}),
+      id: undefined,
     });
     const { container } = render(
       <EditPropertyForm propertyId="prop-1" onClose={vi.fn()} onSuccess={vi.fn()} />

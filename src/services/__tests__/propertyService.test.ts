@@ -36,11 +36,11 @@ describe('propertyService', () => {
       expect(id).toBe('new-prop-123');
       expect(firestoreMocks.addDoc).toHaveBeenCalledTimes(1);
 
-      const calledWith = firestoreMocks.addDoc.mock.calls[0][1];
-      expect(calledWith.title).toBe('Belle villa');
-      expect(calledWith.owner_id).toBe('user1');
-      expect(calledWith.created_at).toBeDefined();
-      expect(calledWith.updated_at).toBeDefined();
+      const calledWith = (firestoreMocks.addDoc.mock.calls[0] as unknown[])[1] as Record<string, unknown>;
+      expect((calledWith as any).title).toBe('Belle villa');
+      expect((calledWith as any).owner_id).toBe('user1');
+      expect((calledWith as any).created_at).toBeDefined();
+      expect((calledWith as any).updated_at).toBeDefined();
     });
 
     it('retourne l\'ID du document créé', async () => {
@@ -57,9 +57,9 @@ describe('propertyService', () => {
       await propertyService.updateProperty('prop-1', { price: 60000000 });
 
       expect(firestoreMocks.updateDoc).toHaveBeenCalledTimes(1);
-      const calledWith = firestoreMocks.updateDoc.mock.calls[0][1];
-      expect(calledWith.price).toBe(60000000);
-      expect(calledWith.updated_at).toBeDefined();
+      const calledWith = (firestoreMocks.updateDoc.mock.calls[0] as unknown[])[1] as Record<string, unknown>;
+      expect((calledWith as any).price).toBe(60000000);
+      expect((calledWith as any).updated_at).toBeDefined();
     });
   });
 
@@ -81,7 +81,7 @@ describe('propertyService', () => {
         data: () => ({}),
         id: 'nope',
       });
-      firestoreMocks.getDocs.mockResolvedValueOnce({ docs: [] });
+      firestoreMocks.getDocs.mockResolvedValueOnce({ docs: [] } as any);
 
       const result = await propertyService.getProperty('inexistant');
       expect(result).toBeNull();
@@ -106,7 +106,7 @@ describe('propertyService', () => {
         id: 'prop-123',
       });
       // Mock pour getDocuments (sous-collection)
-      firestoreMocks.getDocs.mockResolvedValueOnce({ docs: [] });
+      firestoreMocks.getDocs.mockResolvedValueOnce({ docs: [] } as any);
 
       const result = await propertyService.getProperty('prop-123');
 
@@ -132,10 +132,10 @@ describe('propertyService', () => {
       });
 
       expect(firestoreMocks.setDoc).toHaveBeenCalledTimes(1);
-      const calledWith = firestoreMocks.setDoc.mock.calls[0][1];
-      expect(calledWith.label).toBe('Titre foncier');
-      expect(calledWith.url).toContain('firebasestorage');
-      expect(calledWith.status).toBe('en_attente');
+      const calledWith = (firestoreMocks.setDoc.mock.calls[0] as unknown[])[1] as Record<string, unknown>;
+      expect((calledWith as any).label).toBe('Titre foncier');
+      expect((calledWith as any).url).toContain('firebasestorage');
+      expect((calledWith as any).status).toBe('en_attente');
     });
   });
 
@@ -158,18 +158,18 @@ describe('propertyService', () => {
       });
 
       expect(firestoreMocks.updateDoc).toHaveBeenCalledTimes(1);
-      const calledWith = firestoreMocks.updateDoc.mock.calls[0][1];
-      expect(calledWith.documents).toHaveLength(2);
+      const calledWith = (firestoreMocks.updateDoc.mock.calls[0] as unknown[])[1] as Record<string, unknown>;
+      expect((calledWith as any).documents).toHaveLength(2);
       // Le titre_foncier est mis à jour
-      const updatedDoc = calledWith.documents.find((d: any) => d.type === 'titre_foncier');
+      const updatedDoc = (calledWith as any).documents.find((d: any) => d.type === 'titre_foncier');
       expect(updatedDoc.status).toBe('valide');
       expect(updatedDoc.validated_at).toBeDefined();
       expect(updatedDoc.validated_by).toBe('notaire-42');
       // Le CNI reste inchangé
-      const untouchedDoc = calledWith.documents.find((d: any) => d.type === 'cni');
+      const untouchedDoc = (calledWith as any).documents.find((d: any) => d.type === 'cni');
       expect(untouchedDoc.status).toBe('en_attente');
       // updated_at est inclus
-      expect(calledWith.updated_at).toBeDefined();
+      expect((calledWith as any).updated_at).toBeDefined();
     });
 
     it('met à jour le statut d\'un document à "refuse" avec une raison', async () => {
@@ -187,8 +187,8 @@ describe('propertyService', () => {
         rejection_reason: 'Document illisible',
       });
 
-      const calledWith = firestoreMocks.updateDoc.mock.calls[0][1];
-      const updatedDoc = calledWith.documents.find((d: any) => d.type === 'titre_foncier');
+      const calledWith = (firestoreMocks.updateDoc.mock.calls[0] as unknown[])[1] as Record<string, unknown>;
+      const updatedDoc = (calledWith as any).documents.find((d: any) => d.type === 'titre_foncier');
       expect(updatedDoc.status).toBe('refuse');
       expect(updatedDoc.rejection_reason).toBe('Document illisible');
     });
@@ -215,7 +215,7 @@ describe('propertyService', () => {
 
   describe('getDocuments', () => {
     it('retourne un tableau vide si pas de documents', async () => {
-      firestoreMocks.getDocs.mockResolvedValueOnce({ docs: [] });
+      firestoreMocks.getDocs.mockResolvedValueOnce({ docs: [] } as any);
       const docs = await propertyService.getDocuments('prop-empty');
       expect(docs).toEqual([]);
     });

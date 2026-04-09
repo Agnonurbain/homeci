@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, X, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { Calendar, X, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { availabilityService, type PropertyAvailability } from '../../services/availabilityService';
 import type { Property } from '../../services/propertyService';
-import { HColors, HAlpha } from '../../styles/homeci-tokens';
 import ScrollTimePicker from '../ScrollTimePicker';
 
 interface VisitRequestModalProps {
@@ -119,6 +118,7 @@ export default function VisitRequestModal({ property, onClose, onSubmit }: Visit
                     className="flex items-center gap-2 text-xs font-bold text-navy-700 hover:text-navy-900 transition-colors">
                     <Info className="w-4 h-4" /> Voir les disponibilités du propriétaire
                   </button>
+                  {/* TODO: weekly_hours field doesn't exist in PropertyAvailability yet
                   {showAvailabilityHint && (
                     <div className="text-[10px] text-navy-800/70 leading-relaxed italic animate-in fade-in slide-in-from-top-1">
                       {availability.weekly_hours?.map((h, i) => (
@@ -126,6 +126,7 @@ export default function VisitRequestModal({ property, onClose, onSubmit }: Visit
                       ))}
                     </div>
                   )}
+                  */}
                 </div>
               )}
 

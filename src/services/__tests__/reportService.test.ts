@@ -25,10 +25,10 @@ describe('reportService', () => {
       });
 
       expect(id).toBe('report-1');
-      const data = firestoreMocks.addDoc.mock.calls[0][1];
-      expect(data.status).toBe('pending');
-      expect(data.reason).toBe('fraudulent');
-      expect(data.property_id).toBe('prop-1');
+      const data = firestoreMocks.addDoc.mock.calls[0][1] as Record<string, unknown>;
+      expect((data as any).status).toBe('pending');
+      expect((data as any).reason).toBe('fraudulent');
+      expect((data as any).property_id).toBe('prop-1');
     });
   });
 
@@ -37,7 +37,7 @@ describe('reportService', () => {
       firestoreMocks.getDocs.mockResolvedValueOnce({
         empty: false,
         docs: [{ id: 'r1', data: () => ({}) }],
-      });
+      } as any);
 
       const result = await reportService.hasAlreadyReported('user-1', 'prop-1');
       expect(result).toBe(true);
@@ -47,7 +47,7 @@ describe('reportService', () => {
       firestoreMocks.getDocs.mockResolvedValueOnce({
         empty: true,
         docs: [],
-      });
+      } as any);
 
       const result = await reportService.hasAlreadyReported('user-1', 'prop-1');
       expect(result).toBe(false);
@@ -69,7 +69,7 @@ describe('reportService', () => {
             }),
           },
         ],
-      });
+      } as any);
 
       const reports = await reportService.getAllReports();
       expect(reports).toHaveLength(1);

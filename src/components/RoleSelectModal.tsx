@@ -42,10 +42,6 @@ async function validateNotaireCode(code: string): Promise<{ valid: boolean; docI
   } catch { return { valid: false }; }
 }
 
-async function markNotaireCodeUsed(docId: string) {
-  await updateDoc(doc(db, 'notaire_codes', docId), { used: true, used_at: new Date().toISOString() });
-}
-
 export default function RoleSelectModal({ uid, displayName, photoURL, onDone }: RoleSelectModalProps) {
   const { refreshProfile } = useAuth();
   useBodyScrollLock(true);

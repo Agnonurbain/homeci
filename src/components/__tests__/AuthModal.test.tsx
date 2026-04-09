@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { firestoreMocks } from '../../tests/firebase.mock';
 
 const mockSignIn = vi.fn();
 const mockSignUp = vi.fn();

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { firestoreMocks } from '../../tests/firebase.mock';
 
 // Mock firebase/auth complet
 vi.mock('firebase/auth', () => ({

@@ -2,11 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-import { firestoreMocks } from '../../tests/firebase.mock';
 import { propertyService } from '../../services/propertyService';
 import { adService } from '../../services/adService';
-
-const { Timestamp } = firestoreMocks;
 
 // Mock sub-components
 vi.mock('../PropertyCard', () => ({

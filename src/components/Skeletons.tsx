@@ -42,12 +42,6 @@ function Bone({ w, h, r = 8, className = '', style = {} }: {
   );
 }
 
-/** Cercle animé */
-function Circle({ size = 40 }: { size?: number }) {
-  ensureAnimation();
-  return <div style={{ width: size, height: size, borderRadius: '50%', ...pulseStyle }} />;
-}
-
 /* ── Property Card Skeleton ──────────────────────────────────────────── */
 
 export function PropertyCardSkeleton() {

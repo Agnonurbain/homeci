@@ -1,5 +1,5 @@
 import { ShieldCheck, FileText, Smartphone, MapPin, Clock, Users } from 'lucide-react';
-import { HColors, HAlpha } from '../styles/homeci-tokens';
+import { HColors } from '../styles/homeci-tokens';
 
 const features = [
   { icon: ShieldCheck, title: 'Vérification Notaire',   desc: 'Chaque bien est vérifié par un notaire agréé inscrit au tableau de l\'Ordre', color: HColors.vertCI },

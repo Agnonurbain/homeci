@@ -1,14 +1,4 @@
-import React from 'react';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
-
-interface StatProps {
-  label: string;
-  count: number;
-  icon: React.ElementType;
-  accent: string;
-  bg: string;
-  border: string;
-}
 
 export function NotaireStats({ stats }: { stats: any }) {
   return (

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Search, UserX, UserCheck, Shield, User, Mail, Phone, Calendar, AlertTriangle, Loader, X } from 'lucide-react';
+import { Search, UserX, UserCheck, User, Mail, Phone, Calendar, AlertTriangle, Loader, X } from 'lucide-react';
 import { collection, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { HColors, HAlpha } from '../styles/homeci-tokens';

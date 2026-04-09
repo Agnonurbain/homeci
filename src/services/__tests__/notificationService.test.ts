@@ -24,11 +24,11 @@ describe('notificationService', () => {
       });
 
       expect(firestoreMocks.addDoc).toHaveBeenCalledTimes(1);
-      const data = firestoreMocks.addDoc.mock.calls[0][1];
-      expect(data.user_id).toBe('user-1');
-      expect(data.type).toBe('visit_request');
-      expect(data.read).toBe(false);
-      expect(data.created_at).toBeDefined();
+      const data = firestoreMocks.addDoc.mock.calls[0][1] as Record<string, unknown>;
+      expect((data as any).user_id).toBe('user-1');
+      expect((data as any).type).toBe('visit_request');
+      expect((data as any).read).toBe(false);
+      expect((data as any).created_at).toBeDefined();
     });
 
     it('crée une notification sans property_id', async () => {
@@ -39,9 +39,9 @@ describe('notificationService', () => {
         message: 'Bienvenue sur HOMECI',
       });
 
-      const data = firestoreMocks.addDoc.mock.calls[0][1];
-      expect(data.user_id).toBe('user-2');
-      expect(data.type).toBe('new_message');
+      const data = firestoreMocks.addDoc.mock.calls[0][1] as Record<string, unknown>;
+      expect((data as any).user_id).toBe('user-2');
+      expect((data as any).type).toBe('new_message');
     });
   });
 
@@ -52,7 +52,8 @@ describe('notificationService', () => {
       await notificationService.markAsRead('notif-123');
 
       expect(firestoreMocks.updateDoc).toHaveBeenCalledTimes(1);
-      const data = firestoreMocks.updateDoc.mock.calls[0][1];
+      const callArgs = firestoreMocks.updateDoc.mock.calls[0] as unknown[];
+      const data = callArgs[1] as Record<string, unknown>;
       expect(data.read).toBe(true);
     });
   });
@@ -73,7 +74,7 @@ describe('notificationService', () => {
         }),
       }));
 
-      firestoreMocks.getDocs.mockResolvedValueOnce({ docs: mockNotifs });
+      firestoreMocks.getDocs.mockResolvedValueOnce({ docs: mockNotifs } as any);
 
       const notifs = await notificationService.getNotifications('user-1');
 
@@ -84,7 +85,7 @@ describe('notificationService', () => {
     });
 
     it('retourne un tableau vide si aucune notification', async () => {
-      firestoreMocks.getDocs.mockResolvedValueOnce({ docs: [] });
+      firestoreMocks.getDocs.mockResolvedValueOnce({ docs: [] } as any);
       const notifs = await notificationService.getNotifications('user-vide');
       expect(notifs).toEqual([]);
     });
@@ -100,7 +101,7 @@ describe('notificationService', () => {
           { id: 'n2', data: () => ({ user_id: 'u1', type: 'new_message', title: '', message: '', read: false, created_at: Timestamp.fromDate(new Date()) }) },
           { id: 'n3', data: () => ({ user_id: 'u1', type: 'new_message', title: '', message: '', read: true, created_at: Timestamp.fromDate(new Date()) }) },
         ],
-      });
+      } as any);
 
       await notificationService.markAllAsRead('u1');
 

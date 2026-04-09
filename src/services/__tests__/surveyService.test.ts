@@ -27,12 +27,12 @@ describe('surveyService', () => {
 
       expect(id).toBe('survey-1');
       expect(firestoreMocks.addDoc).toHaveBeenCalledTimes(1);
-      const data = firestoreMocks.addDoc.mock.calls[0][1];
-      expect(data.user_id).toBe('user-1');
-      expect(data.rating).toBe(4);
-      expect(data.comment).toBe('Très bon service');
-      expect(data.trigger).toBe('visit_accepted');
-      expect(data.property_id).toBe('prop-1');
+      const data = firestoreMocks.addDoc.mock.calls[0][1] as Record<string, unknown>;
+      expect((data as any).user_id).toBe('user-1');
+      expect((data as any).rating).toBe(4);
+      expect((data as any).comment).toBe('Très bon service');
+      expect((data as any).trigger).toBe('visit_accepted');
+      expect((data as any).property_id).toBe('prop-1');
     });
   });
 
@@ -41,7 +41,7 @@ describe('surveyService', () => {
       firestoreMocks.getDocs.mockResolvedValueOnce({
         empty: false,
         docs: [{ id: 's1', data: () => ({}) }],
-      });
+      } as any);
 
       const result = await surveyService.hasAlreadyResponded('user-1', 'visit_accepted', 'prop-1');
       expect(result).toBe(true);
@@ -51,7 +51,7 @@ describe('surveyService', () => {
       firestoreMocks.getDocs.mockResolvedValueOnce({
         empty: true,
         docs: [],
-      });
+      } as any);
 
       const result = await surveyService.hasAlreadyResponded('user-1', 'visit_accepted', 'prop-1');
       expect(result).toBe(false);
@@ -82,7 +82,7 @@ describe('surveyService', () => {
             }),
           },
         ],
-      });
+      } as any);
 
       const surveys = await surveyService.getSurveysByUser('user-1');
       expect(surveys).toHaveLength(2);
@@ -106,7 +106,7 @@ describe('surveyService', () => {
             }),
           },
         ],
-      });
+      } as any);
 
       const surveys = await surveyService.getAllSurveys();
       expect(surveys).toHaveLength(1);

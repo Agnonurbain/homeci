@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 
 // Mock PropertyFormBase since the wrappers just delegate to it
 vi.mock('../PropertyFormBase', () => ({
-  default: ({ mode, propertyId, onClose, onSuccess }: any) => (
+  default: ({ mode, propertyId, onClose: _onClose, onSuccess: _onSuccess }: any) => (
     <div data-testid="form-base" data-mode={mode} data-property-id={propertyId || ''}>
       PropertyFormBase
     </div>
