@@ -23,5 +23,9 @@ export default defineConfig({
       reporter: ['text', 'html'],
       include: ['src/utils/**', 'src/services/**', 'src/hooks/**'],
     },
+    // Force React to use dev mode for act() support
+    define: {
+      'process.env.NODE_ENV': JSON.stringify('development'),
+    },
   },
 });

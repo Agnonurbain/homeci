@@ -51,7 +51,10 @@ BRAINSTORMING.md → QWEN.md → MEMORY.md → NOT_DONE.md → WORKED_LESSON.md
 | **2** | `NOT_DONE.md` | Marquer la tâche comme faite, ajuster la progression |
 | **3** | `PLAN.md` | Mettre à jour les statuts ✅/❌, ajouter l'historique |
 | **4** | `WORKED_LESSON.md` | Ajouter toute difficulté rencontrée avec sa leçon |
-| **5** | `MEMORY.md` | Mettre à jour le résumé si l'état global a changé |
+| **5** | `TEST.md` | Vérifier que les tests associés au code modifié sont à jour |
+| **6** | `MEMORY.md` | Mettre à jour le résumé si l'état global a changé |
+| **7** | `BRAINSTORMING.md` (ce fichier) | Mettre à jour les problèmes critiques et prochaines étapes |
+| **8** | `Qwen.md` | Mettre à jour la section "Audit" si changement majeur |
 
 ---
 
@@ -67,6 +70,7 @@ BRAINSTORMING.md → QWEN.md → MEMORY.md → NOT_DONE.md → WORKED_LESSON.md
 | `PLAN.md` | **Plan complet** — architecture, écrans, DB, paliers | Pour comprendre le scope |
 | `WORKED_LESSON.md` | **Leçons** — erreurs passées et solutions | Pour éviter les pièges |
 | `PACKAGE.md` | **Dépendances** — packages installés, non installés | Pour ajouter/mettre à jour des packages |
+| `TEST.md` | **Règles de test** — rappel impératif de mise à jour des tests | **À lire avant chaque commit** |
 
 ### Fichiers racine complémentaires
 
@@ -134,11 +138,14 @@ cd functions && npm run serve    # Build + emulators
 > 2. **`NOT_DONE.md`** — Marquer les tâches comme faites, ajuster la progression (%)
 > 3. **`PLAN.md`** — Mettre à jour les statuts ✅/❌, ajouter l'historique des changements
 > 4. **`WORKED_LESSON.md`** — Ajouter toute difficulté rencontrée avec sa leçon apprise
-> 5. **`MEMORY.md`** — Mettre à jour le résumé si l'état global a changé
-> 6. **`BRAINSTORMING.md`** (ce fichier) — Mettre à jour les problèmes critiques et prochaines étapes
-> 7. **`Qwen.md`** — Mettre à jour la section "Audit" si changement majeur
+> 5. **`TEST.md`** — Vérifier les tests associés au code modifié, ajouter nouveaux tests
+> 6. **`MEMORY.md`** — Mettre à jour le résumé si l'état global a changé
+> 7. **`BRAINSTORMING.md`** (ce fichier) — Mettre à jour les problèmes critiques et prochaines étapes
+> 8. **`Qwen.md`** — Mettre à jour la section "Audit" si changement majeur
 >
 > **NE JAMAIS terminer une session sans cette mise à jour.** C'est la mémoire du projet. Sans ça, le contexte est perdu.
+>
+> **NE JAMAIS commit sans avoir lancé `npx vitest run` + `npm run typecheck`.**
 
 ---
 

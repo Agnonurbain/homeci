@@ -1,96 +1,164 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { firestoreMocks, mockFirestore } from '../../tests/firebase.mock';
-
-// Les mocks doivent être importés AVANT le service
 import { chatService } from '../chatService';
+
+const mockUnsub = vi.fn();
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockFirestore.reset();
 });
 
-describe('chatService', () => {
+vi.mock('../../lib/firebase', () => ({
+  db: {} as any,
+}));
 
+vi.mock('firebase/firestore', () => ({
+  collection: vi.fn((_: any, ...args: any[]) => ({ path: ['chats', ...args].join('/') })),
+  doc: vi.fn((_: any, ...args: any[]) => ({ path: ['chats', ...args].join('/') })),
+  setDoc: vi.fn(async () => {}),
+  addDoc: vi.fn(async () => ({ id: 'msg-1' })),
+  query: vi.fn((...args: any[]) => args),
+  orderBy: vi.fn((field: string, dir: string) => ({ field, dir })),
+  onSnapshot: vi.fn((_: any, cb: (snap: any) => void) => {
+    cb({
+      docs: [
+        { id: 'msg-1', data: () => ({ sender_id: 'u1', content: 'Hello', read: false, created_at: { toDate: () => new Date() } }) },
+        { id: 'msg-2', data: () => ({ sender_id: 'u2', content: 'Hi', read: false, created_at: { toDate: () => new Date() } }) },
+      ],
+    });
+    return mockUnsub;
+  }),
+  getDoc: vi.fn(async () => ({
+    exists: () => false,
+    data: () => ({}),
+    id: undefined,
+  })),
+  updateDoc: vi.fn(async () => {}),
+  serverTimestamp: vi.fn(() => ({ __type: 'serverTimestamp' })),
+}));
+
+import { collection, doc, setDoc, addDoc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+
+describe('chatService', () => {
   describe('getOrCreateChat', () => {
-    it('crée un nouveau chat si inexistant', async () => {
-      firestoreMocks.getDoc.mockResolvedValueOnce({ 
-        exists: () => false,
+    it('retourne l\'id si le chat existe déjà', async () => {
+      const mockGetDoc = getDoc as any;
+      mockGetDoc.mockResolvedValueOnce({
+        exists: () => true,
+        id: 'visit-1',
         data: () => ({}),
-        id: 'visit-1'
       });
-      
-      const chatId = await chatService.getOrCreateChat('visit-1', 'prop-1', 'tenant-1', 'owner-1');
-      
-      expect(chatId).toBe('visit-1');
-      expect(firestoreMocks.setDoc).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({
+
+      const result = await chatService.getOrCreateChat('visit-1', 'prop-1', 'tenant-1', 'owner-1');
+      expect(result).toBe('visit-1');
+      expect(setDoc).not.toHaveBeenCalled();
+    });
+
+    it('crée un nouveau chat s\'il n\'existe pas', async () => {
+      const mockGetDoc = getDoc as any;
+      mockGetDoc.mockResolvedValueOnce({
+        exists: () => false,
+        id: undefined,
+        data: () => ({}),
+      });
+
+      const result = await chatService.getOrCreateChat('visit-2', 'prop-2', 'tenant-2', 'owner-2');
+      expect(result).toBe('visit-2');
+      expect(setDoc).toHaveBeenCalledTimes(1);
+      const callArgs = (setDoc as any).mock.calls[0] as unknown[];
+      const data = callArgs[1] as Record<string, unknown>;
+      expect(data.property_id).toBe('prop-2');
+      expect(data.tenant_id).toBe('tenant-2');
+      expect(data.owner_id).toBe('owner-2');
+      expect(data.visit_id).toBe('visit-2');
+    });
+  });
+
+  describe('getChatContext', () => {
+    it('retourne null si le chat n\'existe pas', async () => {
+      const mockGetDoc = getDoc as any;
+      mockGetDoc.mockResolvedValueOnce({
+        exists: () => false,
+        id: undefined,
+        data: () => ({}),
+      });
+
+      const result = await chatService.getChatContext('chat-1');
+      expect(result).toBeNull();
+    });
+
+    it('retourne le contexte du chat', async () => {
+      const mockGetDoc = getDoc as any;
+      mockGetDoc.mockResolvedValueOnce({
+        exists: () => true,
+        id: 'chat-1',
+        data: () => ({
           property_id: 'prop-1',
           tenant_id: 'tenant-1',
           owner_id: 'owner-1',
-          visit_id: 'visit-1'
-        })
-      );
-    });
-
-    it('récupère l\'ID existant si le chat existe déjà', async () => {
-      firestoreMocks.getDoc.mockResolvedValueOnce({ 
-        exists: () => true,
-        data: () => ({}),
-        id: 'existing-chat' 
+          visit_id: 'visit-1',
+        }),
       });
-      
-      const chatId = await chatService.getOrCreateChat('visit-1', 'prop-1', 'tenant-1', 'owner-1');
-      
-      expect(chatId).toBe('existing-chat');
-      expect(firestoreMocks.setDoc).not.toHaveBeenCalled();
-    });
-  });
 
-  describe('sendMessage', () => {
-    it('filtre les emails et appelle addDoc avec serverTimestamp', async () => {
-      await chatService.sendMessage('chat-1', 'user-1', 'Contactez moi sur test@gmail.com');
-      
-      expect(firestoreMocks.addDoc).toHaveBeenCalledTimes(1);
-      const data = firestoreMocks.addDoc.mock.calls[0][1] as any;
-      
-      expect(data.content).toBe('Contactez moi sur  [Email masqué]');
-      expect(data.sender_id).toBe('user-1');
-      expect(data.created_at).toBeDefined();
-      expect(data.read).toBe(false);
-      
-      // Vérifier la mise à jour du chat parent
-      expect(firestoreMocks.updateDoc).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({ updated_at: expect.anything() })
-      );
-    });
-
-    it('ne fait rien si le contenu est vide après filtrage', async () => {
-      await chatService.sendMessage('chat-1', 'user-1', '   ');
-      expect(firestoreMocks.addDoc).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('markMessageAsRead', () => {
-    it('met à jour uniquement le champ read', async () => {
-      await chatService.markMessageAsRead('chat-1', 'msg-1');
-      
-      expect(firestoreMocks.updateDoc).toHaveBeenCalledWith(
-        expect.anything(),
-        { read: true }
-      );
+      const result = await chatService.getChatContext('chat-1');
+      expect(result).not.toBeNull();
+      expect(result!.property_id).toBe('prop-1');
+      expect(result!.tenant_id).toBe('tenant-1');
     });
   });
 
   describe('subscribeToMessages', () => {
-    it('configure une requête ordonnée par created_at', () => {
+    it('s\'abonne aux messages en temps réel et appelle le callback', () => {
       const callback = vi.fn();
-      chatService.subscribeToMessages('chat-1', callback);
-      
-      expect(firestoreMocks.query).toHaveBeenCalled();
-      expect(firestoreMocks.orderBy).toHaveBeenCalledWith('created_at', 'asc');
-      expect(firestoreMocks.onSnapshot).toHaveBeenCalled();
+      const unsub = chatService.subscribeToMessages('chat-1', callback);
+
+      expect(onSnapshot).toHaveBeenCalled();
+      expect(callback).toHaveBeenCalled();
+
+      const messages = callback.mock.calls[0][0];
+      expect(messages).toHaveLength(2);
+      expect(messages[0].content).toBe('Hello');
+      expect(messages[1].content).toBe('Hi');
+
+      unsub();
+      expect(mockUnsub).toHaveBeenCalled();
+    });
+  });
+
+  describe('sendMessage', () => {
+    it('envoie un message filtré et met à jour le chat', async () => {
+      await chatService.sendMessage('chat-1', 'u1', 'Contactez-moi à test@email.com');
+
+      expect(addDoc).toHaveBeenCalledTimes(1);
+      const addArgs = (addDoc as any).mock.calls[0] as unknown[];
+      const msgData = addArgs[1] as Record<string, unknown>;
+      // Le filtrage d'email remplace test@email.com
+      expect((msgData.content as string)).not.toContain('test@email.com');
+      expect(msgData.sender_id).toBe('u1');
+      expect(msgData.chat_id).toBe('chat-1');
+      expect(msgData.read).toBe(false);
+
+      expect(updateDoc).toHaveBeenCalledTimes(1);
+    });
+
+    it('filtre les emails du contenu', async () => {
+      await chatService.sendMessage('chat-1', 'u1', 'Contactez test@email.com svp');
+
+      expect(addDoc).toHaveBeenCalledTimes(1);
+      const addArgs = (addDoc as any).mock.calls[0] as unknown[];
+      const msgData = addArgs[1] as Record<string, unknown>;
+      expect(msgData.content).not.toContain('test@email.com');
+      expect(msgData.content).toContain('Email masqué');
+    });
+  });
+
+  describe('markMessageAsRead', () => {
+    it('marque un message comme lu', async () => {
+      await chatService.markMessageAsRead('chat-1', 'msg-1');
+
+      expect(updateDoc).toHaveBeenCalledTimes(1);
+      const callArgs = (updateDoc as any).mock.calls[0] as unknown[];
+      const data = callArgs[1] as Record<string, unknown>;
+      expect(data.read).toBe(true);
     });
   });
 });

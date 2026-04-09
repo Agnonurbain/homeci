@@ -26,3 +26,4 @@ test_results.json
 *.sln
 *.sw?
 .env
+lint_output.txt

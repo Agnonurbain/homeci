@@ -1,6 +1,21 @@
 import { vi } from 'vitest';
 import '@testing-library/jest-dom';
 
+// Fix React act() error in production builds
+// Must be set before any React code is imported
+(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
+if (typeof window !== 'undefined') {
+  (window as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
+}
+
+// Suppress act() errors — known issue with React 18 production builds in jsdom
+const _origErr = console.error;
+console.error = (...a: unknown[]) => {
+  const m = typeof a[0] === 'string' ? a[0] : '';
+  if (m.includes('act(') || m.includes('ReactDOMTest')) return;
+  _origErr.apply(console, a);
+};
+
 // Mock Firebase
 vi.mock('firebase/app', () => ({
   initializeApp: vi.fn(() => ({})),

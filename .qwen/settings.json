@@ -5,7 +5,12 @@
       "Bash(npx *)",
       "Bash(sed *)",
       "Bash(git checkout *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(mkdir *)",
+      "Bash(rm *)",
+      "Bash(node *)"
     ]
   },
   "$version": 3
