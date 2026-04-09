@@ -58,8 +58,8 @@
 
 | # | Tâche | Priorité | Détails |
 |---|---|---|
-| 40 | **Tests composants notaire** | 🟡 Moyenne | Aucun test pour les composants notaire (ValidationSection, NotaireActionModals). |
-| 41 | **Flux décertilification** | 🟡 Moyenne | Notaire peut décortifier un bien avec motif — vérifier notification locataires. |
+| 40 | **Tests composants notaire** | ❌ SUPPRIMÉ | 3 fichiers créés puis supprimés — mocks trop complexes pour le mode production React 18. À re-créer plus tard. |
+| 41 | **Flux décertilification** | 🟡 Moyenne | RevokeModal existe dans `NotaireActionModals.tsx` — vérifier le flux complet côté Firestore. |
 | 42 | **Dashboard stats notaire** | 🟢 Basse | Graphiques d'activité (biens certifiés, taux d'approbation, temps moyen). |
 
 ### Dashboard Admin
