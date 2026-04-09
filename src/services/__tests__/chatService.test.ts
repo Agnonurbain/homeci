@@ -8,17 +8,15 @@ beforeEach(() => {
 });
 
 vi.mock('../../lib/firebase', () => ({
-  db: {} as any,
+  db: {},
 }));
 
 vi.mock('firebase/firestore', () => ({
-  collection: vi.fn((_: any, ...args: any[]) => ({ path: ['chats', ...args].join('/') })),
-  doc: vi.fn((_: any, ...args: any[]) => ({ path: ['chats', ...args].join('/') })),
   setDoc: vi.fn(async () => {}),
   addDoc: vi.fn(async () => ({ id: 'msg-1' })),
-  query: vi.fn((...args: any[]) => args),
-  orderBy: vi.fn((field: string, dir: string) => ({ field, dir })),
-  onSnapshot: vi.fn((_: any, cb: (snap: any) => void) => {
+  query: vi.fn(() => []),
+  orderBy: vi.fn(() => ({})),
+  onSnapshot: vi.fn((_q: unknown, cb: (snap: { docs: { id: string; data: () => Record<string, unknown> }[] }) => void) => {
     cb({
       docs: [
         { id: 'msg-1', data: () => ({ sender_id: 'u1', content: 'Hello', read: false, created_at: { toDate: () => new Date() } }) },
@@ -36,13 +34,15 @@ vi.mock('firebase/firestore', () => ({
   serverTimestamp: vi.fn(() => ({ __type: 'serverTimestamp' })),
 }));
 
-import { collection, doc, setDoc, addDoc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+// Re-import mocked functions for test usage
+import * as fs from 'firebase/firestore';
+const { setDoc, addDoc, getDoc, updateDoc, onSnapshot } = fs;
 
 describe('chatService', () => {
   describe('getOrCreateChat', () => {
     it('retourne l\'id si le chat existe déjà', async () => {
-      const mockGetDoc = getDoc as any;
-      mockGetDoc.mockResolvedValueOnce({
+      const mg = getDoc as ReturnType<typeof vi.fn>;
+      mg.mockResolvedValueOnce({
         exists: () => true,
         id: 'visit-1',
         data: () => ({}),
@@ -54,8 +54,8 @@ describe('chatService', () => {
     });
 
     it('crée un nouveau chat s\'il n\'existe pas', async () => {
-      const mockGetDoc = getDoc as any;
-      mockGetDoc.mockResolvedValueOnce({
+      const mg = getDoc as ReturnType<typeof vi.fn>;
+      mg.mockResolvedValueOnce({
         exists: () => false,
         id: undefined,
         data: () => ({}),
@@ -64,7 +64,7 @@ describe('chatService', () => {
       const result = await chatService.getOrCreateChat('visit-2', 'prop-2', 'tenant-2', 'owner-2');
       expect(result).toBe('visit-2');
       expect(setDoc).toHaveBeenCalledTimes(1);
-      const callArgs = (setDoc as any).mock.calls[0] as unknown[];
+      const callArgs = (setDoc as ReturnType<typeof vi.fn>).mock.calls[0] as unknown[];
       const data = callArgs[1] as Record<string, unknown>;
       expect(data.property_id).toBe('prop-2');
       expect(data.tenant_id).toBe('tenant-2');
@@ -75,8 +75,8 @@ describe('chatService', () => {
 
   describe('getChatContext', () => {
     it('retourne null si le chat n\'existe pas', async () => {
-      const mockGetDoc = getDoc as any;
-      mockGetDoc.mockResolvedValueOnce({
+      const mg = getDoc as ReturnType<typeof vi.fn>;
+      mg.mockResolvedValueOnce({
         exists: () => false,
         id: undefined,
         data: () => ({}),
@@ -87,8 +87,8 @@ describe('chatService', () => {
     });
 
     it('retourne le contexte du chat', async () => {
-      const mockGetDoc = getDoc as any;
-      mockGetDoc.mockResolvedValueOnce({
+      const mg = getDoc as ReturnType<typeof vi.fn>;
+      mg.mockResolvedValueOnce({
         exists: () => true,
         id: 'chat-1',
         data: () => ({
@@ -129,10 +129,9 @@ describe('chatService', () => {
       await chatService.sendMessage('chat-1', 'u1', 'Contactez-moi à test@email.com');
 
       expect(addDoc).toHaveBeenCalledTimes(1);
-      const addArgs = (addDoc as any).mock.calls[0] as unknown[];
+      const addArgs = (addDoc as ReturnType<typeof vi.fn>).mock.calls[0] as unknown[];
       const msgData = addArgs[1] as Record<string, unknown>;
-      // Le filtrage d'email remplace test@email.com
-      expect((msgData.content as string)).not.toContain('test@email.com');
+      expect(msgData.content).not.toContain('test@email.com');
       expect(msgData.sender_id).toBe('u1');
       expect(msgData.chat_id).toBe('chat-1');
       expect(msgData.read).toBe(false);
@@ -144,7 +143,7 @@ describe('chatService', () => {
       await chatService.sendMessage('chat-1', 'u1', 'Contactez test@email.com svp');
 
       expect(addDoc).toHaveBeenCalledTimes(1);
-      const addArgs = (addDoc as any).mock.calls[0] as unknown[];
+      const addArgs = (addDoc as ReturnType<typeof vi.fn>).mock.calls[0] as unknown[];
       const msgData = addArgs[1] as Record<string, unknown>;
       expect(msgData.content).not.toContain('test@email.com');
       expect(msgData.content).toContain('Email masqué');
@@ -156,7 +155,7 @@ describe('chatService', () => {
       await chatService.markMessageAsRead('chat-1', 'msg-1');
 
       expect(updateDoc).toHaveBeenCalledTimes(1);
-      const callArgs = (updateDoc as any).mock.calls[0] as unknown[];
+      const callArgs = (updateDoc as ReturnType<typeof vi.fn>).mock.calls[0] as unknown[];
       const data = callArgs[1] as Record<string, unknown>;
       expect(data.read).toBe(true);
     });

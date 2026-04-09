@@ -3,9 +3,11 @@ import '@testing-library/jest-dom';
 
 // Fix React act() error in production builds
 // Must be set before any React code is imported
-(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 if (typeof window !== 'undefined') {
-  (window as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).IS_REACT_ACT_ENVIRONMENT = true;
 }
 
 // Suppress act() errors — known issue with React 18 production builds in jsdom
