@@ -248,6 +248,20 @@ Chaque entrée suit ce format :
 
 ---
 
+### WL-020 — package-lock.json incompatible avec CI (mismatch os/cpu)
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-020 |
+| **Date** | 2026-04-10 |
+| **Catégorie** | CI/CD |
+| **Problème** | `npm ci` échouait sur GitHub Actions avec des erreurs "notsup Valid os: netbsd, Actual os: linux" et "notsup Valid cpu: arm64, Actual cpu: x64". |
+| **Cause racine** | `package-lock.json` contenait des dépendances optionnelles pour des plateformes spécifiques (netbsd/arm64) générées localement sur macOS/Apple Silicon. |
+| **Solution** | Regénérer le `package-lock.json` avec `npm install --package-lock-only` pour supprimer les dépendances optionnelles incompatibles. |
+| **Impact** | 🔴 Critique — CI bloquée, aucun déploiement possible. |
+| **Prévention** | Toujours lancer `npm install --package-lock-only` après l'ajout de packages sur machine locale avant de pusher. Vérifier le CI avant chaque merge. |
+
+---
+
 ## 📊 Résumé par catégorie
 
 | Catégorie | Count |

@@ -384,7 +384,8 @@ Global : ███████████████████████�
 
 | Date | Changement |
 |---|---|
-| 2026-04-10 | **Session tests massive** — 221 nouveaux tests ajoutés (Cloud Functions 101, services 58, owner 60, admin 34, formulaires 18). 74 fichiers de test au total. typecheck clean à 0 erreur. |
+| 2026-04-10 | **Fix CI** — `package-lock.json` regénéré (dépendances netbsd/arm64 retirées). Commit `d68d4a4`. |
+| 2026-04-10 | **Session tests massive** — 221 nouveaux tests ajoutés (Cloud Functions 101, services 58, owner 75, admin 34, chat 24, formulaires 18, hooks 17). 78 fichiers de test au total, 778 tests, 100% passent. typecheck clean à 0 erreur. |
 | 2026-04-09 | Création PLAN.md pour HOMECI (audit complet) |
 | 2026-04-09 | Documentation BRAIN_QWEN mise à jour (était Djama → maintenant HOMECI) |
 | 2026-04-08 | Champs hôtel/appart-hôtel dans formulaire propriété |

@@ -120,6 +120,7 @@
 | 92 | **Code splitting** | ✅ FAIT | recharts et leaflet chunked séparément dans vite.config.ts. |
 | 93 | **Bundle size monitoring** | 🟡 Moyenne | `npm run build` → vérifier que le bundle initial reste < 350KB gzip. |
 | 94 | **Lighthouse CI** | 🟢 Basse | Intégrer Lighthouse dans la CI pour monitorer FCP, LCP, CLS. |
+| 95 | ~~**Fix package-lock CI**~~ | ✅ FAIT | Dépendances optionnelles netbsd/arm64 retirées, CI passe. |
 
 ---
 

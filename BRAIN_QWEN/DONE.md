@@ -287,32 +287,34 @@
 | 180 | **Tests dashboard admin (5)** | `AdminTabs` (4), `AdminStats` (4), `OverviewSection` (6), `AdminNotairesTab` (8), `AdminModals` (12) — Total : 34 tests. |
 | 181 | **Tests formulaires 5 étapes (2)** | `LocationStep` (7), `MediaStep` (11) — Total : 18 tests. |
 | 182 | **Fix tests pré-existantes** | `DocumentsStep` (import + Auth mock), `InfoStep` (getByRole combobox), `CharacteristicsStep` (texte exact), `PropertyFormBase` (validation prix/ville + testid), `VisitsTab` (champs manquants), `cloud-functions` (beforeAll import), `paymentService`/`adService` (types TS). |
+| 183 | **Fix CI GitHub Actions** | `package-lock.json` — dépendances optionnelles netbsd/arm64 incompatibles avec runner linux/x64. Regénéré avec `npm install --package-lock-only`. Commit `d68d4a4`. |
 
 ---
 
 ## 📊 Résumé
 
 ```
-Total items complétés : ~182
+Total items complétés : ~183
 
 Frontend : ~91 composants, 14 hooks, 15 services, 8 utils
-Tests : 74 fichiers de test (221 nouveaux tests ajoutés)
+Tests : 78 fichiers de test (778 tests, 100% passent, 0 erreur TS)
   - Cloud Functions : 101 tests
   - Services : 58 tests (7 services)
-  - Composants owner : 60 tests (6 composants)
+  - Composants owner : 75 tests (9 composants)
   - Composants admin : 34 tests (5 composants)
+  - Composants chat : 24 tests (2 composants)
   - Formulaires : 18 tests (2 étapes)
-  - Fixes pre-existants : DocumentsStep, InfoStep, CharacteristicsStep, PropertyFormBase, VisitsTab
+  - Hooks : 17 tests (1 hook)
 Firestore : 10+ collections, 230+ lignes de règles, 7 index
 Storage : 7 paths avec règles de sécurité
 Cloud Functions : 6 modules modulaires (europe-west1, nodejs20)
 Sécurité : Portail admin 2 étapes, anti brute force, session timeout, headers Vercel
 PWA : Service Worker avec cache strategies + FCM push
 Design : Tokens centralisés, palette CI (orange/vert/or)
-CI/CD : typecheck ajouté, branche develop créée, version 1.0.0
+CI/CD : typecheck ajouté, branche develop créée, version 1.0.0, package-lock fixé
 TypeScript : 0 erreur (typecheck passe clean)
 ```
 
 ---
 
-*Dernière mise à jour : 2026-04-10 (session tests massive)*
+*Dernière mise à jour : 2026-04-10 (fix CI package-lock + session tests massive)*

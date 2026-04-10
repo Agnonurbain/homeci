@@ -118,9 +118,11 @@ cd functions && npm run serve    # Build + emulators
 7. ~~Gitignore `lint_output.txt`~~ ✅ RÉSOLU
 8. ~~Tests Cloud Functions~~ ✅ RÉSOLU — 101 tests
 9. ~~Tests services manquants~~ ✅ RÉSOLU — 58 tests (7 services)
-10. ~~Tests dashboard owner~~ ✅ RÉSOLU — 60 tests (6 composants)
+10. ~~Tests dashboard owner~~ ✅ RÉSOLU — 75 tests (9 composants)
 11. ~~Tests dashboard admin~~ ✅ RÉSOLU — 34 tests (5 composants)
 12. ~~Tests formulaires 5 étapes~~ ✅ RÉSOLU — 18 tests (2 étapes)
+13. ~~Tests chat~~ ✅ RÉSOLU — 24 tests (ChatInput, MessageBubble)
+14. ~~package-lock CI~~ ✅ RÉSOLU — dépendances optionnelles netbsd/arm64 retirées
 
 ⚠️ **Restants :** Tests composants notaire (mocks complexes), paiement Mobile Money réel, notifications messages offline
 

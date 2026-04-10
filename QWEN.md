@@ -45,7 +45,7 @@ cd functions && npm run serve    # Build + emulators
   - ✅ Branche `develop` créée pour les PRs
   - ✅ Version `1.0.0`
 
-## Audit du répertoire (2026-04-10)
+## Audit du répertoire (2026-04-10 — fix CI)
 
 ### État global : ~93% complété
 
@@ -53,8 +53,8 @@ cd functions && npm run serve    # Build + emulators
 |---|---|
 | Frontend (4 dashboards, formulaires, PWA) | ~88% |
 | Backend Firebase (Auth, Firestore, Storage, Functions) | ~90% |
-| Tests (74 fichiers, 731 tests, 0 erreur typecheck) | ~92% |
-| CI/CD (GitHub Actions + Vercel, typecheck ajouté) | ~85% |
+| Tests (78 fichiers, 778 tests, 0 erreur, 100% passent) | ~92% |
+| CI/CD (GitHub Actions + Vercel, typecheck, package-lock fixé) | ~90% |
 | Sécurité (règles Firestore, portail admin 2 étapes) | ~80% |
 
 ### ✅ Résolu session haute priorité
@@ -68,16 +68,15 @@ cd functions && npm run serve    # Build + emulators
 
 ### ✅ Résolu session tests massive (2026-04-10)
 
-- **221 nouveaux tests** — Cloud Functions (101), services (58), owner (60), admin (34), formulaires (18)
-- **74 fichiers de test** au total, **731 tests**, **0 erreur TypeScript**
-- **Fix tests pré-existantes** — 6 fichiers corrigés
-- **8 échecs résiduels** — composants complexes avec chaînes d'import profondes
+- **778 tests, 100% passent** — Cloud Functions (101), services (58), owner (75), admin (34), chat (24), formulaires (18), hooks (17)
+- **78 fichiers de test** au total
+- **0 erreur TypeScript**
+- **Fix CI** — `package-lock.json` regénéré (dépendances optionnelles netbsd/arm64 retirées)
 
 ### Points d'attention restants
 
-- Cloud Functions : tests d'intégration E2E à écrire
+- Tests composants notaire (mocks complexes, chaîne d'import profonde)
 - Intégration paiement Mobile Money réel à finaliser (laissé de côté)
-- Tests composants notaire (mocks complexes)
 - Notifications offline et pièces jointes dans chat
 
 ## Architecture — Vue d'ensemble

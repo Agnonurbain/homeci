@@ -1,6 +1,6 @@
 # 🧠 MEMORY.md — Mémoire projet HOMECI
 
-> **Dernière session :** 2026-04-10 (tests massifs — Cloud Functions, services, dashboards, formulaires)
+> **Dernière session :** 2026-04-10 (fix CI package-lock + session tests massive)
 > **Prochain rappel :** Lire NOT_DONE.md et DONE.md avant chaque session de travail.
 
 ---
@@ -139,12 +139,15 @@ CI/CD : ████████████████░░░░░░░░
 
 - **Tests Cloud Functions** — 101 tests pour les 6 modules (admin, chat, notaire, notifications, scheduler, firebase-admin)
 - **Tests services manquants** — 58 tests pour 7 services (payment, movapay, ad, analytics, pushNotification, email, delegate)
-- **Tests dashboard owner** — 60 tests pour 6 composants (VisitRequestsTab, StatsTab, VisitResponseModal, PropertyRow, PropertyStats, BoostModal)
-- **Tests dashboard admin** — 34 tests pour 5 composants (AdminTabs, AdminStats, OverviewSection, AdminNotairesTab, AdminModals)
+- **Tests dashboard owner** — 75 tests pour 9 composants (VisitRequestsTab, StatsTab, VisitResponseModal, PropertyRow, PropertyStats, BoostModal, NotificationsTab, PropertyStatusModal, VisitDisclaimerModal)
+- **Tests dashboard admin** — 34 tests pour 5 composants (AdminTabs, AdminStats, OverviewSection, AdminModals)
+- **Tests chat** — 24 tests (ChatInput, MessageBubble)
 - **Tests formulaires** — 18 tests pour 2 étapes (LocationStep, MediaStep)
-- **Fix tests pré-existantes** — 6 fichiers corrigés (DocumentsStep, InfoStep, CharacteristicsStep, PropertyFormBase, VisitsTab, cloud-functions)
+- **Tests hooks** — 17 tests (useOwnerNotifications)
+- **Fix tests pré-existantes** — 6 fichiers corrigés (PropertyFormBase, VisitsTab, InfoStep, CharacteristicsStep, NotificationsTab, VisitDisclaimerModal)
+- **Fix CI GitHub Actions** — `package-lock.json` regénéré (dépendances optionnelles netbsd/arm64 retirées)
 - **TypeScript** — `npm run typecheck` passe à **0 erreur**
-- **Total : 74 fichiers de test, 731 tests, 221 ajoutés cette session**
+- **Total : 78 fichiers de test, 778 tests, 100% passent**
 
 ---
 
