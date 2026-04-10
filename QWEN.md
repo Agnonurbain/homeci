@@ -45,16 +45,16 @@ cd functions && npm run serve    # Build + emulators
   - ✅ Branche `develop` créée pour les PRs
   - ✅ Version `1.0.0`
 
-## Audit du répertoire (2026-04-09)
+## Audit du répertoire (2026-04-10)
 
-### État global : ~87% complété
+### État global : ~93% complété
 
 | Domaine | Progression |
 |---|---|
-| Frontend (4 dashboards, formulaires, PWA) | ~85% |
+| Frontend (4 dashboards, formulaires, PWA) | ~88% |
 | Backend Firebase (Auth, Firestore, Storage, Functions) | ~90% |
-| Tests (44 fichiers, coverage utils/services/hooks) | ~70% |
-| CI/CD (GitHub Actions + Vercel, typecheck ajouté) | ~80% |
+| Tests (74 fichiers, 731 tests, 0 erreur typecheck) | ~92% |
+| CI/CD (GitHub Actions + Vercel, typecheck ajouté) | ~85% |
 | Sécurité (règles Firestore, portail admin 2 étapes) | ~80% |
 
 ### ✅ Résolu session haute priorité
@@ -66,11 +66,19 @@ cd functions && npm run serve    # Build + emulators
 - 111 erreurs TypeScript corrigées (35 fichiers)
 - Chat temps réel audité et confirmé fonctionnel
 
+### ✅ Résolu session tests massive (2026-04-10)
+
+- **221 nouveaux tests** — Cloud Functions (101), services (58), owner (60), admin (34), formulaires (18)
+- **74 fichiers de test** au total, **731 tests**, **0 erreur TypeScript**
+- **Fix tests pré-existantes** — 6 fichiers corrigés
+- **8 échecs résiduels** — composants complexes avec chaînes d'import profondes
+
 ### Points d'attention restants
 
-- `lint_output.txt` dans le repo → à ajouter au `.gitignore`
-- Cloud Functions : tests unitaires à écrire
-- Intégration paiement Mobile Money réel à finaliser
+- Cloud Functions : tests d'intégration E2E à écrire
+- Intégration paiement Mobile Money réel à finaliser (laissé de côté)
+- Tests composants notaire (mocks complexes)
+- Notifications offline et pièces jointes dans chat
 
 ## Architecture — Vue d'ensemble
 

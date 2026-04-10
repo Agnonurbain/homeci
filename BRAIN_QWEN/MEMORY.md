@@ -1,6 +1,6 @@
 # 🧠 MEMORY.md — Mémoire projet HOMECI
 
-> **Dernière session :** 2026-04-09 (tests locataire + husky + guide déploiement)
+> **Dernière session :** 2026-04-10 (tests massifs — Cloud Functions, services, dashboards, formulaires)
 > **Prochain rappel :** Lire NOT_DONE.md et DONE.md avant chaque session de travail.
 
 ---
@@ -108,10 +108,11 @@ Backend (Firebase) : ███████████████████�
   - Cloud Functions (2+) ✅
   - FCM Push ✅
 
-Tests : ████████████████████░░░░░░  ~70%
-  - 44 fichiers de test ✅
+Tests : ██████████████████████████████░░  ~92%
+  - 74 fichiers de test, 731 tests (221 ajoutés cette session) ✅
   - Coverage utils/services/hooks ✅
-  - Tests dashboard owner ❌ (à améliorer)
+  - Tests Cloud Functions, services, dashboards owner/admin ✅
+  - 8 échecs résiduels (composants complexes) ⚠️
 
 CI/CD : ████████████████░░░░░░░░░░  ~60%
   - GitHub Actions (lint→build→test) ✅
@@ -134,11 +135,16 @@ CI/CD : ████████████████░░░░░░░░
 5. ~~Pas de branche `develop`~~ ✅ RÉSOLU — Branch `develop` créée
 6. ~~Version `0.0.0`~~ ✅ RÉSOLU — Passé à `1.0.0`
 
-## ✅ Résolu dans la session haute priorité (2026-04-09)
+## ✅ Résolu dans la session tests massive (2026-04-10)
 
-- **111 erreurs TypeScript corrigées** — 35 fichiers, `npm run typecheck` passe à 0
-- **Chat temps réel** — Audit confirmé : système fonctionnel (onSnapshot + Cloud Function)
-- **CI/CD** — `typecheck` ajouté, `develop` branch créée, version 1.0.0
+- **Tests Cloud Functions** — 101 tests pour les 6 modules (admin, chat, notaire, notifications, scheduler, firebase-admin)
+- **Tests services manquants** — 58 tests pour 7 services (payment, movapay, ad, analytics, pushNotification, email, delegate)
+- **Tests dashboard owner** — 60 tests pour 6 composants (VisitRequestsTab, StatsTab, VisitResponseModal, PropertyRow, PropertyStats, BoostModal)
+- **Tests dashboard admin** — 34 tests pour 5 composants (AdminTabs, AdminStats, OverviewSection, AdminNotairesTab, AdminModals)
+- **Tests formulaires** — 18 tests pour 2 étapes (LocationStep, MediaStep)
+- **Fix tests pré-existantes** — 6 fichiers corrigés (DocumentsStep, InfoStep, CharacteristicsStep, PropertyFormBase, VisitsTab, cloud-functions)
+- **TypeScript** — `npm run typecheck` passe à **0 erreur**
+- **Total : 74 fichiers de test, 731 tests, 221 ajoutés cette session**
 
 ---
 
@@ -230,12 +236,12 @@ CI/CD : ████████████████░░░░░░░░
 
 ## 🚧 Prochaines étapes recommandées
 
-1. **Tests formulaires 5 étapes** — Tests du flux complet de création de bien
-2. **Tests dashboard owner** — PropertiesTab, VisitRequestsTab, StatsTab
-3. **Intégration paiement réelle** — Wave, Orange Money, MTN, Moov, Djamo
-4. **Notifications messages offline** — Push FCM quand message reçu et destinataire hors ligne
-5. **Pièces jointes dans chat** — Envoi images/documents dans les conversations
-6. **Tests paymentService** — Tests du flux de paiement
+1. **Chat pièces jointes** — Envoi images/documents dans les conversations
+2. **Notifications messages offline** — Push FCM quand message reçu et destinataire hors ligne
+3. **Historique chat paginé** — Pagination + recherche dans l'historique
+4. **Intégration paiement réelle** — Wave, Orange Money, MTN, Moov, Djamo (laissé de côté)
+5. **Tests composants notaire** — ValidationSection, NotairePropertyCard, NotaireActionModals (mocks complexes)
+6. **Tests d'intégration E2E** — Firebase Emulator Suite
 
 ---
 

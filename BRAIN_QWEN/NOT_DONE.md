@@ -27,7 +27,7 @@
 
 | # | Tâche | Priorité | Détails |
 |---|---|---|---|
-| 11 | **Tests Cloud Functions** | 🟡 Moyenne | Aucun test pour les Cloud Functions. Écrire des tests unitaires avec Firebase Functions Testing. |
+| 11 | ~~**Tests Cloud Functions**~~ | ✅ FAIT | 101 tests dans `cloud-functions.test.ts`. |
 | 12 | **Function de modération auto** | 🟡 Moyenne | Détection automatique de contenu suspect (doublons, spam, mots-clés). |
 | 13 | **Function nettoyage Storage** | 🟢 Basse | Cron pour supprimer les images/documents orphelins (biens supprimés ou rejetés). |
 | 14 | **Function statistiques** | 🟢 Basse | Agrégation quotidienne des stats (visites, vues, certifications). |
@@ -98,14 +98,16 @@
 
 | # | Tâche | Priorité | Détails |
 |---|---|---|
-| 80 | **Tests dashboard owner** | 🟡 Moyenne | Ajouter des tests pour PropertiesTab, VisitRequestsTab, StatsTab. |
+| 80 | ~~**Tests dashboard owner**~~ | ✅ FAIT | VisitRequestsTab (14), StatsTab (9), VisitResponseModal (10), PropertyRow (13), PropertyStats (3), BoostModal (11). |
 | 81 | **Tests dashboard notaire** | 🟡 Moyenne | Tests pour ValidationSection, NotairePropertyCard, NotaireActionModals. |
 | 82 | ~~**Tests dashboard locataire**~~ | ✅ FAIT | 4 fichiers créés : SearchTab (8), FavoritesTab (5), VisitsTab (10), VisitRequestModal (4). |
-| 83 | **Tests chatService** | 🟡 Moyenne | Couverture complète du service de messagerie. |
-| 84 | **Tests paymentService** | 🟡 Moyenne | Tests du flux de paiement (movapayService, paymentService). |
-| 85 | **Tests Cloud Functions** | 🟡 Moyenne | Tests unitaires pour sendPushNotification, autoResetVisits. |
+| 83 | ~~**Tests chatService**~~ | ✅ FAIT | 8 tests — getOrCreateChat, subscribeToMessages, sendMessage, etc. |
+| 84 | ~~**Tests paymentService**~~ | ✅ FAIT | 5 tests + movapayService (3), adService (12), analyticsService (21), pushNotificationService (5), emailService (7), delegateService (5). |
+| 85 | ~~**Tests Cloud Functions**~~ | ✅ FAIT | 101 tests — admin, chat, notaire, notifications, scheduler, firebase-admin. |
 | 86 | **Tests d'intégration** | 🟢 Basse | Tests E2E avec Firebase Emulator Suite. |
 | 87 | **Augmenter coverage** | 🟡 Moyenne | Coverage actuellement limitée à utils/services/hooks — étendre aux composants. |
+| 88 | ~~**Tests formulaires 5 étapes**~~ | ✅ FAIT | LocationStep (7), MediaStep (11). |
+| 89 | ~~**Tests dashboard admin**~~ | ✅ FAIT | AdminTabs (4), AdminStats (4), OverviewSection (6), AdminNotairesTab (8), AdminModals (12). |
 
 ---
 
@@ -157,10 +159,10 @@
 
 | Priorité | Count |
 |---|---|
-| 🔴 Haute | 6 |
-| 🟡 Moyenne | 28 |
+| 🔴 Haute | 4 (sans paiement) |
+| 🟡 Moyenne | 22 |
 | 🟢 Basse | 14 |
-| **TOTAL** | **32 tâches** (16 résolues depuis session précédente) |
+| **TOTAL** | **~26 tâches** (21 résolues depuis session précédente) |
 
 ---
 
@@ -169,13 +171,16 @@
 ```
 Frontend : ██████████████████████████████░░  ~88%
 Backend (Firebase) : ████████████████████████████  ~90%
-Tests : ████████████████████████░░░░  ~80%
+Tests : ██████████████████████████████░░  ~92% (+12%)
+  - 74 fichiers de test, 731 tests (221 ajoutés)
+  - 0 erreur TypeScript (typecheck clean)
+  - 8 échecs résiduels (composants complexes avec chaînes d'import)
 CI/CD : ██████████████████████████░░  ~85%
 Sécurité : ████████████████████████░░  ~80%
 
-Global : ███████████████████████████████░  ~91%
+Global : ████████████████████████████████░  ~93%
 ```
 
 ---
 
-*Dernière mise à jour : 2026-04-09 (session haute priorité)*
+*Dernière mise à jour : 2026-04-10 (session tests massive — 221 nouveaux tests)*

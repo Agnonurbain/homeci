@@ -206,6 +206,48 @@ Chaque entrée suit ce format :
 
 ---
 
+### WL-017 — `getByDisplayValue` incompatible avec `<select>` en jsdom
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-017 |
+| **Date** | 2026-04-10 |
+| **Catégorie** | Tests |
+| **Problème** | `screen.getByDisplayValue('valeur')` ne trouve pas les `<select>` dans l'environnement jsdom. |
+| **Cause racine** | jsdom ne gère pas correctement `displayValue` sur les éléments `<select>`. |
+| **Solution** | Utiliser `screen.getByRole('combobox', { name: /Label/ })` ou `screen.getAllByRole('combobox')[index]` puis vérifier la valeur avec `.toHaveValue('valeur')`. |
+| **Impact** | 🟡 Moyen — Tests InfoStep cassés. |
+| **Prévention** | Toujours utiliser `getByRole('combobox')` pour les `<select>`. |
+
+---
+
+### WL-018 — Chaînes d'import de composants admin complexes
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-018 |
+| **Date** | 2026-04-10 |
+| **Catégorie** | Tests |
+| **Problème** | Les composants admin (OverviewSection) importent une chaîne de dépendances (AdminSections → AdminStats → AdminSections → SectionTitle, PropertyStatusBadge) qui cause des erreurs "Element type is invalid" dans les tests. |
+| **Cause racine** | Les imports circulaires et les dépendances profondes rendent le mocking difficile. Les tests doivent mocker toute la chaîne simultanément. |
+| **Solution** | Mocker TOUS les sous-composants (`vi.mock('./AdminStats')`, `vi.mock('./AdminSections')`) AVANT d'importer le composant testé. Utiliser des testids (`data-testid`) dans les mocks pour les assertions. |
+| **Impact** | 🟡 Moyen — Tests OverviewSection et AdminNotairesTab difficiles à écrire. |
+| **Prévention** | Découpler les composants avec moins de dépendances croisées. Envisager une architecture de composition plutôt que d'import direct. |
+
+---
+
+### WL-019 — Import paths cassés lors du déplacement de fichiers de test
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-019 |
+| **Date** | 2026-04-10 |
+| **Catégorie** | Infrastructure |
+| **Problème** | Les imports relatifs (`../../PropertyFormBase`, `../../hooks/useOwnerVisits`) étaient incorrects selon la profondeur des fichiers de test. |
+| **Cause racine** | Les fichiers de test sont à différents niveaux : `__tests__/`, `owner/__tests__/`, `owner/propertyForm/__tests__/`, `admin/__tests__/`. |
+| **Solution** | Vérifier systématiquement le chemin relatif depuis l'emplacement du fichier de test jusqu'à la source. Utiliser `grep` pour localiser le fichier cible. |
+| **Impact** | 🟡 Moyen — 6 fichiers avec imports cassés à corriger. |
+| **Prévention** | Utiliser des imports absolus (alias `@/`) si possible. |
+
+---
+
 ## 📊 Résumé par catégorie
 
 | Catégorie | Count |
@@ -215,11 +257,11 @@ Chaque entrée suit ce format :
 | CI/CD | 4 |
 | Sécurité | 1 |
 | UX | 1 |
-| Tests | 1 |
-| Infrastructure | 3 |
+| Tests | 3 |
+| Infrastructure | 4 |
 | Documentation | 1 |
 | Design | 1 |
-| **TOTAL** | **17** |
+| **TOTAL** | **20** |
 
 ---
 
@@ -228,7 +270,7 @@ Chaque entrée suit ce format :
 | Impact | Count |
 |---|---|
 | 🔴 Critique | 5 |
-| 🟡 Moyen | 9 |
+| 🟡 Moyen | 12 |
 | 🟢 Faible | 3 |
 
 ---

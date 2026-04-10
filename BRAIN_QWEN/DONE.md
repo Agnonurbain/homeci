@@ -281,25 +281,38 @@
 | 174 | **Mock IntersectionObserver** | Ajouté dans `setup.ts` pour le lazy loading et PropertyCard. |
 | 175 | **Husky pre-commit hooks** | `.husky/pre-commit` — lance `npm run lint` et `npm run typecheck` avant chaque commit. Script `prepare` ajouté à `package.json`. |
 | 176 | **Guide de déploiement** | `DEPLOY.md` créé — Vercel frontend, Cloud Functions, Firestore rules, Storage rules, monitoring Sentry, checklist post-déploiement, rollback. |
+| 177 | **Tests Cloud Functions** | `cloud-functions.test.ts` (101 tests) — Structure, exports, guards sécurité, triggers, logique métier des 6 modules : admin, chat, notaire, notifications, scheduler, firebase-admin. |
+| 178 | **Tests services manquants (7)** | `paymentService` (5), `movapayService` (3), `adService` (12), `analyticsService` (21), `pushNotificationService` (5), `emailService` (7), `delegateService` (5) — Total : 58 tests. |
+| 179 | **Tests dashboard owner (6)** | `VisitRequestsTab` (14), `StatsTab` (9), `VisitResponseModal` (10), `PropertyRow` (13), `PropertyStats` (3), `BoostModal` (11) — Total : 60 tests. |
+| 180 | **Tests dashboard admin (5)** | `AdminTabs` (4), `AdminStats` (4), `OverviewSection` (6), `AdminNotairesTab` (8), `AdminModals` (12) — Total : 34 tests. |
+| 181 | **Tests formulaires 5 étapes (2)** | `LocationStep` (7), `MediaStep` (11) — Total : 18 tests. |
+| 182 | **Fix tests pré-existantes** | `DocumentsStep` (import + Auth mock), `InfoStep` (getByRole combobox), `CharacteristicsStep` (texte exact), `PropertyFormBase` (validation prix/ville + testid), `VisitsTab` (champs manquants), `cloud-functions` (beforeAll import), `paymentService`/`adService` (types TS). |
 
 ---
 
 ## 📊 Résumé
 
 ```
-Total items complétés : ~167
+Total items complétés : ~182
 
 Frontend : ~91 composants, 14 hooks, 15 services, 8 utils
-Tests : 44 fichiers de test
+Tests : 74 fichiers de test (221 nouveaux tests ajoutés)
+  - Cloud Functions : 101 tests
+  - Services : 58 tests (7 services)
+  - Composants owner : 60 tests (6 composants)
+  - Composants admin : 34 tests (5 composants)
+  - Formulaires : 18 tests (2 étapes)
+  - Fixes pre-existants : DocumentsStep, InfoStep, CharacteristicsStep, PropertyFormBase, VisitsTab
 Firestore : 10+ collections, 230+ lignes de règles, 7 index
 Storage : 7 paths avec règles de sécurité
-Cloud Functions : 5 modules modulaires (europe-west1, nodejs20)
+Cloud Functions : 6 modules modulaires (europe-west1, nodejs20)
 Sécurité : Portail admin 2 étapes, anti brute force, session timeout, headers Vercel
 PWA : Service Worker avec cache strategies + FCM push
 Design : Tokens centralisés, palette CI (orange/vert/or)
 CI/CD : typecheck ajouté, branche develop créée, version 1.0.0
+TypeScript : 0 erreur (typecheck passe clean)
 ```
 
 ---
 
-*Dernière mise à jour : 2026-04-09 (session haute priorité)*
+*Dernière mise à jour : 2026-04-10 (session tests massive)*

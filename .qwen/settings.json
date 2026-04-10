@@ -13,7 +13,14 @@
       "Bash(node *)",
       "Bash(npm install *)",
       "Bash(echo *)",
-      "Bash(chmod *)"
+      "Bash(chmod *)",
+      "Bash(timeout *)",
+      "Bash(npm ci *)",
+      "Bash(npm *)",
+      "Bash(npm ls *)",
+      "Bash(cat *)",
+      "Bash(ls *)",
+      "Bash(rmdir *)"
     ]
   },
   "$version": 3

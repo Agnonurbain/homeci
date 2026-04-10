@@ -35,7 +35,8 @@ const mockVisit = (id: string, status: string, ov = {}): VisitRequest => ({
   owner_id: 'owner-1', tenant_id: 'tenant-1', tenant_name: 'Jean Locataire',
   preferred_date: '2026-05-15', preferred_time: '10:00',
   status: status as VisitRequest['status'],
-  counter_date: null, counter_time: null, counter_proposed_by: null, owner_notes: '',
+  counter_date: undefined, counter_time: undefined, counter_proposed_by: undefined, owner_notes: '',
+  tenant_phone: '+225 07 00 00 00', tenant_email: 'jean@example.com',
   created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z',
   ...ov,
 });

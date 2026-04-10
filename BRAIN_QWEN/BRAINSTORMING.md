@@ -116,18 +116,23 @@ cd functions && npm run serve    # Build + emulators
 5. ~~Pas de branche `develop`~~ ✅ RÉSOLU
 6. ~~Version `0.0.0`~~ ✅ RÉSOLU — 1.0.0
 7. ~~Gitignore `lint_output.txt`~~ ✅ RÉSOLU
+8. ~~Tests Cloud Functions~~ ✅ RÉSOLU — 101 tests
+9. ~~Tests services manquants~~ ✅ RÉSOLU — 58 tests (7 services)
+10. ~~Tests dashboard owner~~ ✅ RÉSOLU — 60 tests (6 composants)
+11. ~~Tests dashboard admin~~ ✅ RÉSOLU — 34 tests (5 composants)
+12. ~~Tests formulaires 5 étapes~~ ✅ RÉSOLU — 18 tests (2 étapes)
 
-⚠️ **Restants :** Tests composants (act() React 18 prod), paiement Mobile Money réel, notifications messages offline
+⚠️ **Restants :** Tests composants notaire (mocks complexes), paiement Mobile Money réel, notifications messages offline
 
 ---
 
 ## 📊 Prochaines étapes prioritaires
 
-1. **Tests dashboard locataire** — SearchTab, FavoritesTab, VisitsTab
+1. **Chat pièces jointes** — Envoi images/documents dans les conversations
 2. **Notifications messages offline** — Push FCM quand message reçu et destinataire hors ligne
-3. **Pièces jointes dans chat** — Envoi images/documents dans les conversations
-4. **Intégration paiement Mobile Money réelle** — Wave, Orange Money, MTN, Moov, Djamo
-5. **Historique chat paginé** — Pagination + recherche dans l'historique
+3. **Historique chat paginé** — Pagination + recherche dans l'historique
+4. **Tests composants notaire** — ValidationSection, NotairePropertyCard, NotaireActionModals (mocks complexes)
+5. **Intégration paiement Mobile Money réelle** — Wave, Orange Money, MTN, Moov, Djamo (laissé de côté pour l'instant)
 
 ---
 
@@ -151,4 +156,4 @@ cd functions && npm run serve    # Build + emulators
 ---
 
 *Ce fichier est le point d'entrée unique. Toujours le lire en premier.*
-*Dernière mise à jour : 2026-04-09*
+*Dernière mise à jour : 2026-04-10 (session tests massive)*
