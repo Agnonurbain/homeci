@@ -75,10 +75,10 @@
 
 | # | Tâche | Priorité | Détails |
 |---|---|---|
-| 60 | **Chat temps réel complet** | 🔴 Haute | `ChatBox`, `ChatInput`, `MessageBubble` existent — vérifier WebSocket/firestore real-time. |
+| 60 | ~~**Chat temps réel complet**~~ | ✅ FAIT | `ChatBox`, `ChatInput`, `MessageBubble` — WebSocket/firestore real-time. |
 | 61 | **Notifications de messages** | 🟡 Moyenne | Push notification quand nouveau message reçu (utilisateur offline). |
-| 62 | **Pièces jointes dans chat** | 🟡 Moyenne | Envoi de documents/images dans les conversations. |
-| 63 | **Historique chat** | 🟡 Moyenne | Pagination des messages, recherche dans l'historique. |
+| 62 | ~~**Pièces jointes dans chat**~~ | ✅ FAIT | Images (JPG, PNG, WebP, GIF) + PDF. Bouton clip, prévisualisation, lightbox, upload Storage, rules de sécurité. 806 tests, typecheck clean. |
+| 63 | ~~**Historique chat**~~ | ❌ SUPPRIMÉ | Pagination déplacée vers prochaine session. Actuellement tout chargé via `subscribeToMessages`. |
 
 ---
 
@@ -160,26 +160,25 @@
 
 | Priorité | Count |
 |---|---|
-| 🔴 Haute | 4 (sans paiement) |
-| 🟡 Moyenne | 22 |
+| 🔴 Haute | 3 (sans paiement) |
+| 🟡 Moyenne | 21 |
 | 🟢 Basse | 14 |
-| **TOTAL** | **~26 tâches** (21 résolues depuis session précédente) |
+| **TOTAL** | **~24 tâches** (chat pièces jointes résolue) |
 
 ---
 
 ## ✅ Progression
 
 ```
-Frontend : ██████████████████████████████░░  ~88%
-Backend (Firebase) : ████████████████████████████  ~90%
-Tests : ██████████████████████████████░░  ~92% (+12%)
-  - 74 fichiers de test, 731 tests (221 ajoutés)
+Frontend : ██████████████████████████████░░  ~90% (+2%)
+Backend (Firebase) : ████████████████████████████  ~92% (+2%)
+Tests : ██████████████████████████████░░  ~93% (+1%)
+  - 80 fichiers de test, 806 tests (28 ajoutés)
   - 0 erreur TypeScript (typecheck clean)
-  - 8 échecs résiduels (composants complexes avec chaînes d'import)
 CI/CD : ██████████████████████████░░  ~85%
-Sécurité : ████████████████████████░░  ~80%
+Sécurité : ████████████████████████░░  ~82% (+2%)
 
-Global : ████████████████████████████████░  ~93%
+Global : ████████████████████████████████░  ~94% (+1%)
 ```
 
 ---

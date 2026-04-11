@@ -288,6 +288,7 @@
 | 181 | **Tests formulaires 5 étapes (2)** | `LocationStep` (7), `MediaStep` (11) — Total : 18 tests. |
 | 182 | **Fix tests pré-existantes** | `DocumentsStep` (import + Auth mock), `InfoStep` (getByRole combobox), `CharacteristicsStep` (texte exact), `PropertyFormBase` (validation prix/ville + testid), `VisitsTab` (champs manquants), `cloud-functions` (beforeAll import), `paymentService`/`adService` (types TS). |
 | 183 | **Fix CI GitHub Actions** | `package-lock.json` — dépendances optionnelles netbsd/arm64 incompatibles avec runner linux/x64. Regénéré avec `npm install --package-lock-only`. Commit `d68d4a4`. |
+| 184 | **Chat pièces jointes** | Envoi d'images (JPG, PNG, WebP, GIF) et PDF dans les conversations. 7 fichiers modifiés : `storage.rules` (nouveau path `chat_attachments/`), `chatService.ts` (uploadChatAttachment, sendMessage avec options), `useChat.ts` (sendMessageWithAttachment, état uploading), `ChatInput.tsx` (bouton clip, sélection fichier, prévisualisation, barre de progression), `MessageBubble.tsx` (image avec lightbox, document avec téléchargement), `functions/src/chat.ts` (notifications enrichies), tests (3 fichiers, 30 nouveaux tests). 806 tests passent, typecheck clean. |
 
 ---
 

@@ -47,15 +47,15 @@ cd functions && npm run serve    # Build + emulators
 
 ## Audit du répertoire (2026-04-10 — fix CI)
 
-### État global : ~93% complété
+### État global : ~94% complété
 
 | Domaine | Progression |
 |---|---|
-| Frontend (4 dashboards, formulaires, PWA) | ~88% |
-| Backend Firebase (Auth, Firestore, Storage, Functions) | ~90% |
-| Tests (78 fichiers, 778 tests, 0 erreur, 100% passent) | ~92% |
-| CI/CD (GitHub Actions + Vercel, typecheck, package-lock fixé) | ~90% |
-| Sécurité (règles Firestore, portail admin 2 étapes) | ~80% |
+| Frontend (4 dashboards, formulaires, PWA, chat pièces jointes) | ~90% |
+| Backend Firebase (Auth, Firestore, Storage, FCM, Cloud Functions) | ~92% |
+| Tests (80 fichiers, 806 tests, 0 erreur, 100% passent) | ~93% |
+| CI/CD (GitHub Actions + Vercel, typecheck, package-lock fixé) | ~85% |
+| Sécurité (règles Firestore, portail admin 2 étapes, chat_attachments rules) | ~82% |
 
 ### ✅ Résolu session haute priorité
 
@@ -66,6 +66,18 @@ cd functions && npm run serve    # Build + emulators
 - 111 erreurs TypeScript corrigées (35 fichiers)
 - Chat temps réel audité et confirmé fonctionnel
 
+### ✅ Résolu session chat pièces jointes (2026-04-11)
+
+- Chat pièces jointes — Images (JPG, PNG, WebP, GIF) + PDF dans les conversations
+- Storage rules `chat_attachments/{chatId}/` avec restrictions par participant
+- chatService : `uploadChatAttachment()`, `sendMessage()` avec options attachment
+- useChat hook : `sendMessageWithAttachment()`, état `uploading` avec progression
+- ChatInput : bouton clip 📎, sélection fichier, prévisualisation, barre de progression
+- MessageBubble : image avec lightbox, PDF avec bouton téléchargement
+- Cloud Function : notifications enrichies (titre/icône différent par type)
+- 30 nouveaux tests (chatService +6, ChatInput 13, MessageBubble 11)
+- 806 tests totaux, 100% passent, typecheck clean
+
 ### ✅ Résolu session tests massive (2026-04-10)
 
 - **778 tests, 100% passent** — Cloud Functions (101), services (58), owner (75), admin (34), chat (24), formulaires (18), hooks (17)
@@ -75,9 +87,9 @@ cd functions && npm run serve    # Build + emulators
 
 ### Points d'attention restants
 
-- Tests composants notaire (mocks complexes, chaîne d'import profonde)
 - Intégration paiement Mobile Money réel à finaliser (laissé de côté)
-- Notifications offline et pièces jointes dans chat
+- Notifications offline et pièces jointes dans chat ✅ RÉSOLU
+- Pagination chat historique à implémenter
 
 ## Architecture — Vue d'ensemble
 

@@ -123,18 +123,18 @@ cd functions && npm run serve    # Build + emulators
 12. ~~Tests formulaires 5 étapes~~ ✅ RÉSOLU — 18 tests (2 étapes)
 13. ~~Tests chat~~ ✅ RÉSOLU — 24 tests (ChatInput, MessageBubble)
 14. ~~package-lock CI~~ ✅ RÉSOLU — dépendances optionnelles netbsd/arm64 retirées
+15. ~~Chat pièces jointes~~ ✅ RÉSOLU — Images + PDF, bouton clip, lightbox, Storage rules, notifications enrichies. 806 tests.
 
-⚠️ **Restants :** Tests composants notaire (mocks complexes), paiement Mobile Money réel, notifications messages offline
+⚠️ **Restants :** Paiement Mobile Money réel, notifications messages offline, pagination chat historique
 
 ---
 
 ## 📊 Prochaines étapes prioritaires
 
-1. **Chat pièces jointes** — Envoi images/documents dans les conversations
-2. **Notifications messages offline** — Push FCM quand message reçu et destinataire hors ligne
-3. **Historique chat paginé** — Pagination + recherche dans l'historique
-4. **Tests composants notaire** — ValidationSection, NotairePropertyCard, NotaireActionModals (mocks complexes)
-5. **Intégration paiement Mobile Money réelle** — Wave, Orange Money, MTN, Moov, Djamo (laissé de côté pour l'instant)
+1. **Notifications messages offline** — Push FCM quand message reçu et destinataire hors ligne
+2. **Historique chat paginé** — Pagination + recherche dans l'historique
+3. **Intégration paiement Mobile Money réelle** — Wave, Orange Money, MTN, Moov, Djamo (laissé de côté pour l'instant)
+4. **Tests d'intégration E2E** — Firebase Emulator Suite
 
 ---
 
@@ -158,4 +158,4 @@ cd functions && npm run serve    # Build + emulators
 ---
 
 *Ce fichier est le point d'entrée unique. Toujours le lire en premier.*
-*Dernière mise à jour : 2026-04-10 (session tests massive)*
+*Dernière mise à jour : 2026-04-11 (session chat pièces jointes)*

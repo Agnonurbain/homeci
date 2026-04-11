@@ -262,7 +262,8 @@ describe('4. chat.ts — onNewChatMessage', () => {
   it('crée une notification de type new_message', () => {
     expect(content).toContain('collection("notifications")');
     expect(content).toContain('type: "new_message"');
-    expect(content).toContain('title: `Message de ${senderName}`');
+    expect(content).toContain('notifTitle');
+    expect(content).toContain('notifMessage');
   });
 
   it('inclut property_id dans la notification', () => {

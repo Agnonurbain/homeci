@@ -10,6 +10,11 @@ service firebase.storage {
     function isAdmin() { return isAuth() && getUserData().role == 'admin'; }
     function isNotaire() { return isAuth() && getUserData().role == 'notaire'; }
     function isProprietaire() { return isAuth() && getUserData().role == 'proprietaire'; }
+    function isChatParticipant(chatId) {
+      let chat = firestore.get(/databases/(default)/documents/chats/$(chatId));
+      return chat.data.tenant_id == request.auth.uid
+          || chat.data.owner_id == request.auth.uid;
+    }
 
     // ── Images de propriétés : lecture publique, écriture authentifiée ──
     match /images/{allPaths=**} {
@@ -88,6 +93,19 @@ service firebase.storage {
       allow write: if isAuth()
         && request.resource.size < 100 * 1024 * 1024
         && request.resource.contentType.matches('video/.*');
+    }
+
+    // ── Pièces jointes du chat (images + documents) ──
+    // Lecture : uniquement les participants du chat ou admin
+    // Écriture : participants du chat uniquement
+    match /chat_attachments/{chatId}/{allPaths=**} {
+      allow read: if isAuth() && (
+        isChatParticipant(chatId) || isAdmin()
+      );
+      allow write: if isAuth() && isChatParticipant(chatId)
+        && request.resource.size < 10 * 1024 * 1024
+        && (request.resource.contentType.matches('image/.*')
+            || request.resource.contentType == 'application/pdf');
     }
   }
 }

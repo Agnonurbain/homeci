@@ -38,12 +38,29 @@ export const onNewChatMessage = onDocumentCreated(
     const senderName = senderSnap.data()?.full_name || "Quelqu'un";
 
     const content = String(data.content || "").slice(0, 100);
+    const attachmentType = data.attachment_type as string | undefined;
+    const attachmentName = data.attachment_name as string | undefined;
+
+    // Build notification message
+    let notifTitle = `Message de ${senderName}`;
+    let notifMessage = content;
+
+    if (attachmentType === "image" && !content) {
+      notifTitle = `Image de ${senderName}`;
+      notifMessage = attachmentName ? `📷 ${attachmentName}` : "📷 Une image a été envoyée";
+    } else if (attachmentType === "document" && !content) {
+      notifTitle = `Document de ${senderName}`;
+      notifMessage = attachmentName ? `📄 ${attachmentName}` : "📄 Un document a été envoyé";
+    } else if (attachmentType) {
+      // Both text and attachment
+      notifMessage = content;
+    }
 
     await db.collection("notifications").add({
       user_id: recipientId,
       type: "new_message",
-      title: `Message de ${senderName}`,
-      message: content,
+      title: notifTitle,
+      message: notifMessage,
       property_id: chat.property_id || null,
       read: false,
       created_at: FieldValue.serverTimestamp(),

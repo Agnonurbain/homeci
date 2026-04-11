@@ -160,8 +160,8 @@
 | Composant | Description | Statut |
 |---|---|---|
 | **ChatBox** | Composant chat complet | ✅ Fait |
-| **ChatInput** | Input de saisie message | ✅ Fait |
-| **MessageBubble** | Bulle de message individuelle | ✅ Fait |
+| **ChatInput** | Input de saisie message + pièces jointes | ✅ Fait |
+| **MessageBubble** | Bulle de message individuelle + lightbox image | ✅ Fait |
 
 ### 8. Composants Transverses
 
@@ -320,8 +320,8 @@ transactions/{id}
 ### Palier 2 — Messagerie + Analytics + Performance — 🟡 ~60%
 
 - ✅ Messagerie basique (ChatBox, ChatInput, MessageBubble)
+- ✅ Pièces jointes dans chat (images + PDF, lightbox, upload Storage)
 - ❌ Chat temps réel complet (WebSocket/Firestore real-time)
-- ❌ Pièces jointes dans chat
 - ✅ Enquêtes de satisfaction
 - ✅ Statistiques propriétaires
 - ❌ Analytics avancé admin (graphiques Recharts)
@@ -384,6 +384,7 @@ Global : ███████████████████████�
 
 | Date | Changement |
 |---|---|
+| 2026-04-11 | **Chat pièces jointes** — Images (JPG, PNG, WebP, GIF) + PDF. Bouton clip, prévisualisation, lightbox, upload Storage, rules `chat_attachments/`, notifications enrichies. 806 tests, typecheck clean. |
 | 2026-04-10 | **Fix CI** — `package-lock.json` regénéré (dépendances netbsd/arm64 retirées). Commit `d68d4a4`. |
 | 2026-04-10 | **Session tests massive** — 221 nouveaux tests ajoutés (Cloud Functions 101, services 58, owner 75, admin 34, chat 24, formulaires 18, hooks 17). 78 fichiers de test au total, 778 tests, 100% passent. typecheck clean à 0 erreur. |
 | 2026-04-09 | Création PLAN.md pour HOMECI (audit complet) |

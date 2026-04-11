@@ -262,20 +262,48 @@ Chaque entrée suit ce format :
 
 ---
 
+### WL-021 — Chat pièces jointes : import path dans les composants chat
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-021 |
+| **Date** | 2026-04-11 |
+| **Catégorie** | Frontend / Infrastructure |
+| **Problème** | `ChatInput.tsx` importait `../styles/homeci-tokens` au lieu de `../../styles/homeci-tokens` car le fichier est dans `src/components/chat/` (un niveau de sous-dossier). |
+| **Cause racine** | Le fichier a été réécrit avec `write_file` sans recalculer le chemin relatif. |
+| **Solution** | Corriger l'import : `../../styles/homeci-tokens`. Toujours vérifier la profondeur du fichier avant d'écrire les imports relatifs. |
+| **Impact** | 🟡 Faible — Erreur TS détectée immédiatement par typecheck. |
+| **Prévention** | Utiliser `read_file` pour vérifier le chemin avant `write_file`, ou privilégier `edit` avec contexte. |
+
+---
+
+### WL-022 — Tests : `getByAltText` dupliqué dans lightbox
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-022 |
+| **Date** | 2026-04-11 |
+| **Catégorie** | Tests |
+| **Problème** | `screen.getByAltText('photo.jpg')` trouvait 2 éléments (image dans la bulle + image dans la lightbox) après ouverture de la lightbox. |
+| **Cause racine** | La lightbox réutilise le même `alt` que l'image originale. `getByAltText` exige un résultat unique. |
+| **Solution** | Utiliser `container.querySelectorAll('img')` et vérifier la count avant/après clic. Pour la fermeture, cibler le bouton X via `querySelector`. |
+| **Impact** | 🟡 Faible — 1 test cassé. |
+| **Prévention** | Préférer `container.querySelectorAll` quand des éléments dupliqués existent, ou utiliser des `data-testid` uniques. |
+
+---
+
 ## 📊 Résumé par catégorie
 
 | Catégorie | Count |
 |---|---|
 | Backend | 2 |
-| Frontend | 3 |
+| Frontend | 4 |
 | CI/CD | 4 |
 | Sécurité | 1 |
 | UX | 1 |
-| Tests | 3 |
-| Infrastructure | 4 |
+| Tests | 4 |
+| Infrastructure | 5 |
 | Documentation | 1 |
 | Design | 1 |
-| **TOTAL** | **20** |
+| **TOTAL** | **23** |
 
 ---
 

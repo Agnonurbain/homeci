@@ -18,10 +18,12 @@ export default function ChatBox({ chatId, currentUserId, otherUserName, otherUse
     messages,
     loading,
     sending,
+    uploading,
     error,
     setError,
     sendMessage,
-    messagesEndRef
+    sendMessageWithAttachment,
+    messagesEndRef,
   } = useChat({ chatId, currentUserId });
 
   return (
@@ -102,9 +104,11 @@ export default function ChatBox({ chatId, currentUserId, otherUserName, otherUse
         </div>
 
         {/* Input Area */}
-        <ChatInput 
+        <ChatInput
           onSend={sendMessage}
+          onSendWithAttachment={sendMessageWithAttachment}
           sending={sending}
+          uploading={uploading}
           error={error}
           onClearError={() => setError(null)}
         />

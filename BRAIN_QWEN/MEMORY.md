@@ -1,6 +1,6 @@
 # 🧠 MEMORY.md — Mémoire projet HOMECI
 
-> **Dernière session :** 2026-04-10 (fix CI package-lock + session tests massive)
+> **Dernière session :** 2026-04-11 (chat pièces jointes — images + PDF)
 > **Prochain rappel :** Lire NOT_DONE.md et DONE.md avant chaque session de travail.
 
 ---
@@ -108,17 +108,17 @@ Backend (Firebase) : ███████████████████�
   - Cloud Functions (2+) ✅
   - FCM Push ✅
 
-Tests : ██████████████████████████████░░  ~92%
-  - 74 fichiers de test, 731 tests (221 ajoutés cette session) ✅
+Tests : ██████████████████████████████░░  ~93%
+  - 80 fichiers de test, 806 tests (100% passent) ✅
   - Coverage utils/services/hooks ✅
-  - Tests Cloud Functions, services, dashboards owner/admin ✅
-  - 8 échecs résiduels (composants complexes) ⚠️
+  - Tests Cloud Functions, services, dashboards owner/admin, chat pièces jointes ✅
+  - 0 échec résiduel
 
-CI/CD : ████████████████░░░░░░░░░░  ~60%
+CI/CD : ██████████████████████████░░  ~85%
   - GitHub Actions (lint→build→test) ✅
   - Vercel deployment ✅
-  - typecheck hors CI ❌
-  - Pas de branche develop ❌
+  - typecheck dans CI ✅
+  - Branche develop créée ✅
 ```
 
 **Voir `DONE.md` pour le détail des items complétés.**
@@ -135,19 +135,17 @@ CI/CD : ████████████████░░░░░░░░
 5. ~~Pas de branche `develop`~~ ✅ RÉSOLU — Branch `develop` créée
 6. ~~Version `0.0.0`~~ ✅ RÉSOLU — Passé à `1.0.0`
 
-## ✅ Résolu dans la session tests massive (2026-04-10)
+## ✅ Résolu dans la session chat pièces jointes (2026-04-11)
 
-- **Tests Cloud Functions** — 101 tests pour les 6 modules (admin, chat, notaire, notifications, scheduler, firebase-admin)
-- **Tests services manquants** — 58 tests pour 7 services (payment, movapay, ad, analytics, pushNotification, email, delegate)
-- **Tests dashboard owner** — 75 tests pour 9 composants (VisitRequestsTab, StatsTab, VisitResponseModal, PropertyRow, PropertyStats, BoostModal, NotificationsTab, PropertyStatusModal, VisitDisclaimerModal)
-- **Tests dashboard admin** — 34 tests pour 5 composants (AdminTabs, AdminStats, OverviewSection, AdminModals)
-- **Tests chat** — 24 tests (ChatInput, MessageBubble)
-- **Tests formulaires** — 18 tests pour 2 étapes (LocationStep, MediaStep)
-- **Tests hooks** — 17 tests (useOwnerNotifications)
-- **Fix tests pré-existantes** — 6 fichiers corrigés (PropertyFormBase, VisitsTab, InfoStep, CharacteristicsStep, NotificationsTab, VisitDisclaimerModal)
-- **Fix CI GitHub Actions** — `package-lock.json` regénéré (dépendances optionnelles netbsd/arm64 retirées)
-- **TypeScript** — `npm run typecheck` passe à **0 erreur**
-- **Total : 78 fichiers de test, 778 tests, 100% passent**
+- **Chat pièces jointes** — Envoi d'images (JPG, PNG, WebP, GIF) et PDF dans les conversations
+- **Storage rules** — Nouveau path `chat_attachments/{chatId}/` avec restrictions par participant
+- **chatService** — `uploadChatAttachment()`, `deleteChatAttachment()`, `sendMessage()` avec options
+- **useChat hook** — `sendMessageWithAttachment()`, état `uploading` avec progression
+- **ChatInput** — Bouton clip 📎, sélection fichier, prévisualisation image, barre de progression
+- **MessageBubble** — Affichage image avec lightbox, document PDF avec bouton téléchargement
+- **Cloud Function** — Notifications enrichies (titre/icône différent pour images et documents)
+- **Tests** — 30 nouveaux tests (chatService +6, ChatInput 13, MessageBubble 11)
+- **806 tests totaux, 100% passent, 0 erreur TypeScript**
 
 ---
 
@@ -239,12 +237,10 @@ CI/CD : ████████████████░░░░░░░░
 
 ## 🚧 Prochaines étapes recommandées
 
-1. **Chat pièces jointes** — Envoi images/documents dans les conversations
-2. **Notifications messages offline** — Push FCM quand message reçu et destinataire hors ligne
-3. **Historique chat paginé** — Pagination + recherche dans l'historique
-4. **Intégration paiement réelle** — Wave, Orange Money, MTN, Moov, Djamo (laissé de côté)
-5. **Tests composants notaire** — ValidationSection, NotairePropertyCard, NotaireActionModals (mocks complexes)
-6. **Tests d'intégration E2E** — Firebase Emulator Suite
+1. **Notifications messages offline** — Push FCM quand message reçu et destinataire hors ligne
+2. **Historique chat paginé** — Pagination + recherche dans l'historique
+3. **Intégration paiement réelle** — Wave, Orange Money, MTN, Moov, Djamo (laissé de côté)
+4. **Tests d'intégration E2E** — Firebase Emulator Suite
 
 ---
 

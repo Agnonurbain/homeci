@@ -9,6 +9,7 @@ beforeEach(() => {
 
 vi.mock('../../lib/firebase', () => ({
   db: {},
+  storage: {},
 }));
 
 vi.mock('firebase/firestore', () => ({
@@ -34,6 +35,13 @@ vi.mock('firebase/firestore', () => ({
   })),
   updateDoc: vi.fn(async () => {}),
   serverTimestamp: vi.fn(() => ({ __type: 'serverTimestamp' })),
+}));
+
+vi.mock('firebase/storage', () => ({
+  ref: vi.fn(() => ({})),
+  uploadBytes: vi.fn(async () => {}),
+  getDownloadURL: vi.fn(async () => 'https://firebasestorage.url/attachment.jpg'),
+  deleteObject: vi.fn(async () => {}),
 }));
 
 import * as fs from 'firebase/firestore';
@@ -159,6 +167,74 @@ describe('chatService', () => {
       const callArgs = (updateDoc as ReturnType<typeof vi.fn>).mock.calls[0] as unknown[];
       const data = callArgs[1] as Record<string, unknown>;
       expect(data.read).toBe(true);
+    });
+  });
+
+  describe('uploadChatAttachment', () => {
+    it('upload un fichier et retourne l\'URL avec le type et le nom', async () => {
+      const file = new File(['dummy content'], 'photo.jpg', { type: 'image/jpeg' });
+      const result = await chatService.uploadChatAttachment(file, 'chat-1');
+
+      expect(result.url).toBe('https://firebasestorage.url/attachment.jpg');
+      expect(result.type).toBe('image');
+      expect(result.name).toBe('photo.jpg');
+    });
+
+    it('détecte un document PDF comme type "document"', async () => {
+      const file = new File(['dummy content'], 'doc.pdf', { type: 'application/pdf' });
+      const result = await chatService.uploadChatAttachment(file, 'chat-1');
+
+      expect(result.type).toBe('document');
+    });
+  });
+
+  describe('deleteChatAttachment', () => {
+    it('supprime un fichier sans lever d\'erreur', async () => {
+      await expect(chatService.deleteChatAttachment('https://example.com/file.jpg')).resolves.not.toThrow();
+    });
+  });
+
+  describe('sendMessage with attachment', () => {
+    it('envoie un message avec une pièce jointe', async () => {
+      await chatService.sendMessage('chat-1', 'u1', 'Voici le document', {
+        attachmentUrl: 'https://firebasestorage.url/doc.pdf',
+        attachmentType: 'document',
+        attachmentName: 'doc.pdf',
+      });
+
+      expect(addDoc).toHaveBeenCalledTimes(1);
+      const addArgs = (addDoc as ReturnType<typeof vi.fn>).mock.calls[0] as unknown[];
+      const msgData = addArgs[1] as Record<string, unknown>;
+      expect(msgData.attachment_url).toBe('https://firebasestorage.url/doc.pdf');
+      expect(msgData.attachment_type).toBe('document');
+      expect(msgData.attachment_name).toBe('doc.pdf');
+      expect(msgData.content).toBe('Voici le document');
+    });
+
+    it('envoie un message avec pièce jointe seule (sans texte)', async () => {
+      await chatService.sendMessage('chat-1', 'u1', '', {
+        attachmentUrl: 'https://firebasestorage.url/img.jpg',
+        attachmentType: 'image',
+        attachmentName: 'img.jpg',
+      });
+
+      expect(addDoc).toHaveBeenCalledTimes(1);
+      const addArgs = (addDoc as ReturnType<typeof vi.fn>).mock.calls[0] as unknown[];
+      const msgData = addArgs[1] as Record<string, unknown>;
+      expect(msgData.content).toBe('[Pièce jointe]');
+      expect(msgData.attachment_url).toBe('https://firebasestorage.url/img.jpg');
+    });
+
+    it('ne filtre pas les emails quand il y a une pièce jointe', async () => {
+      await chatService.sendMessage('chat-1', 'u1', 'Contactez test@email.com', {
+        attachmentUrl: 'https://firebasestorage.url/img.jpg',
+        attachmentType: 'image',
+        attachmentName: 'img.jpg',
+      });
+
+      const addArgs = (addDoc as ReturnType<typeof vi.fn>).mock.calls[0] as unknown[];
+      const msgData = addArgs[1] as Record<string, unknown>;
+      expect(msgData.content).toBe('Contactez test@email.com');
     });
   });
 });

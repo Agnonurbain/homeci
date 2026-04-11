@@ -1,7 +1,10 @@
 import {
   collection, doc, setDoc, addDoc, query, orderBy, onSnapshot, getDoc, updateDoc, serverTimestamp
 } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { db, storage } from '../lib/firebase';
+
+export type ChatAttachmentType = 'image' | 'document';
 
 export interface ChatMessage {
   id?: string;
@@ -10,6 +13,9 @@ export interface ChatMessage {
   content: string;
   created_at: any; // Firestore Timestamp
   read: boolean;
+  attachment_url?: string;
+  attachment_type?: ChatAttachmentType;
+  attachment_name?: string;
 }
 
 export interface Chat {
@@ -84,20 +90,70 @@ export const chatService = {
   },
 
   /**
-   * Envoie un message
+   * Upload a chat attachment (image or PDF) to Firebase Storage
    */
-  async sendMessage(chatId: string, senderId: string, content: string): Promise<void> {
-    const filteredContent = filterMessage(content);
-    if (!filteredContent) return;
+  async uploadChatAttachment(
+    file: File,
+    chatId: string
+  ): Promise<{ url: string; type: ChatAttachmentType; name: string }> {
+    const isImage = file.type.startsWith('image/');
+    const ext = file.name.split('.').pop() || (isImage ? 'jpg' : 'pdf');
+    const attachmentType: ChatAttachmentType = isImage ? 'image' : 'document';
+    const storagePath = `chat_attachments/${chatId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const storageRef = ref(storage, storagePath);
+
+    await uploadBytes(storageRef, file);
+    const url = await getDownloadURL(storageRef);
+
+    return { url, type: attachmentType, name: file.name };
+  },
+
+  /**
+   * Delete a chat attachment from Firebase Storage
+   */
+  async deleteChatAttachment(fileUrl: string): Promise<void> {
+    try {
+      const storageRef = ref(storage, fileUrl);
+      await deleteObject(storageRef);
+    } catch (err) {
+      console.warn('[chatService] Failed to delete attachment:', err);
+    }
+  },
+
+  /**
+   * Envoie un message (texte seul ou avec pièce jointe)
+   */
+  async sendMessage(
+    chatId: string,
+    senderId: string,
+    content: string,
+    options?: {
+      attachmentUrl?: string;
+      attachmentType?: ChatAttachmentType;
+      attachmentName?: string;
+    }
+  ): Promise<void> {
+    const filteredContent = options?.attachmentUrl
+      ? content || '[Pièce jointe]'
+      : filterMessage(content);
+    if (!filteredContent && !options?.attachmentUrl) return;
 
     try {
-      await addDoc(collection(db, 'chats', chatId, 'messages'), {
+      const messageData: Record<string, unknown> = {
         chat_id: chatId,
         sender_id: senderId,
         content: filteredContent,
         created_at: serverTimestamp(),
-        read: false
-      });
+        read: false,
+      };
+
+      if (options?.attachmentUrl) {
+        messageData.attachment_url = options.attachmentUrl;
+        messageData.attachment_type = options.attachmentType;
+        messageData.attachment_name = options.attachmentName;
+      }
+
+      await addDoc(collection(db, 'chats', chatId, 'messages'), messageData);
 
       // Mettre à jour le chat parent pour les tris
       await updateDoc(doc(db, 'chats', chatId), {
