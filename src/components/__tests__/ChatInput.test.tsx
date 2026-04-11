@@ -29,8 +29,10 @@ describe('ChatInput', () => {
   it('envoie le message au submit', async () => {
     render(<ChatInput {...defaultProps} />);
     const textarea = screen.getByPlaceholderText('Répondre...');
+    const form = textarea.closest('form');
+    if (!form) throw new Error('Form not found');
     fireEvent.change(textarea, { target: { value: 'Bonjour' } });
-    fireEvent.submit(textarea.closest('form')!);
+    fireEvent.submit(form);
 
     await waitFor(() => {
       expect(mockOnSend).toHaveBeenCalledWith('Bonjour');
@@ -51,7 +53,10 @@ describe('ChatInput', () => {
   it('montre un message d\'erreur de format pour les fichiers non acceptés', () => {
     render(<ChatInput {...defaultProps} onSendWithAttachment={mockOnSendWithAttachment} />);
     const clipBtn = screen.getByTitle(/joindre un fichier/i);
-    const fileInput = clipBtn.closest('form')?.querySelector('input[type="file"]')!;
+    const form = clipBtn.closest('form');
+    if (!form) throw new Error('Form not found');
+    const fileInput = form.querySelector('input[type="file"]');
+    if (!fileInput) throw new Error('File input not found');
 
     const invalidFile = new File(['content'], 'script.exe', { type: 'application/x-msdownload' });
     Object.defineProperty(fileInput, 'files', { value: [invalidFile] });
@@ -63,7 +68,10 @@ describe('ChatInput', () => {
   it('montre un message d\'erreur pour les fichiers trop volumineux', () => {
     render(<ChatInput {...defaultProps} onSendWithAttachment={mockOnSendWithAttachment} />);
     const clipBtn = screen.getByTitle(/joindre un fichier/i);
-    const fileInput = clipBtn.closest('form')?.querySelector('input[type="file"]')!;
+    const form = clipBtn.closest('form');
+    if (!form) throw new Error('Form not found');
+    const fileInput = form.querySelector('input[type="file"]');
+    if (!fileInput) throw new Error('File input not found');
 
     const bigFile = new File([new ArrayBuffer(11 * 1024 * 1024)], 'huge.jpg', { type: 'image/jpeg' });
     Object.defineProperty(fileInput, 'files', { value: [bigFile] });
@@ -101,7 +109,10 @@ describe('ChatInput', () => {
   it('envoie avec pièce jointe quand un fichier est sélectionné', async () => {
     render(<ChatInput {...defaultProps} onSendWithAttachment={mockOnSendWithAttachment} />);
     const clipBtn = screen.getByTitle(/joindre un fichier/i);
-    const fileInput = clipBtn.closest('form')?.querySelector('input[type="file"]')!;
+    const form = clipBtn.closest('form');
+    if (!form) throw new Error('Form not found');
+    const fileInput = form.querySelector('input[type="file"]');
+    if (!fileInput) throw new Error('File input not found');
 
     const imageFile = new File(['image data'], 'photo.jpg', { type: 'image/jpeg' });
     Object.defineProperty(fileInput, 'files', { value: [imageFile] });
@@ -110,7 +121,7 @@ describe('ChatInput', () => {
     // Add some text and submit
     const textarea = screen.getByPlaceholderText(/ajouter un commentaire/i);
     fireEvent.change(textarea, { target: { value: 'Voici la photo' } });
-    fireEvent.submit(textarea.closest('form')!);
+    fireEvent.submit(form);
 
     await waitFor(() => {
       expect(mockOnSendWithAttachment).toHaveBeenCalledWith('Voici la photo', expect.any(File));
@@ -120,7 +131,10 @@ describe('ChatInput', () => {
   it('permet de retirer un fichier sélectionné', () => {
     render(<ChatInput {...defaultProps} onSendWithAttachment={mockOnSendWithAttachment} />);
     const clipBtn = screen.getByTitle(/joindre un fichier/i);
-    const fileInput = clipBtn.closest('form')?.querySelector('input[type="file"]')!;
+    const form = clipBtn.closest('form');
+    if (!form) throw new Error('Form not found');
+    const fileInput = form.querySelector('input[type="file"]');
+    if (!fileInput) throw new Error('File input not found');
 
     const imageFile = new File(['image data'], 'photo.jpg', { type: 'image/jpeg' });
     Object.defineProperty(fileInput, 'files', { value: [imageFile] });
@@ -129,8 +143,8 @@ describe('ChatInput', () => {
     // Click remove button (X button in the file preview)
     const buttons = screen.getAllByRole('button');
     const removeBtn = buttons.find(btn => btn.getAttribute('title') !== 'Joindre un fichier (image ou PDF, max 10 MB)');
-    expect(removeBtn).toBeTruthy();
-    fireEvent.click(removeBtn!);
+    if (!removeBtn) throw new Error('Remove button not found');
+    fireEvent.click(removeBtn);
 
     expect(screen.queryByText(/photo\.jpg/i)).toBeNull();
   });
@@ -138,7 +152,10 @@ describe('ChatInput', () => {
   it('affiche le placeholder de commentaire quand un fichier est sélectionné', () => {
     render(<ChatInput {...defaultProps} onSendWithAttachment={mockOnSendWithAttachment} />);
     const clipBtn = screen.getByTitle(/joindre un fichier/i);
-    const fileInput = clipBtn.closest('form')?.querySelector('input[type="file"]')!;
+    const form = clipBtn.closest('form');
+    if (!form) throw new Error('Form not found');
+    const fileInput = form.querySelector('input[type="file"]');
+    if (!fileInput) throw new Error('File input not found');
 
     const imageFile = new File(['image data'], 'photo.jpg', { type: 'image/jpeg' });
     Object.defineProperty(fileInput, 'files', { value: [imageFile] });
