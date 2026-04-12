@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import SearchTab from '../SearchTab';
 import type { Property } from '../../../services/propertyService';
+import type { SortOption } from '../../../hooks/useTenantProperties';
 
 // Mock PropertyCard
 vi.mock('../../PropertyCard', () => ({
@@ -66,6 +67,8 @@ const noop = vi.fn();
 const defaultProps = {
   loading: false,
   properties: [mockProperty(1), mockProperty(2), mockProperty(3)],
+  sortBy: 'newest' as SortOption,
+  onSortChange: noop,
   onFilterChange: noop,
   onFavorite: noop,
   isFavorite: () => false,
@@ -131,5 +134,24 @@ describe('SearchTab', () => {
     render(<SearchTab {...manyProps} />);
     expect(screen.getByText('1')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
+  });
+
+  it('affiche le menu de tri et appelle onSortChange', () => {
+    const onSortChange = vi.fn();
+    render(<SearchTab {...defaultProps} onSortChange={onSortChange} />);
+    const sortBtn = screen.getByLabelText(/Trier par/);
+    fireEvent.click(sortBtn);
+    expect(screen.getByText('Prix croissant')).toBeInTheDocument();
+    expect(screen.getByText('Plus populaires')).toBeInTheDocument();
+  });
+
+  it('réinitialise la page quand on change de tri', () => {
+    const onSortChange = vi.fn();
+    render(<SearchTab {...defaultProps} onSortChange={onSortChange} />);
+    const sortBtn = screen.getByLabelText(/Trier par/);
+    fireEvent.click(sortBtn);
+    const priceAsc = screen.getByText('Prix croissant');
+    fireEvent.click(priceAsc);
+    expect(onSortChange).toHaveBeenCalledWith('price_asc');
   });
 });

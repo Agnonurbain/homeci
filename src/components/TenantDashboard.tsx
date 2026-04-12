@@ -44,7 +44,7 @@ export default function TenantDashboard() {
   const { toast, showToast, hideToast } = useToast();
   
   // Modular Hooks
-  const { filtered, loading: propsLoading, handleFilterChange, allProperties } = useTenantProperties();
+  const { filtered, loading: propsLoading, handleFilterChange, allProperties, sortBy, setSortBy } = useTenantProperties();
   const { visitRequests, visitProperties, handleAcceptCounter, handleProposeCounter, requestVisit } = useTenantVisits(user?.uid, profile?.full_name, showToast);
   const { notifications, unreadCount, handleMarkAllRead, loading: notifLoading } = useTenantNotifications(user?.uid);
 
@@ -122,9 +122,11 @@ export default function TenantDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
         
         {activeTab === 'search' && (
-          <SearchTab 
+          <SearchTab
             loading={propsLoading}
             properties={filtered}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
             onFilterChange={handleFilterChange}
             onFavorite={toggleFavorite}
             isFavorite={isFavorite}

@@ -1,6 +1,6 @@
 # ✅ DONE.md — Ce qui a été fait
 
-> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-12 (session dossier locataire complet).
+> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-12 (session recherche avancée locataire).
 
 ---
 
@@ -290,6 +290,9 @@
 | 183 | **Fix CI GitHub Actions** | `package-lock.json` — dépendances optionnelles netbsd/arm64 incompatibles avec runner linux/x64. Regénéré avec `npm install --package-lock-only`. Commit `d68d4a4`. |
 | 184 | **Chat pièces jointes** | Envoi d'images (JPG, PNG, WebP, GIF) et PDF dans les conversations. 7 fichiers modifiés : `storage.rules` (nouveau path `chat_attachments/`), `chatService.ts` (uploadChatAttachment, sendMessage avec options), `useChat.ts` (sendMessageWithAttachment, état uploading), `ChatInput.tsx` (bouton clip, sélection fichier, prévisualisation, barre de progression), `MessageBubble.tsx` (image avec lightbox, document avec téléchargement), `functions/src/chat.ts` (notifications enrichies), tests (3 fichiers, 30 nouveaux tests). 806 tests passent, typecheck clean. |
 | 185 | **Notifications FCM offline pour chat** | Système de détection en ligne/hors ligne avec `last_seen` (seuil 30s). `onNewChatMessage` vérifie si destinataire actif récemment. Ajout champs `delivery_mode` ('instant' vs 'push'), `recipient_online`, `push_sent` (évite doublons). Envoi push direct si hors ligne, sinon trigger Firestore gère. Nouveau hook `usePresence` met à jour `last_seen` toutes les 15s + sur activité utilisateur. Service worker amélioré avec deep link vers chat (`/dashboard?open_chat={chatId}`). Notification interface enrichie : `chat_id`, `sender_id`, `sender_name`, `attachment_type`. Préférences notifications séparées (`messages` vs `visits`). 19 nouveaux tests (7 usePresence + 12 cloud functions). 825 tests totaux, typecheck clean. |
+| 186 | **Chat paginé + recherche historique** | `subscribeToMessages` limité à 30 msg/page (orderBy desc + limit). `getMessagesBefore` avec `endBefore` pour charger messages plus anciens. `searchMessages` côté client. Hook `useChat` : `loadMoreMessages`, `hasMore`, `loadingMore`, `searchResults`, `clearSearch`. ChatBox : scroll infini, bouton "Messages plus anciens", barre de recherche, highlight résultats (`HighlightedText`). Auto-scroll intelligent (seulement si near bottom). Déduplication messages. 18 nouveaux tests. 843 tests totaux. |
+| 187 | **Dossier locataire complet** | `dossierService.ts` (upload, delete, validate, submit, findTenantsWithCompleteDossier). `useTenantDossier` hook extrait la logique du composant. TenantDossier refactorisé : soumission avec modal de confirmation, suppression de documents, indicateur "Soumis le...". 36 tests (25 service + 11 hook). 879 tests totaux. |
+| 188 | **Recherche avancée locataire** | `useTenantProperties` refactorisé avec tri (5 options : newest, price_asc/desc, views, surface_asc) via `useMemo`. Intégration complète de `parseAdvancedSearch` pour le filtrage NLP (type, transaction, localisation, prix avec opérateurs `<>=`, chambres, étoiles hôtels, verified, keywords). `SearchTab` amélioré : dropdown de tri avec icônes, reset page au changement de tri. 14 nouveaux tests (10 SearchTab + 12 useTenantProperties). 893 tests totaux. |
 
 ---
 
@@ -299,14 +302,15 @@
 Total items complétés : ~185
 
 Frontend : ~91 composants, 16 hooks, 16 services, 8 utils
-Tests : 83 fichiers de test (879 tests, 100% passent, 0 erreur TS)
+Tests : 84 fichiers de test (893 tests, 100% passent, 0 erreur TS)
   - Cloud Functions : 113 tests (+12)
   - Services : 95 tests (+25 dossier)
   - Composants owner : 75 tests (9 composants)
   - Composants admin : 34 tests (5 composants)
   - Composants chat : 24 tests (2 composants)
+  - Composants recherche : 10 tests (SearchTab + tri)
   - Formulaires : 18 tests (2 étapes)
-  - Hooks : 48 tests (+11 dossier)
+  - Hooks : 60 tests (+12 useTenantProperties)
 Firestore : 10+ collections, 230+ lignes de règles, 7 index
 Storage : 7 paths avec règles de sécurité
 Cloud Functions : 6 modules modulaires (europe-west1, nodejs20)

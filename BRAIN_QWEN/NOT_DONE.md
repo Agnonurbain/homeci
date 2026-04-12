@@ -51,7 +51,7 @@
 |---|---|---|
 | 30 | **Paiement visite réel** | 🔴 Haute | `movapayService.ts` existe mais intégration réelle avec Wave, Orange Money, MTN, Moov, Djamo à finaliser. |
 | 31 | ~~**Dossier locataire complet**~~ | ✅ FAIT | `dossierService.ts` (upload, delete, validate, submit), `useTenantDossier` hook, TenantDossier refactorisé (soumission, suppression, modal confirmation), 36 tests. 879 tests totaux. |
-| 32 | **Recherche avancée** | 🟡 Moyenne | `searchParser.ts` existe — améliorer la recherche avec filtres combinés, tri, pagination. |
+| 32 | ~~**Recherche avancée**~~ | ✅ FAIT | Tri 5 options (prix asc/desc, date, popularité, surface), intégration `parseAdvancedSearch` complète (NLP: prix, chambres, étoiles, keywords, localisation), dropdown tri dans SearchTab, reset page au tri. 14 tests. 893 tests. |
 | 33 | **Comparaison de biens** | 🟢 Basse | Fonctionnalité de comparaison côte à côte de biens. |
 
 ### Dashboard Notaire
@@ -161,7 +161,7 @@
 | Priorité | Count |
 |---|---|
 | 🔴 Haute | 0 (paiement Mobile Money restant) |
-| 🟡 Moyenne | 19 (-1 : dossier locataire ✅) |
+| 🟡 Moyenne | 18 (-1 : recherche avancée ✅) |
 | 🟢 Basse | 13 |
 | **TOTAL** | **~22 tâches** (modèles 3D retiré) |
 
@@ -170,18 +170,19 @@
 ## ✅ Progression
 
 ```
-Frontend : ███████████████████████████████▌  ~96% (+2%)
+Frontend : ███████████████████████████████▌  ~96%
 Backend (Firebase) : ████████████████████████████  ~94%
-Tests : ███████████████████████████████▌  ~96% (+1%)
-  - 83 fichiers de test, 879 tests (36 ajoutés)
+Tests : ███████████████████████████████▌  ~96%
+  - 84 fichiers de test, 893 tests (14 ajoutés)
   - 0 erreur TypeScript (typecheck clean)
 CI/CD : ██████████████████████████░░  ~85%
 Sécurité : ████████████████████████░░  ~82%
 Notifications : ████████████████████████████  ~95%
 Chat paginé : ████████████████████████████  ~100%
 Dossier locataire : ████████████████████████████  ~100%
+Recherche avancée : ████████████████████████████  ~100%
 
-Global : ████████████████████████████████▌  ~97% (+1%)
+Global : ████████████████████████████████▌  ~97%
 ```
 
 ---
