@@ -83,11 +83,12 @@ firebase deploy
 
 Aller sur [Firebase Console](https://console.firebase.google.com) → Functions → Vérifier que :
 - `autoResetPropertyStatus` (scheduler) est actif
-- `sendPushNotification` (firestore) est actif
+- `sendPushNotification` (firestore trigger) est actif
 - `assignNotaireRole` (callable) est actif
 - `certifyProperty` (callable) est actif
 - `createAdmin` (callable) est actif
-- `onNewChatMessage` (firestore) est actif
+- `onNewChatMessage` (firestore trigger) est actif
+- `onReportCreated` (firestore trigger) est actif — auto-modération
 
 ---
 
@@ -162,6 +163,7 @@ firebase deploy --only firestore:indexes
 
 ## 7. Checklist post-déploiement
 
+### Frontend
 - [ ] Page d'accueil charge correctement
 - [ ] Auth email/password fonctionne
 - [ ] Auth Google fonctionne
@@ -172,11 +174,23 @@ firebase deploy --only firestore:indexes
 - [ ] Création d'un bien fonctionne (formulaire 5 étapes)
 - [ ] Upload d'images fonctionne
 - [ ] Demande de visite fonctionne
-- [ ] Chat fonctionne
+- [ ] Chat fonctionne (pagination + recherche)
 - [ ] Push notifications FCM fonctionnent
 - [ ] Auto-reset des visites après 3 jours fonctionne
 - [ ] Sentry reçoit les erreurs
 - [ ] Service Worker fonctionne (PWA offline)
+
+### Sécurité
+- [ ] 2FA admin fonctionne (setup + vérification TOTP)
+- [ ] Journal d'audit admin enregistre les actions
+- [ ] Rate limiting fonctionne (visites, login, messages)
+- [ ] Auto-modération détecte spam/doublons
+- [ ] Husky pre-commit hooks fonctionnels (lint → typecheck → test)
+
+### Performance
+- [ ] Bundle index < 350KB gzip (vérifier `npm run build:analyze`)
+- [ ] Images compressées avant upload
+- [ ] Lazy loading routes fonctionnel
 
 ---
 
@@ -212,7 +226,7 @@ firebase deploy --only firestore:rules
 git clone https://github.com/Agnonurbain/homeci.git
 cd homeci
 
-# Installer les dépendances
+# Installer les dépendances (Node 22+ recommandé)
 npm install
 
 # Démarrer le serveur de dev
@@ -226,8 +240,31 @@ npm run typecheck
 
 # Linter
 npm run lint
+
+# Analyser le bundle
+npm run build:analyze
+# → Ouvrir dist/stats.html dans le navigateur
+
+# Exécuter les hooks pre-commit manuellement
+npx husky
 ```
+
+### Versions recommandées
+
+| Outil | Version |
+|---|---|
+| Node.js | 22+ |
+| npm | 10.8+ |
+| Firebase CLI | 13+ |
+
+### Problèmes connus
+
+| Problème | Solution |
+|---|---|
+| `npm ci` échoue sur CI | Utiliser `npm install` à la place (bug npm 10.8.x sur Node 24) |
+| Tests Firebase non mockés | Vérifier `src/tests/setup.ts` — tout Firebase est mocké globalement |
+| Husky pre-commit échoue | Vérifier que `lint`, `typecheck` et `test` passent localement |
 
 ---
 
-*Dernière mise à jour : 2026-04-09*
+*Dernière mise à jour : 2026-04-12*
