@@ -1,8 +1,12 @@
 import {
-  collection, doc, setDoc, addDoc, query, orderBy, onSnapshot, getDoc, updateDoc, serverTimestamp
+  collection, doc, setDoc, addDoc, query, orderBy, onSnapshot, getDoc, getDocs,
+  updateDoc, serverTimestamp, limit, endBefore
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from '../lib/firebase';
+
+// Nombre de messages par page de pagination
+export const MESSAGES_PER_PAGE = 30;
 
 export type ChatAttachmentType = 'image' | 'document';
 
@@ -72,21 +76,100 @@ export const chatService = {
   },
 
   /**
-   * Écoute en temps réel les messages d'un chat
+   * Écoute en temps réel les messages d'un chat (limité aux derniers MESSAGES_PER_PAGE)
    */
-  subscribeToMessages(chatId: string, callback: (messages: ChatMessage[]) => void) {
+  subscribeToMessages(chatId: string, callback: (messages: ChatMessage[]) => void, pageSize: number = MESSAGES_PER_PAGE) {
     const q = query(
       collection(db, 'chats', chatId, 'messages'),
-      orderBy('created_at', 'asc')
+      orderBy('created_at', 'desc'),
+      limit(pageSize)
     );
-    
+
     return onSnapshot(q, (snapshot) => {
       const msgs = snapshot.docs.map(d => ({
         id: d.id,
         ...d.data()
       })) as ChatMessage[];
-      callback(msgs);
+      // Return in ascending order (oldest first)
+      callback(msgs.reverse());
     });
+  },
+
+  /**
+   * Récupère une page de messages plus anciens (pagination)
+   * @param chatId - ID du chat
+   * @param lastMessage - Le message le plus ancien actuellement chargé (cursor)
+   * @param pageSize - Nombre de messages à charger
+   * @returns Les messages plus anciens, triés du plus ancien au plus récent
+   */
+  async getMessagesBefore(chatId: string, lastMessage: ChatMessage, pageSize: number = MESSAGES_PER_PAGE): Promise<ChatMessage[]> {
+    const lastTimestamp = lastMessage.created_at;
+    if (!lastTimestamp) return [];
+
+    const q = query(
+      collection(db, 'chats', chatId, 'messages'),
+      orderBy('created_at', 'desc'),
+      endBefore(lastTimestamp),
+      limit(pageSize)
+    );
+
+    const snapshot = await getDocs(q);
+    const msgs = snapshot.docs.map(d => ({
+      id: d.id,
+      ...d.data()
+    })) as ChatMessage[];
+
+    // Return in ascending order (oldest first)
+    return msgs.reverse();
+  },
+
+  /**
+   * Recherche des messages dans l'historique d'un chat
+   * @param chatId - ID du chat
+   * @param searchTerm - Terme de recherche
+   * @param maxResults - Nombre max de résultats
+   * @returns Les messages correspondants, triés du plus récent au plus ancien
+   */
+  async searchMessages(chatId: string, searchTerm: string, maxResults: number = 50): Promise<ChatMessage[]> {
+    if (!searchTerm.trim()) return [];
+
+    const lowerSearch = searchTerm.toLowerCase().trim();
+
+    // Firestore doesn't support full-text search, so we fetch recent messages
+    // and filter client-side. For large-scale search, use Algolia/Typesense.
+    const q = query(
+      collection(db, 'chats', chatId, 'messages'),
+      orderBy('created_at', 'desc'),
+      limit(maxResults)
+    );
+
+    const snapshot = await getDocs(q);
+    const allMessages = snapshot.docs.map(d => ({
+      id: d.id,
+      ...d.data()
+    })) as ChatMessage[];
+
+    // Client-side filtering
+    return allMessages.filter(msg =>
+      msg.content.toLowerCase().includes(lowerSearch)
+    );
+  },
+
+  /**
+   * Récupère le dernier message d'un chat (pour la pagination)
+   */
+  async getLastMessage(chatId: string): Promise<ChatMessage | null> {
+    const q = query(
+      collection(db, 'chats', chatId, 'messages'),
+      orderBy('created_at', 'desc'),
+      limit(1)
+    );
+
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return null;
+
+    const doc = snapshot.docs[0];
+    return { id: doc.id, ...doc.data() } as ChatMessage;
   },
 
   /**

@@ -1,6 +1,6 @@
 # 🚧 NOT_DONE.md — Ce qui reste à faire
 
-> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-09.
+> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-12 (session chat paginé + recherche).
 
 ---
 
@@ -78,7 +78,7 @@
 | 60 | ~~**Chat temps réel complet**~~ | ✅ FAIT | `ChatBox`, `ChatInput`, `MessageBubble` — WebSocket/firestore real-time. |
 | 61 | ~~**Notifications de messages**~~ | ✅ FAIT | Push FCM avec détection online/offline (seuil 30s), `delivery_mode`, `push_sent` anti-doublons, deep link chat. Hook `usePresence` (15s + activité). 825 tests. |
 | 62 | ~~**Pièces jointes dans chat**~~ | ✅ FAIT | Images (JPG, PNG, WebP, GIF) + PDF. Bouton clip, prévisualisation, lightbox, upload Storage, rules de sécurité. 806 tests, typecheck clean. |
-| 63 | ~~**Historique chat**~~ | ❌ SUPPRIMÉ | Pagination déplacée vers prochaine session. Actuellement tout chargé via `subscribeToMessages`. |
+| 63 | ~~**Historique chat**~~ | ✅ FAIT | Pagination 30 msg/page, `getMessagesBefore` avec `endBefore`, `searchMessages` côté client, bouton "Messages plus anciens", scroll infini, recherche avec highlight. 843 tests. |
 
 ---
 
@@ -170,16 +170,17 @@
 ## ✅ Progression
 
 ```
-Frontend : ██████████████████████████████░░  ~92% (+2%)
-Backend (Firebase) : ████████████████████████████  ~94% (+2%)
-Tests : ██████████████████████████████░░  ~94% (+1%)
-  - 81 fichiers de test, 825 tests (19 ajoutés)
+Frontend : ███████████████████████████████░░  ~94% (+2%)
+Backend (Firebase) : ████████████████████████████  ~94%
+Tests : ███████████████████████████████░  ~95% (+1%)
+  - 81 fichiers de test, 843 tests (18 ajoutés)
   - 0 erreur TypeScript (typecheck clean)
 CI/CD : ██████████████████████████░░  ~85%
 Sécurité : ████████████████████████░░  ~82%
-Notifications : ████████████████████████████  ~95% (+10%)
+Notifications : ████████████████████████████  ~95%
+Chat paginé : ████████████████████████████  ~100%
 
-Global : ████████████████████████████████░  ~95% (+1%)
+Global : ████████████████████████████████▌  ~96% (+1%)
 ```
 
 ---

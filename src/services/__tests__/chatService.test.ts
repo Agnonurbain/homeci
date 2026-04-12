@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { chatService } from '../chatService';
+import { chatService, MESSAGES_PER_PAGE } from '../chatService';
 
 const mockUnsub = vi.fn();
 
@@ -12,6 +12,13 @@ vi.mock('../../lib/firebase', () => ({
   storage: {},
 }));
 
+const makeTimestamp = (seconds: number) => ({
+  seconds,
+  nanoseconds: 0,
+  toDate: () => new Date(seconds * 1000),
+  toMillis: () => seconds * 1000,
+});
+
 vi.mock('firebase/firestore', () => ({
   collection: vi.fn(() => ({})),
   doc: vi.fn(() => ({})),
@@ -19,11 +26,13 @@ vi.mock('firebase/firestore', () => ({
   addDoc: vi.fn(async () => ({ id: 'msg-1' })),
   query: vi.fn(() => []),
   orderBy: vi.fn(() => ({})),
+  limit: vi.fn(() => ({})),
+  endBefore: vi.fn(() => ({})),
   onSnapshot: vi.fn((_q: unknown, cb: (snap: { docs: { id: string; data: () => Record<string, unknown> }[] }) => void) => {
     cb({
       docs: [
-        { id: 'msg-1', data: () => ({ sender_id: 'u1', content: 'Hello', read: false, created_at: { toDate: () => new Date() } }) },
-        { id: 'msg-2', data: () => ({ sender_id: 'u2', content: 'Hi', read: false, created_at: { toDate: () => new Date() } }) },
+        { id: 'msg-1', data: () => ({ sender_id: 'u1', content: 'Hello', read: false, created_at: makeTimestamp(1000) }) },
+        { id: 'msg-2', data: () => ({ sender_id: 'u2', content: 'Hi', read: false, created_at: makeTimestamp(2000) }) },
       ],
     });
     return mockUnsub;
@@ -32,6 +41,12 @@ vi.mock('firebase/firestore', () => ({
     exists: () => false,
     data: () => ({}),
     id: undefined,
+  })),
+  getDocs: vi.fn(async () => ({
+    empty: false,
+    docs: [
+      { id: 'msg-old-1', data: () => ({ sender_id: 'u1', content: 'Older message', read: false, created_at: makeTimestamp(500) }) },
+    ],
   })),
   updateDoc: vi.fn(async () => {}),
   serverTimestamp: vi.fn(() => ({ __type: 'serverTimestamp' })),
@@ -45,7 +60,7 @@ vi.mock('firebase/storage', () => ({
 }));
 
 import * as fs from 'firebase/firestore';
-const { setDoc, addDoc, getDoc, updateDoc, onSnapshot } = fs;
+const { setDoc, addDoc, getDoc, updateDoc, onSnapshot, getDocs } = fs;
 
 describe('chatService', () => {
   describe('getOrCreateChat', () => {
@@ -124,12 +139,112 @@ describe('chatService', () => {
       expect(callback).toHaveBeenCalled();
 
       const messages = callback.mock.calls[0][0];
+      // Messages are reversed (returned descending from Firestore, but we want ascending)
       expect(messages).toHaveLength(2);
-      expect(messages[0].content).toBe('Hello');
-      expect(messages[1].content).toBe('Hi');
+      expect(messages[0].content).toBe('Hi');     // newest first after reverse
+      expect(messages[1].content).toBe('Hello');  // oldest last
 
       unsub();
       expect(mockUnsub).toHaveBeenCalled();
+    });
+
+    it('accepte un pageSize personnalisé', () => {
+      const callback = vi.fn();
+      chatService.subscribeToMessages('chat-1', callback, 10);
+      expect(onSnapshot).toHaveBeenCalled();
+    });
+  });
+
+  describe('getMessagesBefore', () => {
+    it('récupère les messages plus anciens que le cursor', async () => {
+      const lastMsg = {
+        id: 'msg-1',
+        chat_id: 'chat-1',
+        sender_id: 'u1',
+        content: 'Last loaded',
+        created_at: makeTimestamp(1000),
+        read: false,
+      };
+
+      const msgs = await chatService.getMessagesBefore('chat-1', lastMsg);
+      expect(getDocs).toHaveBeenCalled();
+      expect(Array.isArray(msgs)).toBe(true);
+    });
+
+    it('retourne un tableau vide si le cursor n\'a pas de timestamp', async () => {
+      const lastMsg = {
+        id: 'msg-1',
+        chat_id: 'chat-1',
+        sender_id: 'u1',
+        content: 'No timestamp',
+        created_at: null,
+        read: false,
+      };
+
+      const msgs = await chatService.getMessagesBefore('chat-1', lastMsg as any);
+      expect(msgs).toEqual([]);
+      expect(getDocs).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('searchMessages', () => {
+    it('retourne un tableau vide si le terme est vide', async () => {
+      const results = await chatService.searchMessages('chat-1', '');
+      expect(results).toEqual([]);
+    });
+
+    it('retourne un tableau vide si le terme est uniquement des espaces', async () => {
+      const results = await chatService.searchMessages('chat-1', '   ');
+      expect(results).toEqual([]);
+    });
+
+    it('recherche dans les messages récents et filtre côté client', async () => {
+      const mg = getDocs as ReturnType<typeof vi.fn>;
+      mg.mockResolvedValueOnce({
+        empty: false,
+        docs: [
+          { id: 'msg-1', data: () => ({ sender_id: 'u1', content: 'Hello world', read: false, created_at: makeTimestamp(1000) }) },
+          { id: 'msg-2', data: () => ({ sender_id: 'u2', content: 'Foo bar', read: false, created_at: makeTimestamp(2000) }) },
+          { id: 'msg-3', data: () => ({ sender_id: 'u1', content: 'Say hello again', read: false, created_at: makeTimestamp(3000) }) },
+        ],
+      });
+
+      const results = await chatService.searchMessages('chat-1', 'hello');
+      expect(results).toHaveLength(2);
+      expect(results[0].content).toBe('Hello world');
+      expect(results[1].content).toBe('Say hello again');
+    });
+
+    it('respecte maxResults', async () => {
+      await chatService.searchMessages('chat-1', 'test', 20);
+      expect(getDocs).toHaveBeenCalled();
+      const callArgs = (getDocs as ReturnType<typeof vi.fn>).mock.calls[0] as unknown[];
+      expect(callArgs).toBeDefined();
+    });
+  });
+
+  describe('getLastMessage', () => {
+    it('retourne null si aucun message', async () => {
+      const mg = getDocs as ReturnType<typeof vi.fn>;
+      mg.mockResolvedValueOnce({ empty: true, docs: [] });
+
+      const result = await chatService.getLastMessage('chat-1');
+      expect(result).toBeNull();
+    });
+
+    it('retourne le dernier message', async () => {
+      const mg = getDocs as ReturnType<typeof vi.fn>;
+      mg.mockResolvedValueOnce({
+        empty: false,
+        docs: [
+          { id: 'msg-last', data: () => ({ sender_id: 'u2', content: 'Latest', read: true, created_at: makeTimestamp(9999) }) },
+        ],
+      });
+
+      const result = await chatService.getLastMessage('chat-1');
+      expect(result).not.toBeNull();
+      expect(result!.content).toBe('Latest');
+      expect(result!.id).toBe('msg-last');
     });
   });
 
@@ -236,5 +351,11 @@ describe('chatService', () => {
       const msgData = addArgs[1] as Record<string, unknown>;
       expect(msgData.content).toBe('Contactez test@email.com');
     });
+  });
+});
+
+describe('MESSAGES_PER_PAGE constant', () => {
+  it('est défini à 30', () => {
+    expect(MESSAGES_PER_PAGE).toBe(30);
   });
 });

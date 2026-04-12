@@ -1,7 +1,7 @@
 # 📋 PLAN — HOMECI: Plateforme Immobilière Certifiée Côte d'Ivoire
 
 > **Vision** : Un marketplace immobilier de confiance en Côte d'Ivoire — biens vérifiés par des notaires agréés, visites à 1000 FCFA, certification notariale.
-> **Dernière mise à jour** : 2026-04-09 — Projet à ~82%
+> **Dernière mise à jour** : 2026-04-12 — Projet à ~96%
 
 ---
 
@@ -155,13 +155,13 @@
 | **ValidationSection** | Validation/certification de biens | ✅ Fait |
 | **NotaireActionModals** | Approuver/refuser/certifier | ✅ Fait |
 
-### 7. Messagerie ✅ (basique)
+### 7. Messagerie ✅ (paginé + recherche)
 
 | Composant | Description | Statut |
 |---|---|---|
-| **ChatBox** | Composant chat complet | ✅ Fait |
+| **ChatBox** | Composant chat complet avec pagination et recherche | ✅ Fait |
 | **ChatInput** | Input de saisie message + pièces jointes | ✅ Fait |
-| **MessageBubble** | Bulle de message individuelle + lightbox image | ✅ Fait |
+| **MessageBubble** | Bulle de message + lightbox image + highlight recherche | ✅ Fait |
 
 ### 8. Composants Transverses
 
@@ -374,17 +374,17 @@ transactions/{id}
 ### Résumé
 ```
 Palier 1 (MVP) : ████████████████████████░  ~95%
-Palier 2 (Messagerie + Analytics) : ██████████████████░░░░░░░░  ~75% (+10%)
+Palier 2 (Messagerie + Analytics) : ██████████████████████░░░░░░  ~85% (+10%)
 Palier 3 (Avancé) : ██████░░░░░░░░░░░░░░░░░░░░░░░░░░  ~30%
 
-Global : ████████████████████████████████░  ~90% (+5%)
+Global : ████████████████████████████████▌  ~96% (+6%)
 ```
 
 ### Historique des mises à jour
 
 | Date | Changement |
 |---|---|
-| 2026-04-12 | **Notifications FCM offline chat** — Détection online/offline (`last_seen` 30s), `delivery_mode` (instant/push), `push_sent` anti-doublons, deep link `/dashboard?open_chat={chatId}`. Hook `usePresence` (15s + activité utilisateur). Service worker amélioré. Notification interface enrichie (`chat_id`, `sender_id`, `sender_name`). Préférences `messages` vs `visits` séparées. 19 tests ajoutés (7 usePresence + 12 cloud functions). 825 tests totaux. |
+| 2026-04-12 | **Chat paginé + recherche historique** — `subscribeToMessages` limité à 30 msg/page (orderBy desc + limit). `getMessagesBefore` avec `endBefore` pour charger messages plus anciens. `searchMessages` côté client. Hook `useChat` : `loadMoreMessages`, `hasMore`, `loadingMore`, `searchResults`, `clearSearch`. ChatBox : scroll infini, bouton "Messages plus anciens", barre de recherche, highlight résultats (`HighlightedText`). Auto-scroll intelligent (seulement si near bottom). Déduplication messages. 18 nouveaux tests. 843 tests totaux. |
 | 2026-04-10 | **Fix CI** — `package-lock.json` regénéré (dépendances netbsd/arm64 retirées). Commit `d68d4a4`. |
 | 2026-04-10 | **Session tests massive** — 221 nouveaux tests ajoutés (Cloud Functions 101, services 58, owner 75, admin 34, chat 24, formulaires 18, hooks 17). 78 fichiers de test au total, 778 tests, 100% passent. typecheck clean à 0 erreur. |
 | 2026-04-09 | Création PLAN.md pour HOMECI (audit complet) |

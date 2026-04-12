@@ -6,9 +6,36 @@ interface MessageBubbleProps {
   message: ChatMessage;
   isMine: boolean;
   showTail: boolean;
+  highlight?: boolean;
+  searchTerm?: string;
 }
 
-export default function MessageBubble({ message, isMine, showTail }: MessageBubbleProps) {
+/**
+ * Highlight matching text in a message for search results
+ */
+function HighlightedText({ content, searchTerm }: { content: string; searchTerm: string }) {
+  if (!searchTerm || !content) return <>{content}</>;
+
+  const lowerContent = content.toLowerCase();
+  const lowerSearch = searchTerm.toLowerCase();
+  const index = lowerContent.indexOf(lowerSearch);
+
+  if (index === -1) return <>{content}</>;
+
+  const before = content.slice(0, index);
+  const match = content.slice(index, index + searchTerm.length);
+  const after = content.slice(index + searchTerm.length);
+
+  return (
+    <>
+      {before}
+      <mark className="bg-yellow-200 text-inherit rounded px-0.5">{match}</mark>
+      {after}
+    </>
+  );
+}
+
+export default function MessageBubble({ message, isMine, showTail, highlight, searchTerm }: MessageBubbleProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const formatTime = (val: any) => {
@@ -83,7 +110,13 @@ export default function MessageBubble({ message, isMine, showTail }: MessageBubb
 
           {/* Text content */}
           {message.content && message.content !== '[Pièce jointe]' && (
-            <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+            <p className="whitespace-pre-wrap leading-relaxed">
+              {highlight ? (
+                <HighlightedText content={message.content} searchTerm={searchTerm || ''} />
+              ) : (
+                message.content
+              )}
+            </p>
           )}
 
           {/* Time + read receipt */}

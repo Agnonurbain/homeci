@@ -53,7 +53,7 @@ cd functions && npm run serve    # Build + emulators
 |---|---|
 | Frontend (4 dashboards, formulaires, PWA, chat pièces jointes, présence) | ~92% |
 | Backend Firebase (Auth, Firestore, Storage, FCM, Cloud Functions, offline notifications) | ~94% |
-| Tests (81 fichiers, 825 tests, 0 erreur, 100% passent) | ~94% |
+| Tests (81 fichiers, 843 tests, 0 erreur, 100% passent) | ~95% |
 | CI/CD (GitHub Actions + Vercel, typecheck, package-lock fixé) | ~85% |
 | Sécurité (règles Firestore, portail admin 2 étapes, chat_attachments rules) | ~82% |
 | Notifications (online/offline detection, deep links, anti-doublons) | ~95% |
@@ -77,7 +77,7 @@ cd functions && npm run serve    # Build + emulators
 - **Service worker** — Deep link `/dashboard?open_chat={chatId}`, `buildNotificationUrl` par type
 - **Préférences** — Séparation `messages` vs `visits` dans `notification_prefs`
 - **19 tests ajoutés** — 7 usePresence + 12 cloud functions
-- **825 tests totaux, 100% passent, typecheck clean**
+- **843 tests totaux, 100% passent, typecheck clean**
 
 ### ✅ Résolu session tests massive (2026-04-10)
 
@@ -90,7 +90,6 @@ cd functions && npm run serve    # Build + emulators
 
 - Intégration paiement Mobile Money réel à finaliser (laissé de côté)
 - Notifications offline et pièces jointes dans chat ✅ RÉSOLU
-- Pagination chat historique à implémenter
 
 ## Architecture — Vue d'ensemble
 

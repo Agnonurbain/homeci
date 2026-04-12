@@ -1,6 +1,6 @@
 # 🧠 MEMORY.md — Mémoire projet HOMECI
 
-> **Dernière session :** 2026-04-12 (notifications FCM offline pour chat)
+> **Dernière session :** 2026-04-12 (chat paginé + recherche historique)
 > **Prochain rappel :** Lire NOT_DONE.md et DONE.md avant chaque session de travail.
 
 ---
@@ -108,10 +108,8 @@ Backend (Firebase) : ███████████████████�
   - Cloud Functions (2+) ✅
   - FCM Push ✅
 
-Tests : ██████████████████████████████░░  ~93%
-  - 80 fichiers de test, 806 tests (100% passent) ✅
-  - Coverage utils/services/hooks ✅
-  - Tests Cloud Functions, services, dashboards owner/admin, chat pièces jointes ✅
+Tests : ███████████████████████████████░  ~95%
+  - 81 fichiers de test, 843 tests (100% passent) ✅
   - 0 échec résiduel
 
 CI/CD : ██████████████████████████░░  ~85%
@@ -135,7 +133,22 @@ CI/CD : ████████████████████████
 5. ~~Pas de branche `develop`~~ ✅ RÉSOLU — Branch `develop` créée
 6. ~~Version `0.0.0`~~ ✅ RÉSOLU — Passé à `1.0.0`
 
-## ✅ Résolu dans la session notifications FCM offline (2026-04-12)
+## ✅ Résolu dans la session chat paginé (2026-04-12)
+
+- **Chat paginé** — `subscribeToMessages` limité à 30 messages/page (orderBy desc + limit)
+- **`getMessagesBefore`** — Fonction dans chatService pour charger des messages plus anciens via `endBefore` + `limit`
+- **`searchMessages`** — Recherche côté client dans les messages récents (filtrage client-side, limit maxResults)
+- **`getLastMessage`** — Récupère le dernier message d'un chat (utile pour la pagination)
+- **Hook `useChat` amélioré** — `loadMoreMessages` (prépend messages), `hasMore`, `loadingMore`, `searchResults`, `searchTerm`, `clearSearch`, `messagesContainerRef`
+- **Auto-scroll intelligent** — Ne scroll vers le bas que si l'utilisateur est près du bottom (150px)
+- **Scroll infini** — Détection du scroll vers le top (< 50px) déclenche `loadMoreMessages`
+- **Bouton "Messages plus anciens"** — Visible en haut de la liste, avec état de chargement
+- **Barre de recherche** — Toggle dans le header du chat, formulaire avec input + bouton OK + reset
+- **Highlight des résultats** — `HighlightedText` dans MessageBubble avec `<mark>` jaune
+- **Indicateur "Début de la conversation"** — Affiché quand plus de messages à charger
+- **Déduplication** — Merge des messages réels avec le state existant via `id` unique
+- **18 nouveaux tests** — 12 chatService (getMessagesBefore, searchMessages, getLastMessage, subscribeToMessages pageSize) + 13 useChat (loadMore, search, clearSearch)
+- **843 tests totaux, 100% passent, typecheck clean**
 
 - **Notifications FCM offline pour chat** — Détection en ligne/hors ligne avec `last_seen` (seuil 30s)
 - **Cloud Function `onNewChatMessage` améliorée** — Vérifie `last_seen` du destinataire, détermine `isOnline`, envoie push direct si offline
@@ -238,9 +251,9 @@ CI/CD : ████████████████████████
 
 ## 🚧 Prochaines étapes recommandées
 
-1. **Historique chat paginé** — Pagination + recherche dans l'historique
-2. **Intégration paiement réelle** — Wave, Orange Money, MTN, Moov, Djamo (laissé de côté)
-3. **Tests d'intégration E2E** — Firebase Emulator Suite
+1. **Intégration paiement réelle** — Wave, Orange Money, MTN, Moov, Djamo (laissé de côté)
+2. **Tests d'intégration E2E** — Firebase Emulator Suite
+3. **Index Firestore pour messages** — Vérifier que `created_at` est indexé pour les queries paginées
 
 ---
 

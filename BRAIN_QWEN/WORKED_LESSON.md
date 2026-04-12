@@ -318,7 +318,35 @@ Chaque entrée suit ce format :
 
 ---
 
-## 📊 Résumé par catégorie
+### WL-025 — Chat paginé : orderBy desc + reverse pour le temps réel
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-025 |
+| **Date** | 2026-04-12 |
+| **Catégorie** | Frontend / Backend |
+| **Problème** | Firestore ne supporte pas `limitToLast` avec `onSnapshot` de manière fiable pour un chat temps réel. Charger tous les messages d'un coup est inefficace pour les longues conversations. |
+| **Cause racine** | `onSnapshot` avec `orderBy('created_at', 'asc')` + `limit(N)` retourne les N PREMIERS messages (les plus anciens), pas les plus récents. `limitToLast` peut causer des problèmes de ré-écoute. |
+| **Solution** | Utiliser `orderBy('created_at', 'desc')` + `limit(N)` pour récupérer les N derniers messages, puis `.reverse()` dans le callback pour les remettre dans l'ordre croissant. Pour charger plus ancien : `endBefore(timestamp)` + `orderBy('created_at', 'desc')` + `limit(N)` + `.reverse()`. |
+| **Impact** | � Moyen — Performance chat améliorée, seulement 30 messages chargés initialement. |
+| **Prévention** | Toujours penser à l'ordre Firestore : desc pour les récents, reverse pour l'affichage. |
+
+---
+
+### WL-026 — Déduplication des messages entre temps réel et pagination
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-026 |
+| **Date** | 2026-04-12 |
+| **Catégorie** | Frontend / State management |
+| **Problème** | Quand on charge des messages plus anciens pendant que l'abonnement temps réel est actif, il peut y avoir des doublons si un message arrive entre les deux appels. |
+| **Cause racine** | Race condition entre `onSnapshot` callback et `getMessagesBefore` promesse. |
+| **Solution** | Utiliser un `Set` d'IDs existants pour filtrer les doublons avant de merger : `const existingIds = new Set(prevMsgs.map(m => m.id)); const newMsgs = msgs.filter(m => !existingIds.has(m.id));` Puis trier par timestamp. |
+| **Impact** | 🟡 Moyen — Doublons potentiels dans l'UI sans déduplication. |
+| **Prévention** | Toujours dédupliquer par ID avant de merger des données Firestore. |
+
+---
+
+## �📊 Résumé par catégorie
 
 | Catégorie | Count |
 |---|---|
@@ -331,7 +359,8 @@ Chaque entrée suit ce format :
 | Infrastructure | 5 |
 | Documentation | 1 |
 | Design | 1 |
-| **TOTAL** | **25** (+2) |
+| State management | 1 |
+| **TOTAL** | **27** (+2) |
 
 ---
 
@@ -340,7 +369,7 @@ Chaque entrée suit ce format :
 | Impact | Count |
 |---|---|
 | 🔴 Critique | 5 |
-| 🟡 Moyen | 12 |
+| 🟡 Moyen | 14 |
 | 🟢 Faible | 3 |
 
 ---

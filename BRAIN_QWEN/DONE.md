@@ -1,6 +1,6 @@
 # ✅ DONE.md — Ce qui a été fait
 
-> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-09 (session haute priorité).
+> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-12 (session chat paginé + recherche).
 
 ---
 
@@ -299,14 +299,14 @@
 Total items complétés : ~185
 
 Frontend : ~91 composants, 15 hooks, 15 services, 8 utils
-Tests : 81 fichiers de test (825 tests, 100% passent, 0 erreur TS)
+Tests : 81 fichiers de test (843 tests, 100% passent, 0 erreur TS)
   - Cloud Functions : 113 tests (+12)
-  - Services : 58 tests (7 services)
+  - Services : 70 tests (+12 chat pagination/recherche)
   - Composants owner : 75 tests (9 composants)
   - Composants admin : 34 tests (5 composants)
   - Composants chat : 24 tests (2 composants)
   - Formulaires : 18 tests (2 étapes)
-  - Hooks : 24 tests (+7 usePresence)
+  - Hooks : 37 tests (+13 chat pagination/recherche)
 Firestore : 10+ collections, 230+ lignes de règles, 7 index
 Storage : 7 paths avec règles de sécurité
 Cloud Functions : 6 modules modulaires (europe-west1, nodejs20)
@@ -316,6 +316,7 @@ Design : Tokens centralisés, palette CI (orange/vert/or)
 CI/CD : typecheck ajouté, branche develop créée, version 1.0.0, package-lock fixé
 TypeScript : 0 erreur (typecheck passe clean)
 Notifications : Détection online/offline (30s), delivery_mode, push direct hors ligne
+Chat paginé : Pagination 30 messages/page, scroll infini, recherche dans historique, highlight résultats
 ```
 
 ---
