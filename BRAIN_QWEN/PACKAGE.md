@@ -1,6 +1,6 @@
 # 📦 PACKAGE.md — Registre des dépendances HOMECI
 
-> **Dernière mise à jour :** 2026-04-09
+> **Dernière mise à jour :** 2026-04-12 (otplib, husky, rollup-plugin-visualizer)
 > **Ce fichier DOIT être mis à jour à chaque ajout/suppression de dépendance.**
 
 ---
@@ -97,6 +97,12 @@ npm run typecheck              # TypeScript no-emit
 |---|---|---|---|
 | `zod` | `^4.3.6` | Validation de schémas | `import { z } from 'zod'` |
 
+### Sécurité / 2FA
+
+| Package | Version | Usage | Import |
+|---|---|---|---|
+| `otplib` | `^13.0.0` | TOTP pour authentification 2FA admin | `import { generateSecret, verifySync } from 'otplib'` |
+
 ---
 
 ## Frontend — Dépendances de développement
@@ -121,11 +127,18 @@ npm run typecheck              # TypeScript no-emit
 
 | Package | Version | Usage |
 |---|---|---|
-| `vitest` | `^4.1.1` | Test runner |
+| `vitest` | `^4.1.4` | Test runner |
 | `@vitest/coverage-v8` | `^4.1.1` | Coverage V8 |
 | `@testing-library/react` | `^16.3.2` | Tests React components |
 | `@testing-library/jest-dom` | `^6.9.1` | Matchers Jest DOM |
 | `jsdom` | `^28.1.0` | Environnement DOM pour tests |
+
+### CI / Hooks
+
+| Package | Version | Usage |
+|---|---|---|
+| `husky` | `^9.1.7` | Pre-commit hooks (lint → typecheck → test) |
+| `rollup-plugin-visualizer` | _(latest)_ | Analyse bundle size (`dist/stats.html`) |
 
 ### Linting
 

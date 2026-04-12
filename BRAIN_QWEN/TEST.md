@@ -118,15 +118,16 @@ npm run build
 
 | Domaine | Fichiers de test | Couverture |
 |---|---|---|
-| Composants | 19 fichiers | ~60% |
-| Hooks | 8 fichiers | ~70% |
-| Services | 8 fichiers | ~70% |
-| Utils | 8 fichiers | ~80% |
+| Composants | 25 fichiers | ~65% |
+| Hooks | 14 fichiers | ~75% |
+| Services | 17 fichiers | ~75% |
+| Utils | 12 fichiers | ~85% |
 | Styles | 1 fichier | 100% |
-| Cloud Functions | **0 fichiers** | ❌ À créer |
-| Pré-lancement | 1 fichier | N/A |
+| Data | 1 fichier | 100% |
+| Cloud Functions | 1 fichier (113 tests) | ~90% |
+| Pré-lancement | 1 fichier (100 tests) | N/A |
 
-**Total : 45 fichiers de test**
+**Total : 93 fichiers de test, 998 tests (100% passent)**
 
 ---
 

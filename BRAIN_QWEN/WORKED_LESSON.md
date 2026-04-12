@@ -352,7 +352,7 @@ Chaque entrée suit ce format :
 |---|---|
 | Backend | 4 (+2) |
 | Frontend | 5 (+1) |
-| CI/CD | 4 |
+| CI/CD | 7 (+3) |
 | Sécurité | 1 |
 | UX | 1 |
 | Tests | 4 |
@@ -360,7 +360,7 @@ Chaque entrée suit ce format :
 | Documentation | 1 |
 | Design | 1 |
 | State management | 1 |
-| **TOTAL** | **27** (+2) |
+| **TOTAL** | **30** (+3) |
 
 ---
 
@@ -368,9 +368,9 @@ Chaque entrée suit ce format :
 
 | Impact | Count |
 |---|---|
-| 🔴 Critique | 5 |
-| 🟡 Moyen | 14 |
-| 🟢 Faible | 3 |
+| 🔴 Critique | 6 (+1) |
+| 🟡 Moyen | 15 (+1) |
+| 🟢 Faible | 4 (+1) |
 
 ---
 
