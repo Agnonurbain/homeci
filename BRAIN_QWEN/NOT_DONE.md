@@ -42,7 +42,7 @@
 |---|---|---|---|
 | 20 | **Tests PropertiesTab** | 🟡 Moyenne | Couverture de test pour le composant PropertiesTab (bannière statut, mise à jour). |
 | 21 | **Tests formulaires 5 étapes** | 🟡 Moyenne | Tests complets du flux de création de bien (InfoStep → DocumentsStep). |
-| 22 | **Gestion vidéo** | 🟡 Moyenne | `VideoUploadPreview.tsx` et `videoProcessing.ts` existent — vérifier intégration complète. |
+| 22 | ~~**Gestion vidéo**~~ | ✅ FAIT | `VideoUploadPreview` intégré dans MediaStep (remplace `<video>` natif pour uploads). `videoProcessing.ts` complet (thumbnail, duration, resolution, bitrate). `OptimizedVideoPlayer` avec contrôles custom. Storage rules (100MB, video/*). 23 tests (10 VideoUploadPreview + 5 OptimizedVideoPlayer + 8 videoProcessing). 918 tests. |
 | 23 | ~~**Modèles 3D**~~ | ❌ SUPPRIMÉ | Retiré des priorités — fonctionnalité non essentielle pour le MVP. |
 
 ### Dashboard Locataire
@@ -161,7 +161,7 @@
 | Priorité | Count |
 |---|---|
 | 🔴 Haute | 0 (paiement Mobile Money restant) |
-| 🟡 Moyenne | 17 (-1 : flux décértilification ✅) |
+| 🟡 Moyenne | 16 (-1 : gestion vidéo ✅) |
 | 🟢 Basse | 13 |
 | **TOTAL** | **~22 tâches** (modèles 3D retiré) |
 
@@ -172,8 +172,8 @@
 ```
 Frontend : ███████████████████████████████▌  ~96%
 Backend (Firebase) : ████████████████████████████  ~94%
-Tests : ███████████████████████████████▌  ~96%
-  - 85 fichiers de test, 903 tests (3 ajoutés)
+Tests : ████████████████████████████████░  ~97%
+  - 87 fichiers de test, 918 tests (15 ajoutés)
   - 0 erreur TypeScript (typecheck clean)
 CI/CD : ██████████████████████████░░  ~85%
 Sécurité : ████████████████████████░░  ~82%
@@ -183,6 +183,7 @@ Dossier locataire : ████████████████████
 Recherche avancée : ████████████████████████████  ~100%
 Gestion publicités : ████████████████████████████  ~100%
 Flux décértilification : ████████████████████████████  ~100%
+Gestion vidéo : ████████████████████████████  ~100%
 
 Global : ████████████████████████████████▌  ~97%
 ```

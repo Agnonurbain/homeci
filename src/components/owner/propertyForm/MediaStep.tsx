@@ -1,5 +1,6 @@
 import { Image as ImageIcon, Film, Plus, Trash2 } from 'lucide-react';
 import { HColors, HAlpha } from '../../../styles/homeci-tokens';
+import { VideoUploadPreview } from '../../VideoUploadPreview';
 
 interface MediaStepProps {
   mode: 'create' | 'edit';
@@ -102,15 +103,15 @@ export default function MediaStep({
             </div>
           ))}
 
-          {/* Nouvelles vidéos */}
-          {videoPreviews.map((url, idx) => (
-            <div key={`v-new-${idx}`} className="aspect-video relative rounded-xl overflow-hidden bg-black/5 flex items-center justify-center">
-              <video src={url} className="w-full h-full" controls />
-              <button type="button" onClick={() => onRemoveVideo(idx, false)}
-                className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full hover:bg-red-600">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
+          {/* Nouvelles vidéos — utiliser VideoUploadPreview pour plus de détails */}
+          {videos.map((videoFile, idx) => (
+            <VideoUploadPreview
+              key={`v-new-${idx}`}
+              file={videoFile}
+              thumbnail={videoPreviews[idx]}
+              onRemove={() => onRemoveVideo(idx, false)}
+              status="pending"
+            />
           ))}
 
           {/* Bouton d'ajout vidéo */}
