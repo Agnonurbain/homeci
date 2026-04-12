@@ -28,7 +28,7 @@
 | # | Tâche | Priorité | Détails |
 |---|---|---|---|
 | 11 | ~~**Tests Cloud Functions**~~ | ✅ FAIT | 101 tests dans `cloud-functions.test.ts`. |
-| 12 | **Function de modération auto** | 🟡 Moyenne | Détection automatique de contenu suspect (doublons, spam, mots-clés). |
+| 12 | ~~**Modération auto Cloud Function**~~ | ✅ FAIT | `moderation.ts` : trigger Firestore on report create. Détection mots-clés suspects (14 keywords), patterns spam (caractères répétés, liens externes, téléphones), similarité Levenshtein pour doublons (même ville + prix ±10% + titre ≥80%). Auto-flag ≥3 reports → statut property → pending + notification admin. 11 tests (autoModeration + fonctions pures). 952 tests totaux. |
 | 13 | **Function nettoyage Storage** | 🟢 Basse | Cron pour supprimer les images/documents orphelins (biens supprimés ou rejetés). |
 | 14 | **Function statistiques** | 🟢 Basse | Agrégation quotidienne des stats (visites, vues, certifications). |
 
@@ -161,7 +161,7 @@
 | Priorité | Count |
 |---|---|
 | 🔴 Haute | 0 (paiement Mobile Money restant) |
-| 🟡 Moyenne | 14 (-1 : Tests formulaires 5 étapes ✅) |
+| 🟡 Moyenne | 13 (-1 : modération auto ✅) |
 | 🟢 Basse | 13 |
 | **TOTAL** | **~22 tâches** (modèles 3D retiré) |
 
@@ -171,9 +171,9 @@
 
 ```
 Frontend : ███████████████████████████████▌  ~96%
-Backend (Firebase) : ████████████████████████████  ~94%
-Tests : ████████████████████████████████░  ~98%
-  - 88 fichiers de test, 941 tests (13 ajoutés)
+Backend (Firebase) : ████████████████████████████▌  ~96% (+2%)
+Tests : ████████████████████████████████▌  ~98%
+  - 89 fichiers de test, 952 tests (11 ajoutés)
   - 0 erreur TypeScript (typecheck clean)
 CI/CD : ██████████████████████████░░  ~85%
 Sécurité : ████████████████████████░░  ~82%
@@ -186,6 +186,7 @@ Flux décértilification : █████████████████�
 Gestion vidéo : ████████████████████████████  ~100%
 Tests PropertiesTab : ████████████████████████████  ~100%
 Tests formulaires 5 étapes : ████████████████████████████  ~100%
+Modération auto : ████████████████████████████  ~100%
 
 Global : ████████████████████████████████▌  ~98%
 ```

@@ -716,7 +716,7 @@ describe('8. Sécurité — Guards communs', () => {
 // ══════════════════════════════════════════════════════════════════════════
 
 describe('9. Intégrité — Cohérence entre modules', () => {
-  it('index.ts exporte exactement 6 fonctions nommées', () => {
+  it('index.ts exporte exactement 7 fonctions nommées', () => {
     const content = readFunc('index.ts');
     // Match the exported names from the export { ... } from "..." lines
     const exportLines = content.match(/export \{[^}]+\} from/g) || [];
@@ -732,7 +732,8 @@ describe('9. Intégrité — Cohérence entre modules', () => {
     expect(allNames).toContain('certifyProperty');
     expect(allNames).toContain('createAdmin');
     expect(allNames).toContain('onNewChatMessage');
-    expect(allNames.length).toBe(6);
+    expect(allNames).toContain('onReportCreated');
+    expect(allNames.length).toBe(7);
   });
 
   it('tous les fichiers source existent', () => {

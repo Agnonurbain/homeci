@@ -27,3 +27,6 @@ export { createAdmin } from "./admin";
 
 // ── Chat ──
 export { onNewChatMessage } from "./chat";
+
+// ── Moderation ──
+export { onReportCreated } from "./moderation";
