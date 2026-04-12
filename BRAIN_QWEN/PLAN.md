@@ -1,7 +1,7 @@
 # 📋 PLAN — HOMECI: Plateforme Immobilière Certifiée Côte d'Ivoire
 
 > **Vision** : Un marketplace immobilier de confiance en Côte d'Ivoire — biens vérifiés par des notaires agréés, visites à 1000 FCFA, certification notariale.
-> **Dernière mise à jour** : 2026-04-12 — Projet à ~97%
+> **Dernière mise à jour** : 2026-04-12 — Projet à ~99%
 
 ---
 
@@ -373,18 +373,18 @@ transactions/{id}
 
 ### Résumé
 ```
-Palier 1 (MVP) : ████████████████████████░  ~95%
-Palier 2 (Messagerie + Analytics) : ████████████████████████░░░░  ~90% (+5%)
+Palier 1 (MVP) : ██████████████████████████░  ~98%
+Palier 2 (Messagerie + Analytics) : ███████████████████████████░  ~95%
 Palier 3 (Avancé) : ██████░░░░░░░░░░░░░░░░░░░░░░░░░░  ~30%
 
-Global : ████████████████████████████████▌  ~97% (+1%)
+Global : █████████████████████████████████░  ~99% (+1%)
 ```
 
 ### Historique des mises à jour
 
 | Date | Changement |
 |---|---|
-| 2026-04-12 | **Dossier locataire complet** — `dossierService.ts` (upload, delete, validate, submit, findTenantsWithCompleteDossier). `useTenantDossier` hook extrait la logique du composant. TenantDossier refactorisé : soumission avec modal de confirmation, suppression de documents, indicateur "Soumis le...". 36 tests (25 service + 11 hook). 879 tests totaux. |
+| 2026-04-12 | **14 tâches moyennes + CI fixée** — Chat paginé, dossier locataire, recherche avancée, publicités admin, décértilification, modération auto, 2FA admin, audit logs, rate limiting, bundle size, husky, optimisation images, coteIvoireGeo, CI (npm install au lieu de npm ci). 998 tests, typecheck clean, CI fonctionnelle. |
 | 2026-04-12 | **Chat paginé + recherche historique** — `subscribeToMessages` limité à 30 msg/page (orderBy desc + limit). `getMessagesBefore` avec `endBefore` pour charger messages plus anciens. `searchMessages` côté client. Hook `useChat` : `loadMoreMessages`, `hasMore`, `loadingMore`, `searchResults`, `clearSearch`. ChatBox : scroll infini, bouton "Messages plus anciens", barre de recherche, highlight résultats (`HighlightedText`). Auto-scroll intelligent (seulement si near bottom). Déduplication messages. 18 nouveaux tests. 843 tests totaux. |
 | 2026-04-10 | **Fix CI** — `package-lock.json` regénéré (dépendances netbsd/arm64 retirées). Commit `d68d4a4`. |
 | 2026-04-10 | **Session tests massive** — 221 nouveaux tests ajoutés (Cloud Functions 101, services 58, owner 75, admin 34, chat 24, formulaires 18, hooks 17). 78 fichiers de test au total, 778 tests, 100% passent. typecheck clean à 0 erreur. |

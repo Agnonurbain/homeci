@@ -1,6 +1,6 @@
 # ✅ DONE.md — Ce qui a été fait
 
-> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-12 (session modération auto Cloud Function).
+> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-12 (session CI fixée + 14 tâches moyennes accomplies).
 
 ---
 

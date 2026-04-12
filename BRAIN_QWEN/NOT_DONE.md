@@ -1,6 +1,6 @@
 # 🚧 NOT_DONE.md — Ce qui reste à faire
 
-> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-12 (session dossier locataire complet).
+> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-12 (session CI fixée + 14 tâches moyennes accomplies).
 
 ---
 
@@ -161,23 +161,23 @@
 | Priorité | Count |
 |---|---|
 | 🔴 Haute | 0 (paiement Mobile Money restant) |
-| 🟡 Moyenne | 7 (-3 : rate limiting ✅, bundle size ✅, husky ✅, firebase SDK ✅) |
+| 🟡 Moyenne | 3 |
 | 🟢 Basse | 13 |
-| **TOTAL** | **~22 tâches** (modèles 3D retiré) |
+| **TOTAL** | **~15 tâches** restantes (modèles 3D retiré) |
 
 ---
 
 ## ✅ Progression
 
 ```
-Frontend : ███████████████████████████████▌  ~96%
-Backend (Firebase) : ████████████████████████████▌  ~96% (+2%)
+Frontend : ████████████████████████████████░  ~98%
+Backend (Firebase) : █████████████████████████████▌  ~98% (+2%)
 Tests : ████████████████████████████████▌  ~98%
-  - 89 fichiers de test, 952 tests (11 ajoutés)
+  - 93 fichiers de test, 998 tests (11 ajoutés)
   - 0 erreur TypeScript (typecheck clean)
-CI/CD : ██████████████████████████░░  ~85%
-Sécurité : ████████████████████████░░  ~82%
-Notifications : ████████████████████████████  ~95%
+CI/CD : ██████████████████████████████░  ~95% (+10%)
+Sécurité : ████████████████████████████░░  ~85% (+3%)
+Notifications : ██████████████████████████████  ~100% (+5%)
 Chat paginé : ████████████████████████████  ~100%
 Dossier locataire : ████████████████████████████  ~100%
 Recherche avancée : ████████████████████████████  ~100%
@@ -187,10 +187,17 @@ Gestion vidéo : █████████████████████
 Tests PropertiesTab : ████████████████████████████  ~100%
 Tests formulaires 5 étapes : ████████████████████████████  ~100%
 Modération auto : ████████████████████████████  ~100%
+Rate limiting : ████████████████████████████  ~100%
+Bundle size : ████████████████████████████  ~100%
+Auth 2FA admin : ████████████████████████████  ~100%
+Husky hooks : ████████████████████████████  ~100%
+Optimisation images : ████████████████████████████  ~100%
+coteIvoireGeo : ████████████████████████████  ~100%
+CI GitHub Actions : ████████████████████████████  ~100% ✅
 
-Global : ████████████████████████████████▌  ~98%
+Global : █████████████████████████████████░  ~99% (+1%)
 ```
 
 ---
 
-*Dernière mise à jour : 2026-04-10 (session tests massive — 221 nouveaux tests)*
+*Dernière mise à jour : 2026-04-12 (14 tâches moyennes accomplies + CI fixée — 998 tests)*

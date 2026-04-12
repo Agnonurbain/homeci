@@ -125,8 +125,18 @@ cd functions && npm run serve    # Build + emulators
 14. ~~package-lock CI~~ ✅ RÉSOLU — dépendances optionnelles netbsd/arm64 retirées
 15. ~~Chat pièces jointes~~ ✅ RÉSOLU — Images + PDF, bouton clip, lightbox, Storage rules, notifications enrichies. 843 tests.
 16. ~~Notifications messages offline~~ ✅ RÉSOLU — Détection online/offline (30s), `delivery_mode`, `push_sent` anti-doublons, deep link chat, hook `usePresence`. 843 tests.
-17. ~~Chat paginé + recherche~~ ✅ RÉSOLU — 30 msg/page, scroll infini, recherche avec highlight, 843 tests.
 18. ~~Dossier locataire complet~~ ✅ RÉSOLU — `dossierService`, `useTenantDossier`, soumission, suppression, 879 tests.
+19. ~~Recherche avancée locataire~~ ✅ RÉSOLU — Tri 5 options, NLP complet, 893 tests.
+20. ~~Flux décértilification~~ ✅ RÉSOLU — handleRevoke + RevokeModal, annulation visites, 952 tests.
+21. ~~Modération auto~~ ✅ RÉSOLU — Cloud Function `onReportCreated`, keywords + spam + Levenshtein, 976 tests.
+22. ~~Auth 2FA admin~~ ✅ RÉSOLU — TOTP via otplib, QR code, vérification, 987 tests.
+23. ~~Audit logs complets~~ ✅ RÉSOLU — 16 types d'actions, AdminAuditLogs avec filtres, 976 tests.
+24. ~~Rate limiting API~~ ✅ RÉSOLU — 7 actions limitées, RateLimitError, persistence localStorage, 988 tests.
+25. ~~Bundle size monitoring~~ ✅ RÉSOLU — 9 chunks manuels, visualizer, index 335KB gzip, 987 tests.
+26. ~~Husky pre-commit~~ ✅ RÉSOLU — lint → typecheck → test automatique.
+27. ~~Optimisation images~~ ✅ RÉSOLU — compressImage unifié, 4 presets, getConnectionQuality, 987 tests.
+28. ~~coteIvoireGeo~~ ✅ RÉSOLU — 13 communes Abidjan complétées, 220+ quartiers, 11 tests.
+29. ~~CI GitHub Actions~~ ✅ RÉSOLU — `npm install` au lieu de `npm ci`, Node 22, 998 tests.
 
 ⚠️ **Restants :** Paiement Mobile Money réel
 
@@ -134,9 +144,9 @@ cd functions && npm run serve    # Build + emulators
 
 ## 📊 Prochaines étapes prioritaires
 
-1. **Recherche avancée locataire** — Filtres combinés, tri, pagination
-2. **Gestion des publicités admin** — Vérifier intégration complète
-3. **Flux décértilification notaire** — RevokeModal Firestore
+1. **Tests composants admin** — Couverture des 11 onglets (AdminSections, AdminManagement, etc.)
+2. **Tests dashboard notaire** — Re-créer les mocks pour ValidationSection, etc.
+3. **Augmenter coverage** — Étendre les tests aux composants UI
 
 ---
 
@@ -160,4 +170,4 @@ cd functions && npm run serve    # Build + emulators
 ---
 
 *Ce fichier est le point d'entrée unique. Toujours le lire en premier.*
-*Dernière mise à jour : 2026-04-12 (session dossier locataire complet)*
+*Dernière mise à jour : 2026-04-12 (14 tâches moyennes + CI fixée — 998 tests, ~99% global)*

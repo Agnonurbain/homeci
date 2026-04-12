@@ -1,6 +1,6 @@
 # 🧠 MEMORY.md — Mémoire projet HOMECI
 
-> **Dernière session :** 2026-04-12 (dossier locataire complet)
+> **Dernière session :** 2026-04-12 (14 tâches moyennes accomplies + CI fixée)
 > **Prochain rappel :** Lire NOT_DONE.md et DONE.md avant chaque session de travail.
 
 ---
@@ -108,15 +108,15 @@ Backend (Firebase) : ███████████████████�
   - Cloud Functions (2+) ✅
   - FCM Push ✅
 
-Tests : ███████████████████████████████▌  ~96%
-  - 83 fichiers de test, 879 tests (100% passent) ✅
-  - 0 échec résiduel
+Tests : ████████████████████████████████░  ~98%
+  - 93 fichiers de test, 998 tests (100% passent) ✅
+  - 0 échec résiduel, 0 erreur TypeScript
 
-CI/CD : ██████████████████████████░░  ~85%
-  - GitHub Actions (lint→build→test) ✅
+CI/CD : ██████████████████████████████░  ~95%
+  - GitHub Actions fonctionnelle (lint→build→test→coverage) ✅
   - Vercel deployment ✅
   - typecheck dans CI ✅
-  - Branche develop créée ✅
+  - Husky pre-commit hooks ✅
 ```
 
 **Voir `DONE.md` pour le détail des items complétés.**
@@ -251,11 +251,9 @@ CI/CD : ████████████████████████
 
 ## 🚧 Prochaines étapes recommandées
 
-1. **Recherche avancée locataire** — `searchParser.ts` existe — filtres combinés, tri, pagination
-2. **Gestion des publicités admin** — `AdminAdsTab.tsx` + `adService.ts`
-3. **Flux décértilification notaire** — RevokeModal dans `NotaireActionModals.tsx`
-4. **Intégration paiement réelle** — Wave, Orange Money, MTN, Moov, Djamo (laissé de côté)
-5. **Tests d'intégration E2E** — Firebase Emulator Suite
+1. **Tests composants admin** — Couverture des 11 onglets
+2. **Tests dashboard notaire** — Re-créer les mocks
+3. **Augmenter coverage** — Étendre aux composants UI
 
 ---
 
