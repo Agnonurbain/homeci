@@ -9,10 +9,13 @@ import PublicPropertyList from './components/PublicPropertyList';
 import AdminAccessCode, { clearSessionCode } from './components/AdminAccessCode';
 import AdminLogin from './components/AdminLogin';
 import AdminSessionManager from './components/AdminSessionManager';
+import AdminTwoFactorVerify from './components/AdminTwoFactorVerify';
+import AdminTwoFactorSetup from './components/AdminTwoFactorSetup';
 import RoleSelectModal from './components/RoleSelectModal';
 import ErrorBoundary from './components/ErrorBoundary';
 import NotFoundPage from './components/NotFoundPage';
 import ProfileModal from './components/ProfileModal';
+import { twoFactorService } from './services/twoFactorService';
 import { pushService } from './services/pushNotificationService';
 import { usePresence } from './hooks/usePresence';
 import { HColors, HAlpha } from './styles/homeci-tokens';
@@ -48,6 +51,9 @@ function AppContent() {
   const [accessCodeValidated, setAccessCodeValidated] = useState(false);
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
   const [notaireCodeValidated, setNotaireCodeValidated] = useState(false);
+  const [twoFactorRequired, setTwoFactorRequired] = useState(false);
+  const [twoFactorVerified, setTwoFactorVerified] = useState(false);
+  const [showTwoFactorSetup, setShowTwoFactorSetup] = useState(false);
   const [heroFilters, setHeroFilters] = useState<HeroFilters>({ propertyType: '', propertyTypes: [], verifiedNotaire: false, transactionType: '', district: '', region: '', departement: '', city: '', commune: '', quartier: '' });
   const [showProfile, setShowProfile] = useState(false);
 
@@ -84,6 +90,23 @@ function AppContent() {
     });
     return () => clearTimeout(timer);
   }, [user, profile]);
+
+  // ── Check 2FA status when admin access code is validated ──
+  useEffect(() => {
+    if (!accessCodeValidated || !user) return;
+    const check2FA = async () => {
+      try {
+        const enabled = await twoFactorService.isEnabled(user.uid);
+        if (enabled) {
+          setTwoFactorRequired(true);
+          setTwoFactorVerified(false);
+        }
+      } catch (err) {
+        console.error('Error checking 2FA status:', err);
+      }
+    };
+    check2FA();
+  }, [accessCodeValidated, user]);
 
   const handleAuthClick = (mode: 'login' | 'signup') => {
     setAuthMode(mode);
@@ -176,12 +199,42 @@ function AppContent() {
   const AdminRoute = () => {
     if (!adminAuthenticated || profile?.role !== 'admin') return <AdminLogin onSuccess={() => setAdminAuthenticated(true)} />;
     if (!accessCodeValidated) return <AdminAccessCode onSuccess={() => setAccessCodeValidated(true)} />;
+
+    // 2FA check: after access code is validated, check if 2FA is required
+    if (twoFactorRequired && !twoFactorVerified) {
+      return (
+        <div className="min-h-screen flex items-center justify-center px-4"
+          style={{ background: `linear-gradient(135deg, ${HColors.night} 0%, #1A0E00 100%)` }}>
+          <AdminTwoFactorVerify
+            userId={user?.uid || ''}
+            onSuccess={() => setTwoFactorVerified(true)}
+            onBack={() => { setTwoFactorRequired(false); setAccessCodeValidated(false); }}
+          />
+        </div>
+      );
+    }
+
+    // If 2FA is not set up, offer setup option but allow access
+    if (!twoFactorRequired && accessCodeValidated && showTwoFactorSetup) {
+      return (
+        <div className="min-h-screen flex items-center justify-center px-4"
+          style={{ background: `linear-gradient(135deg, ${HColors.night} 0%, #1A0E00 100%)` }}>
+          <AdminTwoFactorSetup
+            onCompleted={() => { setShowTwoFactorSetup(false); setTwoFactorRequired(true); setTwoFactorVerified(true); }}
+            onSkip={() => setShowTwoFactorSetup(false)}
+          />
+        </div>
+      );
+    }
+
     return (
       <AdminSessionManager
         timeoutMinutes={profile?.session_timeout_minutes || 30}
         onTimeout={() => {
           setAdminAuthenticated(false);
           setAccessCodeValidated(false);
+          setTwoFactorRequired(false);
+          setTwoFactorVerified(false);
           clearSessionCode();
           alert("Votre session a expiré. Veuillez vous reconnecter.");
           navigate('/');

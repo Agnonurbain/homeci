@@ -21,7 +21,10 @@
       "Bash(cat *)",
       "Bash(ls *)",
       "Bash(rmdir *)",
-      "Bash(git diff *)"
+      "Bash(git diff *)",
+      "Bash(python3 *)",
+      "Bash(git stash)",
+      "Bash(yarn install)"
     ]
   },
   "$version": 3

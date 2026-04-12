@@ -86,7 +86,7 @@
 
 | # | Tâche | Priorité | Détails |
 |---|---|---|
-| 70 | **Auth 2FA pour admin** | 🟡 Moyenne | Champ `require_2fa` déjà dans les specs — implémenter TOTP ou SMS. |
+| 70 | ~~**Auth 2FA pour admin**~~ | ✅ FAIT | `twoFactorService.ts` (TOTP via otplib), `AdminTwoFactorSetup.tsx` (QR code + vérification), `AdminTwoFactorVerify.tsx` (connexion 2FA). Intégré dans App.tsx (AdminRoute). 9 tests. package.json mis à jour (otplib). |
 | 71 | **Restriction IP admin** | 🟢 Basse | Limiter l'accès au portail admin à des IPs whitlistées. |
 | 72 | **Audit logs complets** | 🟡 Moyenne | Enregistrer toutes les actions sensibles (modération, suspension, certification). |
 | 73 | **Rate limiting API** | 🟡 Moyenne | Limiter les appels API côté client (visites, messages, rapports). |
@@ -161,7 +161,7 @@
 | Priorité | Count |
 |---|---|
 | 🔴 Haute | 0 (paiement Mobile Money restant) |
-| 🟡 Moyenne | 13 (-1 : modération auto ✅) |
+| 🟡 Moyenne | 12 (-1 : Auth 2FA admin ✅) |
 | 🟢 Basse | 13 |
 | **TOTAL** | **~22 tâches** (modèles 3D retiré) |
 
