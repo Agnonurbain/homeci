@@ -86,9 +86,21 @@ describe('PropertiesTab', () => {
     expect(screen.getByText('Mes Biens')).toBeInTheDocument();
   });
 
+  it('affiche le nombre de biens enregistrés', () => {
+    renderTab([baseProperty], { stats: { total: 5, published: 3, pending: 1, rented_sold: 1, verified: 2 } });
+    expect(screen.getByText('5 bien(s) enregistré(s)')).toBeInTheDocument();
+  });
+
   it('affiche le message vide quand aucune propriété', () => {
     renderTab([]);
     expect(screen.getByText('Aucun bien enregistré')).toBeInTheDocument();
+  });
+
+  it('affiche le bouton "Enregistrer un bien" dans le message vide', () => {
+    renderTab([]);
+    const addBtn = screen.getByText('Enregistrer un bien');
+    expect(addBtn).toBeInTheDocument();
+    fireEvent.click(addBtn);
   });
 
   it('affiche la bannière de mise à jour quand needs_status_update est true', () => {
@@ -126,5 +138,64 @@ describe('PropertiesTab', () => {
     expect(screen.getAllByText('Mettre à jour')).toHaveLength(2);
     const banners = screen.getAllByText(/Visite effectuée/);
     expect(banners).toHaveLength(2);
+  });
+
+  it('appelle onExportCSV au clic sur Exporter', () => {
+    const onExportCSV = vi.fn();
+    renderTab([baseProperty], { onExportCSV });
+    fireEvent.click(screen.getByText(/Exporter/));
+    expect(onExportCSV).toHaveBeenCalled();
+  });
+
+  it('appelle onAddProperty au clic sur Ajouter', () => {
+    const onAddProperty = vi.fn();
+    renderTab([baseProperty], { onAddProperty });
+    fireEvent.click(screen.getByText('Ajouter'));
+    expect(onAddProperty).toHaveBeenCalled();
+  });
+
+  it('affiche les lignes de propriétés dans le tableau', () => {
+    renderTab([baseProperty]);
+    // The table should contain the property title
+    expect(screen.getByText('Appartement Cocody')).toBeInTheDocument();
+  });
+
+  it('affiche plusieurs propriétés dans le tableau', () => {
+    const prop1 = { ...baseProperty, id: 'p1', title: 'Villa Plateau', price: 300000 };
+    const prop2 = { ...baseProperty, id: 'p2', title: 'Studio Marcory', price: 80000 };
+    renderTab([prop1, prop2], { stats: { ...defaultStats, total: 2, published: 2 } });
+    expect(screen.getByText('Villa Plateau')).toBeInTheDocument();
+    expect(screen.getByText('Studio Marcory')).toBeInTheDocument();
+  });
+
+  it('affiche le statut de vérification notaire', () => {
+    const verifiedProp = { ...baseProperty, verified_notaire: true };
+    renderTab([verifiedProp]);
+    // Should show "✓ Vérifié" badge
+    expect(screen.getByText('✓ Vérifié')).toBeInTheDocument();
+  });
+
+  it('appelle onViewProperty au clic sur voir', () => {
+    const onViewProperty = vi.fn();
+    renderTab([baseProperty], { onViewProperty });
+    const viewBtn = screen.getByRole('button', { name: /détails/i });
+    fireEvent.click(viewBtn);
+    expect(onViewProperty).toHaveBeenCalledWith('prop-1');
+  });
+
+  it('appelle onEditProperty au clic sur éditer', () => {
+    const onEditProperty = vi.fn();
+    renderTab([baseProperty], { onEditProperty });
+    const editBtn = screen.getByRole('button', { name: /modifier/i });
+    fireEvent.click(editBtn);
+    expect(onEditProperty).toHaveBeenCalledWith('prop-1');
+  });
+
+  it('appelle onBoost au clic sur booster', () => {
+    const onBoost = vi.fn();
+    renderTab([baseProperty], { onBoost });
+    const boostBtn = screen.getByRole('button', { name: /booster/i });
+    fireEvent.click(boostBtn);
+    expect(onBoost).toHaveBeenCalledWith(baseProperty);
   });
 });
