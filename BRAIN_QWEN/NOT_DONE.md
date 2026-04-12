@@ -59,7 +59,7 @@
 | # | Tâche | Priorité | Détails |
 |---|---|---|
 | 40 | **Tests composants notaire** | ❌ SUPPRIMÉ | 3 fichiers créés puis supprimés — mocks trop complexes pour le mode production React 18. À re-créer plus tard. |
-| 41 | **Flux décertilification** | 🟡 Moyenne | RevokeModal existe dans `NotaireActionModals.tsx` — vérifier le flux complet côté Firestore. |
+| 41 | ~~**Flux décertilification**~~ | ✅ FAIT | `handleRevoke` dans useNotaireDashboard + `RevokeModal` UI + Cloud Function `certifyProperty` (action=reject). Annule visites actives, notifie locataires, log admin. 3 tests ajoutés. 903 tests. |
 | 42 | **Dashboard stats notaire** | 🟢 Basse | Graphiques d'activité (biens certifiés, taux d'approbation, temps moyen). |
 
 ### Dashboard Admin
@@ -161,7 +161,7 @@
 | Priorité | Count |
 |---|---|
 | 🔴 Haute | 0 (paiement Mobile Money restant) |
-| 🟡 Moyenne | 18 (-1 : recherche avancée ✅) |
+| 🟡 Moyenne | 17 (-1 : flux décértilification ✅) |
 | 🟢 Basse | 13 |
 | **TOTAL** | **~22 tâches** (modèles 3D retiré) |
 
@@ -173,7 +173,7 @@
 Frontend : ███████████████████████████████▌  ~96%
 Backend (Firebase) : ████████████████████████████  ~94%
 Tests : ███████████████████████████████▌  ~96%
-  - 84 fichiers de test, 893 tests (14 ajoutés)
+  - 85 fichiers de test, 903 tests (3 ajoutés)
   - 0 erreur TypeScript (typecheck clean)
 CI/CD : ██████████████████████████░░  ~85%
 Sécurité : ████████████████████████░░  ~82%
@@ -181,6 +181,8 @@ Notifications : █████████████████████�
 Chat paginé : ████████████████████████████  ~100%
 Dossier locataire : ████████████████████████████  ~100%
 Recherche avancée : ████████████████████████████  ~100%
+Gestion publicités : ████████████████████████████  ~100%
+Flux décértilification : ████████████████████████████  ~100%
 
 Global : ████████████████████████████████▌  ~97%
 ```
