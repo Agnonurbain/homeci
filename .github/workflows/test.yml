@@ -23,7 +23,14 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm install
+          npm install --include=dev
+          echo "Verifying dev deps are installed..."
+          npx vitest --version
+          npx tsc --version
+          npx eslint --version
+          npx vite --version
 
       - name: Lint
         run: npm run lint
