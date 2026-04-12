@@ -118,7 +118,7 @@
 | 90 | ~~**Optimisation images**~~ | ✅ FAIT | Unifié `compressImage` (doublon retiré de `imageOptimization.ts`), `useImageUpload.ts` mis à jour pour utiliser l'API options de `compressImage.ts`. 4 presets (property, thumbnail, avatar, video). `imageOptimization.ts` re-exporte le canonique. `OptimizedImage.tsx` avec cache. `getConnectionQuality` adapte qualité selon connexion (2G/3G/4G). 987 tests. |
 | 91 | **Lazy loading routes** | ✅ FAIT | Déjà implémenté pour les 4 dashboards et pages publiques. |
 | 92 | **Code splitting** | ✅ FAIT | recharts et leaflet chunked séparément dans vite.config.ts. |
-| 93 | **Bundle size monitoring** | 🟡 Moyenne | `npm run build` → vérifier que le bundle initial reste < 350KB gzip. |
+| 93 | ~~**Bundle size monitoring**~~ | ✅ FAIT | `vite.config.ts` : chunks manuels optimisés (firebase, lucide, sentry, zod, router, reactCore). `rollup-plugin-visualizer` pour analyse (`npm run build:analyze`). Index bundle : **335KB gzip** (sous le seuil 350KB). `chunkSizeWarningLimit: 500`. |
 | 94 | **Lighthouse CI** | 🟢 Basse | Intégrer Lighthouse dans la CI pour monitorer FCP, LCP, CLS. |
 | 95 | ~~**Fix package-lock CI**~~ | ✅ FAIT | Dépendances optionnelles netbsd/arm64 retirées, CI passe. |
 
