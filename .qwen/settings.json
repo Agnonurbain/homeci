@@ -24,7 +24,10 @@
       "Bash(git diff *)",
       "Bash(python3 *)",
       "Bash(git stash)",
-      "Bash(yarn install)"
+      "Bash(yarn install)",
+      "Bash(mv *)",
+      "Bash(source *)",
+      "Bash(nvm *)"
     ]
   },
   "$version": 3
