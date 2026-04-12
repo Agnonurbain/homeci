@@ -88,7 +88,7 @@
 |---|---|---|
 | 70 | ~~**Auth 2FA pour admin**~~ | ✅ FAIT | `twoFactorService.ts` (TOTP via otplib), `AdminTwoFactorSetup.tsx` (QR code + vérification), `AdminTwoFactorVerify.tsx` (connexion 2FA). Intégré dans App.tsx (AdminRoute). 9 tests. package.json mis à jour (otplib). |
 | 71 | **Restriction IP admin** | 🟢 Basse | Limiter l'accès au portail admin à des IPs whitlistées. |
-| 72 | **Audit logs complets** | 🟡 Moyenne | Enregistrer toutes les actions sensibles (modération, suspension, certification). |
+| 72 | ~~**Audit logs complets**~~ | ✅ FAIT | `auditService.ts` : 16 types d'actions tracées (login, suspension, modération, certification, signalements, CGV...). `AdminAuditLogs.tsx` : tableau filtrable avec recherche, filtre par action, pagination. Intégré dans dashboard admin (onglet "Journal d'Audit"). 15 tests. 976 tests totaux. |
 | 73 | **Rate limiting API** | 🟡 Moyenne | Limiter les appels API côté client (visites, messages, rapports). |
 | 74 | **Scan antivirus uploads** | 🟢 Basse | Scanner les fichiers uploadés avec ClamAV ou équivalent. |
 
@@ -161,7 +161,7 @@
 | Priorité | Count |
 |---|---|
 | 🔴 Haute | 0 (paiement Mobile Money restant) |
-| 🟡 Moyenne | 12 (-1 : Auth 2FA admin ✅) |
+| 🟡 Moyenne | 11 (-1 : audit logs ✅) |
 | 🟢 Basse | 13 |
 | **TOTAL** | **~22 tâches** (modèles 3D retiré) |
 

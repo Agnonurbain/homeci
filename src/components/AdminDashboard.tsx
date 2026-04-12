@@ -18,6 +18,7 @@ const AdminReportsTab = lazy(() => import('./AdminReportsTab'));
 const AdminSurveysTab = lazy(() => import('./AdminSurveysTab'));
 const AdminVisitsTab = lazy(() => import('./AdminVisitsTab'));
 const AdminUsersSearchTab = lazy(() => import('./AdminUsersSearchTab'));
+const AdminAuditLogs = lazy(() => import('./admin/AdminAuditLogs'));
 const AdminCGVTab = lazy(() => import('./AdminCGVTab'));
 const AdminAdsTab = lazy(() => import('./AdminAdsTab'));
 const AdminLoginHistory = lazy(() => import('./AdminLoginHistory'));
@@ -144,6 +145,11 @@ export default function AdminDashboard() {
             {activeTab === 'ads' && <AdminAdsTab />}
             {activeTab === 'security' && <AdminLoginHistory />}
             {activeTab === 'admin-management' && <AdminManagement />}
+            {activeTab === 'audit' && (
+              <Suspense fallback={<div className="py-20 text-center" style={{ color: HColors.brown }}>Chargement des logs...</div>}>
+                <AdminAuditLogs />
+              </Suspense>
+            )}
           </Suspense>
         )}
       </div>
