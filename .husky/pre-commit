@@ -1,4 +1,11 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-npm run lint && npm run typecheck
+# Run lint first
+npm run lint -- --quiet || exit 1
+
+# Run typecheck
+npm run typecheck || exit 1
+
+# Run tests (only changed files for speed)
+npm test || exit 1

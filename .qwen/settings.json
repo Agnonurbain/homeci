@@ -27,7 +27,9 @@
       "Bash(yarn install)",
       "Bash(mv *)",
       "Bash(source *)",
-      "Bash(nvm *)"
+      "Bash(nvm *)",
+      "Bash(node_modules/.bin/husky *)",
+      "Bash(bash *)"
     ]
   },
   "$version": 3

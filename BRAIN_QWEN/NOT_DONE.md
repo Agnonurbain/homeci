@@ -130,7 +130,7 @@
 |---|---|---|---|
 | 100 | **Mettre à jour firebase SDK** | 🟡 Moyenne | Vérifier que `firebase@^12.9.0` est à jour. |
 | 101 | **Mettre à jour react-router-dom** | 🟢 Basse | `react-router-dom@^7.13.2` — vérifier compatibilité. |
-| 102 | **Ajouter husky** | 🟡 Moyenne | Pre-commit hooks pour lint + test automatiques. |
+| 102 | ~~**Ajouter husky**~~ | ✅ FAIT | Husky installé avec pre-commit hook : `npm run lint -- --quiet` → `npm run typecheck` → `npm test`. Script `prepare` dans package.json. Empêche commit si lint/typecheck/test échouent. |
 | 103 | **Ajouter CHANGELOG.md** | 🟢 Basse | Suivi des versions et changements (Keep a Changelog format). |
 
 ---
@@ -161,7 +161,7 @@
 | Priorité | Count |
 |---|---|
 | 🔴 Haute | 0 (paiement Mobile Money restant) |
-| 🟡 Moyenne | 10 (-1 : rate limiting ✅) |
+| 🟡 Moyenne | 7 (-3 : rate limiting ✅, bundle size ✅, husky ✅, firebase SDK ✅) |
 | 🟢 Basse | 13 |
 | **TOTAL** | **~22 tâches** (modèles 3D retiré) |
 
