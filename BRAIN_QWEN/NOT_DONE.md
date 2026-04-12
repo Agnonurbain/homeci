@@ -67,7 +67,7 @@
 | # | Tâche | Priorité | Détails |
 |---|---|---|
 | 50 | **Tests composants admin** | 🟡 Moyenne | Seul `AdminSections.test.tsx` existe. Couverture des 11 onglets à améliorer. |
-| 51 | **Gestion des publicités** | 🟡 Moyenne | `AdminAdsTab.tsx` et `adService.ts` — vérifier intégration complète. |
+| 51 | ~~**Gestion des publicités**~~ | ✅ FAIT | `adService` complet (boosts + bannières), `AdminAdsTab` avec stats, CRUD, modals, ciblage contextuel. 18 tests (11 service + 7 composant). 900 tests. |
 | 52 | **Export données** | 🟢 Basse | Export CSV/Excel des utilisateurs, biens, visites, enquêtes. |
 | 53 | **Dashboard analytics avancé** | 🟢 Basse | Graphiques Recharts pour tendances (inscriptions, publications, certifications). |
 
