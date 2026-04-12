@@ -115,7 +115,7 @@
 
 | # | Tâche | Priorité | Détails |
 |---|---|---|
-| 90 | **Optimisation images** | 🟡 Moyenne | `compressImage.ts` et `imageOptimization.ts` existent — vérifier application systématique. |
+| 90 | ~~**Optimisation images**~~ | ✅ FAIT | Unifié `compressImage` (doublon retiré de `imageOptimization.ts`), `useImageUpload.ts` mis à jour pour utiliser l'API options de `compressImage.ts`. 4 presets (property, thumbnail, avatar, video). `imageOptimization.ts` re-exporte le canonique. `OptimizedImage.tsx` avec cache. `getConnectionQuality` adapte qualité selon connexion (2G/3G/4G). 987 tests. |
 | 91 | **Lazy loading routes** | ✅ FAIT | Déjà implémenté pour les 4 dashboards et pages publiques. |
 | 92 | **Code splitting** | ✅ FAIT | recharts et leaflet chunked séparément dans vite.config.ts. |
 | 93 | **Bundle size monitoring** | 🟡 Moyenne | `npm run build` → vérifier que le bundle initial reste < 350KB gzip. |

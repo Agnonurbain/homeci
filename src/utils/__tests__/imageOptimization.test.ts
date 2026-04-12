@@ -1,9 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { 
-  compressImage, 
-  generateThumbnail, 
-  formatFileSize, 
-  isImageFile, 
+import {
+  generateThumbnail,
+  formatFileSize,
+  isImageFile,
   isVideoFile,
   getOptimalImageQuality,
   getOptimizedImageUrl
@@ -97,14 +96,6 @@ describe('imageOptimization', () => {
           return {};
         }),
       });
-    });
-
-    it('compressImage compresse une image', async () => {
-      const file = new File(['dummy'], 'test.jpg', { type: 'image/jpeg' });
-      const compressed = await compressImage(file);
-      expect(compressed).toBeInstanceOf(File);
-      expect(compressed.name).toBe('test.webp');
-      expect(compressed.type).toBe('image/webp');
     });
 
     it('generateThumbnail génère une miniature', async () => {

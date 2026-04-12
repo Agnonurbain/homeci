@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { storageService } from '../services/storageService';
-import { compressImage, isVideoFile, isImageFile, getOptimalImageQuality } from '../utils/imageOptimization';
+import { compressImage } from '../utils/compressImage';
+import { isVideoFile, isImageFile, getOptimalImageQuality } from '../utils/imageOptimization';
 import { generateVideoThumbnail } from '../utils/videoProcessing';
 
 interface UploadProgress {
@@ -62,7 +63,11 @@ export const useImageUpload = () => {
           return newMap;
         });
 
-        fileToUpload = await compressImage(file, maxWidth, maxHeight, quality);
+        fileToUpload = await compressImage(file, {
+          maxWidth,
+          maxHeight,
+          quality,
+        });
       }
 
       const onProgress = (p: { progress: number }) => {
