@@ -17,18 +17,17 @@ vi.mock('firebase/firestore', () => ({
 }));
 
 vi.mock('otplib', () => ({
-  authenticator: {
-    options: {},
-    generateSecret: vi.fn(() => 'JBSWY3DPEHPK3PXP'),
-    keyuri: vi.fn((email: string, issuer: string, secret: string) =>
-      `otpauth://totp/${encodeURIComponent(email)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`
-    ),
-    check: vi.fn((token: string, secret: string) => token === '123456'),
-  },
+  generateSecret: vi.fn(() => 'JBSWY3DPEHPK3PXP'),
+  generateURI: vi.fn(({ secret, label, issuer }: any) =>
+    `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(label)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`
+  ),
+  verifySync: vi.fn(({ token }: { token: string }) =>
+    token === '123456' ? { valid: true, delta: 0, epoch: 1776018150, timeStep: 59200605 } : { valid: false, delta: 0, epoch: 1776018150, timeStep: 59200605 }
+  ),
 }));
 
 import * as fs from 'firebase/firestore';
-import { authenticator } from 'otplib';
+import { generateSecret, generateURI, verifySync } from 'otplib';
 
 describe('twoFactorService', () => {
   beforeEach(() => {
@@ -37,15 +36,15 @@ describe('twoFactorService', () => {
 
   describe('generateSecret', () => {
     it('génère un secret et une URL otpauth', async () => {
-      const { doc, setDoc } = fs;
+      const { setDoc } = fs;
       vi.mocked(setDoc).mockResolvedValue(undefined as any);
 
       const result = await twoFactorService.generateSecret('user-1', 'admin@homeci.ci');
 
       expect(result.secret).toBe('JBSWY3DPEHPK3PXP');
       expect(result.otpauthUrl).toContain('otpauth://totp/');
-      expect(authenticator.generateSecret).toHaveBeenCalled();
-      expect(authenticator.keyuri).toHaveBeenCalledWith('admin@homeci.ci', 'HOMECI', 'JBSWY3DPEHPK3PXP');
+      expect(generateSecret).toHaveBeenCalled();
+      expect(generateURI).toHaveBeenCalledWith({ secret: 'JBSWY3DPEHPK3PXP', label: 'admin@homeci.ci', issuer: 'HOMECI' });
     });
   });
 
@@ -56,13 +55,12 @@ describe('twoFactorService', () => {
         exists: () => true,
         data: () => ({ secret: 'JBSWY3DPEHPK3PXP' }),
       } as any);
-      vi.mocked(authenticator.check).mockReturnValue(true);
       vi.mocked(updateDoc).mockResolvedValue(undefined as any);
 
       const result = await twoFactorService.verifyAndEnable('user-1', '123456');
 
       expect(result).toBe(true);
-      expect(authenticator.check).toHaveBeenCalledWith('123456', 'JBSWY3DPEHPK3PXP');
+      expect(verifySync).toHaveBeenCalledWith(expect.objectContaining({ token: '123456', secret: 'JBSWY3DPEHPK3PXP' }));
       expect(updateDoc).toHaveBeenCalled();
     });
 
@@ -72,7 +70,6 @@ describe('twoFactorService', () => {
         exists: () => true,
         data: () => ({ secret: 'JBSWY3DPEHPK3PXP' }),
       } as any);
-      vi.mocked(authenticator.check).mockReturnValue(false);
 
       const result = await twoFactorService.verifyAndEnable('user-1', '000000');
 
@@ -95,7 +92,6 @@ describe('twoFactorService', () => {
         exists: () => true,
         data: () => ({ secret: 'JBSWY3DPEHPK3PXP', enabled: true }),
       } as any);
-      vi.mocked(authenticator.check).mockReturnValue(true);
 
       const result = await twoFactorService.verifyToken('user-1', '123456');
 

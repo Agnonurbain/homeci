@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Shield, QrCode, Copy, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { useState } from 'react';
+import { Shield, Copy, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { twoFactorService } from '../services/twoFactorService';
 import { HColors, HAlpha } from '../styles/homeci-tokens';

@@ -1,22 +1,30 @@
 /**
  * HOMECI — Two-Factor Authentication (TOTP) Service
  *
- * Uses otplib for TOTP generation/verification.
- * Secret is stored in Firestore under users/{uid}.two_factor_secret.
+ * Uses otplib v13 for TOTP generation/verification.
+ * Secret is stored in Firestore under users/{uid}/two_factor/config.
  * 2FA status is stored under users/{uid}.two_factor_enabled.
  */
 
 import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { authenticator } from 'otplib';
+import { generateSecret, generateURI, verifySync } from 'otplib';
 
-// TOTP configuration
-authenticator.options = {
-  window: 1, // Allow 1 step before/after for clock drift
-  step: 30,  // 30-second steps (standard)
-  digits: 6, // 6-digit codes
-  algorithm: 'sha1',
-};
+// TOTP configuration: 30-second steps, 6-digit codes, 1 step window tolerance
+const TOTP_PERIOD = 30;
+const TOTP_DIGITS = 6;
+const TOTP_EPOCH_TOLERANCE = 1; // Check 1 time step before/after for clock drift
+
+function checkToken(token: string, secret: string): boolean {
+  const result = verifySync({
+    token,
+    secret,
+    period: TOTP_PERIOD,
+    digits: TOTP_DIGITS,
+    epochTolerance: TOTP_EPOCH_TOLERANCE,
+  });
+  return result.valid === true;
+}
 
 export interface TwoFactorSetup {
   secret: string;
@@ -28,8 +36,8 @@ export const twoFactorService = {
    * Génère un nouveau secret TOTP et l'URL otpauth pour le QR code
    */
   async generateSecret(userId: string, email: string): Promise<TwoFactorSetup> {
-    const secret = authenticator.generateSecret();
-    const otpauthUrl = authenticator.keyuri(email, 'HOMECI', secret);
+    const secret = generateSecret();
+    const otpauthUrl = generateURI({ secret, label: email, issuer: 'HOMECI' });
 
     // Store the secret (not yet enabled)
     await setDoc(doc(db, 'users', userId, 'two_factor', 'config'), {
@@ -52,8 +60,8 @@ export const twoFactorService = {
       throw new Error('Configuration 2FA introuvable. Générez d\'abord un secret.');
     }
 
-    const config = configSnap.data();
-    const isValid = authenticator.check(token, config.secret);
+    const config = configSnap.data() as Record<string, unknown>;
+    const isValid = checkToken(token, config.secret as string);
 
     if (isValid) {
       // Enable 2FA
@@ -84,12 +92,12 @@ export const twoFactorService = {
       throw new Error('Configuration 2FA introuvable.');
     }
 
-    const config = configSnap.data();
+    const config = configSnap.data() as Record<string, unknown>;
     if (!config.enabled) {
       throw new Error('Le 2FA n\'est pas activé pour ce compte.');
     }
 
-    return authenticator.check(token, config.secret);
+    return checkToken(token, config.secret as string);
   },
 
   /**
@@ -114,6 +122,6 @@ export const twoFactorService = {
     const configSnap = await getDoc(configRef);
 
     if (!configSnap.exists()) return false;
-    return configSnap.data().enabled || false;
+    return (configSnap.data() as Record<string, unknown>).enabled as boolean || false;
   },
 };
