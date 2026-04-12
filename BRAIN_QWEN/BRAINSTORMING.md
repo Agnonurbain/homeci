@@ -126,6 +126,7 @@ cd functions && npm run serve    # Build + emulators
 15. ~~Chat pièces jointes~~ ✅ RÉSOLU — Images + PDF, bouton clip, lightbox, Storage rules, notifications enrichies. 843 tests.
 16. ~~Notifications messages offline~~ ✅ RÉSOLU — Détection online/offline (30s), `delivery_mode`, `push_sent` anti-doublons, deep link chat, hook `usePresence`. 843 tests.
 17. ~~Chat paginé + recherche~~ ✅ RÉSOLU — 30 msg/page, scroll infini, recherche avec highlight, 843 tests.
+18. ~~Dossier locataire complet~~ ✅ RÉSOLU — `dossierService`, `useTenantDossier`, soumission, suppression, 879 tests.
 
 ⚠️ **Restants :** Paiement Mobile Money réel
 
@@ -133,8 +134,9 @@ cd functions && npm run serve    # Build + emulators
 
 ## 📊 Prochaines étapes prioritaires
 
-1. **Intégration paiement Mobile Money réelle** — Wave, Orange Money, MTN, Moov, Djamo (laissé de côté pour l'instant)
-2. **Tests d'intégration E2E** — Firebase Emulator Suite
+1. **Recherche avancée locataire** — Filtres combinés, tri, pagination
+2. **Gestion des publicités admin** — Vérifier intégration complète
+3. **Flux décértilification notaire** — RevokeModal Firestore
 
 ---
 
@@ -158,4 +160,4 @@ cd functions && npm run serve    # Build + emulators
 ---
 
 *Ce fichier est le point d'entrée unique. Toujours le lire en premier.*
-*Dernière mise à jour : 2026-04-12 (session chat paginé + recherche historique)*
+*Dernière mise à jour : 2026-04-12 (session dossier locataire complet)*

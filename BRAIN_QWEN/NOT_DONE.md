@@ -1,6 +1,6 @@
 # 🚧 NOT_DONE.md — Ce qui reste à faire
 
-> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-12 (session chat paginé + recherche).
+> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-12 (session dossier locataire complet).
 
 ---
 
@@ -50,7 +50,7 @@
 | # | Tâche | Priorité | Détails |
 |---|---|---|
 | 30 | **Paiement visite réel** | 🔴 Haute | `movapayService.ts` existe mais intégration réelle avec Wave, Orange Money, MTN, Moov, Djamo à finaliser. |
-| 31 | **Dossier locataire complet** | 🟡 Moyenne | `TenantDossier.tsx` — upload et gestion des documents locataire. |
+| 31 | ~~**Dossier locataire complet**~~ | ✅ FAIT | `dossierService.ts` (upload, delete, validate, submit), `useTenantDossier` hook, TenantDossier refactorisé (soumission, suppression, modal confirmation), 36 tests. 879 tests totaux. |
 | 32 | **Recherche avancée** | 🟡 Moyenne | `searchParser.ts` existe — améliorer la recherche avec filtres combinés, tri, pagination. |
 | 33 | **Comparaison de biens** | 🟢 Basse | Fonctionnalité de comparaison côte à côte de biens. |
 
@@ -161,7 +161,7 @@
 | Priorité | Count |
 |---|---|
 | 🔴 Haute | 0 (paiement Mobile Money restant) |
-| 🟡 Moyenne | 20 (-1 : notifications messages ✅) |
+| 🟡 Moyenne | 19 (-1 : dossier locataire ✅) |
 | 🟢 Basse | 13 |
 | **TOTAL** | **~22 tâches** (modèles 3D retiré) |
 
@@ -170,17 +170,18 @@
 ## ✅ Progression
 
 ```
-Frontend : ███████████████████████████████░░  ~94% (+2%)
+Frontend : ███████████████████████████████▌  ~96% (+2%)
 Backend (Firebase) : ████████████████████████████  ~94%
-Tests : ███████████████████████████████░  ~95% (+1%)
-  - 81 fichiers de test, 843 tests (18 ajoutés)
+Tests : ███████████████████████████████▌  ~96% (+1%)
+  - 83 fichiers de test, 879 tests (36 ajoutés)
   - 0 erreur TypeScript (typecheck clean)
 CI/CD : ██████████████████████████░░  ~85%
 Sécurité : ████████████████████████░░  ~82%
 Notifications : ████████████████████████████  ~95%
 Chat paginé : ████████████████████████████  ~100%
+Dossier locataire : ████████████████████████████  ~100%
 
-Global : ████████████████████████████████▌  ~96% (+1%)
+Global : ████████████████████████████████▌  ~97% (+1%)
 ```
 
 ---

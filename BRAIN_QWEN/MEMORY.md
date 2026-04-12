@@ -1,6 +1,6 @@
 # 🧠 MEMORY.md — Mémoire projet HOMECI
 
-> **Dernière session :** 2026-04-12 (chat paginé + recherche historique)
+> **Dernière session :** 2026-04-12 (dossier locataire complet)
 > **Prochain rappel :** Lire NOT_DONE.md et DONE.md avant chaque session de travail.
 
 ---
@@ -108,8 +108,8 @@ Backend (Firebase) : ███████████████████�
   - Cloud Functions (2+) ✅
   - FCM Push ✅
 
-Tests : ███████████████████████████████░  ~95%
-  - 81 fichiers de test, 843 tests (100% passent) ✅
+Tests : ███████████████████████████████▌  ~96%
+  - 83 fichiers de test, 879 tests (100% passent) ✅
   - 0 échec résiduel
 
 CI/CD : ██████████████████████████░░  ~85%
@@ -251,9 +251,11 @@ CI/CD : ████████████████████████
 
 ## 🚧 Prochaines étapes recommandées
 
-1. **Intégration paiement réelle** — Wave, Orange Money, MTN, Moov, Djamo (laissé de côté)
-2. **Tests d'intégration E2E** — Firebase Emulator Suite
-3. **Index Firestore pour messages** — Vérifier que `created_at` est indexé pour les queries paginées
+1. **Recherche avancée locataire** — `searchParser.ts` existe — filtres combinés, tri, pagination
+2. **Gestion des publicités admin** — `AdminAdsTab.tsx` + `adService.ts`
+3. **Flux décértilification notaire** — RevokeModal dans `NotaireActionModals.tsx`
+4. **Intégration paiement réelle** — Wave, Orange Money, MTN, Moov, Djamo (laissé de côté)
+5. **Tests d'intégration E2E** — Firebase Emulator Suite
 
 ---
 

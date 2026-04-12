@@ -1,13 +1,12 @@
-import { useState, useMemo } from 'react';
-import { 
-  Upload, CheckCircle, Clock, Eye, 
+import { useMemo, useState, useCallback } from 'react';
+import {
+  Upload, CheckCircle, Clock, Eye,
   AlertTriangle, ShieldCheck, Wallet,
-  Briefcase, Users, ArrowRight
+  Briefcase, Users,
+  Trash2, Send, X
 } from 'lucide-react';
-import { storageService } from '../services/storageService';
 import { useAuth } from '../contexts/AuthContext';
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { useTenantDossier } from '../hooks/useTenantDossier';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 
 interface DossierDocDef {
@@ -21,50 +20,50 @@ interface DossierDocDef {
 
 const DOSSIER_CONFIG: DossierDocDef[] = [
   // SECTION: REVENUS
-  { 
-    id: 'pay_slip_1', 
-    label: 'Bulletin de paie (Mois N)', 
+  {
+    id: 'pay_slip_1',
+    label: 'Bulletin de paie (Mois N)',
     hint: 'Le plus récent',
     icon: <Wallet className="w-5 h-5" />,
     required: true,
     section: 'income'
   },
-  { 
-    id: 'pay_slip_2', 
-    label: 'Bulletin de paie (Mois N-1)', 
+  {
+    id: 'pay_slip_2',
+    label: 'Bulletin de paie (Mois N-1)',
     hint: 'Avant-dernier mois',
     icon: <Wallet className="w-5 h-5" />,
     required: true,
     section: 'income'
   },
-  { 
-    id: 'pay_slip_3', 
-    label: 'Bulletin de paie (Mois N-2)', 
+  {
+    id: 'pay_slip_3',
+    label: 'Bulletin de paie (Mois N-2)',
     hint: 'Il y a 3 mois',
     icon: <Wallet className="w-5 h-5" />,
     required: true,
     section: 'income'
   },
-  { 
-    id: 'employment_proof', 
-    label: 'Attestation d\'Emploi', 
+  {
+    id: 'employment_proof',
+    label: 'Attestation d\'Emploi',
     hint: 'Ou contrat de travail récent',
     icon: <Briefcase className="w-5 h-5" />,
     required: true,
     section: 'income'
   },
   // SECTION: GARANT
-  { 
-    id: 'guarantor_identity', 
-    label: 'Identité du Garant', 
+  {
+    id: 'guarantor_identity',
+    label: 'Identité du Garant',
     hint: 'Pièce d\'identité de votre caution',
     icon: <Users className="w-5 h-5" />,
     required: false,
     section: 'guarantor'
   },
-  { 
-    id: 'guarantor_income', 
-    label: 'Revenus du Garant', 
+  {
+    id: 'guarantor_income',
+    label: 'Revenus du Garant',
     hint: 'Dernier bulletin de paie du garant',
     icon: <Wallet className="w-5 h-5" />,
     required: false,
@@ -72,56 +71,131 @@ const DOSSIER_CONFIG: DossierDocDef[] = [
   }
 ];
 
+/**
+ * Modal de confirmation de soumission du dossier
+ */
+function SubmitConfirmModal({
+  stats,
+  onConfirm,
+  onCancel,
+  submitting,
+}: {
+  stats: { completedRequired: number; totalRequired: number };
+  onConfirm: () => void;
+  onCancel: () => void;
+  submitting: boolean;
+}) {
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+         onClick={onCancel}>
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200"
+           onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>
+            Soumettre le dossier
+          </h3>
+          <button onClick={onCancel} className="p-1 rounded-lg hover:bg-gray-100">
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        <div className="space-y-3 mb-6">
+          <p className="text-sm text-gray-700" style={{ fontFamily: 'var(--font-nunito)' }}>
+            Votre dossier contient <strong>{stats.completedRequired}/{stats.totalRequired}</strong> documents requis.
+            Une fois soumis, il sera visible par les propriétaires pour étude de solvabilité.
+          </p>
+          <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800">
+            <strong>⚠️ Important :</strong> Vous pourrez modifier vos documents après soumission, mais cela réinitialisera le statut de soumission.
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            disabled={submitting}
+            className="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            Annuler
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={submitting}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50"
+            style={{ background: HColors.vertCI }}
+          >
+            {submitting ? (
+              <>
+                <Clock className="w-4 h-4 animate-spin" />
+                Envoi...
+              </>
+            ) : (
+              <>
+                <Send className="w-4 h-4" />
+                Confirmer
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function TenantDossier() {
   const { user, profile, refreshProfile } = useAuth();
-  const [uploading, setUploading] = useState<Record<string, boolean>>({});
-  const [error, setError] = useState<string | null>(null);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  const dossier = useMemo(() => profile?.dossier || {}, [profile]);
+  const {
+    stats,
+    uploading,
+    submitting,
+    error,
+    success,
+    uploadDocument,
+    deleteDocument,
+    submitDossier,
+    clearError,
+    clearSuccess,
+  } = useTenantDossier({
+    userId: user?.uid || '',
+    dossier: profile?.dossier as Record<string, unknown> | undefined,
+    onRefresh: refreshProfile,
+  });
 
-  // Calcul de la complétude
-  const stats = useMemo(() => {
-    const totalRequired = DOSSIER_CONFIG.filter(d => d.required).length;
-    const completedRequired = DOSSIER_CONFIG.filter(d => d.required && (dossier as any)[`${d.id}_url`]).length;
-    const progress = Math.round((completedRequired / totalRequired) * 100);
-    
-    return { progress, completedRequired, totalRequired };
-  }, [dossier]);
+  const isSubmitted = useMemo(() => {
+    return (profile?.dossier as any)?.overall_status === 'submitted';
+  }, [profile?.dossier]);
+
+  const handleFileSelect = useCallback((docId: string, file: File) => {
+    uploadDocument(docId, file);
+  }, [uploadDocument]);
+
+  const handleDeleteRequest = useCallback((docId: string) => {
+    setDeleteConfirmId(docId);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (deleteConfirmId) {
+      deleteDocument(deleteConfirmId);
+      setDeleteConfirmId(null);
+    }
+  }, [deleteConfirmId, deleteDocument]);
+
+  const handleSubmitRequest = useCallback(() => {
+    setShowSubmitModal(true);
+  }, []);
+
+  const handleSubmitConfirm = useCallback(() => {
+    setShowSubmitModal(false);
+    submitDossier();
+  }, [submitDossier]);
 
   if (!user || !profile) return null;
 
-  const handleUpload = async (docId: string, file: File) => {
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Le fichier est trop volumineux (max 5 Mo)');
-      return;
-    }
-
-    setUploading(prev => ({ ...prev, [docId]: true }));
-    setError(null);
-
-    try {
-      const url = await storageService.uploadTenantDocument(file, user.uid, docId);
-
-      const updates: Record<string, any> = {
-        updated_at: serverTimestamp(),
-        [`dossier.${docId}_url`]: url,
-        [`dossier.${docId}_status`]: 'provided', // On remplace 'pending' par 'provided'
-        'dossier.last_updated': new Date().toISOString()
-      };
-
-      await updateDoc(doc(db, 'users', user.uid), updates);
-      await refreshProfile();
-    } catch (err) {
-      console.error('Upload error:', err);
-      setError('Échec de l\'envoi du document. Veuillez réessayer.');
-    } finally {
-      setUploading(prev => ({ ...prev, [docId]: false }));
-    }
-  };
-
   const renderSection = (title: string, sub: string, sectionId: DossierDocDef['section']) => {
     const sectionDocs = DOSSIER_CONFIG.filter(d => d.section === sectionId);
-    
+
     return (
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between border-b pb-2" style={{ borderColor: HAlpha.gold15 }}>
@@ -131,16 +205,17 @@ export default function TenantDossier() {
           </div>
           <div className="text-[8px] sm:text-[10px] font-bold tracking-widest uppercase opacity-40 mt-1 sm:mt-0">Section {sectionId}</div>
         </div>
-        
+
         <div className="grid gap-3">
           {sectionDocs.map(docDef => {
-            const url = (dossier as any)[`${docDef.id}_url`];
+            const url = (profile.dossier as any)?.[`${docDef.id}_url`];
             const isUploading = uploading[docDef.id];
+            const showDeleteConfirm = deleteConfirmId === docDef.id;
 
             return (
               <div key={docDef.id} className="group relative rounded-xl p-4 transition-all bg-white border"
                 style={{ borderColor: url ? HAlpha.vertCI20 : HAlpha.gold10 }}>
-                
+
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0"
@@ -152,7 +227,7 @@ export default function TenantDossier() {
                         {docDef.label} {docDef.required && <span className="text-red-500 font-normal">*</span>}
                       </h4>
                       <p className="text-[9px] sm:text-[10px]" style={{ color: HColors.brownMid }}>{docDef.hint}</p>
-                      
+
                       {url && (
                         <div className="mt-1 flex flex-wrap items-center gap-2">
                           <span className="flex items-center gap-1 text-[8px] sm:text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
@@ -165,17 +240,41 @@ export default function TenantDossier() {
 
                   <div className="shrink-0 flex justify-end">
                     {url ? (
-                      <div className="flex items-center gap-1">
-                        <a href={url} target="_blank" rel="noopener noreferrer"
-                          className="p-2 rounded-lg hover:bg-navy-50 text-navy-600 transition-colors" title="Voir">
-                          <Eye className="w-4 h-4" />
-                        </a>
-                        <label className="p-2 rounded-lg hover:bg-gray-50 text-gray-400 cursor-pointer transition-colors" title="Modifier">
-                          <Upload className="w-4 h-4" />
-                          <input type="file" className="hidden" accept=".pdf,image/*" 
-                            onChange={(e) => e.target.files?.[0] && handleUpload(docDef.id, e.target.files[0])} />
-                        </label>
-                      </div>
+                      showDeleteConfirm ? (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={handleDeleteConfirm}
+                            className="px-2 py-1 rounded-lg text-xs font-bold text-white bg-red-500 hover:bg-red-600 transition-colors"
+                          >
+                            Confirmer
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirmId(null)}
+                            className="px-2 py-1 rounded-lg text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                          >
+                            Annuler
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1">
+                          <a href={url} target="_blank" rel="noopener noreferrer"
+                            className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors" title="Voir">
+                            <Eye className="w-4 h-4" />
+                          </a>
+                          <label className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 cursor-pointer transition-colors" title="Remplacer">
+                            <Upload className="w-4 h-4" />
+                            <input type="file" className="hidden" accept=".pdf,image/*"
+                              onChange={(e) => e.target.files?.[0] && handleFileSelect(docDef.id, e.target.files[0])} />
+                          </label>
+                          <button
+                            onClick={() => handleDeleteRequest(docDef.id)}
+                            className="p-2 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition-colors"
+                            title="Supprimer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )
                     ) : (
                       <label className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         isUploading ? 'opacity-50 cursor-wait' : 'hover:bg-opacity-90'
@@ -184,7 +283,7 @@ export default function TenantDossier() {
                         {isUploading ? <Clock className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
                         {isUploading ? 'Chargement...' : 'Envoyer'}
                         <input type="file" className="hidden" accept=".pdf,image/*" disabled={isUploading}
-                          onChange={(e) => e.target.files?.[0] && handleUpload(docDef.id, e.target.files[0])} />
+                          onChange={(e) => e.target.files?.[0] && handleFileSelect(docDef.id, e.target.files[0])} />
                       </label>
                     )}
                   </div>
@@ -220,7 +319,7 @@ export default function TenantDossier() {
 
           <div className="flex-1 text-center sm:text-left">
             <h2 className="text-xl sm:text-3xl font-bold mb-1.5" style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>
-              Finalisez votre Dossier
+              {isSubmitted ? 'Dossier Soumis ✓' : 'Finalisez votre Dossier'}
             </h2>
             <div className="flex flex-wrap justify-center md:justify-start gap-4">
                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
@@ -229,28 +328,68 @@ export default function TenantDossier() {
                    {stats.completedRequired} / {stats.totalRequired} documents requis
                  </span>
                </div>
+               {stats.totalOptional > 0 && (
+                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+                   <span className="text-[10px] font-bold" style={{ color: HAlpha.white70 }}>
+                     {stats.completedOptional}/{stats.totalOptional} optionnel{stats.totalOptional > 1 ? 's' : ''}
+                   </span>
+                 </div>
+               )}
                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
                  <ShieldCheck className="w-4 h-4" style={{ color: HColors.vertCI }} />
                  <span className="text-[10px] font-bold" style={{ color: HAlpha.white70 }}>Confidentialité Garantie</span>
                </div>
+               {isSubmitted && (
+                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30">
+                   <Send className="w-4 h-4 text-emerald-400" />
+                   <span className="text-[10px] font-bold text-emerald-300">Soumis le {(profile.dossier as any)?.submitted_at ? new Date((profile.dossier as any).submitted_at).toLocaleDateString('fr-FR') : '—'}</span>
+                 </div>
+               )}
             </div>
           </div>
-          
-          <button className="hidden lg:flex items-center gap-2 px-6 py-3 rounded-2xl bg-white/10 border border-white/20 text-white/90 text-sm font-bold hover:bg-white/20 transition-all">
-            Besoin d'aide ? <ArrowRight className="w-4 h-4" />
-          </button>
+
+          {/* Submit Button */}
+          {!isSubmitted && stats.canSubmit && (
+            <button
+              onClick={handleSubmitRequest}
+              disabled={submitting}
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl text-white text-sm font-bold transition-all hover:shadow-lg disabled:opacity-50"
+              style={{ background: HColors.vertCI }}
+            >
+              {submitting ? (
+                <>
+                  <Clock className="w-4 h-4 animate-spin" />
+                  Envoi...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  Soumettre le dossier
+                </>
+              )}
+            </button>
+          )}
         </div>
-        
+
         {/* Decor */}
         <div className="absolute -bottom-8 -right-8 w-48 h-48 opacity-5">
            <ShieldCheck className="w-full h-full" />
         </div>
       </div>
 
+      {/* Error & Success Banners */}
       {error && (
         <div className="p-4 rounded-2xl flex items-center gap-3 bg-red-500/10 border border-red-500/20 text-red-200 text-sm">
           <AlertTriangle className="w-5 h-5 shrink-0" />
-          {error}
+          <span className="flex-1">{error}</span>
+          <button onClick={clearError} className="ml-2 font-bold hover:opacity-70">✕</button>
+        </div>
+      )}
+      {success && (
+        <div className="p-4 rounded-2xl flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-200 text-sm">
+          <CheckCircle className="w-5 h-5 shrink-0" />
+          <span className="flex-1">{success}</span>
+          <button onClick={clearSuccess} className="ml-2 font-bold hover:opacity-70">✕</button>
         </div>
       )}
 
@@ -276,6 +415,16 @@ export default function TenantDossier() {
           </p>
         </div>
       </div>
+
+      {/* Submit Confirm Modal */}
+      {showSubmitModal && (
+        <SubmitConfirmModal
+          stats={stats}
+          onConfirm={handleSubmitConfirm}
+          onCancel={() => setShowSubmitModal(false)}
+          submitting={submitting}
+        />
+      )}
     </div>
   );
 }
