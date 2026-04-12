@@ -47,10 +47,10 @@ function docToNotif(id: string, data: Record<string, unknown>): Notification {
     icon: data.icon ? String(data.icon) : undefined,
     read: Boolean(data.read ?? false),
     created_at: toISO(data.created_at),
-    delivery_mode: (data.delivery_mode as 'instant' | 'push') ?? undefined,
-    recipient_online: Boolean(data.recipient_online) ?? undefined,
+    delivery_mode: data.delivery_mode as 'instant' | 'push' | undefined,
+    recipient_online: Boolean(data.recipient_online),
     message_id: data.message_id ? String(data.message_id) : undefined,
-    push_sent: Boolean(data.push_sent) ?? undefined,
+    push_sent: Boolean(data.push_sent),
   };
 }
 

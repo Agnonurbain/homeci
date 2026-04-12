@@ -3,17 +3,12 @@
  */
 import { renderHook } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { usePresence } from '../usePresence';
 
-// Mock Firebase Firestore
-const mockUpdateDoc = vi.fn(() => Promise.resolve());
-const mockDoc = vi.fn(() => ({ id: 'test-doc' }));
-const mockServerTimestamp = vi.fn(() => ({ __serverTimestamp: true }));
-
+// Mock Firebase Firestore — vi.mock is hoisted, so define mocks inside
 vi.mock('firebase/firestore', () => ({
-  doc: mockDoc,
-  updateDoc: mockUpdateDoc,
-  serverTimestamp: mockServerTimestamp,
+  doc: vi.fn(() => ({ id: 'test-doc' })),
+  updateDoc: vi.fn(() => Promise.resolve()),
+  serverTimestamp: vi.fn(() => ({ __serverTimestamp: true })),
   getFirestore: () => ({}),
 }));
 
@@ -22,7 +17,12 @@ vi.mock('../../lib/firebase', () => ({
   db: {},
 }));
 
+import { usePresence } from '../usePresence';
+import { updateDoc } from 'firebase/firestore';
+
 describe('usePresence', () => {
+  const mockUpdateDoc = vi.mocked(updateDoc);
+
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
@@ -97,7 +97,7 @@ describe('usePresence', () => {
 
     // Advance time - should not trigger after unmount
     vi.advanceTimersByTime(15000);
-    
+
     // Should not have been called again after unmount
     expect(mockUpdateDoc).not.toHaveBeenCalled();
   });
