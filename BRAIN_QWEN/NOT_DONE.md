@@ -41,7 +41,7 @@
 | # | Tâche | Priorité | Détails |
 |---|---|---|---|
 | 20 | ~~**Tests PropertiesTab**~~ | ✅ FAIT | 17 tests : titre, compteur, empty state, bannières statut (simple/multiple), export, ajout, tableau propriétés, vérifié notaire, boutons (voir/éditer/booster). 928 tests. |
-| 21 | **Tests formulaires 5 étapes** | 🟡 Moyenne | Tests complets du flux de création de bien (InfoStep → DocumentsStep). |
+| 21 | ~~**Tests formulaires 5 étapes**~~ | ✅ FAIT | 13 tests DocumentsStep : titre, progression, docs requis/optionnels, identité proprio, upload réussi, échec upload, suppression, statuts (validé/refusé), lien voir doc. InfoStep (10), LocationStep (7), MediaStep (11), CharacteristicsStep (1) existaient. 941 tests totaux. |
 | 22 | ~~**Gestion vidéo**~~ | ✅ FAIT | `VideoUploadPreview` intégré dans MediaStep (remplace `<video>` natif pour uploads). `videoProcessing.ts` complet (thumbnail, duration, resolution, bitrate). `OptimizedVideoPlayer` avec contrôles custom. Storage rules (100MB, video/*). 23 tests (10 VideoUploadPreview + 5 OptimizedVideoPlayer + 8 videoProcessing). 918 tests. |
 | 23 | ~~**Modèles 3D**~~ | ❌ SUPPRIMÉ | Retiré des priorités — fonctionnalité non essentielle pour le MVP. |
 
@@ -161,7 +161,7 @@
 | Priorité | Count |
 |---|---|
 | 🔴 Haute | 0 (paiement Mobile Money restant) |
-| 🟡 Moyenne | 15 (-1 : Tests PropertiesTab ✅) |
+| 🟡 Moyenne | 14 (-1 : Tests formulaires 5 étapes ✅) |
 | 🟢 Basse | 13 |
 | **TOTAL** | **~22 tâches** (modèles 3D retiré) |
 
@@ -172,8 +172,8 @@
 ```
 Frontend : ███████████████████████████████▌  ~96%
 Backend (Firebase) : ████████████████████████████  ~94%
-Tests : ████████████████████████████████░  ~97%
-  - 87 fichiers de test, 928 tests (10 ajoutés)
+Tests : ████████████████████████████████░  ~98%
+  - 88 fichiers de test, 941 tests (13 ajoutés)
   - 0 erreur TypeScript (typecheck clean)
 CI/CD : ██████████████████████████░░  ~85%
 Sécurité : ████████████████████████░░  ~82%
@@ -185,8 +185,9 @@ Gestion publicités : ███████████████████�
 Flux décértilification : ████████████████████████████  ~100%
 Gestion vidéo : ████████████████████████████  ~100%
 Tests PropertiesTab : ████████████████████████████  ~100%
+Tests formulaires 5 étapes : ████████████████████████████  ~100%
 
-Global : ████████████████████████████████▌  ~97%
+Global : ████████████████████████████████▌  ~98%
 ```
 
 ---
