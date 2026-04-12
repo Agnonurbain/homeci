@@ -116,7 +116,7 @@ cd functions && npm run serve    # Build + emulators
 5. ~~Pas de branche `develop`~~ ✅ RÉSOLU
 6. ~~Version `0.0.0`~~ ✅ RÉSOLU — 1.0.0
 7. ~~Gitignore `lint_output.txt`~~ ✅ RÉSOLU
-8. ~~Tests Cloud Functions~~ ✅ RÉSOLU — 101 tests
+8. ~~Tests Cloud Functions~~ ✅ RÉSOLU — 113 tests (+12)
 9. ~~Tests services manquants~~ ✅ RÉSOLU — 58 tests (7 services)
 10. ~~Tests dashboard owner~~ ✅ RÉSOLU — 75 tests (9 composants)
 11. ~~Tests dashboard admin~~ ✅ RÉSOLU — 34 tests (5 composants)
@@ -124,17 +124,17 @@ cd functions && npm run serve    # Build + emulators
 13. ~~Tests chat~~ ✅ RÉSOLU — 24 tests (ChatInput, MessageBubble)
 14. ~~package-lock CI~~ ✅ RÉSOLU — dépendances optionnelles netbsd/arm64 retirées
 15. ~~Chat pièces jointes~~ ✅ RÉSOLU — Images + PDF, bouton clip, lightbox, Storage rules, notifications enrichies. 806 tests.
+16. ~~Notifications messages offline~~ ✅ RÉSOLU — Détection online/offline (30s), `delivery_mode`, `push_sent` anti-doublons, deep link chat, hook `usePresence`. 825 tests.
 
-⚠️ **Restants :** Paiement Mobile Money réel, notifications messages offline, pagination chat historique
+⚠️ **Restants :** Paiement Mobile Money réel, pagination chat historique
 
 ---
 
 ## 📊 Prochaines étapes prioritaires
 
-1. **Notifications messages offline** — Push FCM quand message reçu et destinataire hors ligne
-2. **Historique chat paginé** — Pagination + recherche dans l'historique
-3. **Intégration paiement Mobile Money réelle** — Wave, Orange Money, MTN, Moov, Djamo (laissé de côté pour l'instant)
-4. **Tests d'intégration E2E** — Firebase Emulator Suite
+1. **Historique chat paginé** — Pagination + recherche dans l'historique
+2. **Intégration paiement Mobile Money réelle** — Wave, Orange Money, MTN, Moov, Djamo (laissé de côté pour l'instant)
+3. **Tests d'intégration E2E** — Firebase Emulator Suite
 
 ---
 
@@ -158,4 +158,4 @@ cd functions && npm run serve    # Build + emulators
 ---
 
 *Ce fichier est le point d'entrée unique. Toujours le lire en premier.*
-*Dernière mise à jour : 2026-04-11 (session chat pièces jointes)*
+*Dernière mise à jour : 2026-04-12 (session notifications FCM offline pour chat)*

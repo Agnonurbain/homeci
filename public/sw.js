@@ -93,25 +93,51 @@ self.addEventListener('push', (event) => {
   }
 
   const notif = data.notification || {};
+  const notifType = data.data?.type || '';
   const title = notif.title || 'HOMECI';
+  
+  // Build notification options based on type
   const options = {
     body: notif.body || '',
     icon: '/favicon-192x192.png',
     badge: '/favicon-192x192.png',
-    tag: data.data?.property_id || 'homeci-general',
+    tag: data.data?.notification_id || 'homeci-general',
     data: {
-      url: data.data?.property_id ? `/?property=${data.data.property_id}` : '/',
+      url: buildNotificationUrl(data.data, notifType),
       property_id: data.data?.property_id || null,
+      chat_id: data.data?.chat_id || null,
+      notification_id: data.data?.notification_id || null,
+      type: notifType,
     },
     vibrate: [100, 50, 100],
     actions: [
       { action: 'open', title: 'Voir' },
       { action: 'close', title: 'Fermer' },
     ],
+    // Different icons for different notification types
+    image: notifType === 'new_message' && notif.image ? notif.image : undefined,
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
 });
+
+/**
+ * Build the URL to open when user clicks notification
+ */
+function buildNotificationUrl(data, notifType) {
+  // Chat message notification → open chat
+  if (notifType === 'new_message' && data.chat_id) {
+    return `/dashboard?open_chat=${data.chat_id}`;
+  }
+  
+  // Property-related notification → open property
+  if (data.property_id) {
+    return `/?property=${data.property_id}`;
+  }
+  
+  // Default → home or dashboard
+  return '/';
+}
 
 // Clic sur une notification
 self.addEventListener('notificationclick', (event) => {

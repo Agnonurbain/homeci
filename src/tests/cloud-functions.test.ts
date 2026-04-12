@@ -269,6 +269,43 @@ describe('4. chat.ts — onNewChatMessage', () => {
   it('inclut property_id dans la notification', () => {
     expect(content).toContain('property_id: chat.property_id');
   });
+
+  it('vérifie le statut en ligne/hors ligne (last_seen)', () => {
+    expect(content).toContain('last_seen');
+    expect(content).toContain('isOnline');
+    expect(content).toContain('ONLINE_THRESHOLD');
+  });
+
+  it('ajoute delivery_mode à la notification', () => {
+    expect(content).toContain('delivery_mode:');
+    expect(content).toContain('"instant"');
+    expect(content).toContain('"push"');
+  });
+
+  it('ajoute push_sent flag pour éviter les doublons', () => {
+    expect(content).toContain('push_sent:');
+    expect(content).toContain('!isOnline');
+  });
+
+  it('envoie push direct si destinataire hors ligne', () => {
+    expect(content).toContain('if (!isOnline)');
+    expect(content).toContain('sendPushToUser');
+  });
+
+  it('inclut chat_id dans les données FCM', () => {
+    expect(content).toContain('chat_id:');
+    expect(content).toContain('chatId');
+  });
+
+  it('utilise le lien deep link vers le chat dans fcmOptions', () => {
+    expect(content).toContain('open_chat=');
+    expect(content).toContain('dashboard?open_chat=');
+  });
+
+  it('vérifie la préférence messages en plus de visits', () => {
+    expect(content).toContain('notifPrefs?.messages');
+    expect(content).toContain('notifPrefs?.visits');
+  });
 });
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -493,6 +530,32 @@ describe('6. notifications.ts — sendPushNotification', () => {
   it('loge le nombre de tokens atteints', () => {
     expect(content).toContain('logger.info');
     expect(content).toContain('token(s) atteint(s)');
+  });
+
+  it('vérifie le flag push_sent pour éviter les doublons', () => {
+    expect(content).toContain('push_sent');
+    expect(content).toContain('pushSent');
+    expect(content).toContain('Push déjà envoyé');
+  });
+
+  it('inclut chat_id dans les données FCM si présent', () => {
+    expect(content).toContain('chat_id:');
+    expect(content).toContain('data.chat_id');
+  });
+
+  it('inclut le type de notification dans les données FCM', () => {
+    expect(content).toContain('type: notifType');
+  });
+
+  it('utilise deep link vers chat si chat_id présent', () => {
+    expect(content).toContain('open_chat=');
+    expect(content).toContain('chatId');
+  });
+
+  it('sépare la vérification messages des visits', () => {
+    expect(content).toContain('isMessage');
+    expect(content).toContain('prefs.messages === false');
+    expect(content).not.toContain("notifType.startsWith(\"visit_\") || notifType === \"new_message\"");
   });
 });
 

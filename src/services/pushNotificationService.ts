@@ -81,6 +81,38 @@ export const pushService = {
   },
 
   /**
+   * Send FCM message with chat notification data
+   * Used by Cloud Functions to build the FCM payload
+   */
+  buildChatNotificationPayload(
+    title: string,
+    body: string,
+    chatId: string,
+    propertyId: string | null,
+    notificationId: string
+  ) {
+    return {
+      notification: { title, body },
+      data: {
+        property_id: propertyId || '',
+        notification_id: notificationId,
+        chat_id: chatId,
+        type: 'new_message',
+      },
+      webpush: {
+        fcmOptions: {
+          link: propertyId ? `/?property=${propertyId}&open_chat=${chatId}` : `/dashboard?open_chat=${chatId}`,
+        },
+        notification: {
+          icon: '/favicon-192x192.png',
+          badge: '/favicon-192x192.png',
+          vibrate: [100, 50, 100] as unknown as number[],
+        },
+      },
+    };
+  },
+
+  /**
    * Écoute les messages reçus en premier plan (quand l'app est ouverte)
    * Affiche un toast ou une notification custom
    */

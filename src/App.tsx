@@ -14,6 +14,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import NotFoundPage from './components/NotFoundPage';
 import ProfileModal from './components/ProfileModal';
 import { pushService } from './services/pushNotificationService';
+import { usePresence } from './hooks/usePresence';
 import { HColors, HAlpha } from './styles/homeci-tokens';
 import { SEO } from './components/SEO';
 
@@ -51,6 +52,9 @@ function AppContent() {
   const [showProfile, setShowProfile] = useState(false);
 
   const navigate = useNavigate();
+
+  // ── Presence tracking: update last_seen when user is active ──
+  usePresence(user?.uid);
 
   // ── FCM : demander la permission push après connexion ──
   const [pushToast, setPushToast] = useState<{ title: string; body: string } | null>(null);

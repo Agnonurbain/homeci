@@ -45,17 +45,18 @@ cd functions && npm run serve    # Build + emulators
   - ✅ Branche `develop` créée pour les PRs
   - ✅ Version `1.0.0`
 
-## Audit du répertoire (2026-04-10 — fix CI)
+## Audit du répertoire (2026-04-12 — notifications FCM offline)
 
-### État global : ~94% complété
+### État global : ~95% complété
 
 | Domaine | Progression |
 |---|---|
-| Frontend (4 dashboards, formulaires, PWA, chat pièces jointes) | ~90% |
-| Backend Firebase (Auth, Firestore, Storage, FCM, Cloud Functions) | ~92% |
-| Tests (80 fichiers, 806 tests, 0 erreur, 100% passent) | ~93% |
+| Frontend (4 dashboards, formulaires, PWA, chat pièces jointes, présence) | ~92% |
+| Backend Firebase (Auth, Firestore, Storage, FCM, Cloud Functions, offline notifications) | ~94% |
+| Tests (81 fichiers, 825 tests, 0 erreur, 100% passent) | ~94% |
 | CI/CD (GitHub Actions + Vercel, typecheck, package-lock fixé) | ~85% |
 | Sécurité (règles Firestore, portail admin 2 étapes, chat_attachments rules) | ~82% |
+| Notifications (online/offline detection, deep links, anti-doublons) | ~95% |
 
 ### ✅ Résolu session haute priorité
 
@@ -66,17 +67,17 @@ cd functions && npm run serve    # Build + emulators
 - 111 erreurs TypeScript corrigées (35 fichiers)
 - Chat temps réel audité et confirmé fonctionnel
 
-### ✅ Résolu session chat pièces jointes (2026-04-11)
+### ✅ Résolu session notifications FCM offline (2026-04-12)
 
-- Chat pièces jointes — Images (JPG, PNG, WebP, GIF) + PDF dans les conversations
-- Storage rules `chat_attachments/{chatId}/` avec restrictions par participant
-- chatService : `uploadChatAttachment()`, `sendMessage()` avec options attachment
-- useChat hook : `sendMessageWithAttachment()`, état `uploading` avec progression
-- ChatInput : bouton clip 📎, sélection fichier, prévisualisation, barre de progression
-- MessageBubble : image avec lightbox, PDF avec bouton téléchargement
-- Cloud Function : notifications enrichies (titre/icône différent par type)
-- 30 nouveaux tests (chatService +6, ChatInput 13, MessageBubble 11)
-- 806 tests totaux, 100% passent, typecheck clean
+- **Notifications FCM offline** — Détection en ligne/hors ligne (seuil 30s via `last_seen`)
+- **Cloud Function `onNewChatMessage`** — Vérifie `last_seen` destinataire, `isOnline`, push direct si offline
+- **Anti-doublons** — Flag `push_sent: true`, `sendPushNotification` vérifie et skip
+- **Métadonnées** — `delivery_mode` ('instant' vs 'push'), `recipient_online`, `chat_id`, `sender_id`, `sender_name`
+- **Hook `usePresence`** — Update `last_seen` toutes les 15s + activité (mouse, keyboard, scroll, touch, visibilitychange)
+- **Service worker** — Deep link `/dashboard?open_chat={chatId}`, `buildNotificationUrl` par type
+- **Préférences** — Séparation `messages` vs `visits` dans `notification_prefs`
+- **19 tests ajoutés** — 7 usePresence + 12 cloud functions
+- **825 tests totaux, 100% passent, typecheck clean**
 
 ### ✅ Résolu session tests massive (2026-04-10)
 

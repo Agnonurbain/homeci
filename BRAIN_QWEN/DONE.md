@@ -289,31 +289,33 @@
 | 182 | **Fix tests pré-existantes** | `DocumentsStep` (import + Auth mock), `InfoStep` (getByRole combobox), `CharacteristicsStep` (texte exact), `PropertyFormBase` (validation prix/ville + testid), `VisitsTab` (champs manquants), `cloud-functions` (beforeAll import), `paymentService`/`adService` (types TS). |
 | 183 | **Fix CI GitHub Actions** | `package-lock.json` — dépendances optionnelles netbsd/arm64 incompatibles avec runner linux/x64. Regénéré avec `npm install --package-lock-only`. Commit `d68d4a4`. |
 | 184 | **Chat pièces jointes** | Envoi d'images (JPG, PNG, WebP, GIF) et PDF dans les conversations. 7 fichiers modifiés : `storage.rules` (nouveau path `chat_attachments/`), `chatService.ts` (uploadChatAttachment, sendMessage avec options), `useChat.ts` (sendMessageWithAttachment, état uploading), `ChatInput.tsx` (bouton clip, sélection fichier, prévisualisation, barre de progression), `MessageBubble.tsx` (image avec lightbox, document avec téléchargement), `functions/src/chat.ts` (notifications enrichies), tests (3 fichiers, 30 nouveaux tests). 806 tests passent, typecheck clean. |
+| 185 | **Notifications FCM offline pour chat** | Système de détection en ligne/hors ligne avec `last_seen` (seuil 30s). `onNewChatMessage` vérifie si destinataire actif récemment. Ajout champs `delivery_mode` ('instant' vs 'push'), `recipient_online`, `push_sent` (évite doublons). Envoi push direct si hors ligne, sinon trigger Firestore gère. Nouveau hook `usePresence` met à jour `last_seen` toutes les 15s + sur activité utilisateur. Service worker amélioré avec deep link vers chat (`/dashboard?open_chat={chatId}`). Notification interface enrichie : `chat_id`, `sender_id`, `sender_name`, `attachment_type`. Préférences notifications séparées (`messages` vs `visits`). 19 nouveaux tests (7 usePresence + 12 cloud functions). 825 tests totaux, typecheck clean. |
 
 ---
 
 ## 📊 Résumé
 
 ```
-Total items complétés : ~183
+Total items complétés : ~185
 
-Frontend : ~91 composants, 14 hooks, 15 services, 8 utils
-Tests : 78 fichiers de test (778 tests, 100% passent, 0 erreur TS)
-  - Cloud Functions : 101 tests
+Frontend : ~91 composants, 15 hooks, 15 services, 8 utils
+Tests : 81 fichiers de test (825 tests, 100% passent, 0 erreur TS)
+  - Cloud Functions : 113 tests (+12)
   - Services : 58 tests (7 services)
   - Composants owner : 75 tests (9 composants)
   - Composants admin : 34 tests (5 composants)
   - Composants chat : 24 tests (2 composants)
   - Formulaires : 18 tests (2 étapes)
-  - Hooks : 17 tests (1 hook)
+  - Hooks : 24 tests (+7 usePresence)
 Firestore : 10+ collections, 230+ lignes de règles, 7 index
 Storage : 7 paths avec règles de sécurité
 Cloud Functions : 6 modules modulaires (europe-west1, nodejs20)
 Sécurité : Portail admin 2 étapes, anti brute force, session timeout, headers Vercel
-PWA : Service Worker avec cache strategies + FCM push
+PWA : Service Worker avec cache strategies + FCM push + deep links chat
 Design : Tokens centralisés, palette CI (orange/vert/or)
 CI/CD : typecheck ajouté, branche develop créée, version 1.0.0, package-lock fixé
 TypeScript : 0 erreur (typecheck passe clean)
+Notifications : Détection online/offline (30s), delivery_mode, push direct hors ligne
 ```
 
 ---

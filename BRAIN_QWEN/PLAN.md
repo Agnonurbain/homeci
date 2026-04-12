@@ -374,17 +374,17 @@ transactions/{id}
 ### Résumé
 ```
 Palier 1 (MVP) : ████████████████████████░  ~95%
-Palier 2 (Messagerie + Analytics) : ██████████████░░░░░░░░░░░░  ~65% (+5%)
+Palier 2 (Messagerie + Analytics) : ██████████████████░░░░░░░░  ~75% (+10%)
 Palier 3 (Avancé) : ██████░░░░░░░░░░░░░░░░░░░░░░░░░░  ~30%
 
-Global : ██████████████████████████████░░  ~85%
+Global : ████████████████████████████████░  ~90% (+5%)
 ```
 
 ### Historique des mises à jour
 
 | Date | Changement |
 |---|---|
-| 2026-04-11 | **Chat pièces jointes** — Images (JPG, PNG, WebP, GIF) + PDF. Bouton clip, prévisualisation, lightbox, upload Storage, rules `chat_attachments/`, notifications enrichies. 806 tests, typecheck clean. |
+| 2026-04-12 | **Notifications FCM offline chat** — Détection online/offline (`last_seen` 30s), `delivery_mode` (instant/push), `push_sent` anti-doublons, deep link `/dashboard?open_chat={chatId}`. Hook `usePresence` (15s + activité utilisateur). Service worker amélioré. Notification interface enrichie (`chat_id`, `sender_id`, `sender_name`). Préférences `messages` vs `visits` séparées. 19 tests ajoutés (7 usePresence + 12 cloud functions). 825 tests totaux. |
 | 2026-04-10 | **Fix CI** — `package-lock.json` regénéré (dépendances netbsd/arm64 retirées). Commit `d68d4a4`. |
 | 2026-04-10 | **Session tests massive** — 221 nouveaux tests ajoutés (Cloud Functions 101, services 58, owner 75, admin 34, chat 24, formulaires 18, hooks 17). 78 fichiers de test au total, 778 tests, 100% passent. typecheck clean à 0 erreur. |
 | 2026-04-09 | Création PLAN.md pour HOMECI (audit complet) |

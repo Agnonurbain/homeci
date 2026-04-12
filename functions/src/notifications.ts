@@ -25,17 +25,27 @@ export const sendPushNotification = onDocumentCreated(
     }
 
     const notifType = (data.type as string) || "";
+    
+    // Check if push was already sent (for offline chat messages)
+    const pushSent = data.push_sent as boolean | undefined;
+    if (pushSent === true) {
+      logger.info("Push déjà envoyé pour cette notification (chat offline).");
+      return;
+    }
+    
     const db = getFirestore();
 
     // Check notification preferences
     const userSnap = await db.collection("users").doc(userId).get();
-    const prefs = userSnap.data()?.notification_prefs;
+    const prefs = userSnap.data()?.notification_prefs as Record<string, unknown> | undefined;
     if (prefs) {
-      const isVisit = notifType.startsWith("visit_") || notifType === "new_message";
+      const isVisit = notifType.startsWith("visit_");
+      const isMessage = notifType === "new_message";
       const isCert = notifType.startsWith("notaire_");
       const isSystem = notifType === "system";
       if (
         (isVisit && prefs.visits === false) ||
+        (isMessage && prefs.messages === false) ||
         (isCert && prefs.certifications === false) ||
         (isSystem && prefs.system === false)
       ) {
@@ -59,15 +69,22 @@ export const sendPushNotification = onDocumentCreated(
     const tokens = tokensSnap.docs.map((d) => d.data().token as string);
 
     // Build FCM message
+    const chatId = (data.chat_id as string) || "";
     const message = {
       notification: { title, body },
       data: {
         property_id: propertyId,
         notification_id: event.params.notifId,
+        chat_id: chatId,
+        type: notifType,
       },
       webpush: {
         fcmOptions: {
-          link: propertyId ? `/?property=${propertyId}` : "/",
+          link: chatId
+            ? `/dashboard?open_chat=${chatId}`
+            : propertyId
+              ? `/?property=${propertyId}`
+              : "/",
         },
         notification: {
           icon: "/favicon-192x192.png",

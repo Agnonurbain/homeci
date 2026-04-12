@@ -43,7 +43,7 @@
 | 20 | **Tests PropertiesTab** | 🟡 Moyenne | Couverture de test pour le composant PropertiesTab (bannière statut, mise à jour). |
 | 21 | **Tests formulaires 5 étapes** | 🟡 Moyenne | Tests complets du flux de création de bien (InfoStep → DocumentsStep). |
 | 22 | **Gestion vidéo** | 🟡 Moyenne | `VideoUploadPreview.tsx` et `videoProcessing.ts` existent — vérifier intégration complète. |
-| 23 | **Modèles 3D** | 🟢 Basse | Support modèles 3D pour les biens (path `/models3d/{propertyId}/` dans Storage rules). |
+| 23 | ~~**Modèles 3D**~~ | ❌ SUPPRIMÉ | Retiré des priorités — fonctionnalité non essentielle pour le MVP. |
 
 ### Dashboard Locataire
 
@@ -76,7 +76,7 @@
 | # | Tâche | Priorité | Détails |
 |---|---|---|
 | 60 | ~~**Chat temps réel complet**~~ | ✅ FAIT | `ChatBox`, `ChatInput`, `MessageBubble` — WebSocket/firestore real-time. |
-| 61 | **Notifications de messages** | 🟡 Moyenne | Push notification quand nouveau message reçu (utilisateur offline). |
+| 61 | ~~**Notifications de messages**~~ | ✅ FAIT | Push FCM avec détection online/offline (seuil 30s), `delivery_mode`, `push_sent` anti-doublons, deep link chat. Hook `usePresence` (15s + activité). 825 tests. |
 | 62 | ~~**Pièces jointes dans chat**~~ | ✅ FAIT | Images (JPG, PNG, WebP, GIF) + PDF. Bouton clip, prévisualisation, lightbox, upload Storage, rules de sécurité. 806 tests, typecheck clean. |
 | 63 | ~~**Historique chat**~~ | ❌ SUPPRIMÉ | Pagination déplacée vers prochaine session. Actuellement tout chargé via `subscribeToMessages`. |
 
@@ -160,25 +160,26 @@
 
 | Priorité | Count |
 |---|---|
-| 🔴 Haute | 3 (sans paiement) |
-| 🟡 Moyenne | 21 |
-| 🟢 Basse | 14 |
-| **TOTAL** | **~24 tâches** (chat pièces jointes résolue) |
+| 🔴 Haute | 0 (paiement Mobile Money restant) |
+| 🟡 Moyenne | 20 (-1 : notifications messages ✅) |
+| 🟢 Basse | 13 |
+| **TOTAL** | **~22 tâches** (modèles 3D retiré) |
 
 ---
 
 ## ✅ Progression
 
 ```
-Frontend : ██████████████████████████████░░  ~90% (+2%)
-Backend (Firebase) : ████████████████████████████  ~92% (+2%)
-Tests : ██████████████████████████████░░  ~93% (+1%)
-  - 80 fichiers de test, 806 tests (28 ajoutés)
+Frontend : ██████████████████████████████░░  ~92% (+2%)
+Backend (Firebase) : ████████████████████████████  ~94% (+2%)
+Tests : ██████████████████████████████░░  ~94% (+1%)
+  - 81 fichiers de test, 825 tests (19 ajoutés)
   - 0 erreur TypeScript (typecheck clean)
 CI/CD : ██████████████████████████░░  ~85%
-Sécurité : ████████████████████████░░  ~82% (+2%)
+Sécurité : ████████████████████████░░  ~82%
+Notifications : ████████████████████████████  ~95% (+10%)
 
-Global : ████████████████████████████████░  ~94% (+1%)
+Global : ████████████████████████████████░  ~95% (+1%)
 ```
 
 ---

@@ -1,6 +1,6 @@
 # 🧠 MEMORY.md — Mémoire projet HOMECI
 
-> **Dernière session :** 2026-04-11 (chat pièces jointes — images + PDF)
+> **Dernière session :** 2026-04-12 (notifications FCM offline pour chat)
 > **Prochain rappel :** Lire NOT_DONE.md et DONE.md avant chaque session de travail.
 
 ---
@@ -135,17 +135,18 @@ CI/CD : ████████████████████████
 5. ~~Pas de branche `develop`~~ ✅ RÉSOLU — Branch `develop` créée
 6. ~~Version `0.0.0`~~ ✅ RÉSOLU — Passé à `1.0.0`
 
-## ✅ Résolu dans la session chat pièces jointes (2026-04-11)
+## ✅ Résolu dans la session notifications FCM offline (2026-04-12)
 
-- **Chat pièces jointes** — Envoi d'images (JPG, PNG, WebP, GIF) et PDF dans les conversations
-- **Storage rules** — Nouveau path `chat_attachments/{chatId}/` avec restrictions par participant
-- **chatService** — `uploadChatAttachment()`, `deleteChatAttachment()`, `sendMessage()` avec options
-- **useChat hook** — `sendMessageWithAttachment()`, état `uploading` avec progression
-- **ChatInput** — Bouton clip 📎, sélection fichier, prévisualisation image, barre de progression
-- **MessageBubble** — Affichage image avec lightbox, document PDF avec bouton téléchargement
-- **Cloud Function** — Notifications enrichies (titre/icône différent pour images et documents)
-- **Tests** — 30 nouveaux tests (chatService +6, ChatInput 13, MessageBubble 11)
-- **806 tests totaux, 100% passent, 0 erreur TypeScript**
+- **Notifications FCM offline pour chat** — Détection en ligne/hors ligne avec `last_seen` (seuil 30s)
+- **Cloud Function `onNewChatMessage` améliorée** — Vérifie `last_seen` du destinataire, détermine `isOnline`, envoie push direct si offline
+- **Anti-doublons** — Flag `push_sent: true` dans notification Firestore, `sendPushNotification` vérifie et skip si déjà envoyé
+- **Métadonnées notifications** — `delivery_mode` ('instant' vs 'push'), `recipient_online`, `chat_id`, `sender_id`, `sender_name`, `message_id`
+- **Hook `usePresence`** — Met à jour `last_seen` toutes les 15s + sur activité utilisateur (mouse, keyboard, scroll, touch, visibilitychange)
+- **Service worker amélioré** — Deep link vers chat `/dashboard?open_chat={chatId}`, fonction `buildNotificationUrl` par type
+- **Préférences notifications** — Séparation `messages` vs `visits` dans `notification_prefs`
+- **Notification interface** — Champs `chat_id`, `sender_id`, `sender_name`, `attachment_type`, `delivery_mode`, `push_sent`
+- **19 nouveaux tests** — 7 usePresence + 12 cloud functions
+- **825 tests totaux, 100% passent, 0 erreur TypeScript**
 
 ---
 
@@ -237,10 +238,9 @@ CI/CD : ████████████████████████
 
 ## 🚧 Prochaines étapes recommandées
 
-1. **Notifications messages offline** — Push FCM quand message reçu et destinataire hors ligne
-2. **Historique chat paginé** — Pagination + recherche dans l'historique
-3. **Intégration paiement réelle** — Wave, Orange Money, MTN, Moov, Djamo (laissé de côté)
-4. **Tests d'intégration E2E** — Firebase Emulator Suite
+1. **Historique chat paginé** — Pagination + recherche dans l'historique
+2. **Intégration paiement réelle** — Wave, Orange Money, MTN, Moov, Djamo (laissé de côté)
+3. **Tests d'intégration E2E** — Firebase Emulator Suite
 
 ---
 

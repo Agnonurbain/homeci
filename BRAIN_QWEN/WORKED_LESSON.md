@@ -290,12 +290,40 @@ Chaque entrée suit ce format :
 
 ---
 
+### WL-023 — Notifications FCM offline : éviter les doublons entre triggers
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-023 |
+| **Date** | 2026-04-12 |
+| **Catégorie** | Backend / Cloud Functions |
+| **Problème** | `onNewChatMessage` crée une notification Firestore → déclenche `sendPushNotification`. Si on envoie aussi un push direct pour utilisateur offline, ça fait un doublon. |
+| **Cause racine** | Deux mécanismes d'envoi push : le trigger `sendPushNotification` sur onCreate Firestore, et l'envoi direct dans `onNewChatMessage` pour offline. |
+| **Solution** | Ajouter un flag `push_sent: true` dans la notification Firestore quand le push est déjà envoyé directement. `sendPushNotification` vérifie ce flag et retourne early si `pushSent === true`. |
+| **Impact** | 🔴 Critique — Doublons de notifications push, UX dégradée. |
+| **Prévention** | Toujours utiliser un flag pour coordonner les triggers Firestore et les envois directs. Documenter dans ARCHITECTURE.md. |
+
+---
+
+### WL-024 — Présence utilisateur : `last_seen` vs Firestore `serverTimestamp()`
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-024 |
+| **Date** | 2026-04-12 |
+| **Catégorie** | Backend / Frontend |
+| **Problème** | Comparer `Date.now()` (client) avec `last_seen` (Firestore serverTimestamp) peut causer des décalages. Le timestamp Firestore est un objet `{ seconds, nanoseconds }`, pas un number. |
+| **Cause racine** | `serverTimestamp()` retourne un objet Firestore Timestamp, pas un timestamp Unix. |
+| **Solution** | Dans Cloud Function : `lastSeen?.seconds ? lastSeen.seconds * 1000 : 0` pour convertir en milliseconds. Côté frontend : utiliser `serverTimestamp()` directement, Firestore gère la conversion. |
+| **Impact** | 🟡 Moyen — Détection online/offline fausse si pas converti correctement. |
+| **Prévention** | Toujours vérifier le type des timestamps Firestore. Utiliser `.seconds * 1000` pour comparer avec `Date.now()`. |
+
+---
+
 ## 📊 Résumé par catégorie
 
 | Catégorie | Count |
 |---|---|
-| Backend | 2 |
-| Frontend | 4 |
+| Backend | 4 (+2) |
+| Frontend | 5 (+1) |
 | CI/CD | 4 |
 | Sécurité | 1 |
 | UX | 1 |
@@ -303,7 +331,7 @@ Chaque entrée suit ce format :
 | Infrastructure | 5 |
 | Documentation | 1 |
 | Design | 1 |
-| **TOTAL** | **23** |
+| **TOTAL** | **25** (+2) |
 
 ---
 
