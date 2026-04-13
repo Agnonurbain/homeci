@@ -1,14 +1,19 @@
-name: Lighthouse CI
+name: Lighthouse CI (Informational)
+
+# ⚠️ Ce workflow est NON-BLOQUANT (continue-on-error: true).
+# Il fournit des métriques de performance à titre indicatif.
+# Nécessite que `npm run preview` fonctionne dans l'environnement CI.
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  schedule:
+    # Exécuté chaque lundi à 9h UTC
+    - cron: "0 9 * * 1"
+  workflow_dispatch: # Permet le lancement manuel
 
 jobs:
   lighthouse:
     runs-on: ubuntu-latest
+    continue-on-error: true
     env:
       ACTIONS_FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
@@ -36,4 +41,4 @@ jobs:
             --collect.startServerCommand="npm run preview" \
             --collect.startServerReadyPattern="Local:" \
             --upload.target=temporary-public-storage \
-            || echo "Lighthouse CI completed (results may vary on preview server)"
+            2>&1 || echo "⚠️ Lighthouse CI n'a pas pu s'exécuter (serveur preview indisponible)"
