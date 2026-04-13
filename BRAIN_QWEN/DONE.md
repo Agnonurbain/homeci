@@ -1,6 +1,6 @@
 # ✅ DONE.md — Ce qui a été fait
 
-> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-12 (session CI fixée + 14 tâches moyennes accomplies).
+> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-13 (session tests composants admin + notaire + UI — 1109 tests).
 
 ---
 
@@ -293,20 +293,32 @@
 | 186 | **Chat paginé + recherche historique** | `subscribeToMessages` limité à 30 msg/page (orderBy desc + limit). `getMessagesBefore` avec `endBefore` pour charger messages plus anciens. `searchMessages` côté client. Hook `useChat` : `loadMoreMessages`, `hasMore`, `loadingMore`, `searchResults`, `clearSearch`. ChatBox : scroll infini, bouton "Messages plus anciens", barre de recherche, highlight résultats (`HighlightedText`). Auto-scroll intelligent (seulement si near bottom). Déduplication messages. 18 nouveaux tests. 843 tests totaux. |
 | 187 | **Dossier locataire complet** | `dossierService.ts` (upload, delete, validate, submit, findTenantsWithCompleteDossier). `useTenantDossier` hook extrait la logique du composant. TenantDossier refactorisé : soumission avec modal de confirmation, suppression de documents, indicateur "Soumis le...". 36 tests (25 service + 11 hook). 879 tests totaux. |
 | 188 | **Recherche avancée locataire** | `useTenantProperties` refactorisé avec tri (5 options : newest, price_asc/desc, views, surface_asc) via `useMemo`. Intégration complète de `parseAdvancedSearch` pour le filtrage NLP (type, transaction, localisation, prix avec opérateurs `<>=`, chambres, étoiles hôtels, verified, keywords). `SearchTab` amélioré : dropdown de tri avec icônes, reset page au changement de tri. 14 nouveaux tests (10 SearchTab + 12 useTenantProperties). 893 tests totaux. |
+| 189 | **Tests AdminAuditLogs** | `AdminAuditLogs.test.tsx` (11 tests) — Affichage logs, filtre par action/recherche, pagination, empty state, cible (email/nom/titre), motif. |
+| 190 | **Tests AdminNotairesTab** | `AdminNotairesTab.test.tsx` (15 tests) — Génération codes, statut (Actif/Utilisé/Expiré), copie, révocation, refresh, note, dates, empty state. |
+| 191 | **Tests NotaireStats** | `NotaireStats.test.tsx` (4 tests) — 4 cartes avec counts, labels, zéros. |
+| 192 | **Tests NotaireTabs** | `NotaireTabs.test.tsx` (4 tests) — 4 onglets, counts, aria-current, navigation. |
+| 193 | **Tests NotaireActionModals** | `NotaireActionModals.test.tsx` (20 tests) — RevokeModal (titre, motif, avertissement visites, confirm, onClose, spinner) + DelegationModal (token, copy, partage, onClose, certification/décertification). |
+| 194 | **Tests NotairePropertyCard** | `NotairePropertyCard.test.tsx` (20 tests) — Titre, ville, image, progression, badges statut, examiner/masquer, infos proprio, prendre en charge, ValidationSection, TYPE_LABELS. |
+| 195 | **Tests ValidationSection** | `ValidationSection.test.tsx` (15 tests) — Documents, badges (Validé/En attente/Refusé), motif refus, Req., lien externe, valider/refuser, certifier bien, spinner chargement. |
+| 196 | **Tests Skeletons** | `Skeletons.test.tsx` (11 tests) — PropertyCard, PropertyGrid, StatCard, StatGrid, PropertyTable, VisitCard, VisitList, NotaireCard, NotaireList. |
+| 197 | **Tests HomeCIEmblem** | `HomeCIEmblem.test.tsx` (5 tests) — Variantes full/header/watermark/favicon, className custom. |
+| 198 | **Tests SEO** | `SEO.test.tsx` (3 tests) — Rendu avec titre, sans props, toutes props. |
 
 ---
 
 ## 📊 Résumé
 
 ```
-Total items complétés : ~185
+Total items complétés : ~196
 
 Frontend : ~91 composants, 16 hooks, 16 services, 8 utils
-Tests : 84 fichiers de test (893 tests, 100% passent, 0 erreur TS)
+Tests : 104 fichiers de test (1109 tests, 100% passent, 0 erreur TS)
   - Cloud Functions : 113 tests (+12)
   - Services : 95 tests (+25 dossier)
   - Composants owner : 75 tests (9 composants)
-  - Composants admin : 34 tests (5 composants)
+  - Composants admin : 69 tests (7 composants, +12 AdminAuditLogs + AdminNotairesTab)
+  - Composants notaire : 63 tests (5 composants, nouveaux)
+  - Composants UI : 22 tests (Skeletons, HomeCIEmblem, SEO)
   - Composants chat : 24 tests (2 composants)
   - Composants recherche : 10 tests (SearchTab + tri)
   - Formulaires : 18 tests (2 étapes)

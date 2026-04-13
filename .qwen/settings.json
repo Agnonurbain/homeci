@@ -29,7 +29,8 @@
       "Bash(source *)",
       "Bash(nvm *)",
       "Bash(node_modules/.bin/husky *)",
-      "Bash(bash *)"
+      "Bash(bash *)",
+      "Bash(which *)"
     ]
   },
   "$version": 3

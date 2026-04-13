@@ -144,9 +144,9 @@ cd functions && npm run serve    # Build + emulators
 
 ## 📊 Prochaines étapes prioritaires
 
-1. **Tests composants admin** — Couverture des 11 onglets (AdminSections, AdminManagement, etc.)
-2. **Tests dashboard notaire** — Re-créer les mocks pour ValidationSection, etc.
-3. **Augmenter coverage** — Étendre les tests aux composants UI
+1. **Tests composants UI restants** — Toast, AdminAccessCode, AdminSessionManager, PaymentModal, ChatBox
+2. **Tests d'intégration** — E2E avec Firebase Emulator Suite
+3. **Paiement Mobile Money réel** — Wave, Orange Money, MTN, Moov, Djamo
 
 ---
 
@@ -170,4 +170,4 @@ cd functions && npm run serve    # Build + emulators
 ---
 
 *Ce fichier est le point d'entrée unique. Toujours le lire en premier.*
-*Dernière mise à jour : 2026-04-12 (14 tâches moyennes + CI fixée — 998 tests, ~99% global)*
+*Dernière mise à jour : 2026-04-13 (tests composants admin + notaire + UI — 1109 tests, 104 fichiers, 0 tâche moyenne restante)*

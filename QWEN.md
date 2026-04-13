@@ -53,7 +53,7 @@ cd functions && npm run serve    # Build + emulators
 |---|---|
 | Frontend (4 dashboards, formulaires, PWA, chat pièces jointes, présence) | ~92% |
 | Backend Firebase (Auth, Firestore, Storage, FCM, Cloud Functions, offline notifications) | ~94% |
-| Tests (93 fichiers, 998 tests, 0 erreur, 100% passent) | ~98% |
+| Tests (104 fichiers, 1109 tests, 0 erreur, 100% passent) | ~99% |
 | CI/CD (GitHub Actions + Vercel, typecheck, package-lock fixé) | ~85% |
 | Sécurité (règles Firestore, portail admin 2 étapes, chat_attachments rules) | ~82% |
 | Notifications (online/offline detection, deep links, anti-doublons) | ~95% |

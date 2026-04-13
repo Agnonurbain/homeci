@@ -1,6 +1,6 @@
 # 🧠 MEMORY.md — Mémoire projet HOMECI
 
-> **Dernière session :** 2026-04-12 (14 tâches moyennes accomplies + CI fixée)
+> **Dernière session :** 2026-04-13 (tests composants admin + notaire + UI — 1109 tests, 104 fichiers)
 > **Prochain rappel :** Lire NOT_DONE.md et DONE.md avant chaque session de travail.
 
 ---
@@ -109,7 +109,7 @@ Backend (Firebase) : ███████████████████�
   - FCM Push ✅
 
 Tests : ████████████████████████████████░  ~98%
-  - 93 fichiers de test, 998 tests (100% passent) ✅
+  - 104 fichiers de test, 1109 tests (100% passent) ✅
   - 0 échec résiduel, 0 erreur TypeScript
 
 CI/CD : ██████████████████████████████░  ~95%

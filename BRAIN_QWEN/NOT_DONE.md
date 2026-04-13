@@ -66,7 +66,7 @@
 
 | # | Tâche | Priorité | Détails |
 |---|---|---|
-| 50 | **Tests composants admin** | 🟡 Moyenne | Seul `AdminSections.test.tsx` existe. Couverture des 11 onglets à améliorer. |
+| 50 | ~~**Tests composants admin**~~ | ✅ FAIT | AdminAuditLogs (11), AdminNotairesTab (15). 7/7 composants admin testés. |
 | 51 | ~~**Gestion des publicités**~~ | ✅ FAIT | `adService` complet (boosts + bannières), `AdminAdsTab` avec stats, CRUD, modals, ciblage contextuel. 18 tests (11 service + 7 composant). 900 tests. |
 | 52 | **Export données** | 🟢 Basse | Export CSV/Excel des utilisateurs, biens, visites, enquêtes. |
 | 53 | **Dashboard analytics avancé** | 🟢 Basse | Graphiques Recharts pour tendances (inscriptions, publications, certifications). |
@@ -99,13 +99,13 @@
 | # | Tâche | Priorité | Détails |
 |---|---|---|
 | 80 | ~~**Tests dashboard owner**~~ | ✅ FAIT | VisitRequestsTab (14), StatsTab (9), VisitResponseModal (10), PropertyRow (13), PropertyStats (3), BoostModal (11). |
-| 81 | **Tests dashboard notaire** | 🟡 Moyenne | Tests pour ValidationSection, NotairePropertyCard, NotaireActionModals. |
+| 81 | ~~**Tests dashboard notaire**~~ | ✅ FAIT | 5 fichiers : ValidationSection (15), NotairePropertyCard (20), NotaireActionModals (20), NotaireTabs (4), NotaireStats (4). 63 tests totaux. |
 | 82 | ~~**Tests dashboard locataire**~~ | ✅ FAIT | 4 fichiers créés : SearchTab (8), FavoritesTab (5), VisitsTab (10), VisitRequestModal (4). |
 | 83 | ~~**Tests chatService**~~ | ✅ FAIT | 8 tests — getOrCreateChat, subscribeToMessages, sendMessage, etc. |
 | 84 | ~~**Tests paymentService**~~ | ✅ FAIT | 5 tests + movapayService (3), adService (12), analyticsService (21), pushNotificationService (5), emailService (7), delegateService (5). |
 | 85 | ~~**Tests Cloud Functions**~~ | ✅ FAIT | 101 tests — admin, chat, notaire, notifications, scheduler, firebase-admin. |
 | 86 | **Tests d'intégration** | 🟢 Basse | Tests E2E avec Firebase Emulator Suite. |
-| 87 | **Augmenter coverage** | 🟡 Moyenne | Coverage actuellement limitée à utils/services/hooks — étendre aux composants. |
+| 87 | ~~**Augmenter coverage**~~ | ✅ FAIT | Skeletons (11), HomeCIEmblem (5), SEO (3) ajoutés. 104 fichiers de test, 1109 tests. |
 | 88 | ~~**Tests formulaires 5 étapes**~~ | ✅ FAIT | LocationStep (7), MediaStep (11). |
 | 89 | ~~**Tests dashboard admin**~~ | ✅ FAIT | AdminTabs (4), AdminStats (4), OverviewSection (6), AdminNotairesTab (8), AdminModals (12). |
 
@@ -161,9 +161,9 @@
 | Priorité | Count |
 |---|---|
 | 🔴 Haute | 0 (paiement Mobile Money restant) |
-| 🟡 Moyenne | 3 |
+| 🟡 Moyenne | 0 (toutes accomplies) |
 | 🟢 Basse | 13 |
-| **TOTAL** | **~15 tâches** restantes (modèles 3D retiré) |
+| **TOTAL** | **~12 tâches** restantes (modèles 3D retiré) |
 
 ---
 
@@ -171,13 +171,13 @@
 
 ```
 Frontend : ████████████████████████████████░  ~98%
-Backend (Firebase) : █████████████████████████████▌  ~98% (+2%)
-Tests : ████████████████████████████████▌  ~98%
-  - 93 fichiers de test, 998 tests (11 ajoutés)
+Backend (Firebase) : █████████████████████████████▌  ~98%
+Tests : █████████████████████████████████░  ~99%
+  - 104 fichiers de test, 1109 tests (100% passent, +111)
   - 0 erreur TypeScript (typecheck clean)
-CI/CD : ██████████████████████████████░  ~95% (+10%)
-Sécurité : ████████████████████████████░░  ~85% (+3%)
-Notifications : ██████████████████████████████  ~100% (+5%)
+CI/CD : ██████████████████████████████░  ~95%
+Sécurité : ████████████████████████████░░  ~85%
+Notifications : ██████████████████████████████  ~100%
 Chat paginé : ████████████████████████████  ~100%
 Dossier locataire : ████████████████████████████  ~100%
 Recherche avancée : ████████████████████████████  ~100%
@@ -194,8 +194,11 @@ Husky hooks : ██████████████████████
 Optimisation images : ████████████████████████████  ~100%
 coteIvoireGeo : ████████████████████████████  ~100%
 CI GitHub Actions : ████████████████████████████  ~100% ✅
+Tests composants admin : ████████████████████████████  ~100% ✅
+Tests dashboard notaire : ████████████████████████████  ~100% ✅
+Tests composants UI : █████████████████████████████  ~75%
 
-Global : █████████████████████████████████░  ~99% (+1%)
+Global : █████████████████████████████████░  ~99%
 ```
 
 ---
