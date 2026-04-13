@@ -5,6 +5,7 @@ import { useNotaireDashboard, TabId, isReadyToCertify } from '../hooks/useNotair
 import { NotaireStats } from './notaire/NotaireStats';
 import { NotaireTabs } from './notaire/NotaireTabs';
 import { NotairePropertyCard } from './notaire/NotairePropertyCard';
+import NotaireStatsTab from './notaire/NotaireStatsTab';
 import { RevokeModal, DelegationModal } from './notaire/NotaireActionModals';
 import { NotaireListSkeleton, StatGridSkeleton } from './Skeletons';
 import { Search, Building2, FileCheck, RotateCcw, Stamp, X } from 'lucide-react';
@@ -43,7 +44,7 @@ export default function NotaireDashboard() {
   const [pendingTakeChargeProperty, setPendingTakeChargeProperty] = useState<any>(null);
 
   const tabFromUrl = location.pathname.split('/')[2];
-  const validTabs: TabId[] = ['disponible', 'en_cours', 'pret', 'certifie'];
+  const validTabs: TabId[] = ['disponible', 'en_cours', 'pret', 'certifie', 'stats'];
   const activeTab = validTabs.includes(tabFromUrl as TabId) ? tabFromUrl as TabId : 'disponible';
 
   const filtered = useMemo(() => {
@@ -96,6 +97,10 @@ export default function NotaireDashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {activeTab === 'stats' ? (
+          <NotaireStatsTab notaireId={profile?.id || ''} />
+        ) : (
+          <>
         <NotaireStats stats={stats} />
 
         <div className="flex flex-col sm:flex-row gap-3">
@@ -140,6 +145,8 @@ export default function NotaireDashboard() {
             ))
           )}
         </div>
+          </>
+        )}
       </main>
 
       <RevokeModal 

@@ -1,13 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
+import { BarChart3 } from 'lucide-react';
 
 interface Tab {
   id: string;
   label: string;
-  count: number;
+  count?: number;
   accent: string;
   bg: string;
   bd: string;
+  icon?: any;
 }
 
 export function NotaireTabs({ activeTab, stats }: { activeTab: string, stats: any }) {
@@ -18,6 +20,7 @@ export function NotaireTabs({ activeTab, stats }: { activeTab: string, stats: an
     { id: 'en_cours', label: 'En cours', count: stats.enCours, accent: HColors.gold, bg: HAlpha.gold10, bd: HAlpha.gold25 },
     { id: 'pret', label: 'Prêts à certifier', count: stats.pret, accent: HColors.navy, bg: HAlpha.navy08, bd: HAlpha.navy20 },
     { id: 'certifie', label: 'Certifiés', count: stats.certifie, accent: HColors.vertCI, bg: HAlpha.vertCI10, bd: HAlpha.vertCI25 },
+    { id: 'stats', label: 'Statistiques', count: undefined, accent: HColors.bordeaux, bg: HAlpha.bord10, bd: HAlpha.bord20, icon: BarChart3 },
   ];
 
   return (
@@ -29,13 +32,16 @@ export function NotaireTabs({ activeTab, stats }: { activeTab: string, stats: an
           style={activeTab === tab.id
             ? { borderColor: HColors.gold, color: HColors.gold, fontFamily: 'var(--font-nunito)' }
             : { borderColor: 'transparent', color: HAlpha.cream45, fontFamily: 'var(--font-nunito)' }}>
+          {tab.icon && <tab.icon className="w-4 h-4 shrink-0" style={{ color: tab.accent }} />}
           {tab.label}
-          <span className="px-1.5 py-0.5 rounded-full text-xs font-bold"
-            style={activeTab === tab.id
-              ? { background: tab.bg, color: tab.accent, border: `1px solid ${tab.bd}` }
-              : { background: HAlpha.gold08, color: HAlpha.cream50 }}>
-            {tab.count}
-          </span>
+          {tab.count !== undefined && (
+            <span className="px-1.5 py-0.5 rounded-full text-xs font-bold"
+              style={activeTab === tab.id
+                ? { background: tab.bg, color: tab.accent, border: `1px solid ${tab.bd}` }
+                : { background: HAlpha.gold08, color: HAlpha.cream50 }}>
+              {tab.count}
+            </span>
+          )}
         </button>
       ))}
     </nav>

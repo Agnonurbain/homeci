@@ -2,7 +2,7 @@ import { FC } from 'react';
 import {
   Users, Home, FileCheck, TrendingUp,
   Activity, UserCog, Award, Flag, Star, CalendarCheck,
-  UserSearch, FileText, Megaphone, Shield, FileDown
+  UserSearch, FileText, Megaphone, Shield, FileDown, BarChart3
 } from 'lucide-react';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
 import type { AdminTab, AdminStats } from '../../hooks/useAdminDashboard';
@@ -30,6 +30,7 @@ export const AdminTabs: FC<AdminTabsProps> = ({ activeTab, setActiveTab, stats }
     { id: 'admin-management', icon: UserCog, label: 'Admins', shortLabel: 'Admins', count: undefined },
     { id: 'audit', icon: Shield, label: 'Journal d\'Audit', shortLabel: 'Audit', count: undefined },
     { id: 'exports', icon: FileDown, label: 'Exports', shortLabel: 'Exports', count: undefined },
+    { id: 'analytics', icon: BarChart3, label: 'Analytics', shortLabel: 'Stats', count: undefined },
   ] as const;
 
   return (

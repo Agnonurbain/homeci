@@ -33,3 +33,6 @@ export { onReportCreated } from "./moderation";
 
 // ── Storage Cleanup ──
 export { cleanupOrphanedFiles } from "./storageCleanup";
+
+// ── Daily Stats ──
+export { aggregateDailyStats } from "./dailyStats";

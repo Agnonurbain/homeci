@@ -12,7 +12,7 @@ import type { Property } from '../services/propertyService';
 import { REQUIRED_DOCS } from '../constants/labels';
 
 export type DocStatus = 'en_attente' | 'valide' | 'refuse';
-export type TabId = 'disponible' | 'en_cours' | 'pret' | 'certifie';
+export type TabId = 'disponible' | 'en_cours' | 'pret' | 'certifie' | 'stats';
 
 interface OwnerProfile {
   full_name: string;

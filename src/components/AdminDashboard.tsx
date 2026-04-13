@@ -13,6 +13,7 @@ import { UsersSection, ModerationSection } from './admin/AdminSections';
 import { AdminNotairesTab } from './admin/AdminNotairesTab';
 import { UserDetailModal, PropertyDetailModal } from './admin/AdminModals';
 import AdminExportTab from './admin/AdminExportTab';
+import AdminAnalyticsTab from './admin/AdminAnalyticsTab';
 
 // Lazy-loaded tabs
 const AdminReportsTab = lazy(() => import('./AdminReportsTab'));
@@ -42,7 +43,7 @@ export default function AdminDashboard() {
   const { loading, stats, toast } = api;
 
   const tabFromUrl = location.pathname.split('/')[2];
-  const validTabs: AdminTab[] = ['overview', 'users', 'properties', 'verification', 'notaires', 'reports', 'surveys', 'visits', 'user-search', 'security', 'admin-management', 'cgv', 'ads', 'exports', 'audit'];
+  const validTabs: AdminTab[] = ['overview', 'users', 'properties', 'verification', 'notaires', 'reports', 'surveys', 'visits', 'user-search', 'security', 'admin-management', 'cgv', 'ads', 'exports', 'analytics', 'audit'];
   const activeTab: AdminTab = validTabs.includes(tabFromUrl as AdminTab) ? tabFromUrl as AdminTab : 'overview';
 
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -157,6 +158,7 @@ export default function AdminDashboard() {
                 showToast={api.showToast}
               />
             )}
+            {activeTab === 'analytics' && <AdminAnalyticsTab />}
           </Suspense>
         )}
       </div>
