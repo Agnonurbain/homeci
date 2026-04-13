@@ -162,20 +162,20 @@
 |---|---|
 | 🔴 Haute | 0 (paiement Mobile Money restant) |
 | 🟡 Moyenne | 0 (toutes accomplies) |
-| 🟢 Basse | 13 |
-| **TOTAL** | **~12 tâches** restantes (modèles 3D retiré) |
+| 🟢 Basse | 4 (Lighthouse CI, Restriction IP admin, Scan antivirus, Tests d'intégration E2E) |
+| **TOTAL** | **~4 tâches** restantes (modèles 3D retiré) |
 
 ---
 
 ## ✅ Progression
 
 ```
-Frontend : ████████████████████████████████░  ~98%
-Backend (Firebase) : █████████████████████████████▌  ~98%
-Tests : █████████████████████████████████░  ~99%
-  - 104 fichiers de test, 1109 tests (100% passent, +111)
+Frontend : ███████████████████████████████▌  ~98%
+Backend (Firebase) : ██████████████████████████████░  ~98% (+2 cloud functions)
+Tests : █████████████████████████████████▌  ~99%
+  - 105 fichiers de test, 1118 tests (100% passent, +120)
   - 0 erreur TypeScript (typecheck clean)
-CI/CD : ██████████████████████████████░  ~95%
+CI/CD : ██████████████████████████████▌  ~97% (Node 24, Husky)
 Sécurité : ████████████████████████████░░  ~85%
 Notifications : ██████████████████████████████  ~100%
 Chat paginé : ████████████████████████████  ~100%
@@ -197,10 +197,15 @@ CI GitHub Actions : ████████████████████
 Tests composants admin : ████████████████████████████  ~100% ✅
 Tests dashboard notaire : ████████████████████████████  ~100% ✅
 Tests composants UI : █████████████████████████████  ~75%
+Export CSV admin : ████████████████████████████  ~100% ✅
+Analytics admin : ████████████████████████████  ~100% ✅
+Stats notaire : ████████████████████████████  ~100% ✅
+Comparaison biens : ████████████████████████████  ~100% ✅
+CHANGELOG : ████████████████████████████  ~100% ✅
 
 Global : █████████████████████████████████░  ~99%
 ```
 
 ---
 
-*Dernière mise à jour : 2026-04-12 (14 tâches moyennes accomplies + CI fixée — 998 tests)*
+*Dernière mise à jour : 2026-04-13 (tâches basses priorités + CI fix — 1118 tests, 8 tâches basses accomplies)*

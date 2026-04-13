@@ -1,7 +1,7 @@
 # 📋 PLAN — HOMECI: Plateforme Immobilière Certifiée Côte d'Ivoire
 
 > **Vision** : Un marketplace immobilier de confiance en Côte d'Ivoire — biens vérifiés par des notaires agréés, visites à 1000 FCFA, certification notariale.
-> **Dernière mise à jour** : 2026-04-12 — Projet à ~99%
+> **Dernière mise à jour** : 2026-04-13 — Projet à ~99%
 
 ---
 
@@ -193,14 +193,19 @@
 |---|---|---|---|
 | **sendPushNotification** | Firestore onCreate `/notifications/{id}` | Envoie push FCM au destinataire | ✅ Fait |
 | **autoResetVisits** | Scheduler (quotidien) | Reset les visites sans réponse après 3 jours | ✅ Fait |
+| **assignNotaireRole** | Callable | Valide code → rôle notaire | ✅ Fait |
+| **certifyProperty** | Callable | Notaire certifie/rejette bien | ✅ Fait |
+| **createAdmin** | Callable | Admin crée nouveau compte admin | ✅ Fait |
+| **onNewChatMessage** | Firestore onCreate `/messages/{id}` | Notification chat + push offline | ✅ Fait |
+| **onReportCreated** | Firestore onCreate `/reports/{id}` | Modération auto (keywords, spam, Levenshtein) | ✅ Fait |
+| **cleanupOrphanedFiles** | Scheduler (quotidien 3h) | Supprime fichiers orphelins Storage | ✅ Fait |
+| **aggregateDailyStats** | Scheduler (quotidien 23h59) | Agrège stats quotidiennes dans `daily_stats` | ✅ Fait |
 
 ### À implémenter
 
 | Fonction | Description | Priorité |
 |---|---|---|
-| **Modération auto** | Détection automatique de contenu suspect | 🟡 Moyenne |
-| **Nettoyage Storage** | Cron pour supprimer fichiers orphelins | 🟢 Basse |
-| **Statistiques agrégées** | Agrégation quotidienne des stats | 🟢 Basse |
+| — | — | Aucune |
 
 ---
 
@@ -329,16 +334,21 @@ transactions/{id}
 - ❌ Bundle size monitoring CI
 - ⚠️ Tests dashboard owner à améliorer
 
-### Palier 3 — Avancé — 🟡 ~30%
+### Palier 3 — Avancé — 🟡 ~65%
 
 - ❌ Modèles 3D pour les biens
 - ❌ Vidéo complète (upload, preview, streaming)
-- ❌ Comparaison de biens
-- ❌ Authentification 2FA admin
-- ❌ Export données (CSV/Excel)
-- ❌ Support autres villes CI (au-delà d'Abidjan)
+- ✅ Comparaison de biens côte à côte
+- ✅ Authentification 2FA admin
+- ✅ Export données CSV (admin)
+- ✅ Support autres villes CI (Bouaké, Yamoussoukro, Daloa, San-Pédro, Korhogo, etc.)
 - ❌ Autocomplétion adresses
 - ❌ Scan antivirus uploads
+- ✅ Analytics admin (Recharts)
+- ✅ Stats notaire (Recharts)
+- ✅ Nettoyage Storage automatique
+- ✅ Stats quotidiennes agrégées
+- ✅ CHANGELOG.md
 
 ---
 
@@ -375,15 +385,17 @@ transactions/{id}
 ```
 Palier 1 (MVP) : ██████████████████████████░  ~98%
 Palier 2 (Messagerie + Analytics) : ███████████████████████████░  ~95%
-Palier 3 (Avancé) : ██████░░░░░░░░░░░░░░░░░░░░░░░░░░  ~30%
+Palier 3 (Avancé) : ██████████████████████░░░░░░░░░░░░░  ~65%
 
-Global : █████████████████████████████████░  ~99% (+1%)
+Global : █████████████████████████████████░  ~99%
 ```
 
 ### Historique des mises à jour
 
 | Date | Changement |
 |---|---|
+| 2026-04-13 | **Tâches basses priorités + CI fix** — CHANGELOG.md, export CSV admin, cleanup Storage CF, daily stats CF, analytics admin (6 graphiques Recharts), stats notaire (4 graphiques Recharts), comparaison biens, géographie étendue 24 villes, CI Node 24. 1118 tests (+120), typecheck clean, CI verte. |
+| 2026-04-13 | **Tests composants admin + notaire + UI** — AdminAuditLogs (11), AdminNotairesTab (15), NotaireStats (4), NotaireTabs (4), NotaireActionModals (20), NotairePropertyCard (20), ValidationSection (15), Skeletons (14), HomeCIEmblem (5), SEO (3). 105 fichiers, 1109 tests. |
 | 2026-04-12 | **14 tâches moyennes + CI fixée** — Chat paginé, dossier locataire, recherche avancée, publicités admin, décértilification, modération auto, 2FA admin, audit logs, rate limiting, bundle size, husky, optimisation images, coteIvoireGeo, CI (npm install au lieu de npm ci). 998 tests, typecheck clean, CI fonctionnelle. |
 | 2026-04-12 | **Chat paginé + recherche historique** — `subscribeToMessages` limité à 30 msg/page (orderBy desc + limit). `getMessagesBefore` avec `endBefore` pour charger messages plus anciens. `searchMessages` côté client. Hook `useChat` : `loadMoreMessages`, `hasMore`, `loadingMore`, `searchResults`, `clearSearch`. ChatBox : scroll infini, bouton "Messages plus anciens", barre de recherche, highlight résultats (`HighlightedText`). Auto-scroll intelligent (seulement si near bottom). Déduplication messages. 18 nouveaux tests. 843 tests totaux. |
 | 2026-04-10 | **Fix CI** — `package-lock.json` regénéré (dépendances netbsd/arm64 retirées). Commit `d68d4a4`. |

@@ -1,6 +1,6 @@
 # 🧠 MEMORY.md — Mémoire projet HOMECI
 
-> **Dernière session :** 2026-04-13 (tests composants admin + notaire + UI — 1109 tests, 104 fichiers)
+> **Dernière session :** 2026-04-13 (tâches basses priorités + CI fix — 1118 tests, 105 fichiers)
 > **Prochain rappel :** Lire NOT_DONE.md et DONE.md avant chaque session de travail.
 
 ---
@@ -109,7 +109,7 @@ Backend (Firebase) : ███████████████████�
   - FCM Push ✅
 
 Tests : ████████████████████████████████░  ~98%
-  - 104 fichiers de test, 1109 tests (100% passent) ✅
+  - 105 fichiers de test, 1118 tests (100% passent) ✅
   - 0 échec résiduel, 0 erreur TypeScript
 
 CI/CD : ██████████████████████████████░  ~95%
@@ -173,6 +173,9 @@ CI/CD : ████████████████████████
 | certifyProperty | ✅ | `notaire.ts` | Callable : notaire certifie/rejette bien |
 | createAdmin | ✅ | `admin.ts` | Callable : admin crée nouveau compte admin |
 | onNewChatMessage | ✅ | `chat.ts` | Trigger Firestore → notification chat |
+| onReportCreated | ✅ | `moderation.ts` | Trigger Firestore → modération auto |
+| cleanupOrphanedFiles | ✅ | `storageCleanup.ts` | Cron quotidien : supprime fichiers orphelins > 7j |
+| aggregateDailyStats | ✅ | `dailyStats.ts` | Cron 23h59 : agrège stats quotidiennes |
 
 ---
 
@@ -180,7 +183,7 @@ CI/CD : ████████████████████████
 
 | Dashboard | Statut | Détails |
 |---|---|---|
-| Admin (11 onglets) | ✅ | Vue d'ensemble, users, biens, modération, notaires, signalements, enquêtes, CGV, pubs, sécurité, gestion admins |
+| Admin (15 onglets) | ✅ | Vue d'ensemble, users, biens, modération, notaires, signalements, enquêtes, CGV, pubs, sécurité, gestion admins, audit logs, exports CSV, analytics, gestion admin |
 | Propriétaire | ✅ | Biens, visites reçues, notifications, stats, formulaire 5 étapes |
 | Notaire | ✅ | Biens à certifier, validation, stats |
 | Locataire | ✅ | Recherche, favoris, visites, notifications, dossier |

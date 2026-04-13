@@ -58,11 +58,12 @@ Après **CHAQUE** modification de code, se poser ces questions :
 | `src/components/*.tsx` | `src/components/__tests__/*.test.tsx` |
 | `src/components/admin/*.tsx` | `src/components/admin/__tests__/*.test.tsx` |
 | `src/components/owner/*.tsx` | `src/components/owner/__tests__/*.test.tsx` |
+| `src/components/notaire/*.tsx` | `src/components/notaire/__tests__/*.test.tsx` |
 | `src/services/*.ts` | `src/services/__tests__/*.test.ts` |
 | `src/hooks/*.ts` | `src/hooks/__tests__/*.test.ts` |
 | `src/utils/*.ts` | `src/utils/__tests__/*.test.ts` |
 | `src/styles/homeci-tokens.ts` | `src/styles/__tests__/homeci-tokens.test.ts` |
-| `functions/src/*.ts` | *(aucun test CF actuellement — à créer)* |
+| `functions/src/*.ts` | `functions/src/__tests__/cloud-functions.test.ts` |
 | `src/tests/firebase.mock.ts` | **TOUS** les tests (impact global) |
 | `src/tests/factories.ts` | Tous les tests utilisant des factories |
 
@@ -118,16 +119,16 @@ npm run build
 
 | Domaine | Fichiers de test | Couverture |
 |---|---|---|
-| Composants | 25 fichiers | ~65% |
+| Composants | 32 fichiers | ~65% |
 | Hooks | 14 fichiers | ~75% |
-| Services | 17 fichiers | ~75% |
+| Services | 18 fichiers | ~75% |
 | Utils | 12 fichiers | ~85% |
 | Styles | 1 fichier | 100% |
 | Data | 1 fichier | 100% |
-| Cloud Functions | 1 fichier (113 tests) | ~90% |
+| Cloud Functions | 2 fichiers (115 tests) | ~90% |
 | Pré-lancement | 1 fichier (100 tests) | N/A |
 
-**Total : 93 fichiers de test, 998 tests (100% passent)**
+**Total : 105 fichiers de test, 1118 tests (100% passent, 0 erreur TS)**
 
 ---
 
@@ -141,4 +142,4 @@ npm run build
 ---
 
 *Ce fichier DOIT être mis à jour à chaque nouveau piège identifié.*
-*Dernière mise à jour : 2026-04-09*
+*Dernière mise à jour : 2026-04-13 (105 fichiers, 1118 tests, domaine notaire ajouté, CF tests mis à jour)*

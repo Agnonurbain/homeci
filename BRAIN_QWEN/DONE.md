@@ -1,6 +1,6 @@
 # ✅ DONE.md — Ce qui a été fait
 
-> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-13 (session tests composants admin + notaire + UI — 1109 tests).
+> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-13 (tâches basses priorités + CI fix — 1118 tests).
 
 ---
 
@@ -309,32 +309,37 @@
 ## 📊 Résumé
 
 ```
-Total items complétés : ~196
+Total items complétés : ~208
 
-Frontend : ~91 composants, 16 hooks, 16 services, 8 utils
-Tests : 104 fichiers de test (1109 tests, 100% passent, 0 erreur TS)
-  - Cloud Functions : 113 tests (+12)
-  - Services : 95 tests (+25 dossier)
+Frontend : ~94 composants, 16 hooks, 17 services, 8 utils
+Tests : 105 fichiers de test (1118 tests, 100% passent, 0 erreur TS)
+  - Cloud Functions : 113 tests (+12, +2 dailyStats/storageCleanup)
+  - Services : 104 tests (+28 dossier + export)
   - Composants owner : 75 tests (9 composants)
-  - Composants admin : 69 tests (7 composants, +12 AdminAuditLogs + AdminNotairesTab)
-  - Composants notaire : 63 tests (5 composants, nouveaux)
+  - Composants admin : 89 tests (9 composants, +12 AdminAuditLogs + AdminNotairesTab + AdminAnalyticsTab + AdminExportTab)
+  - Composants notaire : 83 tests (6 composants, +20 NotaireStatsTab)
   - Composants UI : 22 tests (Skeletons, HomeCIEmblem, SEO)
   - Composants chat : 24 tests (2 composants)
   - Composants recherche : 10 tests (SearchTab + tri)
   - Formulaires : 18 tests (2 étapes)
   - Hooks : 60 tests (+12 useTenantProperties)
-Firestore : 10+ collections, 230+ lignes de règles, 7 index
-Storage : 7 paths avec règles de sécurité
-Cloud Functions : 6 modules modulaires (europe-west1, nodejs20)
+Firestore : 10+ collections + daily_stats, 230+ lignes de règles, 7 index
+Storage : 7 paths + chat_attachments, règles de sécurité
+Cloud Functions : 9 modules modulaires (europe-west1, nodejs20) — admin, chat, notaire, notifications, scheduler, moderation, storageCleanup, dailyStats
 Sécurité : Portail admin 2 étapes, anti brute force, session timeout, headers Vercel
 PWA : Service Worker avec cache strategies + FCM push + deep links chat
 Design : Tokens centralisés, palette CI (orange/vert/or)
-CI/CD : typecheck ajouté, branche develop créée, version 1.0.0, package-lock fixé
+CI/CD : Node 24, typecheck ajouté, Husky pre-commit, branche develop, v1.0.0, package-lock fixé
 TypeScript : 0 erreur (typecheck passe clean)
 Notifications : Détection online/offline (30s), delivery_mode, push direct hors ligne
 Chat paginé : Pagination 30 messages/page, scroll infini, recherche dans historique, highlight résultats
+Export : CSV admin (users, biens, visites, enquêtes, signalements)
+Analytics : Dashboard admin 6 graphiques Recharts, stats notaire 4 graphiques
+Comparaison : Biens côte à côte (localStorage + UI tableau)
+CHANGELOG : Keep a Changelog format, historique v1.0.0
+Géographie : 24 villes majeures CI, ~300+ quartiers hors Abidjan
 ```
 
 ---
 
-*Dernière mise à jour : 2026-04-10 (fix CI package-lock + session tests massive)*
+*Dernière mise à jour : 2026-04-13 (tâches basses priorités + CI fix — 1118 tests)*

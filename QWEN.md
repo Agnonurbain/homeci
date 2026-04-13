@@ -45,7 +45,7 @@ cd functions && npm run serve    # Build + emulators
   - ✅ Branche `develop` créée pour les PRs
   - ✅ Version `1.0.0`
 
-## Audit du répertoire (2026-04-12 — notifications FCM offline)
+## Audit du répertoire (2026-04-13 — tâches basses priorités + CI fix)
 
 ### État global : ~95% complété
 

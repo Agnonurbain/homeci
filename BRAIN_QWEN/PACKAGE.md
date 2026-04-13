@@ -1,6 +1,6 @@
 # 📦 PACKAGE.md — Registre des dépendances HOMECI
 
-> **Dernière mise à jour :** 2026-04-12 (otplib, husky, rollup-plugin-visualizer)
+> **Dernière mise à jour :** 2026-04-13 (aucune dépendance ajoutée — CI Node 24, nouvelles fonctionnalités sans nouveaux packages)
 > **Ce fichier DOIT être mis à jour à chaque ajout/suppression de dépendance.**
 
 ---
