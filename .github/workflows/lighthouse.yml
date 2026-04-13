@@ -9,6 +9,8 @@ on:
 jobs:
   lighthouse:
     runs-on: ubuntu-latest
+    env:
+      ACTIONS_FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
 
@@ -24,11 +26,9 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Serve & Audit Lighthouse
+      - name: Run Lighthouse audits
         uses: treosh/lighthouse-ci-action@v12
         with:
           urls: |
             http://localhost:4173/
-          configPath: './.lighthouserc.json'
-          uploadArtifacts: true
           runs: 1
