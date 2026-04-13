@@ -30,3 +30,6 @@ export { onNewChatMessage } from "./chat";
 
 // ── Moderation ──
 export { onReportCreated } from "./moderation";
+
+// ── Storage Cleanup ──
+export { cleanupOrphanedFiles } from "./storageCleanup";

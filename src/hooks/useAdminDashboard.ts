@@ -14,7 +14,7 @@ export interface AdminStats {
   verified_properties: number;
 }
 
-export type AdminTab = 'overview' | 'users' | 'properties' | 'verification' | 'notaires' | 'reports' | 'surveys' | 'visits' | 'user-search' | 'security' | 'admin-management' | 'cgv' | 'ads' | 'audit';
+export type AdminTab = 'overview' | 'users' | 'properties' | 'verification' | 'notaires' | 'reports' | 'surveys' | 'visits' | 'user-search' | 'security' | 'admin-management' | 'cgv' | 'ads' | 'audit' | 'exports';
 
 export function useAdminDashboard(adminProfile: Profile | null) {
   const [properties, setProperties] = useState<Property[]>([]);

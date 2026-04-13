@@ -716,7 +716,7 @@ describe('8. Sécurité — Guards communs', () => {
 // ══════════════════════════════════════════════════════════════════════════
 
 describe('9. Intégrité — Cohérence entre modules', () => {
-  it('index.ts exporte exactement 7 fonctions nommées', () => {
+  it('index.ts exporte exactement 8 fonctions nommées', () => {
     const content = readFunc('index.ts');
     // Match the exported names from the export { ... } from "..." lines
     const exportLines = content.match(/export \{[^}]+\} from/g) || [];
@@ -733,7 +733,8 @@ describe('9. Intégrité — Cohérence entre modules', () => {
     expect(allNames).toContain('createAdmin');
     expect(allNames).toContain('onNewChatMessage');
     expect(allNames).toContain('onReportCreated');
-    expect(allNames.length).toBe(7);
+    expect(allNames).toContain('cleanupOrphanedFiles');
+    expect(allNames.length).toBe(8);
   });
 
   it('tous les fichiers source existent', () => {
@@ -743,6 +744,7 @@ describe('9. Intégrité — Cohérence entre modules', () => {
     expect(funcExists('notaire.ts')).toBe(true);
     expect(funcExists('notifications.ts')).toBe(true);
     expect(funcExists('scheduler.ts')).toBe(true);
+    expect(funcExists('storageCleanup.ts')).toBe(true);
     expect(funcExists('index.ts')).toBe(true);
   });
 
