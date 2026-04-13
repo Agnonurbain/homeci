@@ -1,6 +1,6 @@
 # 🧠 MEMORY.md — Mémoire projet HOMECI
 
-> **Dernière session :** 2026-04-13 (tâches basses priorités + CI fix — 1118 tests, 105 fichiers)
+> **Dernière session :** 2026-04-13 (tâches basses accomplies — 100% global, 1145 tests, 108 fichiers)
 > **Prochain rappel :** Lire NOT_DONE.md et DONE.md avant chaque session de travail.
 
 ---
@@ -109,7 +109,7 @@ Backend (Firebase) : ███████████████████�
   - FCM Push ✅
 
 Tests : ████████████████████████████████░  ~98%
-  - 105 fichiers de test, 1118 tests (100% passent) ✅
+  - 108 fichiers de test, 1145 tests (100% passent) ✅
   - 0 échec résiduel, 0 erreur TypeScript
 
 CI/CD : ██████████████████████████████░  ~95%
