@@ -1,6 +1,6 @@
 # 📚 WORKED_LESSON.md — Leçons apprises & Difficultés rencontrées
 
-> **Mis à jour à chaque session HOMECI.** Dernière mise à jour : 2026-04-09 (session haute priorité).
+> **Mis à jour à chaque session HOMECI.** Dernière mise à jour : 2026-04-13 (CI fixée — Node 24).
 > **Objectif :** Capitaliser sur les erreurs passées pour ne pas les répéter.
 
 ---
@@ -346,13 +346,27 @@ Chaque entrée suit ce format :
 
 ---
 
+### WL-027 — CI GitHub Actions : Node 22 incompatible avec vitest v4
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-027 |
+| **Date** | 2026-04-13 |
+| **Catégorie** | CI/CD |
+| **Problème** | La CI GitHub Actions échouait avec `Process completed with exit code 1` sur le step `test:coverage`. Les annotations montraient des warnings de dépréciation Node 20 sur `actions/setup-node@v4`. |
+| **Cause racine** | Le workflow utilisait `node-version: "22"` mais `vitest v4` et ses dépendances (rolldown) nécessitent Node 24+. Le mismatch causait des erreurs silencieuses dans le step de coverage. |
+| **Solution** | Passer à `node-version: "24"` dans `.github/workflows/test.yml`. Retirer les variables d'environnement dépréciées (`ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION`, `ACTIONS_FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`). |
+| **Impact** | 🔴 Critique — CI bloquée, aucun déploiement possible. |
+| **Prévention** | Toujours aligner la version Node de la CI avec l'environnement local. Vérifier les warnings de dépréciation GitHub Actions. |
+
+---
+
 ## �📊 Résumé par catégorie
 
 | Catégorie | Count |
 |---|---|
 | Backend | 4 (+2) |
 | Frontend | 5 (+1) |
-| CI/CD | 7 (+3) |
+| CI/CD | 8 (+4) |
 | Sécurité | 1 |
 | UX | 1 |
 | Tests | 4 |
@@ -360,7 +374,7 @@ Chaque entrée suit ce format :
 | Documentation | 1 |
 | Design | 1 |
 | State management | 1 |
-| **TOTAL** | **30** (+3) |
+| **TOTAL** | **31** (+4) |
 
 ---
 
@@ -368,7 +382,7 @@ Chaque entrée suit ce format :
 
 | Impact | Count |
 |---|---|
-| 🔴 Critique | 6 (+1) |
+| 🔴 Critique | 7 (+2) |
 | 🟡 Moyen | 15 (+1) |
 | 🟢 Faible | 4 (+1) |
 
