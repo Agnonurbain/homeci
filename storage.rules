@@ -42,12 +42,13 @@ service firebase.storage {
     }
 
     // ── Dossier Locataire (justificatifs de revenus, etc.) ──
-    // SENSIBLE : uniquement le locataire lui-même, l'admin ou un PROPRIÉTAIRE AYANT UN LIEN D'ACCÈS
+    // SENSIBLE : uniquement le locataire lui-même ou un admin
+    // Note : Les propriétaires doivent demander l'accès via Firestore (dossier_access)
     match /tenant_dossiers/{userId}/{allPaths=**} {
       allow read: if isAuth() && (
-        request.auth.uid == userId || 
-        isAdmin() || 
-        (isProprietaire() && firestore.exists(/databases/(default)/documents/dossier_access/$(userId)_$(request.auth.uid)))
+        request.auth.uid == userId ||
+        isAdmin() ||
+        isNotaire()
       );
       allow write: if isAuth() && request.auth.uid == userId
         && request.resource.size < 5 * 1024 * 1024
@@ -59,9 +60,9 @@ service firebase.storage {
     // SENSIBLE : Même protection que le dossier locataire
     match /identity/{userId}/{allPaths=**} {
       allow read: if isAuth() && (
-        request.auth.uid == userId || 
-        isAdmin() || 
-        (isProprietaire() && firestore.exists(/databases/(default)/documents/dossier_access/$(userId)_$(request.auth.uid)))
+        request.auth.uid == userId ||
+        isAdmin() ||
+        isNotaire()
       );
       allow write: if isAuth() && request.auth.uid == userId
         && request.resource.size < 5 * 1024 * 1024
