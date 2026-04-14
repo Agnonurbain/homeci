@@ -128,8 +128,8 @@
 
 | # | Tâche | Priorité | Détails |
 |---|---|---|---|
-| 100 | **Mettre à jour firebase SDK** | 🟡 Moyenne | Vérifier que `firebase@^12.9.0` est à jour. |
-| 101 | **Mettre à jour react-router-dom** | 🟢 Basse | `react-router-dom@^7.13.2` — vérifier compatibilité. |
+| 100 | ~~**Mettre à jour firebase SDK**~~ | ✅ FAIT | `firebase@^12.12.0` (était 12.9.0). |
+| 101 | ~~**Mettre à jour react-router-dom**~~ | ✅ FAIT | `react-router-dom@^7.14.1` (était 7.13.2). |
 | 102 | ~~**Ajouter husky**~~ | ✅ FAIT | Husky installé avec pre-commit hook : `npm run lint -- --quiet` → `npm run typecheck` → `npm test`. Script `prepare` dans package.json. Empêche commit si lint/typecheck/test échouent. |
 | 103 | **Ajouter CHANGELOG.md** | 🟢 Basse | Suivi des versions et changements (Keep a Changelog format). |
 
@@ -162,9 +162,9 @@
 | Priorité | Count |
 |---|---|
 | 🔴 Haute | 0 (paiement Mobile Money restant) |
-| 🟡 Moyenne | 2 (ARCHITECTURE.md à vérifier, guide déploiement existe déjà) |
-| 🟢 Basse | 2 (versions deps à vérifier) |
-| **TOTAL** | **~4 tâches** restantes (modèles 3D retiré, paiement Mobile Money = API externe) |
+| 🟡 Moyenne | 1 (ARCHITECTURE.md à vérifier) |
+| 🟢 Basse | 0 (toutes accomplies) |
+| **TOTAL** | **~1 tâche** restante (modèles 3D retiré, paiement Mobile Money = API externe) |
 
 ---
 
