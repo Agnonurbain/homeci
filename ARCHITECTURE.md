@@ -1,7 +1,7 @@
 # HOMECI — Architecture Technique
 
 > Document de référence pour tout développeur (humain ou IA) intervenant sur le projet.
-> Dernière mise à jour : 2026-04-12
+> Dernière mise à jour : 2026-04-13
 
 ## Vue d'ensemble
 

@@ -151,8 +151,9 @@
 |---|---|---|
 | 120 | **Mettre à jour ARCHITECTURE.md** | 🟡 Moyenne | Vérifier que le schéma Firestore correspond à l'implémentation réelle. |
 | 121 | **Guide de déploiement** | 🟡 Moyenne | Documentation étape par étape pour déployer (Vercel + Firebase). |
-| 122 | **Guide de contribution** | 🟢 Basse | CONTRIBUTING.md pour les contributeurs externes. |
-| 123 | **API documentation** | 🟢 Basse | Documenter les services et hooks pour les développeurs. |
+| 122 | ~~**Guide de contribution**~~ | ✅ FAIT | `CONTRIBUTING.md` — code de conduite, setup, branches, commits, tests, architecture, review PR, déploiement. |
+| 123 | ~~**API documentation**~~ | ✅ FAIT | `API.md` — documentation complète des services (12), hooks (9), Cloud Functions (9). |
+| 112 | ~~**Autocomplétion adresse**~~ | ✅ FAIT | `AddressAutocomplete.tsx` — cascade Ville→Commune→Quartier avec données locales, 11 tests. |
 
 ---
 
@@ -161,9 +162,9 @@
 | Priorité | Count |
 |---|---|
 | 🔴 Haute | 0 (paiement Mobile Money restant) |
-| 🟡 Moyenne | 0 (toutes accomplies) |
-| 🟢 Basse | 0 (toutes accomplies) |
-| **TOTAL** | **~0 tâches** restantes (modèles 3D retiré, paiement Mobile Money = API externe) |
+| 🟡 Moyenne | 2 (ARCHITECTURE.md à vérifier, guide déploiement existe déjà) |
+| 🟢 Basse | 2 (versions deps à vérifier) |
+| **TOTAL** | **~4 tâches** restantes (modèles 3D retiré, paiement Mobile Money = API externe) |
 
 ---
 
