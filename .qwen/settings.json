@@ -30,7 +30,8 @@
       "Bash(nvm *)",
       "Bash(node_modules/.bin/husky *)",
       "Bash(bash *)",
-      "Bash(which *)"
+      "Bash(which *)",
+      "Bash(./node_modules/.bin/tsc *)"
     ]
   },
   "$version": 3
