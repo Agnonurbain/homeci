@@ -11,7 +11,7 @@
  * - Met à jour le statut de la propriété si risque élevé
  * - Crée une notification admin
  */
-import { onDocumentCreated, HttpsError } from "firebase-functions/v2/firestore";
+import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { getFirestore, FieldValue } from "./firebase-admin";
 import { logger } from "firebase-functions";
 

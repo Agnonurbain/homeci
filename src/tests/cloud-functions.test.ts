@@ -122,7 +122,10 @@ describe('2. firebase-admin.ts — Shared module', () => {
   });
 
   it('exporte tous les services', () => {
-    expect(content).toContain('export { getFirestore, FieldValue, getMessaging, getAuth, logger }');
+    expect(content).toContain('getStorage');
+    expect(content).toContain('getFirestore');
+    expect(content).toContain('getMessaging');
+    expect(content).toContain('getAuth');
   });
 });
 

@@ -36,7 +36,7 @@ export const cleanupOrphanedFiles = onSchedule(
 
     if (staleProperties.empty) {
       logger.info("[Storage Cleanup] Aucun bien orphelin à nettoyer.");
-      return { deletedImages: 0, deletedDocuments: 0 };
+      return;
     }
 
     let deletedImages = 0;
@@ -96,7 +96,5 @@ export const cleanupOrphanedFiles = onSchedule(
     logger.info(
       `[Storage Cleanup] Terminé — ${deletedImages} images et ${deletedDocuments} documents supprimés (${staleProperties.size} biens traités).`
     );
-
-    return { deletedImages, deletedDocuments, propertiesProcessed: staleProperties.size };
   }
 );

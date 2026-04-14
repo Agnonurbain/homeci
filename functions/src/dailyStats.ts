@@ -91,7 +91,5 @@ export const aggregateDailyStats = onSchedule(
     logger.info(
       `[Daily Stats] ${dateStr} — users: ${stats.new_users}, propriétés: ${stats.new_properties}, visites: ${stats.new_visits}, certifications: ${stats.new_certifications}, signalements: ${stats.new_reports}`
     );
-
-    return stats;
   }
 );

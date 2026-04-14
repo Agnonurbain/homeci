@@ -24,15 +24,23 @@ exports.sendPushNotification = (0, firestore_1.onDocumentCreated)({
         return;
     }
     const notifType = data.type || "";
+    // Check if push was already sent (for offline chat messages)
+    const pushSent = data.push_sent;
+    if (pushSent === true) {
+        firebase_admin_1.logger.info("Push déjà envoyé pour cette notification (chat offline).");
+        return;
+    }
     const db = (0, firebase_admin_1.getFirestore)();
     // Check notification preferences
     const userSnap = await db.collection("users").doc(userId).get();
     const prefs = (_b = userSnap.data()) === null || _b === void 0 ? void 0 : _b.notification_prefs;
     if (prefs) {
-        const isVisit = notifType.startsWith("visit_") || notifType === "new_message";
+        const isVisit = notifType.startsWith("visit_");
+        const isMessage = notifType === "new_message";
         const isCert = notifType.startsWith("notaire_");
         const isSystem = notifType === "system";
         if ((isVisit && prefs.visits === false) ||
+            (isMessage && prefs.messages === false) ||
             (isCert && prefs.certifications === false) ||
             (isSystem && prefs.system === false)) {
             firebase_admin_1.logger.info(`Push ignoré pour ${userId}: notification ${notifType} désactivée.`);
@@ -51,15 +59,22 @@ exports.sendPushNotification = (0, firestore_1.onDocumentCreated)({
     }
     const tokens = tokensSnap.docs.map((d) => d.data().token);
     // Build FCM message
+    const chatId = data.chat_id || "";
     const message = {
         notification: { title, body },
         data: {
             property_id: propertyId,
             notification_id: event.params.notifId,
+            chat_id: chatId,
+            type: notifType,
         },
         webpush: {
             fcmOptions: {
-                link: propertyId ? `/?property=${propertyId}` : "/",
+                link: chatId
+                    ? `/dashboard?open_chat=${chatId}`
+                    : propertyId
+                        ? `/?property=${propertyId}`
+                        : "/",
             },
             notification: {
                 icon: "/favicon-192x192.png",

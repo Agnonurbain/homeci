@@ -7,8 +7,11 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2018",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": ["node"]
   },
   "compileOnSave": true,
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/__tests__", "**/*.test.ts", "node_modules"]
 }

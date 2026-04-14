@@ -14,7 +14,7 @@
  * All functions run in europe-west1, nodejs20.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onNewChatMessage = exports.createAdmin = exports.certifyProperty = exports.assignNotaireRole = exports.sendPushNotification = exports.autoResetPropertyStatus = void 0;
+exports.aggregateDailyStats = exports.cleanupOrphanedFiles = exports.onReportCreated = exports.onNewChatMessage = exports.createAdmin = exports.certifyProperty = exports.assignNotaireRole = exports.sendPushNotification = exports.autoResetPropertyStatus = void 0;
 // ── Scheduler ──
 var scheduler_1 = require("./scheduler");
 Object.defineProperty(exports, "autoResetPropertyStatus", { enumerable: true, get: function () { return scheduler_1.autoResetPropertyStatus; } });
@@ -31,4 +31,13 @@ Object.defineProperty(exports, "createAdmin", { enumerable: true, get: function 
 // ── Chat ──
 var chat_1 = require("./chat");
 Object.defineProperty(exports, "onNewChatMessage", { enumerable: true, get: function () { return chat_1.onNewChatMessage; } });
+// ── Moderation ──
+var moderation_1 = require("./moderation");
+Object.defineProperty(exports, "onReportCreated", { enumerable: true, get: function () { return moderation_1.onReportCreated; } });
+// ── Storage Cleanup ──
+var storageCleanup_1 = require("./storageCleanup");
+Object.defineProperty(exports, "cleanupOrphanedFiles", { enumerable: true, get: function () { return storageCleanup_1.cleanupOrphanedFiles; } });
+// ── Daily Stats ──
+var dailyStats_1 = require("./dailyStats");
+Object.defineProperty(exports, "aggregateDailyStats", { enumerable: true, get: function () { return dailyStats_1.aggregateDailyStats; } });
 //# sourceMappingURL=index.js.map
