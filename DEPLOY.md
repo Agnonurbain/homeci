@@ -89,6 +89,8 @@ Aller sur [Firebase Console](https://console.firebase.google.com) → Functions 
 - `createAdmin` (callable) est actif
 - `onNewChatMessage` (firestore trigger) est actif
 - `onReportCreated` (firestore trigger) est actif — auto-modération
+- `cleanupOrphanedFiles` (scheduler) est actif — nettoyage fichiers orphelins
+- `aggregateDailyStats` (scheduler) est actif — agrégation stats quotidiennes
 
 ---
 
@@ -182,10 +184,12 @@ firebase deploy --only firestore:indexes
 
 ### Sécurité
 - [ ] 2FA admin fonctionne (setup + vérification TOTP)
+- [ ] Restriction IP admin fonctionne (variable `ADMIN_ALLOWED_IPS`)
 - [ ] Journal d'audit admin enregistre les actions
 - [ ] Rate limiting fonctionne (visites, login, messages)
 - [ ] Auto-modération détecte spam/doublons
-- [ ] Husky pre-commit hooks fonctionnels (lint → typecheck → test)
+- [ ] Scan fichiers uploads fonctionne (magic bytes, MIME, patterns suspects)
+- [ ] Husky pre-commit hooks fonctionnent (lint → typecheck → test)
 
 ### Performance
 - [ ] Bundle index < 350KB gzip (vérifier `npm run build:analyze`)
@@ -253,7 +257,7 @@ npx husky
 
 | Outil | Version |
 |---|---|
-| Node.js | 22+ |
+| Node.js | 24+ |
 | npm | 10.8+ |
 | Firebase CLI | 13+ |
 
@@ -264,7 +268,18 @@ npx husky
 | `npm ci` échoue sur CI | Utiliser `npm install` à la place (bug npm 10.8.x sur Node 24) |
 | Tests Firebase non mockés | Vérifier `src/tests/setup.ts` — tout Firebase est mocké globalement |
 | Husky pre-commit échoue | Vérifier que `lint`, `typecheck` et `test` passent localement |
+| Lighthouse CI échoue | Workflow non-bloquant (`continue-on-error: true`), lancement manuel possible |
+
+### Nouvelles fonctionnalités récentes
+
+| Fonctionnalité | Variables d'env requises |
+|---|---|
+| Restriction IP admin | `ADMIN_ALLOWED_IPS` (ex: `41.210.5.10,192.168.1.0/24`) |
+| Analytics admin | Aucune (données Firestore) |
+| Export CSV admin | Aucune |
+| Comparaison de biens | Aucune (localStorage) |
+| Autocomplétion adresse | Aucune (données locales `coteIvoireGeo.ts`) |
 
 ---
 
-*Dernière mise à jour : 2026-04-12*
+*Dernière mise à jour : 2026-04-13 — 9 Cloud Functions, Node 24, Lighthouse CI*
