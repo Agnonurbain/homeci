@@ -3,6 +3,8 @@
  *
  * Couvre les sections 1, 3, 8 (partiel), 9, 10, 11 de la checklist PDF.
  * Exécuter : npx vitest run src/tests/prelaunch.test.ts
+ *
+ * @vitest-environment node
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync, statSync } from 'fs';

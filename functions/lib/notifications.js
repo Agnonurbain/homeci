@@ -7,6 +7,7 @@ exports.sendPushNotification = void 0;
  */
 const firestore_1 = require("firebase-functions/v2/firestore");
 const firebase_admin_1 = require("./firebase-admin");
+const pushHelper_1 = require("./pushHelper");
 exports.sendPushNotification = (0, firestore_1.onDocumentCreated)({
     document: "notifications/{notifId}",
     region: "europe-west1",
@@ -47,68 +48,17 @@ exports.sendPushNotification = (0, firestore_1.onDocumentCreated)({
             return;
         }
     }
-    // Get FCM tokens
-    const tokensSnap = await db
-        .collection("users")
-        .doc(userId)
-        .collection("fcm_tokens")
-        .get();
-    if (tokensSnap.empty) {
-        firebase_admin_1.logger.info(`Aucun token FCM pour l'utilisateur ${userId}.`);
-        return;
-    }
-    const tokens = tokensSnap.docs.map((d) => d.data().token);
-    // Build FCM message
     const chatId = data.chat_id || "";
-    const message = {
-        notification: { title, body },
-        data: {
-            property_id: propertyId,
-            notification_id: event.params.notifId,
-            chat_id: chatId,
-            type: notifType,
-        },
-        webpush: {
-            fcmOptions: {
-                link: chatId
-                    ? `/dashboard?open_chat=${chatId}`
-                    : propertyId
-                        ? `/?property=${propertyId}`
-                        : "/",
-            },
-            notification: {
-                icon: "/favicon-192x192.png",
-                badge: "/favicon-192x192.png",
-                vibrate: [100, 50, 100],
-            },
-        },
-    };
-    const messaging = (0, firebase_admin_1.getMessaging)();
-    // Send to each token
-    const results = await Promise.allSettled(tokens.map((token) => messaging.send({ ...message, token })));
-    // Clean up invalid tokens
-    const invalidTokens = [];
-    results.forEach((result, idx) => {
-        var _a;
-        if (result.status === "rejected") {
-            const errorCode = ((_a = result.reason) === null || _a === void 0 ? void 0 : _a.code) || "";
-            if (errorCode === "messaging/invalid-registration-token" ||
-                errorCode === "messaging/registration-token-not-registered") {
-                invalidTokens.push(tokens[idx]);
-            }
-        }
-    });
-    if (invalidTokens.length > 0) {
-        const batch = db.batch();
-        for (const token of invalidTokens) {
-            const tokenDoc = tokensSnap.docs.find((d) => d.data().token === token);
-            if (tokenDoc)
-                batch.delete(tokenDoc.ref);
-        }
-        await batch.commit();
-        firebase_admin_1.logger.info(`Nettoyé ${invalidTokens.length} token(s) FCM invalide(s) pour ${userId}.`);
-    }
-    const sent = results.filter((r) => r.status === "fulfilled").length;
-    firebase_admin_1.logger.info(`Push envoyé à ${userId}: ${sent}/${tokens.length} token(s) atteint(s).`);
+    const link = chatId
+        ? `/dashboard?open_chat=${chatId}`
+        : propertyId
+            ? `/?property=${propertyId}`
+            : "/";
+    await (0, pushHelper_1.sendPushToUser)(userId, title, body, {
+        property_id: propertyId,
+        notification_id: event.params.notifId,
+        chat_id: chatId,
+        type: notifType,
+    }, link);
 });
 //# sourceMappingURL=notifications.js.map

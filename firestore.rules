@@ -128,9 +128,9 @@ service cloud.firestore {
 
     // ── NOTAIRE CODES ──
     match /notaire_codes/{codeId} {
-      // Lecture : Admin (listage) ou public (verification pendant signup)
-      allow get: if true;
-      allow list: if isAdmin() || (isAuth() && !resource.data.used); // Protège les codes valides du listage public
+      // Lecture : authentifié uniquement (vérification pendant signup)
+      allow get: if isAuth();
+      allow list: if isAdmin();
       allow create: if isAdmin();
       allow update: if isAuth()
         && resource.data.used == false
@@ -141,7 +141,9 @@ service cloud.firestore {
     // ── ADMIN LOGS ──
     match /admin_logs/{logId} {
       allow read: if isAdmin();
-      allow create: if isAuth(); // Permis globalement car le frontend génère parfois des logs
+      // Create: authentifié (login attempts) ou admin/notaire (audit actions)
+      allow create: if isAuth();
+      allow update, delete: if false;
     }
 
     // ── SURVEYS ──

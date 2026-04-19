@@ -5,6 +5,8 @@
  * Vérifie les exports, les guards de sécurité, les triggers, et la logique business.
  *
  * Exécuter : npx vitest run src/tests/cloud-functions.test.ts
+ *
+ * @vitest-environment node
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
@@ -454,8 +456,12 @@ describe('5b. notaire.ts — certifyProperty', () => {
 
 describe('6. notifications.ts — sendPushNotification', () => {
   let content: string;
+  let pushContent: string;
 
-  beforeAll(() => { content = readFunc('notifications.ts'); });
+  beforeAll(() => {
+    content = readFunc('notifications.ts');
+    pushContent = readFunc('pushHelper.ts');
+  });
 
   it('utilise onDocumentCreated de firestore v2', () => {
     expect(content).toContain("from \"firebase-functions/v2/firestore\"");
@@ -493,46 +499,47 @@ describe('6. notifications.ts — sendPushNotification', () => {
     expect(content).toContain("notifType === \"new_message\"");
   });
 
+  it('délègue l\'envoi push à sendPushToUser (pushHelper)', () => {
+    expect(content).toContain('sendPushToUser');
+    expect(content).toContain('from "./pushHelper"');
+  });
+
   it('récupère les tokens FCM depuis la sous-collection fcm_tokens', () => {
-    expect(content).toContain('collection("fcm_tokens")');
+    expect(pushContent).toContain('collection("fcm_tokens")');
   });
 
   it('retourne early si aucun token FCM', () => {
-    expect(content).toContain('tokensSnap.empty');
-    expect(content).toContain('Aucun token FCM');
+    expect(pushContent).toContain('tokensSnap.empty');
+    expect(pushContent).toContain('Aucun token FCM');
   });
 
   it('construit le message FCM avec notification + data + webpush', () => {
-    expect(content).toContain('notification: { title, body }');
+    expect(pushContent).toContain('notification: { title, body }');
     expect(content).toContain('property_id: propertyId');
     expect(content).toContain('notification_id');
-    expect(content).toContain('webpush');
-    expect(content).toContain('fcmOptions');
-  });
-
-  it('inclut le lien vers le bien dans webpush', () => {
-    expect(content).toContain('`/?property=${propertyId}`');
+    expect(pushContent).toContain('webpush');
+    expect(pushContent).toContain('fcmOptions');
   });
 
   it('utilise getMessaging().send()', () => {
-    expect(content).toContain('getMessaging()');
-    expect(content).toContain('messaging.send');
+    expect(pushContent).toContain('getMessaging()');
+    expect(pushContent).toContain('messaging.send');
   });
 
   it('envoie avec Promise.allSettled pour tolérance aux erreurs', () => {
-    expect(content).toContain('Promise.allSettled');
+    expect(pushContent).toContain('Promise.allSettled');
   });
 
   it('nettoie les tokens FCM invalides', () => {
-    expect(content).toContain('messaging/invalid-registration-token');
-    expect(content).toContain('messaging/registration-token-not-registered');
-    expect(content).toContain('invalidTokens');
-    expect(content).toContain('batch.delete');
+    expect(pushContent).toContain('messaging/invalid-registration-token');
+    expect(pushContent).toContain('messaging/registration-token-not-registered');
+    expect(pushContent).toContain('invalidTokens');
+    expect(pushContent).toContain('batch.delete');
   });
 
   it('loge le nombre de tokens atteints', () => {
-    expect(content).toContain('logger.info');
-    expect(content).toContain('token(s) atteint(s)');
+    expect(pushContent).toContain('logger.info');
+    expect(pushContent).toContain('token(s) atteint(s)');
   });
 
   it('vérifie le flag push_sent pour éviter les doublons', () => {
@@ -747,6 +754,7 @@ describe('9. Intégrité — Cohérence entre modules', () => {
     expect(funcExists('chat.ts')).toBe(true);
     expect(funcExists('notaire.ts')).toBe(true);
     expect(funcExists('notifications.ts')).toBe(true);
+    expect(funcExists('pushHelper.ts')).toBe(true);
     expect(funcExists('scheduler.ts')).toBe(true);
     expect(funcExists('storageCleanup.ts')).toBe(true);
     expect(funcExists('dailyStats.ts')).toBe(true);

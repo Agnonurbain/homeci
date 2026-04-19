@@ -13,9 +13,6 @@ export default defineConfig({
       brotliSize: true,
     }),
   ],
-  define: {
-    'process.env.NODE_ENV': JSON.stringify('development'),
-  },
   build: {
     chunkSizeWarningLimit: 500,
     rollupOptions: {

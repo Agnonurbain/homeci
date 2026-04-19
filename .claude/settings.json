@@ -28,7 +28,10 @@
       "Bash(ls *)",
       "Bash(head *)",
       "Bash(tail *)",
-      "Bash(sed *)"
+      "Bash(sed *)",
+      "Bash(npm --version)",
+      "Bash(npm audit *)",
+      "Read(//home/aymeric/.nvm/**)"
     ],
     "deny": [
       "Write .env",

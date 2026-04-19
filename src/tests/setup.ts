@@ -88,19 +88,18 @@ vi.mock('firebase/app-check', () => ({
   ReCaptchaEnterpriseProvider: vi.fn(),
 }));
 
-// Mock window.scrollTo
-window.scrollTo = vi.fn();
+if (typeof window !== 'undefined') {
+  window.scrollTo = vi.fn();
 
-// Mock ResizeObserver
-window.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+  window.ResizeObserver = vi.fn().mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  }));
 
-// Mock IntersectionObserver (needed for lazy loading + PropertyCard)
-window.IntersectionObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+  window.IntersectionObserver = vi.fn().mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  }));
+}
