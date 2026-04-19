@@ -102,4 +102,17 @@ if (typeof window !== 'undefined') {
     unobserve: vi.fn(),
     disconnect: vi.fn(),
   }));
+
+  // Replace FileReader.readAsDataURL to avoid jsdom Uint8Array error with Node 24
+  FileReader.prototype.readAsDataURL = function (this: FileReader, blob: Blob) {
+    blob.arrayBuffer().then((buf) => {
+      const bytes = new Uint8Array(buf);
+      const binary = Array.from(bytes).map(b => String.fromCharCode(b)).join('');
+      const base64 = btoa(binary);
+      const mime = blob.type || 'application/octet-stream';
+      Object.defineProperty(this, 'result', { value: `data:${mime};base64,${base64}`, configurable: true });
+      Object.defineProperty(this, 'readyState', { value: 2, configurable: true });
+      this.dispatchEvent(new Event('load'));
+    });
+  };
 }

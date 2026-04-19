@@ -1,6 +1,6 @@
 # ✅ DONE.md — Ce qui a été fait
 
-> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-13 (tâches basses priorités + CI fix — 1118 tests).
+> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-19 (code review — sécurité, refactor pushHelper, tests vitest 4 — 1157 tests).
 
 ---
 
@@ -306,32 +306,46 @@
 
 ---
 
+## 🔧 Session code review (2026-04-19)
+
+| # | Tâche | Détails |
+|---|---|---|
+| 199 | **Sécurité Firestore renforcée** | `notaire_codes`: `allow get: if isAuth()` (était `if true`), `allow list: if isAdmin()` (retiré accès `!resource.data.used`). `admin_logs`: ajouté `allow update, delete: if false`. |
+| 200 | **Refactor pushHelper.ts** | Extraction logique FCM push partagée dans `functions/src/pushHelper.ts` (~80 lignes). `notifications.ts` et `chat.ts` délèguent à `sendPushToUser`. Élimine duplication. |
+| 201 | **Fix mode dev hardcodé** | Supprimé `define: { 'process.env.NODE_ENV': JSON.stringify('development') }` de `vite.config.ts`. |
+| 202 | **Package renommé** | `package.json` : `"name": "homeci"` (était `"vite-react-typescript-starter"`). `@types/leaflet` déplacé en devDependencies. |
+| 203 | **.nvmrc Node 24** | Fichier `.nvmrc` créé avec `24` pour documenter la version Node requise. |
+| 204 | **Fix tests vitest 4 + Node 24** | `@vitest-environment node` ajouté dans `cloud-functions.test.ts` et `prelaunch.test.ts` (fichiers utilisant `fs`/`path`). Guard `typeof window !== 'undefined'` dans `setup.ts` pour compatibilité node + jsdom. Tests pushHelper mis à jour. |
+| 205 | **Deps mises à jour** | `firebase@^12.12.0`, `react-router-dom@^7.14.1`, `vite@^5.4.21`, `typescript@^5.9.3`, `vitest@^4.1.4`. |
+
+---
+
 ## 📊 Résumé
 
 ```
-Total items complétés : ~208
+Total items complétés : ~215
 
 Frontend : ~94 composants, 16 hooks, 17 services, 8 utils
-Tests : 105 fichiers de test (1118 tests, 100% passent, 0 erreur TS)
-  - Cloud Functions : 113 tests (+12, +2 dailyStats/storageCleanup)
-  - Services : 104 tests (+28 dossier + export)
+Tests : 109 fichiers de test (1157 tests, 100% passent, 0 erreur TS)
+  - Cloud Functions : 114 tests (+1 pushHelper delegation)
+  - Services : 104 tests
   - Composants owner : 75 tests (9 composants)
-  - Composants admin : 89 tests (9 composants, +12 AdminAuditLogs + AdminNotairesTab + AdminAnalyticsTab + AdminExportTab)
-  - Composants notaire : 83 tests (6 composants, +20 NotaireStatsTab)
+  - Composants admin : 89 tests (9 composants)
+  - Composants notaire : 83 tests (6 composants)
   - Composants UI : 22 tests (Skeletons, HomeCIEmblem, SEO)
   - Composants chat : 24 tests (2 composants)
   - Composants recherche : 10 tests (SearchTab + tri)
   - Formulaires : 18 tests (2 étapes)
-  - Hooks : 60 tests (+12 useTenantProperties)
+  - Hooks : 60 tests
 Firestore : 10+ collections + daily_stats, 230+ lignes de règles, 7 index
 Storage : 7 paths + chat_attachments, règles de sécurité
-Cloud Functions : 9 modules modulaires (europe-west1, nodejs20) — admin, chat, notaire, notifications, scheduler, moderation, storageCleanup, dailyStats
-Sécurité : Portail admin 2 étapes, anti brute force, session timeout, headers Vercel
+Cloud Functions : 10 modules modulaires (europe-west1, nodejs20) — admin, chat, notaire, notifications, pushHelper, scheduler, moderation, storageCleanup, dailyStats
+Sécurité : Portail admin 2 étapes, anti brute force, session timeout, headers Vercel, Firestore rules renforcées
 PWA : Service Worker avec cache strategies + FCM push + deep links chat
 Design : Tokens centralisés, palette CI (orange/vert/or)
-CI/CD : Node 24, typecheck ajouté, Husky pre-commit, branche develop, v1.0.0, package-lock fixé
+CI/CD : Node 24, .nvmrc, typecheck ajouté, Husky pre-commit, branche develop, v1.0.0, package-lock fixé
 TypeScript : 0 erreur (typecheck passe clean)
-Notifications : Détection online/offline (30s), delivery_mode, push direct hors ligne
+Notifications : Détection online/offline (30s), delivery_mode, push direct hors ligne, pushHelper partagé
 Chat paginé : Pagination 30 messages/page, scroll infini, recherche dans historique, highlight résultats
 Export : CSV admin (users, biens, visites, enquêtes, signalements)
 Analytics : Dashboard admin 6 graphiques Recharts, stats notaire 4 graphiques
@@ -342,4 +356,4 @@ Géographie : 24 villes majeures CI, ~300+ quartiers hors Abidjan
 
 ---
 
-*Dernière mise à jour : 2026-04-13 (tâches basses priorités + CI fix — 1118 tests)*
+*Dernière mise à jour : 2026-04-19 (code review — sécurité, refactor pushHelper, tests vitest 4 — 1157 tests)*

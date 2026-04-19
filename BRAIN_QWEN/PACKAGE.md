@@ -1,6 +1,6 @@
 # 📦 PACKAGE.md — Registre des dépendances HOMECI
 
-> **Dernière mise à jour :** 2026-04-13 (aucune dépendance ajoutée — CI Node 24, nouvelles fonctionnalités sans nouveaux packages)
+> **Dernière mise à jour :** 2026-04-19 (deps mises à jour — firebase 12.12.0, react-router-dom 7.14.1, vite 5.4.21, typescript 5.9.3)
 > **Ce fichier DOIT être mis à jour à chaque ajout/suppression de dépendance.**
 
 ---
@@ -51,13 +51,13 @@ npm run typecheck              # TypeScript no-emit
 
 | Package | Version | Usage | Import |
 |---|---|---|---|
-| `react-router-dom` | `^7.13.2` | Routing SPA | `import { BrowserRouter, Routes, Route } from 'react-router-dom'` |
+| `react-router-dom` | `^7.14.1` | Routing SPA | `import { BrowserRouter, Routes, Route } from 'react-router-dom'` |
 
 ### Firebase
 
 | Package | Version | Usage | Import |
 |---|---|---|---|
-| `firebase` | `^12.9.0` | Auth + Firestore + Storage + FCM | `import { initializeApp } from 'firebase/app'` |
+| `firebase` | `^12.12.0` | Auth + Firestore + Storage + FCM | `import { initializeApp } from 'firebase/app'` |
 
 ### Cartes
 
@@ -65,7 +65,7 @@ npm run typecheck              # TypeScript no-emit
 |---|---|---|---|
 | `leaflet` | `^1.9.4` | Moteur de carte | `import L from 'leaflet'` |
 | `react-leaflet` | `^4.2.1` | Composants React Leaflet | `import { MapContainer, TileLayer } from 'react-leaflet'` |
-| `@types/leaflet` | `^1.9.21` | Types TypeScript Leaflet | `import type { LatLngTuple } from 'leaflet'` |
+| `@types/leaflet` | `^1.9.21` | Types TypeScript Leaflet (**devDependency**) | `import type { LatLngTuple } from 'leaflet'` |
 
 ### Graphiques
 
@@ -111,14 +111,14 @@ npm run typecheck              # TypeScript no-emit
 
 | Package | Version | Usage |
 |---|---|---|
-| `vite` | `^5.4.2` | Bundler + dev server |
-| `@vitejs/plugin-react` | `^4.3.1` | Plugin React pour Vite |
+| `vite` | `^5.4.21` | Bundler + dev server |
+| `@vitejs/plugin-react` | `^4.7.0` | Plugin React pour Vite |
 
 ### TypeScript
 
 | Package | Version | Usage |
 |---|---|---|
-| `typescript` | `^5.5.3` | Compiler TypeScript |
+| `typescript` | `^5.9.3` | Compiler TypeScript |
 | `typescript-eslint` | `^8.57.2` | Plugin ESLint TypeScript |
 | `@types/react` | `^18.3.5` | Types React |
 | `@types/react-dom` | `^18.3.0` | Types React DOM |
@@ -347,4 +347,4 @@ Objectif : bundle initial < 350KB gzip.
 ---
 
 *Mettre à jour ce fichier à CHAQUE fois qu'une dépendance est ajoutée, supprimée ou mise à jour.*
-*Dernière mise à jour : 2026-04-09*
+*Dernière mise à jour : 2026-04-19*

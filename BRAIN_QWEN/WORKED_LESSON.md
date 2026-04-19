@@ -1,6 +1,6 @@
 # 📚 WORKED_LESSON.md — Leçons apprises & Difficultés rencontrées
 
-> **Mis à jour à chaque session HOMECI.** Dernière mise à jour : 2026-04-13 (CI fixée — Node 24).
+> **Mis à jour à chaque session HOMECI.** Dernière mise à jour : 2026-04-19 (code review — vitest-environment, pushHelper, sécurité Firestore).
 > **Objectif :** Capitaliser sur les erreurs passées pour ne pas les répéter.
 
 ---
@@ -360,21 +360,63 @@ Chaque entrée suit ce format :
 
 ---
 
-## �📊 Résumé par catégorie
+### WL-028 — Vitest 4 + Node 24 : `@vitest-environment node` requis pour fichiers Node
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-028 |
+| **Date** | 2026-04-19 |
+| **Catégorie** | Tests |
+| **Problème** | Les fichiers de test utilisant `fs` et `path` (`cloud-functions.test.ts`, `prelaunch.test.ts`) échouent en vitest 4 + Node 24 avec "No such built-in module: node:". L'environnement jsdom externalise les modules Node. |
+| **Cause racine** | Vitest 4 avec rolldown externalise `fs`/`path` en jsdom. Le setup global (`setup.ts`) utilise `window.*` qui n'existe pas en environnement node. |
+| **Solution** | Ajouter `@vitest-environment node` en commentaire JSDoc. Wrapper les mocks `window.*` dans `setup.ts` avec `if (typeof window !== 'undefined')`. |
+| **Impact** | 🔴 Critique — 2 fichiers de test (213+ tests) ne s'exécutaient plus. |
+| **Prévention** | Toujours spécifier `@vitest-environment node` pour les tests utilisant des modules Node natifs. |
+
+---
+
+### WL-029 — Husky pre-commit utilise Node système au lieu de nvm
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-029 |
+| **Date** | 2026-04-19 |
+| **Catégorie** | CI/CD |
+| **Problème** | Le hook pre-commit Husky échoue car il utilise `/usr/bin/node` (v18) au lieu de Node 24 via nvm. `styleText` non trouvé dans rolldown. |
+| **Cause racine** | Husky lance un nouveau shell qui ne charge pas nvm par défaut. |
+| **Solution** | `nvm alias default 24` pour que chaque nouveau shell utilise Node 24. |
+| **Impact** | 🔴 Critique — Impossible de commiter. |
+| **Prévention** | Toujours aligner `nvm alias default` avec la version `.nvmrc` du projet. |
+
+---
+
+### WL-030 — Refactor Cloud Functions : mettre à jour les tests de contenu
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-030 |
+| **Date** | 2026-04-19 |
+| **Catégorie** | Tests |
+| **Problème** | Après extraction FCM push dans `pushHelper.ts`, 7 tests cherchent des patterns dans `notifications.ts` alors qu'ils sont dans `pushHelper.ts`. |
+| **Cause racine** | Tests lisent le contenu comme strings (`readFileSync`). Quand le code est déplacé, les tests ne suivent pas. |
+| **Solution** | Ajouter `pushContent = readFunc('pushHelper.ts')` et rediriger les assertions. Ajouter un test de délégation. |
+| **Impact** | 🟡 Moyen — 7 tests en échec, facilement corrigeables. |
+| **Prévention** | Lors d'un refactor/extraction, toujours mettre à jour les tests de contenu dans le même commit. |
+
+---
+
+## 📊 Résumé par catégorie
 
 | Catégorie | Count |
 |---|---|
-| Backend | 4 (+2) |
-| Frontend | 5 (+1) |
-| CI/CD | 8 (+4) |
+| Backend | 4 |
+| Frontend | 5 |
+| CI/CD | 10 (+2) |
 | Sécurité | 1 |
 | UX | 1 |
-| Tests | 4 |
+| Tests | 7 (+3) |
 | Infrastructure | 5 |
 | Documentation | 1 |
 | Design | 1 |
 | State management | 1 |
-| **TOTAL** | **31** (+4) |
+| **TOTAL** | **34** (+3) |
 
 ---
 
@@ -382,9 +424,9 @@ Chaque entrée suit ce format :
 
 | Impact | Count |
 |---|---|
-| 🔴 Critique | 7 (+2) |
-| 🟡 Moyen | 15 (+1) |
-| 🟢 Faible | 4 (+1) |
+| 🔴 Critique | 9 (+2) |
+| 🟡 Moyen | 16 (+1) |
+| 🟢 Faible | 4 |
 
 ---
 

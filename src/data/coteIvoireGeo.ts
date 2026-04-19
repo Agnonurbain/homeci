@@ -140,26 +140,27 @@ export const QUARTIERS_BY_COMMUNE: Record<string, string[]> = {
   // ─── Abidjan ───
   "Cocody": [
     "Riviera 1", "Riviera 2", "Riviera 3", "Riviera 4", "Riviera 5", "Riviera Palmeraie",
-    "Riviera Golf", "Angré", "Angré Château", "Angré 8ème Tranche", "Danga",
+    "Riviera Golf", "Riviera Bonoumin", "Riviera Faya",
+    "Angré", "Angré Château", "Angré 7ème Tranche", "Angré 8ème Tranche", "Angré 9ème Tranche", "Danga",
     "Blockhauss", "II Plateaux", "II Plateaux Vallon", "Vallon", "Mermoz",
     "Ambassades", "Cocody Village", "Bonoumin", "Faya", "Lycée Technique",
     "Anono", "St. Jean", "Attoban", "Palmeraie Bonoumin", "Cocotiers",
-    "Sicap Cocody", "N'Goron", "Abatta", "Riviera Faya",
+    "Sicap Cocody", "N'Goron", "Abatta",
   ],
   "Plateau": ["Centre Ville", "Commerce", "Indénié", "Administratif", "Abidjan Plateau", "Cité Administrative", "Camp Gallieni"],
-  "Marcory": ["Zone 4", "Biétry", "Anoumabo", "Remblai", "Zone 3C", "Sans Fil", "Résidentiel", "Vallon", "Bel Air"],
+  "Marcory": ["Zone 4", "Zone 4C", "Biétry", "Anoumabo", "Remblai", "Zone 3C", "Sans Fil", "Marcory Résidentiel", "Vallon", "Bel Air"],
   "Yopougon": [
     "Attié", "Selmer", "Niangon Nord", "Niangon Sud", "Wassakara",
     "Toits Rouges", "Kouté", "Siporex", "Sicogi", "Ananeraie",
     "Millionnaire", "Washington", "Banco 1", "Banco 2",
     "N'Dotre", "Yaosséhi", "Lokoa", "Maroc", "Koweit", "Sideci",
-    "Nouveau Quartier", "Cité Sogefiha",
+    "Nouveau Quartier", "Cité Sogefiha", "Gesco", "Port-Bouët 2", "Académie",
   ],
   "Abobo": [
     "Baoulé", "Gare", "PK18", "Avocatier", "Samaké", "Clouetcha",
     "Abobo Gare", "Abobo-Baoulé", "Sagbé", "N'Dotré", "Abobo-Est",
     "Derrière Rails", "Pk 22", "Pk 26", "Anyama Route", "Toit Rouge",
-    "Abobo-Sud", "Banco", "Castor",
+    "Abobo-Sud", "Banco", "Castor", "Houphouët-Boigny", "Wonderland",
   ],
   "Adjamé": [
     "Liberté", "220 Logements", "Williamsville", "Village",
@@ -173,7 +174,7 @@ export const QUARTIERS_BY_COMMUNE: Record<string, string[]> = {
   ],
   "Treichville": ["Centre", "Avenue 7", "Zone 3", "Port", "Vridi Canal", "Belleville", "France", "Blanco"],
   "Port-Bouët": [
-    "Vridi", "Village", "Gonzagueville", "Kouté", "Résidentiel",
+    "Vridi", "Vridi Canal", "Vridi Plage", "Village", "Gonzagueville", "Kouté", "Résidentiel",
     "Zone Industrielle", "Aéroport", "Sicogi", "Cité UAT",
     "Nouveau Quartier", "Biafra", "Bd de Marseille",
   ],

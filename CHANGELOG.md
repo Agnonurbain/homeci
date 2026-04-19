@@ -7,6 +7,24 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [1.0.1] — 2026-04-19
+
+### 🔧 Modifié
+- **Sécurité Firestore** — `notaire_codes`: lecture `get` restreinte à `isAuth()` (était publique), `list` restreint à `isAdmin()`. `admin_logs`: ajouté `allow update, delete: if false`
+- **Refactor pushHelper** — Extraction logique FCM push dans `functions/src/pushHelper.ts`. `notifications.ts` et `chat.ts` délèguent à `sendPushToUser`
+- **Fix mode dev hardcodé** — Supprimé `process.env.NODE_ENV = 'development'` dans `vite.config.ts`
+- **Package renommé** — `"name": "homeci"` (était `"vite-react-typescript-starter"`), `@types/leaflet` déplacé en devDependencies
+- **Tests vitest 4** — `@vitest-environment node` pour fichiers `fs`/`path`, guard `typeof window` dans `setup.ts`, tests pushHelper mis à jour
+- **Deps mises à jour** — `firebase@^12.12.0`, `react-router-dom@^7.14.1`, `vite@^5.4.21`, `typescript@^5.9.3`
+
+### ✅ Ajouté
+- `.nvmrc` — Node 24 documenté
+- `pushHelper.ts` — Module Cloud Functions partagé pour envoi FCM
+- Test délégation `sendPushToUser` dans `notifications.ts`
+- `pushHelper.ts` dans test d'existence des fichiers source
+
+---
+
 ## [1.0.0] — 2026-04-13
 
 ### ✅ Ajouté

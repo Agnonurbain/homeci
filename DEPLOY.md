@@ -230,7 +230,7 @@ firebase deploy --only firestore:rules
 git clone https://github.com/Agnonurbain/homeci.git
 cd homeci
 
-# Installer les dépendances (Node 22+ recommandé)
+# Installer les dépendances (Node 24+ requis — voir .nvmrc)
 npm install
 
 # Démarrer le serveur de dev
@@ -267,7 +267,7 @@ npx husky
 |---|---|
 | `npm ci` échoue sur CI | Utiliser `npm install` à la place (bug npm 10.8.x sur Node 24) |
 | Tests Firebase non mockés | Vérifier `src/tests/setup.ts` — tout Firebase est mocké globalement |
-| Husky pre-commit échoue | Vérifier que `lint`, `typecheck` et `test` passent localement |
+| Husky pre-commit échoue | Vérifier Node 24 actif (`nvm alias default 24`) et que `lint`, `typecheck` et `test` passent |
 | Lighthouse CI échoue | Workflow non-bloquant (`continue-on-error: true`), lancement manuel possible |
 
 ### Nouvelles fonctionnalités récentes
@@ -282,4 +282,4 @@ npx husky
 
 ---
 
-*Dernière mise à jour : 2026-04-13 — 9 Cloud Functions, Node 24, Lighthouse CI*
+*Dernière mise à jour : 2026-04-19 — 10 modules Cloud Functions (+ pushHelper), Node 24 (.nvmrc), Lighthouse CI*

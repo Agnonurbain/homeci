@@ -125,10 +125,10 @@ npm run build
 | Utils | 12 fichiers | ~85% |
 | Styles | 1 fichier | 100% |
 | Data | 1 fichier | 100% |
-| Cloud Functions | 2 fichiers (115 tests) | ~90% |
+| Cloud Functions | 2 fichiers (116 tests) | ~90% |
 | Pré-lancement | 1 fichier (100 tests) | N/A |
 
-**Total : 105 fichiers de test, 1118 tests (100% passent, 0 erreur TS)**
+**Total : 109 fichiers de test, 1157 tests (100% passent, 0 erreur TS)**
 
 ---
 
@@ -142,4 +142,4 @@ npm run build
 ---
 
 *Ce fichier DOIT être mis à jour à chaque nouveau piège identifié.*
-*Dernière mise à jour : 2026-04-13 (105 fichiers, 1118 tests, domaine notaire ajouté, CF tests mis à jour)*
+*Dernière mise à jour : 2026-04-19 (109 fichiers, 1157 tests, pushHelper ajouté, @vitest-environment node pour fichiers fs/path)*

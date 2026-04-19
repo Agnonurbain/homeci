@@ -1,6 +1,6 @@
 # 🚧 NOT_DONE.md — Ce qui reste à faire
 
-> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-12 (session CI fixée + 14 tâches moyennes accomplies).
+> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-19 (code review — sécurité, refactor pushHelper, tests vitest 4).
 
 ---
 
@@ -13,7 +13,7 @@
 | 3 | ~~**Versioning sémantique**~~ | ✅ FAIT | `package.json` passé de `0.0.0` à `1.0.0`. |
 | 4 | ~~**Gitignore `lint_output.txt`**~~ | ✅ FAIT | Ajouté au `.gitignore`. |
 | 5 | ~~**Nettoyer/migrer `BRAIN_QWEN/`**~~ | ✅ FAIT | Documentation réécrite pour HOMECI. |
-| 10 | ~~**Modulariser Cloud Functions**~~ | ✅ FAIT | 6 fichiers : `firebase-admin.ts`, `scheduler.ts`, `notifications.ts`, `notaire.ts`, `admin.ts`, `chat.ts`. |
+| 10 | ~~**Modulariser Cloud Functions**~~ | ✅ FAIT | 7 fichiers : `firebase-admin.ts`, `scheduler.ts`, `notifications.ts`, `notaire.ts`, `admin.ts`, `chat.ts`, `pushHelper.ts`. |
 | 20 | ~~**Tests PropertiesTab**~~ | ✅ FAIT | Déjà couvert (7 tests existants). |
 | 22 | ~~**Gestion vidéo**~~ | ✅ FAIT | Vérifié — intégration complète. |
 | 40 | ~~**Tests composants notaire**~~ | ✅ FAIT | 3 fichiers créés (ValidationSection, NotaireActionModals, NotairePropertyCard). |
@@ -174,7 +174,7 @@
 Frontend : ████████████████████████████████░  ~98%
 Backend (Firebase) : ██████████████████████████████░  ~98% (+2 CF)
 Tests : ██████████████████████████████████  ~100%
-  - 108 fichiers de test, 1145 tests (100% passent, +27)
+  - 109 fichiers de test, 1157 tests (100% passent)
   - 0 erreur TypeScript (typecheck clean)
 CI/CD : ████████████████████████████████  ~99% (Node 24, Lighthouse CI)
 Sécurité : ████████████████████████████░░  ~90% (+5% IP whitelist + scanner)
@@ -213,4 +213,4 @@ Global : ███████████████████████�
 
 ---
 
-*Dernière mise à jour : 2026-04-13 (4 tâches basses accomplies — 100% global, 1145 tests)*
+*Dernière mise à jour : 2026-04-19 (code review — sécurité Firestore, refactor pushHelper, tests vitest 4, 1157 tests)*

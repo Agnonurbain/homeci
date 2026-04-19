@@ -1,7 +1,7 @@
 # 📋 PLAN — HOMECI: Plateforme Immobilière Certifiée Côte d'Ivoire
 
 > **Vision** : Un marketplace immobilier de confiance en Côte d'Ivoire — biens vérifiés par des notaires agréés, visites à 1000 FCFA, certification notariale.
-> **Dernière mise à jour** : 2026-04-13 — Projet à ~99%
+> **Dernière mise à jour** : 2026-04-19 — Projet à ~99%
 
 ---
 
@@ -191,7 +191,8 @@
 
 | Fonction | Trigger | Description | Statut |
 |---|---|---|---|
-| **sendPushNotification** | Firestore onCreate `/notifications/{id}` | Envoie push FCM au destinataire | ✅ Fait |
+| **sendPushNotification** | Firestore onCreate `/notifications/{id}` | Délègue à `pushHelper.ts` pour envoi FCM | ✅ Fait |
+| **pushHelper (sendPushToUser)** | Module partagé | Envoi FCM + nettoyage tokens invalides | ✅ Fait |
 | **autoResetVisits** | Scheduler (quotidien) | Reset les visites sans réponse après 3 jours | ✅ Fait |
 | **assignNotaireRole** | Callable | Valide code → rôle notaire | ✅ Fait |
 | **certifyProperty** | Callable | Notaire certifie/rejette bien | ✅ Fait |
@@ -394,6 +395,7 @@ Global : ███████████████████████�
 
 | Date | Changement |
 |---|---|
+| 2026-04-19 | **Code review** — Sécurité Firestore renforcée (notaire_codes, admin_logs), refactor pushHelper.ts (déduplication FCM), fix mode dev hardcodé, .nvmrc Node 24, tests vitest 4 (@vitest-environment node, guard window), deps mises à jour. 1157 tests, 109 fichiers. |
 | 2026-04-13 | **Tâches basses priorités + CI fix** — CHANGELOG.md, export CSV admin, cleanup Storage CF, daily stats CF, analytics admin (6 graphiques Recharts), stats notaire (4 graphiques Recharts), comparaison biens, géographie étendue 24 villes, CI Node 24. 1118 tests (+120), typecheck clean, CI verte. |
 | 2026-04-13 | **Tests composants admin + notaire + UI** — AdminAuditLogs (11), AdminNotairesTab (15), NotaireStats (4), NotaireTabs (4), NotaireActionModals (20), NotairePropertyCard (20), ValidationSection (15), Skeletons (14), HomeCIEmblem (5), SEO (3). 105 fichiers, 1109 tests. |
 | 2026-04-12 | **14 tâches moyennes + CI fixée** — Chat paginé, dossier locataire, recherche avancée, publicités admin, décértilification, modération auto, 2FA admin, audit logs, rate limiting, bundle size, husky, optimisation images, coteIvoireGeo, CI (npm install au lieu de npm ci). 998 tests, typecheck clean, CI fonctionnelle. |

@@ -1,7 +1,7 @@
 # HOMECI — Architecture Technique
 
 > Document de référence pour tout développeur (humain ou IA) intervenant sur le projet.
-> Dernière mise à jour : 2026-04-13
+> Dernière mise à jour : 2026-04-19
 
 ## Vue d'ensemble
 
@@ -23,7 +23,7 @@ HOMECI est une plateforme immobilière B2C pour la Côte d'Ivoire. Les biens son
 │       │              │              │                │
 │  ┌────┴──────────────┴──────────────┴────┐          │
 │  │    Cloud Functions v2 (Node 20)       │          │
-│  │    europe-west1 — 7 fonctions         │          │
+│  │    europe-west1 — 9 fonctions         │          │
 │  └───────────────────────────────────────┘          │
 │                                                     │
 │  ┌──────────────────────────────────────────┐       │
@@ -90,6 +90,13 @@ Notaire → Prend en charge un bien (pending → en cours)
   cgv_accepted?: boolean;
   cgv_accepted_at?: string;
   cgv_notaire_accepted?: boolean;
+  last_seen?: Timestamp;          // Dernière activité (détection online/offline, seuil 30s)
+  notification_prefs?: {          // Préférences de notification
+    visits?: boolean;
+    messages?: boolean;
+    certifications?: boolean;
+    system?: boolean;
+  };
   created_at: Timestamp;
   updated_at: Timestamp;
 }
@@ -156,10 +163,16 @@ Notaire → Prend en charge un bien (pending → en cours)
   property_id?: string;
   chat_id?: string;              // Pour les notifications de chat
   sender_id?: string;            // Pour les messages
+  sender_name?: string;          // Nom de l'expéditeur
+  attachment_type?: string;      // Type de pièce jointe (image, document)
+  message_id?: string;           // ID du message chat
+  delivery_mode?: 'instant' | 'push'; // Mode de livraison
+  recipient_online?: boolean;    // Destinataire en ligne au moment de l'envoi
+  push_sent?: boolean;           // Push déjà envoyé (anti-doublons)
   read: boolean;
   created_at: Timestamp;
 }
-// → Trigger Cloud Function sendPushNotification
+// → Trigger Cloud Function sendPushNotification (délègue à pushHelper)
 ```
 
 ### reports/{id}
@@ -270,17 +283,92 @@ Notaire → Prend en charge un bien (pending → en cours)
 }
 ```
 
-## Cloud Functions (7 fonctions)
+### daily_stats/{date}
+```typescript
+{
+  date: string;                    // YYYY-MM-DD
+  new_users: number;
+  new_properties: number;
+  new_visits: number;
+  new_certifications: number;
+  new_reports: number;
+  total_users: number;
+  total_properties: number;
+  status_counts: Record<string, number>;
+  type_counts: Record<string, number>;
+  created_at: Timestamp;
+}
+```
 
-| Fonction | Type | Région | Description |
-|----------|------|--------|-------------|
-| `autoResetPropertyStatus` | Scheduler (quotidien) | europe-west1 | Reset visites sans réponse après 3 jours |
-| `sendPushNotification` | Firestore onCreate | europe-west1 | Envoi push FCM quand notification créée |
-| `assignNotaireRole` | Callable | europe-west1 | Code invitation → rôle notaire |
-| `certifyProperty` | Callable | europe-west1 | Certification/rejet par notaire |
-| `createAdmin` | Callable | europe-west1 | Création compte admin |
-| `onNewChatMessage` | Firestore onCreate | europe-west1 | Notification chat + détection online/offline |
-| `onReportCreated` | Firestore onCreate | europe-west1 | Auto-modération (keywords, spam, doublons Levenshtein) |
+### transactions/{id}
+```typescript
+{
+  id: string;
+  userId: string;
+  amount: number;                  // En FCFA
+  currency: string;                // 'XOF'
+  provider: string;                // Wave, Orange Money, MTN, etc.
+  phone: string;
+  status: 'pending' | 'completed' | 'failed';
+  context: string;                 // 'visit_payment', etc.
+  propertyId?: string;
+  reference: string;
+  movapayReference?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+```
+
+### property_availabilities/{id}
+```typescript
+{
+  property_id: string;
+  owner_id: string;
+  weekly_schedule: Record<string, unknown>;  // Créneaux hebdomadaires
+  blocked_dates: string[];         // Dates bloquées
+  updated_at: Timestamp;
+}
+```
+
+### delegation_tokens/{id}
+```typescript
+{
+  token: string;                   // Token unique
+  notary_id: string;               // UID du notaire
+  property_id: string;
+  property_title: string;
+  action: 'certify' | 'reject';
+  status: 'pending' | 'used' | 'expired';
+  created_at: Timestamp;
+  used_at?: Timestamp;
+}
+```
+
+### mail/{id}
+```typescript
+// Firestore Email Extension — envoi automatique d'emails
+{
+  to: string;
+  message: { subject: string; html: string; };
+  created_at: Timestamp;
+}
+```
+
+## Cloud Functions (9 fonctions)
+
+| Fonction | Type | Fichier | Description |
+|----------|------|---------|-------------|
+| `autoResetPropertyStatus` | Scheduler (quotidien) | `scheduler.ts` | Reset visites sans réponse après 3 jours |
+| `sendPushNotification` | Firestore onCreate | `notifications.ts` | Push FCM — délègue à `pushHelper.ts` |
+| `assignNotaireRole` | Callable | `notaire.ts` | Code invitation → rôle notaire |
+| `certifyProperty` | Callable | `notaire.ts` | Certification/rejet par notaire |
+| `createAdmin` | Callable | `admin.ts` | Création compte admin |
+| `onNewChatMessage` | Firestore onCreate | `chat.ts` | Notification chat + détection online/offline + push via `pushHelper.ts` |
+| `onReportCreated` | Firestore onCreate | `moderation.ts` | Auto-modération (keywords, spam, doublons Levenshtein) |
+| `cleanupOrphanedFiles` | Scheduler (quotidien 3h) | `storageCleanup.ts` | Supprime fichiers Storage orphelins > 7j |
+| `aggregateDailyStats` | Scheduler (quotidien 23h59) | `dailyStats.ts` | Agrège stats quotidiennes dans `daily_stats` |
+
+Module utilitaire partagé : `pushHelper.ts` — `sendPushToUser()` (envoi FCM + nettoyage tokens invalides)
 
 ## Sécurité — Règles Firestore
 
@@ -292,7 +380,8 @@ Notaire → Prend en charge un bien (pending → en cours)
 
 ### Points critiques
 - `/identity/{userId}/` (Storage) : lecture **uniquement** par le propriétaire du fichier
-- `/notaire_codes/` : seule la transition `used: false → true` est autorisée
+- `/notaire_codes/` : `get` restreint à `isAuth()`, `list` restreint à `isAdmin()`
+- `/admin_logs/` : `create` autorisé pour `isAuth()`, `update/delete` interdit (`false`)
 - `/reports/` : update autorisé uniquement pour admin
 - `/fcm_tokens/` : écriture autorisée uniquement par le propriétaire du token
 
@@ -305,7 +394,7 @@ Notaire → Prend en charge un bien (pending → en cours)
 | Bundle initial | < 350KB gzip | 335KB | Code splitting 9 chunks (firebase, recharts, leaflet, sentry, zod, router, lucide, reactCore, firebaseMessaging) |
 | Images | < 200KB chacune | ~150KB | Compression JPEG avant upload |
 | Offline | Page d'accueil | ✅ | Service Worker cache-first |
-| Tests | 100% passent | 999/1000 | Husky pre-commit (lint → typecheck → test) |
+| Tests | 100% passent | 1157/1157 | Husky pre-commit (lint → typecheck → test) |
 
 ### Chunking Vite
 
@@ -352,3 +441,7 @@ Notaire → Prend en charge un bien (pending → en cours)
 | Avr 2026 | Rate limiting client-side | Prévention spam (visites, messages, login) |
 | Avr 2026 | Husky pre-commit hooks | lint → typecheck → test automatique |
 | Avr 2026 | 9 chunks manuels Vite | Optimisation bundle (335KB gzip index) |
+| Avr 2026 | pushHelper.ts partagé | Déduplication logique FCM push entre notifications et chat |
+| Avr 2026 | .nvmrc Node 24 | vitest 4 + rolldown nécessitent Node 24+ (`styleText` from `node:util`) |
+| Avr 2026 | `@vitest-environment node` | Fichiers test avec `fs`/`path` doivent override l'env jsdom |
+| Avr 2026 | Sécurité Firestore renforcée | `notaire_codes` get→isAuth, list→isAdmin ; `admin_logs` update/delete→false |

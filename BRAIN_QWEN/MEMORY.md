@@ -1,6 +1,6 @@
 # 🧠 MEMORY.md — Mémoire projet HOMECI
 
-> **Dernière session :** 2026-04-13 (tâches basses accomplies — 100% global, 1145 tests, 108 fichiers)
+> **Dernière session :** 2026-04-19 (code review — sécurité, refactor pushHelper, tests vitest 4 — 1157 tests, 109 fichiers)
 > **Prochain rappel :** Lire NOT_DONE.md et DONE.md avant chaque session de travail.
 
 ---
@@ -109,7 +109,7 @@ Backend (Firebase) : ███████████████████�
   - FCM Push ✅
 
 Tests : ████████████████████████████████░  ~98%
-  - 108 fichiers de test, 1145 tests (100% passent) ✅
+  - 109 fichiers de test, 1157 tests (100% passent) ✅
   - 0 échec résiduel, 0 erreur TypeScript
 
 CI/CD : ██████████████████████████████░  ~95%
@@ -168,7 +168,8 @@ CI/CD : ████████████████████████
 | Fonction | Statut | Fichier | Détails |
 |---|---|---|---|
 | autoResetPropertyStatus | ✅ | `scheduler.ts` | Cron : reset visites sans réponse après 3j |
-| sendPushNotification | ✅ | `notifications.ts` | Trigger Firestore onCreate → FCM push |
+| sendPushNotification | ✅ | `notifications.ts` | Trigger Firestore onCreate → délègue à `pushHelper.ts` |
+| pushHelper (sendPushToUser) | ✅ | `pushHelper.ts` | Envoi FCM partagé, nettoyage tokens invalides |
 | assignNotaireRole | ✅ | `notaire.ts` | Callable : valide code → rôle notaire |
 | certifyProperty | ✅ | `notaire.ts` | Callable : notaire certifie/rejette bien |
 | createAdmin | ✅ | `admin.ts` | Callable : admin crée nouveau compte admin |
@@ -231,8 +232,8 @@ CI/CD : ████████████████████████
 | Package | Version | Usage |
 |---|---|---|
 | `react` + `react-dom` | `^18.3.1` | Core React |
-| `firebase` | `^12.9.0` | Auth + Firestore + Storage + FCM |
-| `react-router-dom` | `^7.13.2` | Routing |
+| `firebase` | `^12.12.0` | Auth + Firestore + Storage + FCM |
+| `react-router-dom` | `^7.14.1` | Routing |
 | `zod` | `^4.3.6` | Validation |
 | `leaflet` + `react-leaflet` | `^1.9.4` + `^4.2.1` | Cartes |
 | `recharts` | `^3.7.0` | Graphiques |
@@ -243,9 +244,9 @@ CI/CD : ████████████████████████
 ### Développement
 | Package | Version | Usage |
 |---|---|---|
-| `vite` | `^5.4.2` | Bundler |
-| `typescript` | `^5.5.3` | TypeScript |
-| `vitest` | `^4.1.1` | Tests |
+| `vite` | `^5.4.21` | Bundler |
+| `typescript` | `^5.9.3` | TypeScript |
+| `vitest` | `^4.1.4` | Tests |
 | `@testing-library/react` | `^16.3.2` | Tests React |
 | `eslint` | `^9.9.1` | Linter |
 | `tailwindcss` | `^3.4.1` | CSS |
