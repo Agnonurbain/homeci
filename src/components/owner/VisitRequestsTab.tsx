@@ -32,7 +32,7 @@ export default function VisitRequestsTab({
   const [viewingDossier, setViewingDossier] = useState<{ id: string, name: string } | null>(null);
 
   return (
-    <div>
+    <div className="animate-in fade-in duration-500">
       <div className="mb-7 text-center sm:text-left">
         <h1 className="font-bold mb-1"
           style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(1.5rem, 5vw, 2rem)', color: HColors.darkBrown }}>

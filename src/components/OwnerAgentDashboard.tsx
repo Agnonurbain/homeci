@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, Calendar, BarChart3, Bell, X } from 'lucide-react';
+import { Home, Calendar, BarChart3, Bell, X, Plus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { adService } from '../services/adService';
@@ -17,9 +17,13 @@ import AvailabilityManager from './AvailabilityManager';
 import ChatBox from './ChatBox';
 import SatisfactionModal from './SatisfactionModal';
 import TutorialButton from './TutorialButton';
+import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import Toast from './ui/Toast';
 import { useToast } from '../hooks/useToast';
+import StatBadge from './shared/StatBadge';
+import RealTimeIndicator from './shared/RealTimeIndicator';
+import MobilePaymentBanner from './shared/MobilePaymentBanner';
 
 // Hooks
 import { useOwnerProperties } from '../hooks/useOwnerProperties';
@@ -95,46 +99,84 @@ export default function OwnerAgentDashboard() {
     }
   };
 
+  const acceptedVisitsCount = visits.visits.filter(v => v.status === 'accepted').length;
+
   /* ── RENDER ──────────────────────────────────────────────────────────────── */
   return (
     <div className="min-h-screen" style={{ background: HColors.creamBg }}>
 
-      {/* ── Tab navigation ── */}
+      {/* ── Header ── */}
       <div className="sticky top-14 z-10"
         style={{
           background: 'rgba(27,94,58,0.97)', backdropFilter: 'blur(16px)',
           borderBottom: `1.5px solid ${HAlpha.gold25}`,
         }}>
+        <KenteLine />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2">
-            <nav className="flex space-x-1 homeci-tabs-scroll flex-1" style={{ minWidth: 0 }}>
-            {[
-              { id: 'properties', icon: Home, label: 'Biens', fullLabel: 'Mes Biens', count: props.stats.total },
-              { id: 'requests', icon: Calendar, label: 'Visites', fullLabel: 'Demandes', count: visits.pendingCount },
-              { id: 'stats', icon: BarChart3, label: 'Stats', fullLabel: 'Statistiques' },
-              { id: 'notifications', icon: Bell, label: 'Notif.', fullLabel: 'Notifications', count: notifs.unreadCount },
-            ].map(tab => (
-              <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
-                aria-label={tab.fullLabel}
-                aria-current={activeTab === tab.id ? 'page' : undefined}
-                className="py-4 px-2 sm:px-4 border-b-2 text-[11px] sm:text-sm font-medium transition-all whitespace-nowrap flex items-center gap-1.5 sm:gap-2"
-                style={activeTab === tab.id
-                  ? { borderColor: HColors.orangeCI, color: HColors.orangeDark, fontFamily: 'var(--font-nunito)' }
-                  : { borderColor: 'transparent', color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>
-                <tab.icon className="w-4 h-4 shrink-0" />
-                <span className="hidden sm:inline">{tab.fullLabel}</span>
-                <span className="sm:hidden">{tab.label}</span>
-                {tab.count !== undefined && tab.count > 0 && (
-                  <span className="px-1.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold"
-                    style={tab.id === 'notifications'
-                      ? { background: HColors.bordeaux, color: HColors.cream }
-                      : { background: HAlpha.orange20, color: HColors.orangeDark }}>
-                    {tab.count}
-                  </span>
-                )}
+          {/* Identity row */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-3 pt-3.5 pb-0">
+            <div className="flex items-center gap-3 text-center sm:text-left">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: HAlpha.gold10, border: `1.5px solid ${HAlpha.gold25}` }}>
+                <span style={{ fontSize: 22 }}>🏘️</span>
+              </div>
+              <div>
+                <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.35rem', fontWeight: 700, color: HColors.cream, lineHeight: 1 }}>
+                  Espace Propriétaire
+                </h1>
+                <p style={{ fontSize: 11, color: 'rgba(245,230,200,0.50)', fontWeight: 600, fontFamily: 'var(--font-nunito)' }}>
+                  {profile?.full_name || 'Propriétaire'} · Propriétaire
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap justify-center">
+              <StatBadge icon="🏠" label="Biens" value={props.stats.total} color={HColors.gold} onClick={() => navigate('/dashboard/properties')} />
+              <StatBadge icon="⏳" label="En attente" value={visits.pendingCount} color={HColors.orangeCI} onClick={() => navigate('/dashboard/requests')} />
+              {acceptedVisitsCount > 0 && (
+                <StatBadge icon="✅" label="Acceptées" value={acceptedVisitsCount} color={HColors.vertCI} onClick={() => navigate('/dashboard/requests')} />
+              )}
+              <RealTimeIndicator />
+              <button onClick={handleAddProperty}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-[10px] text-[11px] font-extrabold transition-all hover:opacity-90 active:scale-95"
+                style={{ background: 'linear-gradient(135deg,#FF6B00,#D4A017)', color: '#fff', boxShadow: '0 4px 14px rgba(255,107,0,0.3)' }}>
+                <Plus className="w-3.5 h-3.5" /> Ajouter un bien
               </button>
-            ))}
-          </nav>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex items-center gap-2 mt-2">
+            <nav className="flex gap-1 homeci-tabs-scroll flex-1" style={{ minWidth: 0 }}>
+              {[
+                { id: 'properties', icon: Home, label: 'Biens', fullLabel: 'Mes Biens', count: props.stats.total },
+                { id: 'requests', icon: Calendar, label: 'Visites', fullLabel: 'Demandes', count: visits.pendingCount },
+                { id: 'stats', icon: BarChart3, label: 'Stats', fullLabel: 'Statistiques' },
+                { id: 'notifications', icon: Bell, label: 'Notif.', fullLabel: 'Notifications', count: notifs.unreadCount },
+              ].map(tab => (
+                <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
+                  aria-label={tab.fullLabel}
+                  aria-current={activeTab === tab.id ? 'page' : undefined}
+                  className="py-3 px-3 sm:px-4 text-[11px] sm:text-[13px] font-medium transition-all whitespace-nowrap flex items-center gap-1.5 sm:gap-2"
+                  style={{
+                    borderBottom: `2.5px solid ${activeTab === tab.id ? HColors.orangeDark : 'transparent'}`,
+                    color: activeTab === tab.id ? HColors.orangeDark : 'rgba(245,230,200,0.50)',
+                    fontWeight: activeTab === tab.id ? 700 : 500,
+                    fontFamily: 'var(--font-nunito)',
+                  }}>
+                  <tab.icon className="w-4 h-4 shrink-0" />
+                  <span className="hidden sm:inline">{tab.fullLabel}</span>
+                  <span className="sm:hidden">{tab.label}</span>
+                  {tab.count !== undefined && tab.count > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold"
+                      style={tab.id === 'notifications'
+                        ? { background: HColors.bordeaux, color: '#fff' }
+                        : { background: HAlpha.orange20, color: HColors.orangeDark }}>
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </nav>
             <TutorialButton />
           </div>
         </div>
@@ -195,6 +237,8 @@ export default function OwnerAgentDashboard() {
             }}
           />
         )}
+
+        {(activeTab === 'properties' || activeTab === 'requests') && <MobilePaymentBanner />}
       </div>
 
       {/* ── Modals ──────────────────────────────────────────────────────────── */}

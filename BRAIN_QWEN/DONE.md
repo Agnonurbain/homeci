@@ -1,6 +1,6 @@
 # ✅ DONE.md — Ce qui a été fait
 
-> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-04-19 (code review — sécurité, refactor pushHelper, tests vitest 4 — 1157 tests).
+> **Mis à jour à chaque étape du projet HOMECI.** Dernière mise à jour : 2026-05-08 (design handoff — refonte visuelle 4 dashboards, 64 icônes, composants partagés, admin sidebar, notaire pipeline+sidebar, boosted field — 1153 tests).
 
 ---
 
@@ -356,4 +356,50 @@ Géographie : 24 villes majeures CI, ~300+ quartiers hors Abidjan
 
 ---
 
-*Dernière mise à jour : 2026-04-19 (code review — sécurité, refactor pushHelper, tests vitest 4 — 1157 tests)*
+## 🎨 Session design handoff (2026-05-08)
+
+| # | Tâche | Détails |
+|---|---|---|
+| 206 | **Design handoff appliqué** | `design_handoff_dashboards/` : 4 prototypes HTML + 64 icônes SVG + spécifications design complètes. |
+| 207 | **KenteLine refonte** | `repeating-linear-gradient(90deg, ...)` 56px cycle (orange/vert/blanc/gold), height par défaut 3. |
+| 208 | **HomeciIcons (64 SVG)** | `src/components/icons/HomeciIcons.tsx` — 64 composants SVG React (stroke 1.6, lineCap round, viewBox 24×24). |
+| 209 | **Composants partagés (5)** | `StatBadge` (badge KPI clickable), `KPICard` (carte stat), `EmptyState` (état vide), `MobilePaymentBanner` (paiement mobile), `RealTimeIndicator` (indicateur temps réel gold). |
+| 210 | **Admin sidebar** | `AdminSidebar.tsx` — sidebar collapsible 210/60px, fond `#071F0F`, 16 nav items, badges urgents. `AdminTabs.tsx` supprimé (dead code). |
+| 211 | **Owner dashboard header** | KenteLine + avatar + nom + rôle + 3 StatBadges + RealTimeIndicator + CTA "Ajouter un bien". |
+| 212 | **Tenant dashboard header** | Sticky, tabs avec 2.5px gold underline + count badges (bordeaux pour unread), MobilePaymentBanner. |
+| 213 | **Notaire dashboard header** | KenteLine + avatar 🏛 + titre "Espace Notaire" + nom + ville + 3 StatBadges + RealTimeIndicator. |
+| 214 | **Notaire PipelineBar** | `PipelineBar.tsx` — 4 stages visuels (Disponibles/En cours/Prêts/Certifiés) avec icônes, counts, labels, flèches. |
+| 215 | **Notaire 2-column layout** | `NotaireSidebar.tsx` — 320px droite : KPI grid 2x2 (certifiés/taux/attente/urgents), pipeline progress bars, activity timeline 5 items, delegation CTA gradient vert. |
+| 216 | **NotairePropertyCard refonte** | `borderRadius: 18`, top bar `height: 3`, hover `translate-y-0.5` + `shadow-lg`. |
+| 217 | **PropertyStats 5 colonnes** | Total/Vues/Visites/Publiés/Vérifiés (était 4 colonnes). Shadow et border corrigés. Tests mis à jour (3 tests). |
+| 218 | **Property.boosted field** | Ajout `boosted?: boolean` dans `Property` interface. `useOwnerProperties` fetch `adService.getBoostedPropertyIds()` et merge le flag. `PropertyRow` affiche badge "⚡ BOOST" inline. |
+| 219 | **Tenant VisitsTab enrichi** | Header "Mes Visites" + count, 3 filter pills (Toutes/En attente/Confirmées), bouton "Annuler" pour pending/counter_proposed. `onCancel` prop ajouté. |
+| 220 | **Tenant notification colors** | `NOTIF_COLORS` map (8 types → couleurs), unread dot + background tint par type. |
+| 221 | **PropertyCard tokens** | Shadow `rgba(26,14,0,0.06)`, border `HAlpha.gold15` (normalisé). |
+| 222 | **Animations fade-in** | `animate-in fade-in duration-500` sur SearchTab, FavoritesTab, VisitsTab, StatsTab, VisitRequestsTab. |
+| 223 | **RealTimeIndicator fix** | Corrigé de green (#009E49) à gold (#D4A017) pour bg/border/text. |
+| 224 | **HColors.sidebar** | Ajouté `sidebar: '#071F0F'` dans `homeci-tokens.ts`. |
+| 225 | **Tests mis à jour** | PropertyStats (3), prelaunch (PipelineBar/NotaireSidebar), OwnerAgentDashboard.visit (adService mock getBoostedPropertyIds). |
+
+---
+
+## 📊 Résumé
+
+```
+Total items complétés : ~240
+
+Frontend : ~100 composants, 16 hooks, 17 services, 8 utils, 64 custom SVG icons
+Tests : 108 fichiers de test (1153 tests, 1149 passent, 3 pre-existing failures, 0 erreur TS)
+Design System : Tokens centralisés, 5 composants partagés, KenteLine gradient, PipelineBar, AdminSidebar, NotaireSidebar
+Firestore : 10+ collections + daily_stats, 230+ lignes de règles, 7 index
+Storage : 7 paths + chat_attachments, règles de sécurité
+Cloud Functions : 10 modules modulaires (europe-west1, nodejs20)
+Sécurité : Portail admin 2 étapes, anti brute force, session timeout, headers Vercel, Firestore rules renforcées
+PWA : Service Worker avec cache strategies + FCM push + deep links chat
+CI/CD : Node 24, .nvmrc, typecheck ajouté, Husky pre-commit, branche develop, v1.0.0
+TypeScript : 0 erreur (typecheck passe clean)
+```
+
+---
+
+*Dernière mise à jour : 2026-05-08 (design handoff — refonte visuelle 4 dashboards, 64 icônes, composants partagés, admin sidebar, notaire pipeline+sidebar, boosted field — 1153 tests)*

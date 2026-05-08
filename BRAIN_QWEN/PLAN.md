@@ -1,7 +1,7 @@
 # 📋 PLAN — HOMECI: Plateforme Immobilière Certifiée Côte d'Ivoire
 
 > **Vision** : Un marketplace immobilier de confiance en Côte d'Ivoire — biens vérifiés par des notaires agréés, visites à 1000 FCFA, certification notariale.
-> **Dernière mise à jour** : 2026-04-19 — Projet à ~99%
+> **Dernière mise à jour** : 2026-05-08 — Projet à ~99% (design handoff appliqué)
 
 ---
 
@@ -89,7 +89,7 @@
 | AdminLogin (email/password) | ✅ |
 | AdminAccessCode (code dynamique 5 min) | ✅ |
 | AdminSessionManager (timeout 30 min) | ✅ |
-| AdminStats, AdminTabs, AdminSections | ✅ |
+| AdminStats, AdminSidebar, AdminSections | ✅ |
 | AdminManagement (gestion comptes admins) | ✅ |
 | AdminLoginHistory (50 dernières tentatives) | ✅ |
 
@@ -148,10 +148,11 @@
 
 | Composant | Description | Statut |
 |---|---|---|
-| **NotaireDashboard** | Dashboard principal | ✅ Fait |
+| **NotaireDashboard** | Dashboard principal (2-column layout) | ✅ Fait |
 | **NotaireTabs** | Navigation entre onglets | ✅ Fait |
-| **NotaireStats** | Statistiques notaire | ✅ Fait |
-| **NotairePropertyCard** | Carte bien pour notaire | ✅ Fait |
+| **PipelineBar** | Pipeline visuel 4 étapes dans header | ✅ Fait |
+| **NotaireSidebar** | Sidebar droite 320px (KPIs, pipeline, timeline, delegation) | ✅ Fait |
+| **NotairePropertyCard** | Carte bien pour notaire (refonte) | ✅ Fait |
 | **ValidationSection** | Validation/certification de biens | ✅ Fait |
 | **NotaireActionModals** | Approuver/refuser/certifier | ✅ Fait |
 
@@ -179,9 +180,15 @@
 | **PrivacyPolicyModal** | Politique de confidentialité | ✅ |
 | **LocationPicker** | Sélection localisation avec carte Leaflet | ✅ |
 | **MapDisplay** | Affichage carte Leaflet | ✅ |
-| **KenteLine** | Élément décoratif kente | ✅ |
+| **KenteLine** | Élément décoratif kente (repeating-linear-gradient) | ✅ |
 | **HomeCIEmblem** | Logo/emblème HOMECI | ✅ |
 | **ScrollTimePicker** | Sélecteur d'heure par scroll | ✅ |
+| **HomeciIcons** | 64 icônes SVG custom | ✅ |
+| **StatBadge** | Badge KPI clickable (partagé) | ✅ |
+| **KPICard** | Carte stat avec icône (partagé) | ✅ |
+| **EmptyState** | État vide réutilisable (partagé) | ✅ |
+| **MobilePaymentBanner** | Bannière paiement mobile (partagé) | ✅ |
+| **RealTimeIndicator** | Indicateur temps réel gold (partagé) | ✅ |
 
 ---
 
@@ -395,6 +402,7 @@ Global : ███████████████████████�
 
 | Date | Changement |
 |---|---|
+| 2026-05-08 | **Design handoff** — Refonte visuelle 4 dashboards d'après prototypes HTML. 64 icônes custom HomeciIcons, 5 composants partagés, admin sidebar layout (AdminTabs supprimé), notaire PipelineBar + 2-column sidebar (KPIs/timeline/delegation), owner BOOST badge + `Property.boosted` field, tenant VisitsTab enrichi (header/filtres/annuler) + notifications per-type colors, PropertyCard tokens normalisés, KenteLine gradient. 24 fichiers modifiés, 108 fichiers test, 1153 tests. |
 | 2026-04-19 | **Code review** — Sécurité Firestore renforcée (notaire_codes, admin_logs), refactor pushHelper.ts (déduplication FCM), fix mode dev hardcodé, .nvmrc Node 24, tests vitest 4 (@vitest-environment node, guard window), deps mises à jour. 1157 tests, 109 fichiers. |
 | 2026-04-13 | **Tâches basses priorités + CI fix** — CHANGELOG.md, export CSV admin, cleanup Storage CF, daily stats CF, analytics admin (6 graphiques Recharts), stats notaire (4 graphiques Recharts), comparaison biens, géographie étendue 24 villes, CI Node 24. 1118 tests (+120), typecheck clean, CI verte. |
 | 2026-04-13 | **Tests composants admin + notaire + UI** — AdminAuditLogs (11), AdminNotairesTab (15), NotaireStats (4), NotaireTabs (4), NotaireActionModals (20), NotairePropertyCard (20), ValidationSection (15), Skeletons (14), HomeCIEmblem (5), SEO (3). 105 fichiers, 1109 tests. |

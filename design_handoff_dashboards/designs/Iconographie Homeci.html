@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Homeci · Système d'icônes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --font-cormorant:'Cormorant',Georgia,serif;
+  --font-nunito:'Nunito',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --gold:#D4A017;--gold-soft:rgba(212,160,23,0.10);--gold-bd:rgba(212,160,23,0.20);
+  --orange:#FF6B00;--orange-dark:#AF4B00;
+  --vert:#009E49;--bordeaux:#8B1D1D;--navy:#1A3A6B;
+  --cream:#FFF8ED;--cream-card:#FFFFFF;
+  --brown:#8B6A30;--bois:#5C3D1E;--dark:#1A0E00;
+  --forest:#1B5E3A;--night:#0A3D1F;
+}
+html,body{height:100%}
+body{background:var(--cream);font-family:var(--font-nunito);color:var(--dark)}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:rgba(212,160,23,0.3);border-radius:3px}
+input:focus{outline:none}
+button{font-family:inherit;cursor:pointer;border:none}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeIn .3s ease both}
+@keyframes pop{0%{transform:scale(.9)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
+.pop{animation:pop .25s ease}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useMemo } = React;
+
+/* ═══════════════════════════════════════════════════════════════════
+   HOMECI ICON SYSTEM
+   Style: 24x24 viewBox · stroke 1.6 · round caps · gold accent
+   Each icon: ({size=24, color='currentColor', accent='#D4A017'})
+   ═══════════════════════════════════════════════════════════════════ */
+const I = {};
+
+/* ══ NAVIGATION (8) ══ */
+I.home=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>;
+I.search=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.35-4.35"/><circle cx="10.5" cy="10.5" r="2" fill={accent} stroke="none" opacity="0.4"/></svg>;
+I.heart=({size=24,color='currentColor',filled=false,accent='#FF6B00'})=><svg width={size} height={size} viewBox="0 0 24 24" fill={filled?accent:'none'} stroke={filled?accent:color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7.5-4.5-9.5-9.5C1 7.5 4 4 7.5 4c2 0 3.5 1 4.5 2.5C13 5 14.5 4 16.5 4 20 4 23 7.5 21.5 11.5 19.5 16.5 12 21 12 21z"/></svg>;
+I.calendar=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17"/><path d="M8 3v4M16 3v4"/><circle cx="8.5" cy="14" r="1.2" fill={accent} stroke="none"/><circle cx="12" cy="14" r="1.2" fill={color} stroke="none" opacity="0.3"/><circle cx="15.5" cy="14" r="1.2" fill={color} stroke="none" opacity="0.3"/></svg>;
+I.bell=({size=24,color='currentColor',accent='#FF6B00'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 17V11.5a6 6 0 1 1 12 0V17l1.5 2H4.5z"/><path d="M10 21a2 2 0 0 0 4 0"/><circle cx="18" cy="6.5" r="2.2" fill={accent} stroke="none"/></svg>;
+I.user=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/></svg>;
+I.dashboard=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3.5" y="3.5" width="7" height="9" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="5" rx="1.5" fill={accent} fillOpacity="0.15" stroke={accent}/><rect x="13.5" y="11.5" width="7" height="9" rx="1.5"/><rect x="3.5" y="15.5" width="7" height="5" rx="1.5"/></svg>;
+I.menu=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round"><path d="M4 7h16M4 12h12M4 17h16"/></svg>;
+
+/* ══ PROPERTY TYPES (8) ══ */
+I.villa=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12L12 4l10 8"/><path d="M4 11v9h6v-5h4v5h6v-9"/><path d="M9 9h6" stroke={accent} strokeWidth="1.8"/><circle cx="17" cy="6" r="0.8" fill={accent} stroke="none"/></svg>;
+I.appartement=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/><path d="M11 21v-3h2v3" fill={accent} fillOpacity="0.25"/></svg>;
+I.terrain=({size=24,color='currentColor',accent='#009E49'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 18h18"/><path d="M5 18l2-7 5 4 4-9 5 12" stroke={accent}/><circle cx="7" cy="11" r="0.8" fill={accent} stroke="none"/><circle cx="16" cy="6" r="0.8" fill={accent} stroke="none"/></svg>;
+I.studio=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="6" width="18" height="14" rx="1.5"/><path d="M3 11h18"/><path d="M7 6V4M17 6V4"/></svg>;
+I.duplex=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 13L12 6l9 7"/><path d="M5 12v8h14v-8"/><path d="M5 16h14" stroke={accent}/><path d="M11 20v-3h2v3"/></svg>;
+I.commercial=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8L4.5 4.5h15L21 8"/><path d="M5 8v12h14V8"/><path d="M9 14h6v6H9z"/><circle cx="12" cy="11" r="0.8" fill={accent} stroke="none"/></svg>;
+I.bureau=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M3 9h18M9 9v11M15 9v11"/></svg>;
+I.cour=({size=24,color='currentColor',accent='#009E49'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="6" width="18" height="15" rx="1.5"/><path d="M3 12h18"/><circle cx="8" cy="16.5" r="1.5" fill={accent} fillOpacity="0.3" stroke={accent}/><circle cx="16" cy="16.5" r="1.5" fill={accent} fillOpacity="0.3" stroke={accent}/></svg>;
+
+/* ══ STATUS (10) ══ */
+I.verified=({size=24,color='currentColor',accent='#009E49'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2.5l2.5 1.7 3-.4 1.5 2.6 2.5 1.6L21 11l1 3-2 2.4 0 3-3 1-1.5 2.6-3-.4L12 24l-2.5-1.4-3 .4L5 20.4l-3-1 0-3L0 14l1.5-3-1.5-3 2.5-1.6L4 4l3 .4L9 2.7z"/><path d="m9 12 2 2 4-4" stroke={accent} strokeWidth="2"/></svg>;
+I.notarise=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="10" r="6.5" fill={accent} fillOpacity="0.12"/><path d="M9 9.5l2 2 4-4" stroke={accent} strokeWidth="2"/><path d="M5 19l1.5-3M19 19l-1.5-3M12 16.5V21"/><path d="M6 21h12"/></svg>;
+I.pending=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke={accent} strokeWidth="1.8"/></svg>;
+I.check=({size=24,color='#009E49'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" fill="#009E49" fillOpacity="0.12"/><path d="m8 12.5 2.5 2.5L16 9.5"/></svg>;
+I.cross=({size=24,color='#8B1D1D'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" fill="#8B1D1D" fillOpacity="0.12"/><path d="m9 9 6 6M15 9l-6 6"/></svg>;
+I.warning=({size=24,color='#FF6B00'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3 2.5 20h19z" fill="#FF6B00" fillOpacity="0.12"/><path d="M12 9.5v4.5"/><circle cx="12" cy="17" r="0.7" fill={color} stroke="none"/></svg>;
+I.boost=({size=24,color='currentColor',accent='#FF6B00'})=><svg width={size} height={size} viewBox="0 0 24 24" fill={accent} fillOpacity="0.18" stroke={accent} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>;
+I.shield=({size=24,color='currentColor',accent='#1A3A6B'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5z" fill={accent} fillOpacity="0.1"/><path d="m9 12 2 2 4-4" stroke={accent} strokeWidth="2"/></svg>;
+I.crown=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8 3 9h12l3-9-5 4-4-7-4 7z" fill={accent} fillOpacity="0.18"/><path d="M5 19h14"/><circle cx="3" cy="8" r="1" fill={accent} stroke="none"/><circle cx="21" cy="8" r="1" fill={accent} stroke="none"/><circle cx="12" cy="6" r="1" fill={accent} stroke="none"/></svg>;
+I.flag=({size=24,color='currentColor',accent='#FF6B00'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 21V4"/><path d="M5 4h12l-2 3.5 2 3.5H5" fill={accent} fillOpacity="0.18"/></svg>;
+
+/* ══ ACTIONS (10) ══ */
+I.edit=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M16 3.5 20.5 8 8 20.5H3.5V16z"/><path d="m13.5 6 4.5 4.5" stroke={accent} strokeWidth="1.8"/></svg>;
+I.trash=({size=24,color='currentColor',accent='#8B1D1D'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7v13a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7" fill={accent} fillOpacity="0.08"/><path d="M10 11v6M14 11v6"/></svg>;
+I.eye=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7"/><circle cx="12" cy="12" r="3"/></svg>;
+I.share=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3" fill={accent} fillOpacity="0.18"/><circle cx="18" cy="18" r="3" fill={accent} fillOpacity="0.18"/><path d="m8.5 11 7-3.5M8.5 13l7 3.5"/></svg>;
+I.download=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v12"/><path d="m6.5 11 5.5 5.5L17.5 11"/><path d="M4 19h16"/></svg>;
+I.upload=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V4"/><path d="m6.5 9 5.5-5.5L17.5 9"/><path d="M4 19h16"/></svg>;
+I.plus=({size=24,color='currentColor',accent='#FF6B00'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="9" fill={accent} fillOpacity="0.12" stroke={accent}/><path d="M12 8v8M8 12h8" stroke={accent}/></svg>;
+I.filter=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>;
+I.sort=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M7 4v16M3 8l4-4 4 4"/><path d="M17 20V4M13 16l4 4 4-4"/></svg>;
+I.refresh=({size=24,color='currentColor',accent='#009E49'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 16-5.5L21 4v6h-6"/><path d="M21 12a9 9 0 0 1-16 5.5L3 20v-6h6" stroke={accent}/></svg>;
+
+/* ══ COMMUNICATION (6) ══ */
+I.chat=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5.5C3 4.7 3.7 4 4.5 4h15c.8 0 1.5.7 1.5 1.5v10c0 .8-.7 1.5-1.5 1.5H10l-4 4v-4H4.5C3.7 17 3 16.3 3 15.5z" fill={accent} fillOpacity="0.08"/><circle cx="8.5" cy="10.5" r="1" fill={color} stroke="none"/><circle cx="12" cy="10.5" r="1" fill={color} stroke="none"/><circle cx="15.5" cy="10.5" r="1" fill={color} stroke="none"/></svg>;
+I.phone=({size=24,color='currentColor',accent='#009E49'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 4.5c0-.8.7-1.5 1.5-1.5h2.3c.6 0 1.2.4 1.4 1l1 3c.2.6 0 1.2-.5 1.6l-1.4 1c1.5 3 3.5 5 6.5 6.5l1-1.4c.4-.5 1-.7 1.6-.5l3 1c.6.2 1 .8 1 1.4v2.3c0 .8-.7 1.5-1.5 1.5C8.6 21 3 15.4 3 8.5z"/><circle cx="17" cy="7" r="2.5" fill={accent} stroke="none"/></svg>;
+I.mail=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6" stroke={accent}/></svg>;
+I.video=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/></svg>;
+I.send=({size=24,color='currentColor',accent='#FF6B00'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m3 12 18-9-6 18-3-7z" fill={accent} fillOpacity="0.18"/><path d="m3 12 9 3" stroke={accent}/></svg>;
+I.megaphone=({size=24,color='currentColor',accent='#FF6B00'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 10v4l13 5V5z" fill={accent} fillOpacity="0.15"/><path d="M16 8.5a3.5 3.5 0 0 1 0 7"/><path d="M8 14v5a1 1 0 0 0 1 1h2v-4"/></svg>;
+
+/* ══ DOCUMENTS (8) ══ */
+I.document=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3h8l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><path d="M8 12h8M8 16h6"/></svg>;
+I.signed=({size=24,color='currentColor',accent='#009E49'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3h8l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" fill={accent} fillOpacity="0.06"/><path d="M14 3v4h4"/><path d="m8 14 2.5 2.5L17 10" stroke={accent} strokeWidth="2"/></svg>;
+I.dossier=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6c0-.8.7-1.5 1.5-1.5h5l2 2h7C19.3 6.5 20 7.2 20 8v10.5c0 .8-.7 1.5-1.5 1.5h-14c-.8 0-1.5-.7-1.5-1.5z" fill={accent} fillOpacity="0.1"/><path d="M3 10h17"/></svg>;
+I.receipt=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 3v18l3-2 3 2 3-2 3 2 3-2V3z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>;
+I.contract=({size=24,color='currentColor',accent='#1A3A6B'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 3h12l3 3v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M17 3v3h3"/><path d="M8 11h8M8 14h8M8 17h5"/><circle cx="17" cy="17.5" r="2.5" fill={accent} fillOpacity="0.2" stroke={accent}/></svg>;
+I.idCard=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11.5" r="2.5" fill={accent} fillOpacity="0.18" stroke={accent}/><path d="M5.5 17c.5-1.5 2-2.5 3.5-2.5s3 1 3.5 2.5"/><path d="M14.5 10h4M14.5 13h3"/></svg>;
+I.stamp=({size=24,color='currentColor',accent='#8B1D1D'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="9" r="5" fill={accent} fillOpacity="0.18" stroke={accent}/><path d="M9 9h6M12 6.5v5" stroke={accent}/><path d="M5 17h14M5 21h14" /></svg>;
+I.book=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4.5C4 3.7 4.7 3 5.5 3H19a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H5.5C4.7 20 4 19.3 4 18.5z" fill={accent} fillOpacity="0.06"/><path d="M4 18.5c0-.8.7-1.5 1.5-1.5H20"/></svg>;
+
+/* ══ REAL ESTATE (8) ══ */
+I.bed=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 18V8h11a4 4 0 0 1 4 4v6"/><path d="M3 14h18M3 18h18M21 18v-6"/><circle cx="7" cy="11" r="1.5"/></svg>;
+I.bath=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h18v3a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 12V6a2 2 0 0 1 4 0v1"/><path d="M5 19l-1 2M19 19l1 2"/></svg>;
+I.area=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="1" stroke={accent} strokeDasharray="3 2"/><path d="m7 7 3 3M14 14l3 3M17 7l-3 3M7 17l3-3"/></svg>;
+I.parking=({size=24,color='currentColor',accent='#1A3A6B'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" fill={accent} fillOpacity="0.1" stroke={accent}/><path d="M10 17V8h3a3 3 0 0 1 0 6h-3" stroke={accent} strokeWidth="2"/></svg>;
+I.garden=({size=24,color='currentColor',accent='#009E49'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21V11"/><path d="M12 11C9 11 7 8.5 7 6c2.5 0 5 2 5 5z" fill={accent} fillOpacity="0.18" stroke={accent}/><path d="M12 13c3 0 5-2.5 5-5-2.5 0-5 2-5 5z" fill={accent} fillOpacity="0.18" stroke={accent}/><path d="M5 21h14"/></svg>;
+I.key=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="13" r="4.5" fill={accent} fillOpacity="0.18" stroke={accent}/><path d="m12 13 8-8M16 9l2 2M19 6l2 2"/></svg>;
+I.location=({size=24,color='currentColor',accent='#FF6B00'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s7-7 7-13a7 7 0 1 0-14 0c0 6 7 13 7 13z" fill={accent} fillOpacity="0.18"/><circle cx="12" cy="9" r="2.5" fill="white"/></svg>;
+I.elevator=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M12 3v18"/><path d="m8 9 1.5-2L11 9M8 15l1.5 2L11 15"/><path d="m16 9 1.5-2L19 9M13 15l1.5 2L16 15"/></svg>;
+
+/* ══ BRAND-SPECIFIC HOMECI (6) ══ */
+I.elephant=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M4 16c0-5 3.5-9 8-9 4 0 6 2 7 5 1 .5 2 1.5 2 3 0 1-1 2-2 2h-1v3h-3v-3h-7v3H5v-4z" fill={accent} fillOpacity="0.18"/><circle cx="9" cy="11" r="0.8" fill={color} stroke="none"/><path d="M16 13c0 1.5 1 3.5 1 5"/></svg>;
+I.kente=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="3" height="12" fill="#FF6B00"/><rect x="6" y="6" width="3" height="12" fill="#009E49"/><rect x="9" y="6" width="3" height="12" fill="#FFFFFF" stroke={color} strokeWidth="1"/><rect x="12" y="6" width="3" height="12" fill="#D4A017"/><rect x="15" y="6" width="3" height="12" fill="#FF6B00"/><rect x="18" y="6" width="3" height="12" fill="#009E49"/></svg>;
+I.flagCI=({size=24,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.4"><rect x="3" y="6" width="6" height="12" fill="#FF6B00"/><rect x="9" y="6" width="6" height="12" fill="#FFFFFF" stroke={color}/><rect x="15" y="6" width="6" height="12" fill="#009E49"/><rect x="3" y="6" width="18" height="12" stroke={color} fill="none"/></svg>;
+I.mobileMoney=({size=24,color='currentColor',accent='#FF6B00'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="3" width="12" height="18" rx="2" fill={accent} fillOpacity="0.1"/><path d="M10 17h4"/><circle cx="12" cy="11" r="2.5" fill={accent} fillOpacity="0.3" stroke={accent}/><text x="12" y="12.5" textAnchor="middle" fontSize="3.5" fontWeight="900" fill={accent}>FCFA</text></svg>;
+I.cocoa=({size=24,color='currentColor',accent='#5C3D1E'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="12" rx="5" ry="8" fill={accent} fillOpacity="0.15" stroke={accent} transform="rotate(20 12 12)"/><path d="M9 7c1 1.5 2.5 6 4 9M11 6c1 1.5 2.5 6 4 9" stroke={accent}/></svg>;
+I.adinkra=({size=24,color='currentColor',accent='#D4A017'})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" stroke={accent}/><path d="M12 4 v16M4 12 h16" stroke={accent}/><circle cx="12" cy="12" r="3.5" fill={accent} fillOpacity="0.2" stroke={accent}/><path d="m8 8 8 8M16 8l-8 8" stroke={accent} strokeWidth="1"/></svg>;
+
+/* ══ DATA ══ */
+const CATEGORIES=[
+  {id:'nav',label:'Navigation',color:'#1A3A6B',icons:['home','search','heart','calendar','bell','user','dashboard','menu']},
+  {id:'props',label:'Types de Bien',color:'#D4A017',icons:['villa','appartement','terrain','studio','duplex','commercial','bureau','cour']},
+  {id:'status',label:'Statuts',color:'#009E49',icons:['verified','notarise','pending','check','cross','warning','boost','shield','crown','flag']},
+  {id:'actions',label:'Actions',color:'#FF6B00',icons:['edit','trash','eye','share','download','upload','plus','filter','sort','refresh']},
+  {id:'comm',label:'Communication',color:'#1A3A6B',icons:['chat','phone','mail','video','send','megaphone']},
+  {id:'docs',label:'Documents',color:'#8B6A30',icons:['document','signed','dossier','receipt','contract','idCard','stamp','book']},
+  {id:'estate',label:'Immobilier',color:'#5C3D1E',icons:['bed','bath','area','parking','garden','key','location','elevator']},
+  {id:'brand',label:'Brand Homeci',color:'#8B1D1D',icons:['elephant','kente','flagCI','mobileMoney','cocoa','adinkra']},
+];
+
+const ICON_LABELS={
+  home:'Accueil',search:'Recherche',heart:'Favoris',calendar:'Calendrier',bell:'Notifications',user:'Utilisateur',dashboard:'Dashboard',menu:'Menu',
+  villa:'Villa',appartement:'Appartement',terrain:'Terrain',studio:'Studio',duplex:'Duplex',commercial:'Commercial',bureau:'Bureau',cour:'Cour commune',
+  verified:'Vérifié',notarise:'Certifié notaire',pending:'En attente',check:'Validé',cross:'Refusé',warning:'Alerte',boost:'Boost',shield:'Sécurité',crown:'Admin',flag:'Drapeau',
+  edit:'Éditer',trash:'Supprimer',eye:'Voir',share:'Partager',download:'Télécharger',upload:'Importer',plus:'Ajouter',filter:'Filtrer',sort:'Trier',refresh:'Rafraîchir',
+  chat:'Messagerie',phone:'Téléphone',mail:'E-mail',video:'Vidéo',send:'Envoyer',megaphone:'Annonce',
+  document:'Document',signed:'Signé',dossier:'Dossier',receipt:'Reçu',contract:'Contrat',idCard:'Pièce d\'identité',stamp:'Cachet',book:'Registre',
+  bed:'Chambres',bath:'Salles de bain',area:'Surface',parking:'Parking',garden:'Jardin',key:'Clé',location:'Localisation',elevator:'Ascenseur',
+  elephant:'Éléphant 🇨🇮',kente:'Bandes Kente',flagCI:'Drapeau CI',mobileMoney:'Mobile Money',cocoa:'Cacao',adinkra:'Adinkra',
+};
+
+/* ══ ICON CARD ══ */
+function IconCard({name,Icon,bgMode,onCopy,copied}){
+  const [hover,setHover]=useState(false);
+  const isDark=bgMode==='dark';
+  return(
+    <div onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} onClick={()=>onCopy(name)} style={{
+      borderRadius:14,padding:'18px 14px 14px',cursor:'pointer',position:'relative',
+      background:isDark?'#0A3D1F':'#FFFFFF',
+      border:`1px solid ${isDark?'rgba(212,160,23,0.20)':'rgba(212,160,23,0.15)'}`,
+      transition:'all .2s ease',transform:hover?'translateY(-2px)':'',boxShadow:hover?'0 8px 24px rgba(26,14,0,0.08)':'0 1px 3px rgba(26,14,0,0.04)',
+    }}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:48,marginBottom:8,color:isDark?'#F5E6C8':'#1A0E00'}} className={copied===name?'pop':''}>
+        <Icon size={32}/>
+      </div>
+      <div style={{fontFamily:'var(--font-mono)',fontSize:9.5,textAlign:'center',color:isDark?'rgba(245,230,200,0.6)':'#8B6A30',fontWeight:600,letterSpacing:'0.02em',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{name}</div>
+      <div style={{fontSize:9,textAlign:'center',color:isDark?'rgba(245,230,200,0.4)':'rgba(139,106,48,0.6)',marginTop:2,fontStyle:'italic'}}>{ICON_LABELS[name]||name}</div>
+      {copied===name&&(
+        <div style={{position:'absolute',top:8,right:8,padding:'2px 7px',borderRadius:6,background:'#009E49',color:'#fff',fontSize:8,fontWeight:800,letterSpacing:'0.04em'}}>COPIÉ</div>
+      )}
+    </div>
+  );
+}
+
+/* ══ CATEGORY SECTION ══ */
+function CategorySection({cat,query,bgMode,onCopy,copied}){
+  const filtered=cat.icons.filter(n=>!query||n.toLowerCase().includes(query.toLowerCase())||(ICON_LABELS[n]||'').toLowerCase().includes(query.toLowerCase()));
+  if(filtered.length===0)return null;
+
+  return(
+    <section className="fade-in" style={{marginBottom:36}}>
+      <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:18}}>
+        <div style={{width:34,height:34,borderRadius:9,background:`${cat.color}18`,border:`1.2px solid ${cat.color}40`,display:'flex',alignItems:'center',justifyContent:'center',color:cat.color,fontWeight:900,fontSize:15,fontFamily:'var(--font-cormorant)'}}>{cat.label[0]}</div>
+        <div>
+          <h2 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.6rem',fontWeight:700,color:'#1A0E00',lineHeight:1}}>{cat.label}</h2>
+          <p style={{fontSize:11,color:'#8B6A30',fontWeight:600,marginTop:2,letterSpacing:'0.04em',textTransform:'uppercase',opacity:.7}}>{filtered.length} icône{filtered.length>1?'s':''}</p>
+        </div>
+        <div style={{flex:1,height:1,background:`linear-gradient(90deg,${cat.color}30,transparent)`,marginLeft:8}}/>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(120px,1fr))',gap:10}}>
+        {filtered.map(name=>{
+          const Icon=I[name];if(!Icon)return null;
+          return <IconCard key={name} name={name} Icon={Icon} bgMode={bgMode} onCopy={onCopy} copied={copied}/>;
+        })}
+      </div>
+    </section>
+  );
+}
+
+/* ══ HEADER + USAGE ══ */
+function PageHeader({query,setQuery,bgMode,setBgMode,total}){
+  return(
+    <header style={{position:'sticky',top:0,zIndex:30,background:'rgba(255,248,237,0.94)',backdropFilter:'blur(18px)',borderBottom:'1.5px solid rgba(212,160,23,0.15)'}}>
+      {/* Kente strip */}
+      <div style={{height:3,background:'repeating-linear-gradient(90deg,#FF6B00 0,#FF6B00 14px,#009E49 14px,#009E49 28px,#FFF 28px,#FFF 42px,#D4A017 42px,#D4A017 56px)'}}/>
+      <div style={{maxWidth:1280,margin:'0 auto',padding:'18px 32px'}}>
+        <div style={{display:'flex',alignItems:'center',gap:18,flexWrap:'wrap'}}>
+          {/* Logo */}
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <div style={{width:42,height:42,borderRadius:11,background:'linear-gradient(135deg,#1B5E3A,#0A3D1F)',border:'1.5px solid rgba(212,160,23,0.4)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <I.adinkra size={24} color="#F5E6C8" accent="#D4A017"/>
+            </div>
+            <div>
+              <h1 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.55rem',fontWeight:700,color:'#1A0E00',lineHeight:1}}>Système d'icônes Homeci</h1>
+              <p style={{fontSize:11,color:'#8B6A30',fontWeight:600,marginTop:2,letterSpacing:'0.04em',textTransform:'uppercase'}}>{total} icônes · 8 catégories · Stroke 1.6 · 24×24</p>
+            </div>
+          </div>
+
+          <div style={{flex:1,minWidth:240,position:'relative'}}>
+            <span style={{position:'absolute',left:14,top:'50%',transform:'translateY(-50%)',color:'#8B6A30',opacity:.6}}><I.search size={16}/></span>
+            <input type="text" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Rechercher une icône (ex: villa, notaire, kente)" style={{width:'100%',padding:'11px 14px 11px 38px',borderRadius:11,fontSize:13,fontFamily:'var(--font-nunito)',border:'1.5px solid rgba(212,160,23,0.20)',background:'#FFF',color:'#1A0E00'}}/>
+          </div>
+
+          {/* Bg toggle */}
+          <div style={{display:'flex',background:'rgba(212,160,23,0.08)',borderRadius:10,padding:3,border:'1px solid rgba(212,160,23,0.18)'}}>
+            {[{id:'light',l:'☀️ Clair'},{id:'dark',l:'🌙 Sombre'}].map(m=>(
+              <button key={m.id} onClick={()=>setBgMode(m.id)} style={{padding:'7px 14px',borderRadius:8,fontSize:11,fontWeight:700,background:bgMode===m.id?'#FFF':'transparent',color:bgMode===m.id?'#1A0E00':'#8B6A30',transition:'all .15s'}}>{m.l}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+/* ══ APP ══ */
+function App(){
+  const [query,setQuery]=useState('');
+  const [bgMode,setBgMode]=useState('light');
+  const [copied,setCopied]=useState(null);
+
+  const total=useMemo(()=>CATEGORIES.reduce((s,c)=>s+c.icons.length,0),[]);
+
+  const handleCopy=(name)=>{
+    navigator.clipboard?.writeText(`<I.${name} size={24} />`);
+    setCopied(name);
+    setTimeout(()=>setCopied(null),1500);
+  };
+
+  return(
+    <>
+      <PageHeader query={query} setQuery={setQuery} bgMode={bgMode} setBgMode={setBgMode} total={total}/>
+
+      <main style={{maxWidth:1280,margin:'0 auto',padding:'32px'}}>
+        {/* Intro card */}
+        <div style={{display:'grid',gridTemplateColumns:'1.6fr 1fr 1fr',gap:14,marginBottom:36}}>
+          <div style={{borderRadius:18,padding:'22px 24px',background:'linear-gradient(135deg,#0A3D1F,#1B5E3A)',color:'#F5E6C8',position:'relative',overflow:'hidden'}}>
+            <div style={{position:'absolute',right:-20,bottom:-20,opacity:.1}}><I.adinkra size={140} color="#D4A017"/></div>
+            <p style={{fontSize:10,fontWeight:800,letterSpacing:'0.12em',color:'#D4A017',textTransform:'uppercase',marginBottom:8}}>Vue d'ensemble</p>
+            <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.35rem',fontWeight:700,marginBottom:8,lineHeight:1.2}}>Une grammaire visuelle ivoirienne</h3>
+            <p style={{fontSize:12,lineHeight:1.55,opacity:.75}}>Système conçu sur-mesure : géométrie cohérente, accents or/orange, et 6 icônes culturellement signifiantes (Adinkra, Kente, drapeau CI, éléphant…).</p>
+          </div>
+          <div style={{borderRadius:18,padding:'18px 20px',background:'#FFF',border:'1px solid rgba(212,160,23,0.20)'}}>
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+              <div style={{width:30,height:30,borderRadius:8,background:'rgba(212,160,23,0.12)',display:'flex',alignItems:'center',justifyContent:'center',color:'#D4A017'}}><I.shield size={18} accent="#D4A017"/></div>
+              <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',color:'#8B6A30',textTransform:'uppercase'}}>Spécifications</p>
+            </div>
+            <ul style={{fontSize:11.5,lineHeight:1.7,color:'#5C3D1E',paddingLeft:14}}>
+              <li>ViewBox 24×24 — scale fluide</li>
+              <li>Stroke <strong>1.6</strong>, line caps arrondis</li>
+              <li>Accent or <code style={{fontFamily:'var(--font-mono)',fontSize:10,color:'#D4A017'}}>#D4A017</code></li>
+              <li>Duotone optionnel via <code style={{fontFamily:'var(--font-mono)',fontSize:10}}>fillOpacity</code></li>
+            </ul>
+          </div>
+          <div style={{borderRadius:18,padding:'18px 20px',background:'#FFF',border:'1px solid rgba(212,160,23,0.20)'}}>
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+              <div style={{width:30,height:30,borderRadius:8,background:'rgba(255,107,0,0.12)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FF6B00'}}><I.send size={18} accent="#FF6B00"/></div>
+              <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',color:'#8B6A30',textTransform:'uppercase'}}>Usage React</p>
+            </div>
+            <pre style={{fontFamily:'var(--font-mono)',fontSize:10,background:'#FFF8ED',padding:'10px 12px',borderRadius:8,color:'#1A0E00',lineHeight:1.6,border:'1px solid rgba(212,160,23,0.12)',overflow:'auto'}}>{`import { I } from './icons';
+
+<I.villa size={24} 
+  color="#1A0E00" 
+  accent="#D4A017" />`}</pre>
+          </div>
+        </div>
+
+        {/* Categories */}
+        {CATEGORIES.map(cat=>(
+          <CategorySection key={cat.id} cat={cat} query={query} bgMode={bgMode} onCopy={handleCopy} copied={copied}/>
+        ))}
+
+        {/* Comparison Lucide vs Homeci */}
+        <section style={{marginTop:48,marginBottom:24}}>
+          <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:18}}>
+            <div style={{width:34,height:34,borderRadius:9,background:'rgba(139,29,29,0.12)',border:'1.2px solid rgba(139,29,29,0.4)',display:'flex',alignItems:'center',justifyContent:'center',color:'#8B1D1D',fontWeight:900,fontSize:18}}>↔</div>
+            <div>
+              <h2 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.6rem',fontWeight:700,color:'#1A0E00'}}>Avant / Après</h2>
+              <p style={{fontSize:11,color:'#8B6A30',fontWeight:600,marginTop:2,letterSpacing:'0.04em',textTransform:'uppercase',opacity:.7}}>Lucide générique vs Homeci sur-mesure</p>
+            </div>
+            <div style={{flex:1,height:1,background:'linear-gradient(90deg,rgba(139,29,29,0.3),transparent)'}}/>
+          </div>
+
+          <div style={{borderRadius:18,overflow:'hidden',background:'#FFF',border:'1px solid rgba(212,160,23,0.15)',boxShadow:'0 2px 14px rgba(26,14,0,0.04)'}}>
+            <div style={{display:'grid',gridTemplateColumns:'1.2fr 1fr 1fr 2fr',padding:'12px 22px',background:'rgba(212,160,23,0.08)',borderBottom:'1px solid rgba(212,160,23,0.15)'}}>
+              {['Concept','Lucide générique','Homeci sur-mesure','Différence apportée'].map(h=>(
+                <span key={h} style={{fontSize:9,fontWeight:900,color:'#8B6A30',letterSpacing:'0.08em',textTransform:'uppercase'}}>{h}</span>
+              ))}
+            </div>
+            {[
+              {label:'Bien certifié',lucide:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A0E00" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,homeci:<I.notarise size={26}/>,note:'Cachet rond + tampon — métaphore notariale réelle'},
+              {label:'Villa',lucide:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A0E00" strokeWidth="1.6"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>,homeci:<I.villa size={26}/>,note:'Toit + détail or + accent solaire (climat CI)'},
+              {label:'Mobile Money',lucide:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A0E00" strokeWidth="1.6"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h0"/></svg>,homeci:<I.mobileMoney size={26}/>,note:'Étiquette FCFA explicite — usage Orange Money/Wave'},
+              {label:'Sécurité dossier',lucide:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A0E00" strokeWidth="1.6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,homeci:<I.shield size={26}/>,note:'Bouclier duotone bleu + check intégré'},
+              {label:'Notification active',lucide:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A0E00" strokeWidth="1.6"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg>,homeci:<I.bell size={26}/>,note:'Pastille orange intégrée — pas de badge externe'},
+            ].map((row,i)=>(
+              <div key={i} style={{display:'grid',gridTemplateColumns:'1.2fr 1fr 1fr 2fr',padding:'14px 22px',alignItems:'center',borderBottom:i<4?'1px solid rgba(212,160,23,0.08)':'none'}}>
+                <span style={{fontSize:13,fontWeight:700,color:'#1A0E00',fontFamily:'var(--font-cormorant)'}}>{row.label}</span>
+                <div style={{opacity:.5}}>{row.lucide}</div>
+                <div>{row.homeci}</div>
+                <span style={{fontSize:11,color:'#5C3D1E',lineHeight:1.5}}>{row.note}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer style={{marginTop:48,paddingTop:24,borderTop:'1px solid rgba(212,160,23,0.15)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:16,flexWrap:'wrap'}}>
+          <p style={{fontSize:11,color:'#8B6A30'}}>💡 Cliquez sur une icône pour copier le snippet React</p>
+          <div style={{display:'flex',alignItems:'center',gap:8,fontSize:10,color:'#8B6A30',fontWeight:600,letterSpacing:'0.06em',textTransform:'uppercase'}}>
+            <I.flagCI size={20}/>
+            Made in Côte d'Ivoire · Homeci v1
+          </div>
+        </footer>
+      </main>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-import { Calendar, MapPin, Bed, Maximize, CheckCircle, Eye, Phone, MessageSquare } from 'lucide-react';
+import { Calendar, MapPin, Bed, Maximize, CheckCircle, Eye, Phone, MessageSquare, X } from 'lucide-react';
 import type { VisitRequest } from '../../services/visitService';
 import type { Property } from '../../services/propertyService';
 import { VISIT_STATUS_TENANT as VISIT_STATUS } from '../../constants/visitStatus';
@@ -15,6 +15,7 @@ interface VisitsTabProps {
   onAcceptCounter: (visit: VisitRequest) => void;
   onProposeCounter: (visitId: string, date: string, time: string) => void;
   onReplan: (property: Property) => void;
+  onCancel?: (visitId: string) => void;
 }
 
 function formatPrice(p: number) {
@@ -29,9 +30,11 @@ export default function VisitsTab({
   chatLoadingId,
   onAcceptCounter,
   onProposeCounter,
-  onReplan
+  onReplan,
+  onCancel
 }: VisitsTabProps) {
   const [counterForm, setCounterForm] = useState<{ visitId: string; date: string; time: string } | null>(null);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'pending' | 'confirmed'>('all');
 
   if (visitRequests.length === 0) {
     return (
@@ -47,9 +50,69 @@ export default function VisitsTab({
     );
   }
 
+  const filteredVisits = visitRequests.filter(v => {
+    if (activeFilter === 'pending') return v.status === 'pending' || v.status === 'counter_proposed';
+    if (activeFilter === 'confirmed') return v.status === 'accepted' || v.status === 'completed';
+    return true;
+  });
+
+  const filters: { key: typeof activeFilter; label: string }[] = [
+    { key: 'all', label: 'Toutes' },
+    { key: 'pending', label: 'En attente' },
+    { key: 'confirmed', label: 'Confirmées' },
+  ];
+
   return (
-    <div className="space-y-4">
-      {visitRequests
+    <div className="space-y-4 animate-in fade-in duration-500">
+      {/* Header */}
+      <div>
+        <h2
+          style={{
+            fontFamily: 'var(--font-cormorant)',
+            fontSize: '1.8rem',
+            fontWeight: 700,
+            color: HColors.darkBrown,
+            margin: 0,
+            lineHeight: 1.2,
+          }}
+        >
+          Mes Visites
+        </h2>
+        <p
+          className="text-sm"
+          style={{
+            fontFamily: 'var(--font-nunito)',
+            color: HColors.brown,
+            margin: '0.25rem 0 0',
+          }}
+        >
+          {visitRequests.length} demande{visitRequests.length > 1 ? 's' : ''} de visite
+        </p>
+      </div>
+
+      {/* Filter pills */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {filters.map(f => {
+          const isActive = activeFilter === f.key;
+          return (
+            <button
+              key={f.key}
+              onClick={() => setActiveFilter(f.key)}
+              className="px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
+              style={{
+                background: isActive ? HAlpha.gold10 : HAlpha.gold08,
+                border: `1px solid ${isActive ? HAlpha.gold25 : HAlpha.gold15}`,
+                color: isActive ? HColors.gold : HColors.brown,
+                fontWeight: isActive ? 700 : 500,
+              }}
+            >
+              {f.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {filteredVisits
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .map(visit => {
           const vsKey = visit.status === 'counter_proposed' && visit.counter_proposed_by === 'tenant'
@@ -210,6 +273,13 @@ export default function VisitsTab({
                    <button onClick={() => prop && onReplan(prop)}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-navy-50 text-navy-600 border border-navy-100">
                     <Calendar className="w-3.5 h-3.5" /> Replanifier
+                  </button>
+                )}
+
+                {onCancel && (visit.status === 'pending' || visit.status === 'counter_proposed') && (
+                  <button onClick={() => onCancel(visit.id)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors">
+                    <X className="w-3.5 h-3.5" /> Annuler
                   </button>
                 )}
               </div>

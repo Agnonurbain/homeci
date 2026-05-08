@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { propertyService } from '../services/propertyService';
 import { notificationService } from '../services/notificationService';
 import { analyticsService } from '../services/analyticsService';
+import { adService } from '../services/adService';
 import type { Property } from '../types/property';
 import type { VisitRequest } from '../services/visitService';
 import { TYPE_LABELS } from '../constants/labels';
@@ -43,8 +44,13 @@ export function useOwnerProperties(userId: string | undefined) {
     if (!userId) { setLoading(false); return; }
     setLoading(true);
     const unsub = propertyService.listenToPropertiesByOwner(userId, (props) => {
-      setProperties(props);
-      setLoading(false);
+      adService.getBoostedPropertyIds().then(boostedIds => {
+        setProperties(props.map(p => ({ ...p, boosted: boostedIds.has(p.id) })));
+        setLoading(false);
+      }).catch(() => {
+        setProperties(props);
+        setLoading(false);
+      });
     });
     return unsub;
   }, [userId]);

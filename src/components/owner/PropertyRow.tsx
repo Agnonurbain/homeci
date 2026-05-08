@@ -64,7 +64,15 @@ export default function PropertyRow({
             }
           </div>
           <div className="min-w-0">
-            <p className="font-bold text-sm truncate" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>{property.title}</p>
+            <p className="font-bold text-sm truncate flex items-center gap-1.5" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
+              {property.title}
+              {property.boosted && (
+                <span className="inline-flex items-center shrink-0"
+                  style={{ padding: '1px 6px', borderRadius: 99, fontSize: 9, fontWeight: 900, background: 'rgba(212,160,23,0.12)', color: '#D4A017', border: '1px solid rgba(212,160,23,0.25)', letterSpacing: '0.04em' }}>
+                  ⚡ BOOST
+                </span>
+              )}
+            </p>
             <p className="text-[10px] uppercase font-bold opacity-50 tracking-widest" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>{property.city}</p>
           </div>
         </div>

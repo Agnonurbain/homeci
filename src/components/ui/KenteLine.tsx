@@ -1,26 +1,19 @@
-import { KENTE_COLORS } from '../../styles/homeci-tokens';
-
 interface KenteLineProps {
   height?: number;
   className?: string;
 }
 
-/**
- * Bande Kente horizontale — signature visuelle HOMECI.
- * Utilisée en haut des modals, headers et bannières.
- */
-export function KenteLine({ height = 4, className = '' }: KenteLineProps) {
+export function KenteLine({ height = 3, className = '' }: KenteLineProps) {
   return (
     <div
-      className={`w-full flex ${className}`}
-      style={{ height }}
+      className={`w-full ${className}`}
+      style={{
+        height,
+        background: 'repeating-linear-gradient(90deg,#FF6B00 0,#FF6B00 14px,#009E49 14px,#009E49 28px,#FFFFFF 28px,#FFFFFF 42px,#D4A017 42px,#D4A017 56px)',
+      }}
       role="presentation"
       aria-hidden="true"
-    >
-      {KENTE_COLORS.map((color, i) => (
-        <div key={i} style={{ flex: 1, backgroundColor: color }} />
-      ))}
-    </div>
+    />
   );
 }
 

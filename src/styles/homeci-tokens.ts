@@ -17,6 +17,7 @@ export const HColors = {
   night:       '#0A3D1F',
   darkForest:  '#0D2F15',
   darkBrown:   '#1A0E00',
+  sidebar:     '#071F0F',
 
   // Accents
   gold:        '#D4A017',

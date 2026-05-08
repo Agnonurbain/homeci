@@ -28,8 +28,8 @@ export function PropertyCard({ property, onFavorite, isFavorite, isBoosted, onVi
     <div className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
       style={{
         background: HColors.white,
-        border: isBoosted ? '2px solid rgba(212,160,23,0.5)' : '1px solid rgba(245,230,200,0.5)',
-        boxShadow: isBoosted ? '0 4px 20px rgba(212,160,23,0.15)' : '0 2px 12px rgba(10,61,31,0.08)',
+        border: isBoosted ? '2px solid rgba(212,160,23,0.5)' : `1px solid ${HAlpha.gold15}`,
+        boxShadow: isBoosted ? '0 4px 20px rgba(212,160,23,0.15)' : '0 2px 12px rgba(26,14,0,0.06)',
       }}>
 
       {/* Image */}

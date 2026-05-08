@@ -1,6 +1,6 @@
 # 📚 WORKED_LESSON.md — Leçons apprises & Difficultés rencontrées
 
-> **Mis à jour à chaque session HOMECI.** Dernière mise à jour : 2026-04-19 (code review — vitest-environment, pushHelper, sécurité Firestore).
+> **Mis à jour à chaque session HOMECI.** Dernière mise à jour : 2026-05-08 (design handoff — refonte visuelle 4 dashboards).
 > **Objectif :** Capitaliser sur les erreurs passées pour ne pas les répéter.
 
 ---
@@ -402,21 +402,77 @@ Chaque entrée suit ce format :
 
 ---
 
+### WL-031 — jsdom FileReader.readAsDataURL incompatible avec Node 24
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-031 |
+| **Date** | 2026-04-19 |
+| **Catégorie** | Tests |
+| **Problème** | `FileReader.readAsDataURL()` dans jsdom lance "Expected an Uint8Array" avec Node 24. Le module `@exodus/bytes` utilisé par jsdom attend `Uint8Array` mais reçoit un `Buffer`. |
+| **Cause racine** | Node 24 change le type interne retourné par `Blob.arrayBuffer()` dans jsdom. |
+| **Solution** | Remplacer `FileReader.prototype.readAsDataURL` dans `setup.ts` par une implémentation manuelle : `blob.arrayBuffer()` → `Uint8Array` → `btoa` → data URL. |
+| **Impact** | 🔴 Critique — 2 erreurs non gérées bloquent le pre-commit hook. |
+| **Prévention** | Surveiller les incompatibilités jsdom lors des montées de version Node. |
+
+---
+
+### WL-032 — Design handoff : tests cassés par ajout de dépendances async dans les hooks
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-032 |
+| **Date** | 2026-05-08 |
+| **Catégorie** | Tests |
+| **Problème** | Ajout de `adService.getBoostedPropertyIds()` dans `useOwnerProperties` hook a cassé 6 tests existants car le mock `adService` ne contenait pas cette méthode. |
+| **Cause racine** | Les tests mockent `adService` avec seulement les méthodes utilisées au moment de l'écriture. Ajouter un appel async dans un hook partagé casse tous les tests qui importent ce hook. |
+| **Solution** | Ajouter `getBoostedPropertyIds: vi.fn(async () => new Set())` au mock `adService` dans les tests concernés. |
+| **Impact** | 🟡 Moyen — 6 tests en échec dans un seul fichier. |
+| **Prévention** | Lors de l'ajout d'un appel service dans un hook partagé, grep tous les tests qui mockent ce service et mettre à jour les mocks. |
+
+---
+
+### WL-033 — Design handoff : dead code après refonte layout
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-033 |
+| **Date** | 2026-05-08 |
+| **Catégorie** | Frontend |
+| **Problème** | Après migration du dashboard admin vers un layout sidebar, `AdminTabs.tsx` n'était plus importé nulle part mais restait dans le repo avec ses tests. |
+| **Cause racine** | Remplacement du composant par un nouveau (`AdminSidebar`) sans suppression de l'ancien. |
+| **Solution** | Grep pour vérifier qu'aucun import n'existe, puis supprimer `AdminTabs.tsx` et `AdminTabs.test.tsx`. |
+| **Impact** | 🟢 Faible — Dead code, aucun impact fonctionnel. |
+| **Prévention** | Après chaque remplacement de composant, vérifier immédiatement si l'ancien est encore importé et le supprimer si non. Mettre à jour les tests prelaunch qui vérifient la présence de composants. |
+
+---
+
+### WL-034 — Design handoff : prelaunch tests vérfient les noms d'import
+| Champ | Valeur |
+|---|---|
+| **ID** | WL-034 |
+| **Date** | 2026-05-08 |
+| **Catégorie** | Tests |
+| **Problème** | `prelaunch.test.ts` vérifie que des strings spécifiques (noms de composants) apparaissent dans les fichiers source. Quand on remplace `NotaireStats` par `NotaireSidebar`, le test échoue. |
+| **Cause racine** | Les prelaunch tests lisent les fichiers comme des strings et cherchent des mots-clés. C'est fragile face aux refactorings. |
+| **Solution** | Mettre à jour les assertions dans `prelaunch.test.ts` pour refléter les nouveaux composants (`PipelineBar`, `NotaireSidebar`). |
+| **Impact** | 🟡 Moyen — Test prelaunch échoue, bloque la CI. |
+| **Prévention** | Lors de tout refactoring de composant, vérifier `prelaunch.test.ts` qui peut contenir des assertions sur les noms d'import. |
+
+---
+
 ## 📊 Résumé par catégorie
 
 | Catégorie | Count |
 |---|---|
 | Backend | 4 |
-| Frontend | 5 |
-| CI/CD | 10 (+2) |
+| Frontend | 6 |
+| CI/CD | 10 |
 | Sécurité | 1 |
 | UX | 1 |
-| Tests | 7 (+3) |
+| Tests | 11 |
 | Infrastructure | 5 |
 | Documentation | 1 |
 | Design | 1 |
 | State management | 1 |
-| **TOTAL** | **34** (+3) |
+| **TOTAL** | **38** |
 
 ---
 
@@ -424,9 +480,9 @@ Chaque entrée suit ce format :
 
 | Impact | Count |
 |---|---|
-| 🔴 Critique | 9 (+2) |
-| 🟡 Moyen | 16 (+1) |
-| 🟢 Faible | 4 |
+| 🔴 Critique | 11 |
+| 🟡 Moyen | 19 |
+| 🟢 Faible | 5 |
 
 ---
 

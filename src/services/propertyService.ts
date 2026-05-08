@@ -95,6 +95,7 @@ export interface Property {
   is_serviced?: boolean;
   topography?: 'plat' | 'pente' | 'accidente' | null;
   needs_status_update?: boolean;
+  boosted?: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -18,7 +18,7 @@ export default function FavoritesTab({
   const navigate = useNavigate();
 
   return (
-    <div>
+    <div className="animate-in fade-in duration-500">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="font-bold mb-0.5"

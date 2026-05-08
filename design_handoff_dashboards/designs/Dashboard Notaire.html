@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HOMECI — Dashboard Notaire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --font-cormorant: 'Cormorant', Georgia, serif;
+  --font-nunito: 'Nunito', system-ui, sans-serif;
+}
+html, body { height: 100%; }
+body { background: #1a1a1a; font-family: var(--font-nunito); }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(212,160,23,0.25); border-radius: 3px; }
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+@keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+.fade-in { animation: fadeIn 0.4s ease both; }
+.slide-up { animation: slideUp 0.5s ease both; }
+</style>
+</head>
+<body>
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+/* ── TOKENS ── */
+const T = {
+  orange:     '#FF6B00',
+  orangeDark: '#AF4B00',
+  vertCI:     '#009E49',
+  gold:       '#D4A017',
+  night:      '#0A3D1F',
+  forest:     '#1B5E3A',
+  cream:      '#F5E6C8',
+  creamBg:    '#FFF8ED',
+  brown:      '#8B6A30',
+  bois:       '#5C3D1E',
+  darkBrown:  '#1A0E00',
+  bordeaux:   '#8B1D1D',
+  navy:       '#1A3A6B',
+  white:      '#FFFFFF',
+};
+
+const A = {
+  gold10: 'rgba(212,160,23,0.10)',
+  gold15: 'rgba(212,160,23,0.15)',
+  gold20: 'rgba(212,160,23,0.20)',
+  gold25: 'rgba(212,160,23,0.25)',
+  gold30: 'rgba(212,160,23,0.30)',
+  gold35: 'rgba(212,160,23,0.35)',
+  orange10: 'rgba(255,107,0,0.10)',
+  orange20: 'rgba(255,107,0,0.20)',
+  orange25: 'rgba(255,107,0,0.25)',
+  vert10: 'rgba(0,158,73,0.10)',
+  vert20: 'rgba(0,158,73,0.20)',
+  vert25: 'rgba(0,158,73,0.25)',
+  navy08: 'rgba(26,58,107,0.08)',
+  navy20: 'rgba(26,58,107,0.20)',
+  bord10: 'rgba(139,29,29,0.10)',
+  bord20: 'rgba(139,29,29,0.20)',
+  bord25: 'rgba(139,29,29,0.25)',
+  cream50: 'rgba(245,230,200,0.50)',
+  cream60: 'rgba(245,230,200,0.60)',
+  white10: 'rgba(255,255,255,0.10)',
+  white20: 'rgba(255,255,255,0.20)',
+};
+
+/* ── KENTE ── */
+function KenteLine({ h = 3 }) {
+  return <div style={{ height: h, flexShrink: 0, background: 'repeating-linear-gradient(90deg,#FF6B00 0,#FF6B00 14px,#009E49 14px,#009E49 28px,#FFF 28px,#FFF 42px,#D4A017 42px,#D4A017 56px)' }} />;
+}
+
+/* ── MOCK DATA ── */
+const MOCK_PROPS = [
+  { id:'p1', title:'Villa moderne Cocody 5 pièces', city:'Abidjan-Cocody', type:'villa', owner:'Kouassi Emmanuel', phone:'+225 07 00 11 22', pct:100, status:'pret', img: null, docs:[
+    {type:'titre_foncier', label:'Titre Foncier', status:'valide'},
+    {type:'certificat_prop', label:'Certificat de propriété', status:'valide'},
+    {type:'plan_cadastral', label:'Plan Cadastral', status:'valide'},
+  ]},
+  { id:'p2', title:'Appartement Plateau 3 pièces', city:'Abidjan-Plateau', type:'appartement', owner:'Aya Koffi', phone:'+225 05 22 33 44', pct:67, status:'en_cours', img: null, docs:[
+    {type:'titre_foncier', label:'Titre Foncier', status:'valide'},
+    {type:'certificat_prop', label:'Certificat de propriété', status:'en_attente'},
+    {type:'plan_cadastral', label:'Plan Cadastral', status:'refuse'},
+  ]},
+  { id:'p3', title:'Terrain Yopougon 800m²', city:'Abidjan-Yopougon', type:'terrain', owner:'Bamba Sékou', phone:'+225 01 44 55 66', pct:33, status:'en_cours', img: null, docs:[
+    {type:'titre_foncier', label:'Titre Foncier', status:'valide'},
+    {type:'certificat_prop', label:'Certificat de propriété', status:'en_attente'},
+  ]},
+  { id:'p4', title:'Maison Marcory 4 pièces', city:'Abidjan-Marcory', type:'maison', owner:'Traoré Fatou', phone:'+225 07 88 99 00', pct:0, status:'disponible', img: null, docs:[] },
+];
+
+const MOCK_CERTIFIES = [
+  { id:'c1', title:'Villa Riviera Golf', city:'Abidjan', type:'villa', owner:'Diallo Ibrahim', date:'15 Avr 2025' },
+  { id:'c2', title:'Appartement Deux Plateaux', city:'Abidjan', type:'appartement', owner:'N\'Guessan Paul', date:'12 Avr 2025' },
+  { id:'c3', title:'Terrain Bingerville', city:'Bingerville', type:'terrain', owner:'Ouattara Mariam', date:'08 Avr 2025' },
+];
+
+const TABS = [
+  { id:'disponible', label:'Disponibles', count:4,  accent:T.orange, bg:A.orange10, bd:A.orange25 },
+  { id:'en_cours',   label:'En cours',    count:7,  accent:T.gold,   bg:A.gold10,   bd:A.gold25 },
+  { id:'pret',       label:'Prêts',       count:3,  accent:T.navy,   bg:A.navy08,   bd:A.navy20 },
+  { id:'certifie',   label:'Certifiés',   count:48, accent:T.vertCI, bg:A.vert10,   bd:A.vert25 },
+  { id:'stats',      label:'Statistiques',count:undefined, accent:T.bordeaux, bg:A.bord10, bd:A.bord20 },
+];
+
+const PIPELINE = [
+  { id:'disponible', label:'Disponibles', n:4,  color:T.orange, bg:A.orange10, icon:'📋', desc:'À prendre en charge' },
+  { id:'en_cours',   label:'En cours',    n:7,  color:T.gold,   bg:A.gold10,   icon:'🔍', desc:'Vérification docs' },
+  { id:'pret',       label:'Prêts',       n:3,  color:T.navy,   bg:A.navy08,   icon:'✅', desc:'À certifier' },
+  { id:'certifie',   label:'Certifiés',   n:48, color:T.vertCI, bg:A.vert10,   icon:'🏛️', desc:'Ce mois' },
+];
+
+const ACTIVITY = [
+  { time:'Il y a 12 min',  action:'Document validé',  detail:'Titre Foncier — Villa Cocody',        color:T.vertCI,   dot:'✓' },
+  { time:'Il y a 1h',      action:'Prise en charge',  detail:'Terrain Yopougon 800m²',              color:T.orange,   dot:'→' },
+  { time:'Il y a 2h',      action:'Certification',    detail:'Appartement Deux Plateaux — certifié',color:T.gold,     dot:'★' },
+  { time:'Il y a 3h',      action:'Document refusé',  detail:'Plan cadastral — Maison Marcory',     color:T.bordeaux, dot:'✕' },
+  { time:'Hier 16:42',     action:'Certification',    detail:'Villa Riviera Golf — certifiée',       color:T.gold,     dot:'★' },
+];
+
+/* ── STATUS CONFIG ── */
+const ST = {
+  certifie:   { label:'Certifié',        bar:T.vertCI,   border:A.vert25 },
+  pret:       { label:'Prêt à certifier',bar:T.navy,     border:A.navy20 },
+  en_cours:   { label:'En cours',        bar:T.gold,     border:A.gold35 },
+  disponible: { label:'Disponible',      bar:T.orange,   border:A.orange25 },
+};
+
+/* ══════════════════════ SUB-COMPONENTS ══════════════════════ */
+
+function StatBadge({ icon, label, value, color, onClick }) {
+  return (
+    <button onClick={onClick} style={{
+      display:'flex', alignItems:'center', gap:6, padding:'6px 12px',
+      borderRadius:10, border:`1px solid ${color}30`, background:`${color}12`,
+      cursor:'pointer', transition:'all 0.15s',
+    }}
+    onMouseEnter={e=>e.currentTarget.style.transform='scale(1.04)'}
+    onMouseLeave={e=>e.currentTarget.style.transform='scale(1)'}>
+      <span style={{ fontSize:13 }}>{icon}</span>
+      <span style={{ color:`${color}`, fontSize:11, fontWeight:800 }}>{value}</span>
+      <span style={{ color:A.cream50, fontSize:10, fontWeight:600 }}>{label}</span>
+    </button>
+  );
+}
+
+function PipelineBar({ active, onSelect }) {
+  return (
+    <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:0, margin:'20px 0 0' }}>
+      {PIPELINE.map((p, i) => {
+        const isActive = active === p.id;
+        return (
+          <div key={p.id} onClick={() => onSelect(p.id)} style={{
+            position:'relative', display:'flex', flexDirection:'column', alignItems:'center',
+            padding:'12px 8px', cursor:'pointer',
+            background: isActive ? `${p.color}18` : 'transparent',
+            borderBottom: isActive ? `2.5px solid ${p.color}` : '2.5px solid transparent',
+            transition:'all 0.2s',
+          }}
+          onMouseEnter={e=>{ if(!isActive) e.currentTarget.style.background='rgba(255,255,255,0.06)'; }}
+          onMouseLeave={e=>{ if(!isActive) e.currentTarget.style.background='transparent'; }}>
+            {/* Arrow connector */}
+            {i < 3 && (
+              <div style={{
+                position:'absolute', right:-10, top:'50%', transform:'translateY(-50%)',
+                color:'rgba(212,160,23,0.4)', fontSize:16, fontWeight:900, zIndex:2,
+              }}>›</div>
+            )}
+            <div style={{
+              width:36, height:36, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center',
+              background: isActive ? `${p.color}25` : 'rgba(255,255,255,0.06)',
+              border: isActive ? `1.5px solid ${p.color}50` : '1px solid rgba(255,255,255,0.08)',
+              fontSize:16, marginBottom:6, transition:'all 0.2s',
+            }}>{p.icon}</div>
+            <div style={{
+              fontSize:22, fontWeight:900, lineHeight:1, marginBottom:2,
+              color: isActive ? p.color : 'rgba(245,230,200,0.8)',
+              fontFamily:'var(--font-cormorant)',
+            }}>{p.n}</div>
+            <div style={{ fontSize:10, fontWeight:700, color: isActive ? p.color : A.cream50, letterSpacing:'0.04em' }}>{p.label}</div>
+            <div style={{ fontSize:9, color:'rgba(245,230,200,0.35)', marginTop:2 }}>{p.desc}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function DocBadge({ status }) {
+  const cfg = {
+    valide:     { label:'Validé',     bg:A.vert10,  color:T.vertCI,   bd:A.vert25 },
+    en_attente: { label:'En attente', bg:A.gold10,  color:T.gold,     bd:A.gold25 },
+    refuse:     { label:'Refusé',     bg:A.bord10,  color:T.bordeaux, bd:A.bord25 },
+  }[status] || { label:status, bg:A.gold10, color:T.gold, bd:A.gold25 };
+  return (
+    <span style={{ padding:'2px 8px', borderRadius:99, fontSize:9, fontWeight:800,
+      background:cfg.bg, color:cfg.color, border:`1px solid ${cfg.bd}`, letterSpacing:'0.04em' }}>
+      {cfg.label}
+    </span>
+  );
+}
+
+function PropertyCard({ prop, defaultExpanded = false }) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
+  const st = ST[prop.status] || ST.disponible;
+
+  return (
+    <div className="fade-in" style={{
+      borderRadius:18, overflow:'hidden', background:T.white,
+      border:`1px solid ${st.border}`, boxShadow:'0 2px 16px rgba(26,14,0,0.06)',
+      marginBottom:10, transition:'box-shadow 0.2s',
+    }}>
+      {/* Color top bar */}
+      <div style={{ height:3, background:st.bar }} />
+
+      <div style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 16px' }}>
+        {/* Thumbnail */}
+        <div style={{
+          width:56, height:56, borderRadius:12, flexShrink:0,
+          background:`linear-gradient(135deg,${st.bar}20,${st.bar}08)`,
+          border:`1px solid ${st.bar}30`,
+          display:'flex', alignItems:'center', justifyContent:'center', fontSize:24,
+        }}>
+          { prop.type === 'villa' ? '🏡' : prop.type === 'terrain' ? '🌿' : prop.type === 'appartement' ? '🏢' : '🏠' }
+        </div>
+
+        {/* Info */}
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8, marginBottom:4 }}>
+            <h3 style={{ fontFamily:'var(--font-cormorant)', fontSize:'1rem', fontWeight:700,
+              color:T.darkBrown, lineHeight:1.2, }}>{prop.title}</h3>
+            <span style={{
+              padding:'3px 8px', borderRadius:99, fontSize:9, fontWeight:900,
+              background:st.bar, color:'#fff', letterSpacing:'0.05em',
+              flexShrink:0, boxShadow:`0 2px 8px ${st.bar}40`,
+            }}>{st.label}</span>
+          </div>
+          <div style={{ display:'flex', alignItems:'center', gap:10, fontSize:11, color:T.brown, marginBottom:8 }}>
+            <span>📍 {prop.city}</span>
+            <span>👤 {prop.owner}</span>
+            <span style={{ color:T.orange, fontWeight:600 }}>📞 {prop.phone}</span>
+          </div>
+          {/* Progress */}
+          {prop.docs.length > 0 && (
+            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+              <div style={{ flex:1, height:5, borderRadius:99, background:'rgba(212,160,23,0.10)', overflow:'hidden' }}>
+                <div style={{
+                  height:'100%', borderRadius:99, transition:'width 0.6s ease',
+                  width:`${prop.pct}%`,
+                  background: prop.pct===100 ? T.vertCI : prop.pct>0 ? T.gold : 'transparent',
+                }} />
+              </div>
+              <span style={{ fontSize:10, fontWeight:800, color:T.brown, minWidth:30 }}>{prop.pct}%</span>
+              <span style={{ fontSize:9, color:T.brown, opacity:0.6 }}>{prop.docs.filter(d=>d.status==='valide').length}/{prop.docs.length} docs</span>
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div style={{ display:'flex', flexDirection:'column', gap:6, flexShrink:0 }}>
+          {prop.status === 'disponible' ? (
+            <button style={{
+              padding:'8px 14px', borderRadius:10,
+              background:'linear-gradient(135deg,#FF6B00,#D4A017)',
+              color:'#fff', fontWeight:800, fontSize:11, border:'none', cursor:'pointer',
+              whiteSpace:'nowrap',
+            }}>Prendre en charge</button>
+          ) : prop.status === 'pret' ? (
+            <button style={{
+              padding:'8px 14px', borderRadius:10,
+              background:'linear-gradient(135deg,#1A3A6B,#2D6A9F)',
+              color:'#fff', fontWeight:800, fontSize:11, border:'none', cursor:'pointer',
+              whiteSpace:'nowrap',
+            }}>🏛️ Certifier</button>
+          ) : (
+            <button onClick={() => setExpanded(!expanded)} style={{
+              padding:'8px 14px', borderRadius:10, cursor:'pointer',
+              background: expanded ? A.vert10 : A.gold10,
+              border: `1px solid ${expanded ? A.vert25 : A.gold25}`,
+              color: expanded ? T.vertCI : T.brown, fontWeight:700, fontSize:11,
+              whiteSpace:'nowrap',
+            }}>{expanded ? '▲ Masquer' : '▼ Examiner'}</button>
+          )}
+        </div>
+      </div>
+
+      {/* Expanded docs */}
+      {expanded && prop.docs.length > 0 && (
+        <div style={{ borderTop:`1px solid ${A.gold15}`, background:'rgba(255,248,237,0.6)', padding:'12px 16px' }}>
+          <p style={{ fontSize:10, fontWeight:800, color:T.brown, letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:8 }}>Documents soumis</p>
+          <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+            {prop.docs.map(doc => (
+              <div key={doc.type} style={{
+                display:'flex', alignItems:'center', justifyContent:'space-between',
+                padding:'8px 12px', borderRadius:10, background:'#fff',
+                border:`1px solid ${A.gold15}`,
+              }}>
+                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                  <span style={{ fontSize:13 }}>📄</span>
+                  <span style={{ fontSize:11, fontWeight:600, color:T.bois }}>{doc.label}</span>
+                </div>
+                <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                  <DocBadge status={doc.status} />
+                  <button style={{ padding:'4px 8px', borderRadius:7, fontSize:10, fontWeight:700,
+                    background:A.vert10, color:T.vertCI, border:`1px solid ${A.vert25}`, cursor:'pointer' }}>✓</button>
+                  <button style={{ padding:'4px 8px', borderRadius:7, fontSize:10, fontWeight:700,
+                    background:A.bord10, color:T.bordeaux, border:`1px solid ${A.bord25}`, cursor:'pointer' }}>✕</button>
+                  <button style={{ padding:'4px 8px', borderRadius:7, fontSize:10, fontWeight:700,
+                    background:A.gold10, color:T.brown, border:`1px solid ${A.gold25}`, cursor:'pointer' }}>↗</button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {prop.pct === 100 && (
+            <div style={{
+              marginTop:12, padding:'14px 16px', borderRadius:14, textAlign:'center',
+              background:'linear-gradient(135deg,#0D1F12,#1A2E1F)',
+              border:`1px solid ${A.gold30}`,
+            }}>
+              <div style={{ fontSize:20, marginBottom:6 }}>🏛️</div>
+              <p style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.1rem', fontWeight:700, color:T.cream, marginBottom:4 }}>
+                Dossier complet &amp; vérifié
+              </p>
+              <p style={{ fontSize:10, color:'rgba(245,230,200,0.5)', marginBottom:12 }}>
+                Tous les documents requis sont validés.
+              </p>
+              <button style={{
+                width:'100%', padding:'11px', borderRadius:10,
+                background:'linear-gradient(135deg,#D4A017,#FF6B00)',
+                color:'#fff', fontWeight:900, fontSize:11, letterSpacing:'0.1em',
+                textTransform:'uppercase', border:'none', cursor:'pointer',
+                boxShadow:'0 4px 15px rgba(212,160,23,0.3)',
+              }}>Certifier le bien maintenant</button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CertifiedCard({ item }) {
+  return (
+    <div style={{
+      display:'flex', alignItems:'center', gap:10, padding:'10px 14px',
+      borderRadius:14, background:T.white, border:`1px solid ${A.vert20}`,
+      marginBottom:8,
+    }}>
+      <div style={{
+        width:36, height:36, borderRadius:10, background:A.vert10, border:`1px solid ${A.vert25}`,
+        display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, flexShrink:0,
+      }}>🏛️</div>
+      <div style={{ flex:1, minWidth:0 }}>
+        <p style={{ fontSize:12, fontWeight:700, color:T.darkBrown, fontFamily:'var(--font-cormorant)' }}>{item.title}</p>
+        <p style={{ fontSize:10, color:T.brown }}>📍 {item.city} — {item.owner}</p>
+      </div>
+      <div style={{ textAlign:'right' }}>
+        <div style={{ padding:'3px 8px', borderRadius:99, fontSize:9, fontWeight:800,
+          background:A.vert10, color:T.vertCI, border:`1px solid ${A.vert25}` }}>Certifié</div>
+        <p style={{ fontSize:9, color:T.brown, marginTop:3 }}>{item.date}</p>
+      </div>
+    </div>
+  );
+}
+
+function ActivityFeed() {
+  return (
+    <div>
+      {ACTIVITY.map((item, i) => (
+        <div key={i} style={{ display:'flex', gap:12, marginBottom:14, position:'relative' }}>
+          {/* Timeline line */}
+          {i < ACTIVITY.length - 1 && (
+            <div style={{
+              position:'absolute', left:14, top:28, width:1, bottom:-14,
+              background:`linear-gradient(to bottom,${item.color}40,transparent)`,
+            }} />
+          )}
+          {/* Dot */}
+          <div style={{
+            width:28, height:28, borderRadius:99, flexShrink:0,
+            background:`${item.color}18`, border:`1.5px solid ${item.color}40`,
+            display:'flex', alignItems:'center', justifyContent:'center',
+            fontSize:11, color:item.color, fontWeight:900,
+          }}>{item.dot}</div>
+          <div>
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:2 }}>
+              <span style={{ fontSize:12, fontWeight:700, color:T.bois }}>{item.action}</span>
+              <span style={{ fontSize:9, color:T.brown }}>{item.time}</span>
+            </div>
+            <p style={{ fontSize:11, color:T.brown }}>{item.detail}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ══════════════════════ MAIN DASHBOARD ══════════════════════ */
+function NotaireDashboard() {
+  const [activeTab, setActiveTab] = useState('en_cours');
+
+  const tabProps = MOCK_PROPS.filter(p =>
+    activeTab === 'disponible' ? p.status === 'disponible' :
+    activeTab === 'en_cours'   ? p.status === 'en_cours' :
+    activeTab === 'pret'       ? p.status === 'pret' :
+    activeTab === 'certifie'   ? p.status === 'certifie' : false
+  );
+
+  return (
+    <div style={{ minHeight:'100vh', background:T.creamBg, fontFamily:'var(--font-nunito)' }}>
+
+      {/* ══ HEADER ══ */}
+      <header style={{ background:'#1B5E3A', borderBottom:`1px solid ${A.gold25}`, position:'sticky', top:0, zIndex:20 }}>
+        <KenteLine h={3} />
+
+        {/* Top bar with profile + quick stats */}
+        <div style={{ maxWidth:1200, margin:'0 auto', padding:'14px 24px 0' }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, marginBottom:12 }}>
+            {/* Identity */}
+            <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+              <div style={{
+                width:44, height:44, borderRadius:14, flexShrink:0,
+                background:A.gold10, border:`1.5px solid ${A.gold25}`,
+                display:'flex', alignItems:'center', justifyContent:'center', fontSize:22,
+              }}>🏛️</div>
+              <div>
+                <h1 style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.3rem', fontWeight:700, color:T.cream, lineHeight:1 }}>
+                  Espace Notaire
+                </h1>
+                <p style={{ fontSize:11, color:'rgba(245,230,200,0.55)', fontWeight:600, marginTop:2 }}>
+                  Maître Kouamé Adjoua — Abidjan
+                </p>
+              </div>
+            </div>
+
+            {/* Quick stats badges */}
+            <div style={{ display:'flex', gap:8, alignItems:'center', flexWrap:'wrap' }}>
+              <StatBadge icon="🔔" label="Urgent" value="3" color={T.orange} onClick={() => setActiveTab('pret')} />
+              <StatBadge icon="📋" label="En cours" value="7" color={T.gold} onClick={() => setActiveTab('en_cours')} />
+              <StatBadge icon="🏛️" label="Certifiés ce mois" value="12" color={T.vertCI} onClick={() => setActiveTab('certifie')} />
+              {/* Real-time badge */}
+              <div style={{
+                display:'flex', alignItems:'center', gap:6, padding:'6px 12px',
+                borderRadius:10, background:A.gold10, border:`1px solid ${A.gold25}`,
+              }}>
+                <div style={{
+                  width:7, height:7, borderRadius:99, background:T.vertCI,
+                  animation:'pulse 2s infinite',
+                }} />
+                <span style={{ fontSize:10, fontWeight:700, color:T.gold }}>Temps réel</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── PIPELINE ── */}
+          <PipelineBar active={activeTab} onSelect={setActiveTab} />
+        </div>
+      </header>
+
+      {/* ══ MAIN ══ */}
+      <main style={{ maxWidth:1200, margin:'0 auto', padding:'28px 24px', display:'grid', gridTemplateColumns:'1fr 320px', gap:24 }}>
+
+        {/* ── LEFT COLUMN ── */}
+        <div>
+          {/* Search + filter bar */}
+          <div style={{ display:'flex', gap:10, marginBottom:20 }}>
+            <div style={{ flex:1, position:'relative' }}>
+              <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', fontSize:14 }}>🔍</span>
+              <input type="text" placeholder="Rechercher un dossier..."
+                style={{
+                  width:'100%', padding:'11px 14px 11px 36px',
+                  borderRadius:12, border:`1px solid ${A.gold15}`,
+                  background:'#fff', fontSize:13, fontFamily:'var(--font-nunito)',
+                  outline:'none', color:T.darkBrown,
+                }} />
+            </div>
+            <select style={{
+              padding:'11px 14px', borderRadius:12, border:`1px solid ${A.gold15}`,
+              background:'#fff', fontSize:12, fontWeight:700, color:T.bois,
+              fontFamily:'var(--font-nunito)', outline:'none', cursor:'pointer',
+            }}>
+              <option>Tous les biens</option>
+              <option>Villa</option>
+              <option>Appartement</option>
+              <option>Terrain</option>
+              <option>Maison</option>
+            </select>
+          </div>
+
+          {/* Section label */}
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+              <h2 style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.25rem', fontWeight:700, color:T.darkBrown }}>
+                {TABS.find(t=>t.id===activeTab)?.label}
+              </h2>
+              {(() => {
+                const tab = TABS.find(t=>t.id===activeTab);
+                return tab?.count !== undefined ? (
+                  <span style={{ padding:'2px 10px', borderRadius:99, fontSize:11, fontWeight:800,
+                    background:tab.bg, color:tab.accent, border:`1px solid ${tab.bd}` }}>{tab.count}</span>
+                ) : null;
+              })()}
+            </div>
+            {activeTab === 'pret' && (
+              <div style={{
+                display:'flex', alignItems:'center', gap:6, padding:'6px 12px',
+                borderRadius:10, background:'rgba(139,29,29,0.08)', border:'1px solid rgba(139,29,29,0.2)',
+              }}>
+                <span style={{ fontSize:12 }}>⚡</span>
+                <span style={{ fontSize:10, fontWeight:800, color:T.bordeaux }}>3 dossiers urgents</span>
+              </div>
+            )}
+          </div>
+
+          {/* Cards */}
+          {activeTab === 'certifie' ? (
+            MOCK_CERTIFIES.map(item => <CertifiedCard key={item.id} item={item} />)
+          ) : activeTab === 'stats' ? (
+            <div style={{ padding:40, borderRadius:20, background:'#fff', textAlign:'center',
+              border:`1px dashed ${A.gold25}`, color:T.brown }}>
+              <div style={{ fontSize:48, marginBottom:12 }}>📊</div>
+              <p style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.3rem', fontWeight:700 }}>Statistiques d'activité</p>
+              <p style={{ fontSize:12, marginTop:4, opacity:0.6 }}>Graphiques Recharts — Certifications, taux d'approbation, biens par type & ville</p>
+            </div>
+          ) : tabProps.length === 0 ? (
+            <div style={{ padding:60, borderRadius:20, background:'#fff', textAlign:'center',
+              border:`1px dashed ${A.gold25}`, color:T.brown }}>
+              <div style={{ fontSize:40, marginBottom:10 }}>🗂️</div>
+              <p style={{ fontSize:13, fontWeight:700, opacity:0.5 }}>Aucun dossier dans cette section</p>
+            </div>
+          ) : (
+            tabProps.map(p => <PropertyCard key={p.id} prop={p} defaultExpanded={p.id==='p1'} />)
+          )}
+        </div>
+
+        {/* ── RIGHT COLUMN ── */}
+        <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+
+          {/* KPIs rapides */}
+          <div style={{ borderRadius:18, overflow:'hidden', background:'#fff', border:`1px solid ${A.gold15}`, boxShadow:'0 2px 16px rgba(26,14,0,0.05)' }}>
+            <div style={{ padding:'14px 16px 10px', borderBottom:`1px solid ${A.gold10}` }}>
+              <h3 style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.05rem', fontWeight:700, color:T.darkBrown }}>
+                Tableau de bord
+              </h3>
+              <p style={{ fontSize:10, color:T.brown, marginTop:1 }}>Avril 2025</p>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:1, background:A.gold10 }}>
+              {[
+                { label:'Certifiés ce mois', val:12, color:T.vertCI, icon:'🏛️' },
+                { label:'Taux approbation', val:'87%', color:T.navy, icon:'📈' },
+                { label:'En attente',        val:7,  color:T.gold,   icon:'⏳' },
+                { label:'Dossiers urgents',  val:3,  color:T.bordeaux, icon:'⚡' },
+              ].map((k,i) => (
+                <div key={i} style={{ padding:'14px 12px', background:'#fff', textAlign:'center' }}>
+                  <div style={{ fontSize:18, marginBottom:4 }}>{k.icon}</div>
+                  <div style={{ fontSize:22, fontWeight:900, color:k.color, fontFamily:'var(--font-cormorant)', lineHeight:1 }}>{k.val}</div>
+                  <div style={{ fontSize:9, fontWeight:700, color:T.brown, marginTop:3, letterSpacing:'0.04em' }}>{k.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Certification pipeline visuel */}
+          <div style={{ borderRadius:18, background:'#fff', border:`1px solid ${A.gold15}`, padding:'14px 16px' }}>
+            <h3 style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.05rem', fontWeight:700, color:T.darkBrown, marginBottom:14 }}>
+              Pipeline certification
+            </h3>
+            {[
+              { label:'Disponibles', n:4,  color:T.orange, pct:100 },
+              { label:'En cours',    n:7,  color:T.gold,   pct:57 },
+              { label:'Prêts',       n:3,  color:T.navy,   pct:25 },
+              { label:'Certifiés',   n:48, color:T.vertCI, pct:100 },
+            ].map((row, i) => (
+              <div key={i} style={{ marginBottom:12 }}>
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+                  <span style={{ fontSize:11, fontWeight:700, color:T.bois }}>{row.label}</span>
+                  <span style={{ fontSize:11, fontWeight:900, color:row.color }}>{row.n}</span>
+                </div>
+                <div style={{ height:6, borderRadius:99, background:`${row.color}12`, overflow:'hidden' }}>
+                  <div style={{ height:'100%', borderRadius:99, width:`${row.pct}%`, background:row.color, transition:'width 0.8s ease' }} />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Activité récente */}
+          <div style={{ borderRadius:18, background:'#fff', border:`1px solid ${A.gold15}`, padding:'14px 16px', flex:1 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
+              <h3 style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.05rem', fontWeight:700, color:T.darkBrown }}>
+                Activité récente
+              </h3>
+              <span style={{ fontSize:10, color:T.orange, fontWeight:700, cursor:'pointer' }}>Voir tout →</span>
+            </div>
+            <ActivityFeed />
+          </div>
+
+          {/* Raccourci délégation */}
+          <div style={{
+            borderRadius:18, padding:'16px', textAlign:'center',
+            background:'linear-gradient(135deg,#0A3D1F,#1B5E3A)',
+            border:`1px solid ${A.gold25}`,
+          }}>
+            <div style={{ fontSize:24, marginBottom:8 }}>🤝</div>
+            <p style={{ fontFamily:'var(--font-cormorant)', fontSize:'1rem', fontWeight:700, color:T.cream, marginBottom:4 }}>
+              Déléguer un dossier
+            </p>
+            <p style={{ fontSize:10, color:'rgba(245,230,200,0.5)', marginBottom:12 }}>
+              Transférer à un confrère notaire
+            </p>
+            <button style={{
+              width:'100%', padding:'9px', borderRadius:10,
+              background:A.gold20, border:`1px solid ${A.gold35}`,
+              color:T.gold, fontWeight:800, fontSize:11, cursor:'pointer',
+              letterSpacing:'0.06em',
+            }}>Créer un lien de délégation</button>
+          </div>
+        </div>
+      </main>
+
+      {/* Toast demo */}
+      <div style={{
+        position:'fixed', bottom:24, left:'50%', transform:'translateX(-50%)',
+        padding:'10px 20px', borderRadius:14,
+        background:'rgba(45,106,79,0.95)', color:'#fff',
+        display:'flex', alignItems:'center', gap:10,
+        boxShadow:'0 8px 24px rgba(0,0,0,0.3)', backdropFilter:'blur(12px)',
+      }}>
+        <span>✅</span>
+        <span style={{ fontSize:13, fontWeight:700 }}>Document validé avec succès</span>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<NotaireDashboard />);
+</script>
+<div id="root"></div>
+</body>
+</html>

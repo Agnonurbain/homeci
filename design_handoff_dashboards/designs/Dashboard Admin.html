@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HOMECI — Dashboard Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--font-cormorant:'Cormorant',Georgia,serif;--font-nunito:'Nunito',system-ui,sans-serif}
+html,body{height:100%}
+body{background:#0A3D1F;font-family:var(--font-nunito)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(212,160,23,0.25);border-radius:3px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.fade-in{animation:fadeIn .3s ease both}
+input:focus,select:focus,textarea:focus{outline:none}
+button{font-family:var(--font-nunito);cursor:pointer}
+</style>
+</head>
+<body>
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+/* ── TOKENS ── */
+const T = {
+  orange:'#FF6B00', orangeDark:'#AF4B00',
+  vertCI:'#009E49', gold:'#D4A017',
+  forest:'#1B5E3A', night:'#0A3D1F',
+  cream:'#F5E6C8', creamBg:'#FFF8ED',
+  brown:'#8B6A30', bois:'#5C3D1E', darkBrown:'#1A0E00',
+  bordeaux:'#8B1D1D', navy:'#1A3A6B', white:'#FFFFFF',
+  sidebar:'#071F0F',
+};
+const A = {
+  gold08:'rgba(212,160,23,0.08)',gold10:'rgba(212,160,23,0.10)',gold15:'rgba(212,160,23,0.15)',
+  gold20:'rgba(212,160,23,0.20)',gold25:'rgba(212,160,23,0.25)',gold30:'rgba(212,160,23,0.30)',
+  orange08:'rgba(255,107,0,0.08)',orange10:'rgba(255,107,0,0.10)',orange15:'rgba(255,107,0,0.15)',
+  orange20:'rgba(255,107,0,0.20)',orange25:'rgba(255,107,0,0.25)',
+  vert08:'rgba(0,158,73,0.08)',vert10:'rgba(0,158,73,0.10)',vert15:'rgba(0,158,73,0.15)',
+  vert20:'rgba(0,158,73,0.20)',vert25:'rgba(0,158,73,0.25)',
+  navy08:'rgba(26,58,107,0.08)',navy15:'rgba(26,58,107,0.15)',navy20:'rgba(26,58,107,0.20)',
+  bord08:'rgba(139,29,29,0.08)',bord10:'rgba(139,29,29,0.10)',bord15:'rgba(139,29,29,0.15)',
+  bord20:'rgba(139,29,29,0.20)',bord25:'rgba(139,29,29,0.25)',
+  cream50:'rgba(245,230,200,0.50)',cream60:'rgba(245,230,200,0.60)',
+  white05:'rgba(255,255,255,0.05)',white10:'rgba(255,255,255,0.10)',
+};
+
+function KenteLine({h=3}){
+  return <div style={{height:h,flexShrink:0,background:'repeating-linear-gradient(90deg,#FF6B00 0,#FF6B00 14px,#009E49 14px,#009E49 28px,#FFF 28px,#FFF 42px,#D4A017 42px,#D4A017 56px)'}}/>;
+}
+
+/* ── NAV (16 onglets réels) ── */
+const NAV = [
+  {id:'overview',    icon:'📊', label:"Vue d'ensemble",         short:'Accueil'},
+  {id:'users',       icon:'👥', label:'Utilisateurs',           short:'Users',    count:1284},
+  {id:'notaires',    icon:'🏛️', label:'Codes Notaires',         short:'Notaires'},
+  {id:'search',      icon:'🔍', label:'Recherche & Suspension', short:'Recherche'},
+  {id:'properties',  icon:'🏠', label:'Biens',                  short:'Biens',    count:342},
+  {id:'moderation',  icon:'⚖️', label:'Modération',             short:'Modé.',    count:3, urgent:true},
+  {id:'reports',     icon:'🚩', label:'Signalements',           short:'Signal.',  count:1, urgent:true},
+  {id:'visits',      icon:'📅', label:'Visites',                short:'Visites'},
+  {id:'surveys',     icon:'⭐', label:'Satisfaction',           short:'Sondages'},
+  {id:'cgv',         icon:'📜', label:'Docs Légaux / CGV',      short:'CGV'},
+  {id:'ads',         icon:'📣', label:'Publicités',             short:'Pubs'},
+  {id:'security',    icon:'🔐', label:'Sécurité',               short:'Logins'},
+  {id:'management',  icon:'👑', label:'Admins',                 short:'Admins'},
+  {id:'audit',       icon:'🛡️', label:"Journal d'Audit",        short:'Audit'},
+  {id:'exports',     icon:'⬇️', label:'Exports',                short:'Exports'},
+  {id:'analytics',   icon:'📈', label:'Analytics',              short:'Stats'},
+];
+
+/* ── MOCK DATA ── */
+const USERS = [
+  {id:'u1',name:'Kouassi Emmanuel',role:'owner',  email:'k.emmanuel@gmail.com', phone:'+225 07 00 11 22',date:'15 Jan 2025',status:'active',   props:3},
+  {id:'u2',name:'Aya Koffi',        role:'tenant', email:'aya.koffi@gmail.com',  phone:'+225 05 22 33 44',date:'20 Jan 2025',status:'active',   props:0},
+  {id:'u3',name:'Maître Adjoua',    role:'notaire',email:'m.adjoua@notaire.ci',  phone:'+225 01 44 55 66',date:'10 Jan 2025',status:'active',   props:0},
+  {id:'u4',name:'Bamba Sékou',      role:'owner',  email:'bamba.s@outlook.com',  phone:'+225 07 88 99 00',date:'05 Fév 2025',status:'suspended',props:1},
+  {id:'u5',name:'Traoré Fatou',     role:'tenant', email:'fatou.t@yahoo.fr',     phone:'+225 01 55 66 77',date:'01 Mar 2025',status:'active',   props:0},
+  {id:'u6',name:"N'Dri Paul",       role:'owner',  email:'ndri.paul@homeci.ci',  phone:'+225 05 33 44 55',date:'12 Mar 2025',status:'pending',  props:2},
+];
+const PROPS=[
+  {id:'p1',title:'Villa Cocody Riviera 5p', city:'Abidjan-Cocody', type:'villa',       price:'850 000',tx:'location',owner:'Kouassi Emmanuel',status:'published',verified:true, views:234},
+  {id:'p2',title:'Appartement Plateau 3p',  city:'Abidjan-Plateau',type:'appartement', price:'320 000',tx:'location',owner:'Bamba Sékou',     status:'pending',  verified:false,views:89},
+  {id:'p3',title:'Terrain Bingerville',     city:'Bingerville',    type:'terrain',      price:'25 000 000',tx:'vente',owner:"N'Dri Paul",    status:'published',verified:true, views:156},
+  {id:'p4',title:'Maison Marcory 4p',       city:'Abidjan-Marcory',type:'maison',       price:'480 000',tx:'location',owner:'Kouassi Emmanuel',status:'rejected', verified:false,views:43},
+  {id:'p5',title:'Villa Angré Golf 6p',     city:'Abidjan-Angré',  type:'villa',       price:'1 200 000',tx:'location',owner:"N'Dri Paul",  status:'published',verified:true, views:312},
+];
+const VISITS_DATA=[
+  {id:'v1',property:'Villa Cocody Riviera',tenant:'Aya Koffi',   owner:'Kouassi Emmanuel',date:'30 Avr 2025',time:'10h00',status:'accepted'},
+  {id:'v2',property:'Appartement Plateau',  tenant:'Traoré Fatou',owner:'Bamba Sékou',     date:'28 Avr 2025',time:'14h30',status:'pending'},
+  {id:'v3',property:'Villa Angré Golf',     tenant:'Aya Koffi',   owner:"N'Dri Paul",      date:'25 Avr 2025',time:'09h00',status:'rejected'},
+  {id:'v4',property:'Terrain Bingerville',  tenant:'Traoré Fatou',owner:"N'Dri Paul",      date:'22 Avr 2025',time:'11h00',status:'completed'},
+];
+const NOTAIRE_CODES=[
+  {id:'nc1',code:'ABCD-EFGH-IJ',note:'Me Konaté, Abidjan',status:'active',  created:'15 Avr 2025',expires:'22 Avr 2025'},
+  {id:'nc2',code:'WXYZ-1234-KL',note:'Cabinet Plateau',     status:'used',   created:'10 Avr 2025',expires:'17 Avr 2025'},
+  {id:'nc3',code:'QRST-5678-MN',note:'Me Diallo, Bouaké',   status:'expired',created:'01 Avr 2025',expires:'08 Avr 2025'},
+];
+const REPORTS=[
+  {id:'r1',property:'Appartement Plateau', reason:'Photos trompeuses',date:'Il y a 2h', severity:'high',  status:'pending'},
+  {id:'r2',property:'Annonce Yopougon',    reason:'Prix anormal',     date:'Hier',      severity:'medium',status:'pending'},
+  {id:'r3',property:'Villa Angré',         reason:'Doublon détecté',  date:'Il y a 2j', severity:'low',   status:'reviewed'},
+];
+const SURVEYS=[
+  {id:'s1',user:'Aya Koffi',   role:'tenant', rating:5,comment:'Excellent service, bien certifié!',date:'28 Avr 2025',trigger:'visit_accepted'},
+  {id:'s2',user:'Traoré Fatou',role:'tenant', rating:4,comment:'Rapide et efficace.',              date:'25 Avr 2025',trigger:'visit_completed'},
+  {id:'s3',user:'Kouassi E.',  role:'owner',  rating:3,comment:'Quelques améliorations possibles.',date:'20 Avr 2025',trigger:'property_rented'},
+  {id:'s4',user:'Bamba Sékou', role:'owner',  rating:5,comment:'Super plateforme!',                date:'15 Avr 2025',trigger:'property_sold'},
+];
+const ADS=[
+  {id:'a1',advertiser:"N'Dri Paul",property:'Villa Angré Golf 6p',  type:'boost',   dur:'7j', start:'25 Avr',end:'02 Mai',status:'active', views:892, clicks:47},
+  {id:'a2',advertiser:'Kouassi E.', property:'Villa Cocody Riviera',type:'featured',dur:'30j',start:'01 Avr',end:'01 Mai',status:'active', views:2341,clicks:134},
+  {id:'a3',advertiser:"N'Dri Paul", property:'Terrain Bingerville', type:'boost',   dur:'7j', start:'15 Avr',end:'22 Avr',status:'expired',views:456, clicks:23},
+];
+const AUDIT_LOGS=[
+  {id:'al1',action:'property_approved',  by:'Super Admin',target:'Villa Angré Golf',   reason:'Dossier complet',date:'01 Mai 2025 09:12'},
+  {id:'al2',action:'user_suspended',     by:'Super Admin',target:'Bamba Sékou',        reason:'Violation CGV',  date:'30 Avr 2025 16:45'},
+  {id:'al3',action:'notaire_code_created',by:'Super Admin',target:'Me Konaté',         reason:null,             date:'29 Avr 2025 11:20'},
+  {id:'al4',action:'property_rejected',  by:'Super Admin',target:'Maison Marcory',     reason:'Photos manquantes',date:'28 Avr 2025 14:30'},
+  {id:'al5',action:'admin_login',        by:'Super Admin',target:null,                  reason:null,             date:'28 Avr 2025 08:00'},
+  {id:'al6',action:'report_reviewed',   by:'Super Admin',target:'Appartement Plateau', reason:'Signalement traité',date:'27 Avr 2025 17:15'},
+];
+const LOGIN_HISTORY=[
+  {id:'lh1',email:'admin@homeci.ci',success:true, ip:'197.234.1.23',browser:'Chrome',os:'Windows',date:'01 Mai 2025 09:00'},
+  {id:'lh2',email:'admin2@homeci.ci',success:false,ip:'197.234.5.11',browser:'Firefox',os:'macOS',date:'30 Avr 2025 22:15'},
+  {id:'lh3',email:'admin@homeci.ci',success:true, ip:'197.234.1.23',browser:'Chrome',os:'Windows',date:'30 Avr 2025 08:30'},
+  {id:'lh4',email:'unknown@mail.com',success:false,ip:'41.207.18.99',browser:'Edge',os:'Linux',date:'29 Avr 2025 03:14'},
+];
+const MONTHLY=[
+  {m:'Oct',u:45,p:28,v:89},{m:'Nov',u:52,p:31,v:102},{m:'Déc',u:38,p:22,v:78},
+  {m:'Jan',u:67,p:45,v:134},{m:'Fév',u:74,p:52,v:156},{m:'Mar',u:89,p:61,v:198},{m:'Avr',u:103,p:74,v:241},
+];
+
+/* ── SHARED ── */
+const ROLE={owner:{l:'Propriétaire',c:T.orange,bg:A.orange10,bd:A.orange25},tenant:{l:'Locataire',c:T.navy,bg:A.navy08,bd:A.navy20},notaire:{l:'Notaire',c:T.gold,bg:A.gold10,bd:A.gold25},admin:{l:'Admin',c:T.bordeaux,bg:A.bord10,bd:A.bord25}};
+const PSTATUS={published:{l:'Publié',c:T.vertCI,bg:A.vert10,bd:A.vert25},pending:{l:'En attente',c:T.gold,bg:A.gold10,bd:A.gold25},rejected:{l:'Rejeté',c:T.bordeaux,bg:A.bord10,bd:A.bord25}};
+const VSTATUS={accepted:{l:'Confirmée',c:T.vertCI,bg:A.vert10,bd:A.vert25},pending:{l:'En attente',c:T.gold,bg:A.gold10,bd:A.gold25},rejected:{l:'Refusée',c:T.bordeaux,bg:A.bord10,bd:A.bord25},completed:{l:'Complétée',c:T.navy,bg:A.navy08,bd:A.navy20}};
+const USTATUS={active:{l:'Actif',c:T.vertCI,bg:A.vert10,bd:A.vert25},suspended:{l:'Suspendu',c:T.bordeaux,bg:A.bord10,bd:A.bord25},pending:{l:'En attente',c:T.gold,bg:A.gold10,bd:A.gold25}};
+const AUDIT_LABELS={'property_approved':'Bien approuvé','user_suspended':'Compte suspendu','notaire_code_created':'Code notaire créé','property_rejected':'Bien rejeté','admin_login':'Connexion admin','report_reviewed':'Signalement traité','property_certified':'Bien certifié','create_admin':'Admin créé','user_reactivated':'Compte réactivé','ad_deleted':'Pub supprimée'};
+
+function Badge({cfg,label}){const c=cfg||{l:label,c:T.gold,bg:A.gold10,bd:A.gold25};return(<span style={{padding:'2px 9px',borderRadius:99,fontSize:9,fontWeight:800,letterSpacing:'0.04em',background:c.bg,color:c.c,border:`1px solid ${c.bd}`}}>{c.l||label}</span>);}
+function PropIcon({type}){return <span>{type==='villa'?'🏡':type==='terrain'?'🌿':type==='appartement'?'🏢':'🏠'}</span>;}
+function Spinner(){return <div style={{width:32,height:32,borderRadius:99,border:`3px solid ${A.gold15}`,borderTopColor:T.gold,animation:'spin 0.8s linear infinite',margin:'60px auto'}}/>;}
+
+function StatCard({icon,label,value,sub,color,bg,bd,trend,spark}){
+  const max=spark?Math.max(...spark):1;
+  return(
+    <div style={{borderRadius:18,padding:'18px 20px',background:T.white,border:`1px solid ${bd||A.gold15}`,boxShadow:'0 2px 16px rgba(10,61,31,0.07)',display:'flex',flexDirection:'column',gap:12}}>
+      <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between'}}>
+        <div style={{width:44,height:44,borderRadius:12,background:bg,border:`1.5px solid ${bd}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>{icon}</div>
+        {trend&&<div style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,background:trend>0?A.vert08:A.bord08,color:trend>0?T.vertCI:T.bordeaux,fontSize:10,fontWeight:800}}>{trend>0?'↑':'↓'}{Math.abs(trend)}%</div>}
+      </div>
+      <div>
+        <div style={{fontFamily:'var(--font-cormorant)',fontSize:'2rem',fontWeight:900,color,lineHeight:1}}>{value}</div>
+        <div style={{fontSize:11,fontWeight:700,color:T.brown,marginTop:3}}>{label}</div>
+        {sub&&<div style={{fontSize:10,color:T.brown,opacity:.6,marginTop:2}}>{sub}</div>}
+      </div>
+      {spark&&<div style={{display:'flex',alignItems:'flex-end',gap:2,height:36}}>{spark.map((v,i)=><div key={i} style={{flex:1,borderRadius:'3px 3px 0 0',height:`${Math.max(5,(v/max)*36)}px`,background:i===spark.length-1?color:`${color}50`}}/>)}</div>}
+    </div>
+  );
+}
+
+function SHead({title,sub,action}){return(
+  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+    <div>
+      <h2 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.6rem',fontWeight:700,color:T.darkBrown}}>{title}</h2>
+      {sub&&<p style={{fontSize:12,color:T.brown,marginTop:2}}>{sub}</p>}
+    </div>
+    {action}
+  </div>
+);}
+
+function SearchBar({placeholder}){return(
+  <div style={{position:'relative',flex:1,minWidth:180}}>
+    <span style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',fontSize:14}}>🔍</span>
+    <input type="text" placeholder={placeholder||'Rechercher…'} style={{width:'100%',padding:'10px 14px 10px 36px',borderRadius:12,border:`1px solid ${A.gold20}`,background:'rgba(255,255,255,0.9)',fontSize:13,color:T.darkBrown}}/>
+  </div>
+);}
+
+/* ══ 1. OVERVIEW ══ */
+function OverviewTab({setTab}){
+  return(
+    <div className="fade-in">
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:16,marginBottom:28}}>
+        <StatCard icon="👥" label="Utilisateurs" value="1 284" sub="+103 ce mois" color={T.navy} bg={A.navy08} bd={A.navy20} trend={14} spark={[45,52,38,67,74,89,103]}/>
+        <StatCard icon="🏠" label="Biens publiés" value="342" sub="+74 ce mois" color={T.orange} bg={A.orange10} bd={A.orange25} trend={8} spark={[28,31,22,45,52,61,74]}/>
+        <StatCard icon="📅" label="Visites planifiées" value="241" sub="Ce mois" color={T.vertCI} bg={A.vert10} bd={A.vert25} trend={22} spark={[89,102,78,134,156,198,241]}/>
+        <StatCard icon="🏛️" label="Certifications" value="48" sub="+12 ce mois" color={T.gold} bg={A.gold10} bd={A.gold25} trend={-3} spark={[12,15,9,18,14,16,12]}/>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 320px',gap:20}}>
+        <div style={{display:'flex',flexDirection:'column',gap:20}}>
+          {/* Bar chart */}
+          <div style={{borderRadius:20,background:T.white,border:`1px solid ${A.gold15}`,padding:'20px 24px'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:18}}>
+              <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.1rem',fontWeight:700,color:T.darkBrown}}>Activité mensuelle — 7 mois</h3>
+              <div style={{display:'flex',gap:14,fontSize:11,fontWeight:700}}>
+                {[{l:'Utilisateurs',c:T.navy},{l:'Biens',c:T.orange},{l:'Visites',c:T.vertCI}].map(x=>(
+                  <div key={x.l} style={{display:'flex',alignItems:'center',gap:5}}>
+                    <div style={{width:10,height:10,borderRadius:2,background:x.c}}/>
+                    <span style={{color:T.brown}}>{x.l}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{display:'flex',alignItems:'flex-end',gap:10,height:160}}>
+              {MONTHLY.map((m,i)=>(
+                <div key={m.m} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+                  <div style={{display:'flex',gap:3,alignItems:'flex-end',width:'100%'}}>
+                    {[{v:m.u,c:T.navy,max:120},{v:m.p,c:T.orange,max:120},{v:m.v/3,c:T.vertCI,max:120}].map((b,bi)=>(
+                      <div key={bi} style={{flex:1,borderRadius:'4px 4px 0 0',height:`${Math.max(4,(b.v/b.max)*140)}px`,background:i===MONTHLY.length-1?b.c:`${b.c}60`}}/>
+                    ))}
+                  </div>
+                  <span style={{fontSize:9,color:T.brown,fontWeight:700}}>{m.m}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent users */}
+          <div style={{borderRadius:20,background:T.white,border:`1px solid ${A.gold15}`,overflow:'hidden'}}>
+            <div style={{padding:'14px 20px',borderBottom:`1px solid ${A.gold10}`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.05rem',fontWeight:700,color:T.darkBrown}}>Derniers inscrits</h3>
+              <button onClick={()=>setTab('users')} style={{padding:'5px 12px',borderRadius:8,fontSize:11,fontWeight:700,background:A.orange10,color:T.orange,border:`1px solid ${A.orange20}`}}>Voir tout →</button>
+            </div>
+            {USERS.slice(0,4).map((u,i)=>{
+              const r=ROLE[u.role]||ROLE.tenant;
+              return(
+                <div key={u.id} style={{display:'flex',alignItems:'center',gap:12,padding:'11px 20px',borderBottom:i<3?`1px solid ${A.gold08}`:'none'}}
+                  onMouseEnter={e=>e.currentTarget.style.background=A.gold08} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                  <div style={{width:34,height:34,borderRadius:9,flexShrink:0,background:`${r.c}15`,border:`1px solid ${r.c}30`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,fontWeight:900,color:r.c,fontFamily:'var(--font-cormorant)'}}>{u.name[0]}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <p style={{fontSize:12,fontWeight:700,color:T.darkBrown,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.name}</p>
+                    <p style={{fontSize:10,color:T.brown,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.email}</p>
+                  </div>
+                  <Badge cfg={r}/><Badge cfg={USTATUS[u.status]}/>
+                  <span style={{fontSize:10,color:T.brown,minWidth:72,textAlign:'right'}}>{u.date}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Recent properties */}
+          <div style={{borderRadius:20,background:T.white,border:`1px solid ${A.gold15}`,overflow:'hidden'}}>
+            <div style={{padding:'14px 20px',borderBottom:`1px solid ${A.gold10}`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.05rem',fontWeight:700,color:T.darkBrown}}>Biens récents</h3>
+              <button onClick={()=>setTab('properties')} style={{padding:'5px 12px',borderRadius:8,fontSize:11,fontWeight:700,background:A.vert10,color:T.vertCI,border:`1px solid ${A.vert20}`}}>Voir tout →</button>
+            </div>
+            {PROPS.slice(0,3).map((p,i)=>{
+              const s=PSTATUS[p.status]||PSTATUS.pending;
+              return(
+                <div key={p.id} style={{display:'flex',alignItems:'center',gap:12,padding:'11px 20px',borderBottom:i<2?`1px solid ${A.gold08}`:'none'}}
+                  onMouseEnter={e=>e.currentTarget.style.background=A.gold08} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                  <div style={{width:38,height:38,borderRadius:9,flexShrink:0,background:A.orange10,border:`1px solid ${A.orange20}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}><PropIcon type={p.type}/></div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <p style={{fontSize:12,fontWeight:700,color:T.darkBrown,fontFamily:'var(--font-cormorant)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.title}</p>
+                    <p style={{fontSize:10,color:T.brown}}>📍 {p.city} — {p.owner}</p>
+                  </div>
+                  <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                    {p.verified&&<span style={{fontSize:12}}>🛡️</span>}
+                    <Badge cfg={s}/>
+                    <span style={{fontSize:10,color:T.brown}}>👁️ {p.views}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Right */}
+        <div style={{display:'flex',flexDirection:'column',gap:16}}>
+          {/* Quick actions */}
+          <div style={{borderRadius:18,background:T.white,border:`1px solid ${A.gold15}`,padding:'16px'}}>
+            <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.05rem',fontWeight:700,color:T.darkBrown,marginBottom:12}}>Actions rapides</h3>
+            {[
+              {icon:'✅',label:'Valider biens en attente',color:T.vertCI,bg:A.vert08,bd:A.vert15,badge:'3',tab:'moderation'},
+              {icon:'⚠️',label:'Traiter signalements',    color:T.bordeaux,bg:A.bord08,bd:A.bord15,badge:'1',tab:'reports'},
+              {icon:'🏛️',label:'Générer code notaire',    color:T.gold,bg:A.gold08,bd:A.gold20,tab:'notaires'},
+              {icon:'🔍',label:'Suspendre un compte',     color:T.navy,bg:A.navy08,bd:A.navy15,tab:'search'},
+              {icon:'📈',label:'Voir analytics',          color:T.orange,bg:A.orange08,bd:A.orange15,tab:'analytics'},
+            ].map(a=>(
+              <button key={a.label} onClick={()=>setTab(a.tab)} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',borderRadius:12,border:`1px solid ${a.bd}`,background:a.bg,transition:'all .15s',textAlign:'left',width:'100%',marginBottom:6}}
+                onMouseEnter={e=>e.currentTarget.style.transform='translateX(3px)'} onMouseLeave={e=>e.currentTarget.style.transform=''}>
+                <span style={{fontSize:16}}>{a.icon}</span>
+                <span style={{flex:1,fontSize:12,fontWeight:700,color:a.color}}>{a.label}</span>
+                {a.badge&&<span style={{padding:'1px 7px',borderRadius:99,fontSize:9,fontWeight:900,background:a.color,color:'#fff'}}>{a.badge}</span>}
+              </button>
+            ))}
+          </div>
+
+          {/* Health */}
+          <div style={{borderRadius:18,background:T.white,border:`1px solid ${A.gold15}`,padding:'16px'}}>
+            <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.05rem',fontWeight:700,color:T.darkBrown,marginBottom:14}}>Santé plateforme</h3>
+            {[{l:'Taux de certification',v:87,c:T.vertCI},{l:'Visites confirmées',v:73,c:T.navy},{l:'Comptes actifs',v:91,c:T.orange},{l:'Biens vérifiés',v:64,c:T.gold}].map(m=>(
+              <div key={m.l} style={{marginBottom:12}}>
+                <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+                  <span style={{fontSize:11,fontWeight:600,color:T.bois}}>{m.l}</span>
+                  <span style={{fontSize:11,fontWeight:900,color:m.c}}>{m.v}%</span>
+                </div>
+                <div style={{height:6,borderRadius:99,background:`${m.c}12`,overflow:'hidden'}}>
+                  <div style={{height:'100%',borderRadius:99,width:`${m.v}%`,background:m.c}}/>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Activity */}
+          <div style={{borderRadius:18,background:T.white,border:`1px solid ${A.gold15}`,padding:'16px'}}>
+            <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.05rem',fontWeight:700,color:T.darkBrown,marginBottom:14}}>Journal récent</h3>
+            {[
+              {icon:'✅',action:'Bien approuvé',detail:'Villa Angré Golf',color:T.vertCI,time:'9h12'},
+              {icon:'🚫',action:'Compte suspendu',detail:'Bamba Sékou',color:T.bordeaux,time:'16h45'},
+              {icon:'🏛️',action:'Code notaire généré',detail:'Me Konaté',color:T.gold,time:'11h20'},
+              {icon:'⚠️',action:'Bien rejeté',detail:'Maison Marcory',color:T.orange,time:'14h30'},
+            ].map((item,i)=>(
+              <div key={i} style={{display:'flex',gap:10,marginBottom:12,position:'relative'}}>
+                {i<3&&<div style={{position:'absolute',left:13,top:28,width:1,bottom:-12,background:`${item.color}20`}}/>}
+                <div style={{width:28,height:28,borderRadius:99,flexShrink:0,background:`${item.color}15`,border:`1.5px solid ${item.color}30`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12}}>{item.icon}</div>
+                <div>
+                  <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:1}}>
+                    <span style={{fontSize:11,fontWeight:700,color:T.bois}}>{item.action}</span>
+                    <span style={{fontSize:9,color:T.brown}}>{item.time}</span>
+                  </div>
+                  <p style={{fontSize:10,color:T.brown}}>{item.detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══ 2. USERS ══ */
+function UsersTab(){
+  const [filter,setFilter]=useState('all');
+  return(
+    <div className="fade-in">
+      <SHead title="Utilisateurs" sub={`${USERS.length} utilisateurs enregistrés`} action={<button style={{padding:'9px 18px',borderRadius:12,fontSize:12,fontWeight:800,background:'linear-gradient(135deg,#FF6B00,#D4A017)',color:'#fff',border:'none'}}>+ Ajouter</button>}/>
+      <div style={{display:'flex',gap:10,marginBottom:20,flexWrap:'wrap'}}>
+        <SearchBar placeholder="Rechercher un utilisateur…"/>
+        <div style={{display:'flex',gap:6}}>
+          {['all','owner','tenant','notaire'].map(r=>(
+            <button key={r} onClick={()=>setFilter(r)} style={{padding:'9px 14px',borderRadius:10,fontSize:11,fontWeight:700,background:filter===r?T.forest:T.white,color:filter===r?T.cream:T.brown,border:filter===r?`1px solid ${A.gold25}`:`1px solid ${A.gold15}`}}>
+              {r==='all'?'Tous':ROLE[r]?.l} ({r==='all'?USERS.length:USERS.filter(u=>u.role===r).length})
+            </button>
+          ))}
+        </div>
+      </div>
+      <div style={{borderRadius:20,background:T.white,border:`1px solid ${A.gold15}`,overflow:'hidden'}}>
+        <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr 80px 120px',padding:'10px 20px',background:A.gold08,borderBottom:`1px solid ${A.gold15}`}}>
+          {['Utilisateur','Rôle','Statut','Inscription','Biens','Actions'].map(h=><span key={h} style={{fontSize:9,fontWeight:900,color:T.brown,letterSpacing:'0.08em',textTransform:'uppercase'}}>{h}</span>)}
+        </div>
+        {USERS.filter(u=>filter==='all'||u.role===u.role&&(filter==='all'||u.role===filter)).map((u,i,arr)=>{
+          const r=ROLE[u.role]||ROLE.tenant;
+          return(
+            <div key={u.id} style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr 80px 120px',alignItems:'center',padding:'13px 20px',borderBottom:i<arr.length-1?`1px solid ${A.gold08}`:'none'}}
+              onMouseEnter={e=>e.currentTarget.style.background=A.gold08} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+              <div style={{display:'flex',alignItems:'center',gap:10,minWidth:0}}>
+                <div style={{width:34,height:34,borderRadius:9,flexShrink:0,background:`${r.c}15`,border:`1px solid ${r.c}30`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,fontWeight:900,color:r.c}}>{u.name[0]}</div>
+                <div style={{minWidth:0}}>
+                  <p style={{fontSize:12,fontWeight:700,color:T.darkBrown,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.name}</p>
+                  <p style={{fontSize:10,color:T.brown,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.email}</p>
+                </div>
+              </div>
+              <Badge cfg={r}/><Badge cfg={USTATUS[u.status]}/>
+              <span style={{fontSize:11,color:T.brown}}>{u.date}</span>
+              <span style={{fontSize:12,fontWeight:700,color:T.orange,textAlign:'center'}}>{u.props}</span>
+              <div style={{display:'flex',gap:5}}>
+                <button style={{padding:'5px 10px',borderRadius:8,fontSize:10,fontWeight:700,background:A.navy08,color:T.navy,border:`1px solid ${A.navy15}`}}>Voir</button>
+                {u.status==='active'?<button style={{padding:'5px 10px',borderRadius:8,fontSize:10,fontWeight:700,background:A.bord08,color:T.bordeaux,border:`1px solid ${A.bord15}`}}>🚫</button>:<button style={{padding:'5px 10px',borderRadius:8,fontSize:10,fontWeight:700,background:A.vert08,color:T.vertCI,border:`1px solid ${A.vert15}`}}>✓</button>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ══ 3. NOTAIRE CODES ══ */
+function NotairesTab(){
+  return(
+    <div className="fade-in">
+      <SHead title="Codes d'invitation Notaires" sub="Codes à usage unique pour l'inscription des notaires agréés"
+        action={<button style={{padding:'9px 18px',borderRadius:12,fontSize:12,fontWeight:800,background:'linear-gradient(135deg,#FF6B00,#D4A017)',color:'#fff',border:'none'}}>+ Générer un code</button>}/>
+      {/* Générateur */}
+      <div style={{borderRadius:18,padding:'20px',marginBottom:20,background:T.white,border:`1px solid ${A.gold20}`}}>
+        <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.1rem',fontWeight:700,color:T.darkBrown,marginBottom:14}}>Générer un nouveau code</h3>
+        <div style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'flex-end'}}>
+          <div style={{flex:1,minWidth:200}}>
+            <label style={{display:'block',fontSize:9,fontWeight:900,color:T.brown,letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:6}}>Note (optionnel)</label>
+            <input type="text" placeholder="Ex: Me Konaté, Cabinet Abidjan..." style={{width:'100%',padding:'10px 14px',borderRadius:10,border:`1px solid ${A.gold20}`,background:'rgba(249,243,232,0.5)',fontSize:13}}/>
+          </div>
+          <div>
+            <label style={{display:'block',fontSize:9,fontWeight:900,color:T.brown,letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:6}}>Expire dans</label>
+            <select style={{padding:'10px 14px',borderRadius:10,border:`1px solid ${A.gold20}`,background:'rgba(249,243,232,0.5)',fontSize:12,fontWeight:700}}>
+              <option>1 jour</option><option>3 jours</option><option selected>7 jours</option><option>30 jours</option>
+            </select>
+          </div>
+          <button style={{padding:'10px 20px',borderRadius:10,background:'linear-gradient(135deg,#FF6B00,#D4A017)',color:'#fff',fontWeight:800,fontSize:12,border:'none'}}>🏛️ Générer</button>
+        </div>
+      </div>
+      {/* Liste codes */}
+      <div style={{borderRadius:18,background:T.white,border:`1px solid ${A.gold15}`,overflow:'hidden'}}>
+        <div style={{padding:'14px 20px',borderBottom:`1px solid ${A.gold10}`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.05rem',fontWeight:700,color:T.darkBrown}}>Codes générés ({NOTAIRE_CODES.length})</h3>
+        </div>
+        {NOTAIRE_CODES.map((c,i)=>{
+          const stCfg=c.status==='active'?{l:'Actif',c:T.vertCI,bg:A.vert10,bd:A.vert25}:c.status==='used'?{l:'Utilisé',c:T.navy,bg:A.navy08,bd:A.navy20}:{l:'Expiré',c:T.bordeaux,bg:A.bord10,bd:A.bord25};
+          return(
+            <div key={c.id} style={{display:'flex',alignItems:'center',gap:14,padding:'14px 20px',borderBottom:i<NOTAIRE_CODES.length-1?`1px solid ${A.gold08}`:'none'}}
+              onMouseEnter={e=>e.currentTarget.style.background=A.gold08} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+              <span style={{fontFamily:'monospace',fontSize:14,fontWeight:800,letterSpacing:'0.15em',color:T.darkBrown}}>{c.code}</span>
+              {c.note&&<span style={{padding:'2px 9px',borderRadius:99,fontSize:10,background:A.orange10,color:T.orangeDark}}>{c.note}</span>}
+              <Badge cfg={stCfg}/>
+              <div style={{flex:1}}/>
+              <span style={{fontSize:10,color:T.brown}}>Créé {c.created} · Expire {c.expires}</span>
+              {c.status==='active'&&<>
+                <button style={{padding:'5px 12px',borderRadius:8,fontSize:10,fontWeight:700,background:A.gold08,color:T.brown,border:`1px solid ${A.gold20}`}}>📋 Copier</button>
+                <button style={{padding:'5px 12px',borderRadius:8,fontSize:10,fontWeight:700,background:A.bord08,color:T.bordeaux,border:`1px solid ${A.bord15}`}}>Révoquer</button>
+              </>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ══ 4. SEARCH & SUSPENSION ══ */
+function SearchTab(){
+  return(
+    <div className="fade-in">
+      <SHead title="Recherche & Suspension" sub="Rechercher un utilisateur par nom, email, téléphone ou ID"/>
+      <div style={{display:'flex',gap:10,marginBottom:20,flexWrap:'wrap'}}>
+        <SearchBar placeholder="Rechercher par nom, email, téléphone ou ID..."/>
+        <select style={{padding:'10px 14px',borderRadius:12,border:`1px solid ${A.gold20}`,background:'rgba(255,255,255,0.9)',fontSize:12,fontWeight:700,color:T.bois}}>
+          <option>Tous les rôles</option><option>Locataire</option><option>Propriétaire</option><option>Notaire</option>
+        </select>
+        <select style={{padding:'10px 14px',borderRadius:12,border:`1px solid ${A.gold20}`,background:'rgba(255,255,255,0.9)',fontSize:12,fontWeight:700,color:T.bois}}>
+          <option>Tous les statuts</option><option>Actifs</option><option>Suspendus</option>
+        </select>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        {USERS.map(u=>{
+          const r=ROLE[u.role]||ROLE.tenant;
+          return(
+            <div key={u.id} style={{borderRadius:16,padding:'14px 18px',background:u.status==='suspended'?'rgba(139,29,29,0.03)':T.white,border:`1px solid ${u.status==='suspended'?'rgba(139,29,29,0.2)':A.gold15}`}}>
+              <div style={{display:'flex',alignItems:'center',gap:14}}>
+                <div style={{width:40,height:40,borderRadius:10,flexShrink:0,background:`${r.c}15`,border:`1px solid ${r.c}30`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,fontWeight:900,color:r.c}}>{u.name[0]}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4,flexWrap:'wrap'}}>
+                    <span style={{fontSize:13,fontWeight:700,color:T.darkBrown}}>{u.name}</span>
+                    <Badge cfg={r}/>
+                    {u.status==='suspended'&&<span style={{padding:'2px 9px',borderRadius:99,fontSize:9,fontWeight:800,background:A.bord10,color:T.bordeaux,border:`1px solid ${A.bord25}`}}>SUSPENDU</span>}
+                  </div>
+                  <div style={{display:'flex',gap:14,fontSize:11,color:T.brown,flexWrap:'wrap'}}>
+                    <span>✉️ {u.email}</span><span>📞 {u.phone}</span><span>📅 {u.date}</span>
+                  </div>
+                </div>
+                <div style={{display:'flex',gap:8,flexShrink:0}}>
+                  <button style={{padding:'7px 14px',borderRadius:10,fontSize:11,fontWeight:700,background:A.navy08,color:T.navy,border:`1px solid ${A.navy15}`}}>Voir profil</button>
+                  {u.status==='suspended'
+                    ?<button style={{padding:'7px 14px',borderRadius:10,fontSize:11,fontWeight:700,background:A.vert10,color:T.vertCI,border:`1px solid ${A.vert25}`}}>✓ Réactiver</button>
+                    :<button style={{padding:'7px 14px',borderRadius:10,fontSize:11,fontWeight:700,background:A.bord08,color:T.bordeaux,border:`1px solid ${A.bord15}`}}>🚫 Suspendre</button>
+                  }
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ══ 5. PROPERTIES ══ */
+function PropertiesTab(){
+  return(
+    <div className="fade-in">
+      <SHead title="Biens immobiliers" sub={`${PROPS.length} biens — ${PROPS.filter(p=>p.status==='pending').length} en attente`} action={<button style={{padding:'9px 14px',borderRadius:12,fontSize:11,fontWeight:700,background:A.gold10,color:T.brown,border:`1px solid ${A.gold25}`}}>⬇️ Exporter CSV</button>}/>
+      <div style={{display:'flex',gap:10,marginBottom:20,flexWrap:'wrap'}}>
+        <SearchBar placeholder="Rechercher un bien…"/>
+        {['Tous les statuts','Publié','En attente','Rejeté'].map(s=><select key={s} style={{padding:'10px 14px',borderRadius:12,border:`1px solid ${A.gold20}`,background:'rgba(255,255,255,0.9)',fontSize:12,fontWeight:700,color:T.bois}}><option>{s}</option></select>)}
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        {PROPS.map(p=>{
+          const st=PSTATUS[p.status]||PSTATUS.pending;
+          return(
+            <div key={p.id} style={{borderRadius:18,overflow:'hidden',background:T.white,border:`1px solid ${st.bd}`,boxShadow:'0 2px 10px rgba(26,14,0,0.05)'}}>
+              <div style={{height:3,background:st.c}}/>
+              <div style={{display:'flex',alignItems:'center',gap:14,padding:'14px 18px'}}>
+                <div style={{width:48,height:48,borderRadius:12,flexShrink:0,background:A.orange10,border:`1px solid ${A.orange20}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22}}><PropIcon type={p.type}/></div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+                    <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1rem',fontWeight:700,color:T.darkBrown,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.title}</h3>
+                    {p.verified&&<span>🛡️</span>}
+                    <Badge cfg={st}/>
+                  </div>
+                  <div style={{display:'flex',gap:14,fontSize:11,color:T.brown}}>
+                    <span>📍 {p.city}</span><span>👤 {p.owner}</span>
+                    <span style={{fontWeight:700,color:T.orange}}>💰 {p.price} FCFA{p.tx==='location'?'/mois':''}</span>
+                    <span>👁️ {p.views} vues</span>
+                  </div>
+                </div>
+                <div style={{display:'flex',gap:8,flexShrink:0}}>
+                  <button style={{padding:'7px 14px',borderRadius:10,fontSize:11,fontWeight:700,background:A.navy08,color:T.navy,border:`1px solid ${A.navy15}`}}>Voir</button>
+                  {p.status==='pending'&&<><button style={{padding:'7px 12px',borderRadius:10,fontSize:11,fontWeight:700,background:A.vert10,color:T.vertCI,border:`1px solid ${A.vert25}`}}>✓ Valider</button><button style={{padding:'7px 12px',borderRadius:10,fontSize:11,fontWeight:700,background:A.bord10,color:T.bordeaux,border:`1px solid ${A.bord25}`}}>✕ Rejeter</button></>}
+                  {p.status==='published'&&<button style={{padding:'7px 12px',borderRadius:10,fontSize:11,fontWeight:700,background:A.bord08,color:T.bordeaux,border:`1px solid ${A.bord15}`}}>🚫 Dépublier</button>}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ══ 6. MODÉRATION ══ */
+function ModerationTab(){
+  const pending=PROPS.filter(p=>p.status==='pending');
+  return(
+    <div className="fade-in">
+      <SHead title="Modération" sub={`${pending.length} bien(s) en attente de validation`}/>
+      {pending.length===0?<div style={{padding:60,borderRadius:20,background:T.white,textAlign:'center',border:`1px dashed ${A.gold25}`}}><p style={{fontSize:20}}>✅</p><p style={{fontSize:14,color:T.brown,marginTop:8}}>Aucun bien en attente</p></div>
+      :pending.map(p=>(
+        <div key={p.id} style={{borderRadius:18,overflow:'hidden',background:T.white,border:`1px solid ${A.gold25}`,marginBottom:12,boxShadow:'0 2px 12px rgba(26,14,0,0.06)'}}>
+          <div style={{height:3,background:T.gold}}/>
+          <div style={{display:'flex',alignItems:'center',gap:14,padding:'16px 20px'}}>
+            <div style={{width:52,height:52,borderRadius:12,flexShrink:0,background:A.gold08,border:`1px solid ${A.gold20}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24}}><PropIcon type={p.type}/></div>
+            <div style={{flex:1,minWidth:0}}>
+              <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.1rem',fontWeight:700,color:T.darkBrown,marginBottom:4}}>{p.title}</h3>
+              <div style={{display:'flex',gap:14,fontSize:11,color:T.brown}}>
+                <span>📍 {p.city}</span><span>👤 {p.owner}</span><span style={{fontWeight:700,color:T.orange}}>💰 {p.price} FCFA</span>
+              </div>
+            </div>
+            <div style={{display:'flex',gap:8,flexShrink:0}}>
+              <button style={{padding:'9px 18px',borderRadius:12,fontSize:12,fontWeight:800,background:'linear-gradient(135deg,#009E49,#2D6A4F)',color:'#fff',border:'none'}}>✓ Valider</button>
+              <button style={{padding:'9px 14px',borderRadius:12,fontSize:11,fontWeight:700,background:A.navy08,color:T.navy,border:`1px solid ${A.navy15}`}}>Voir détails</button>
+              <button style={{padding:'9px 14px',borderRadius:12,fontSize:11,fontWeight:700,background:A.bord08,color:T.bordeaux,border:`1px solid ${A.bord15}`}}>✕ Rejeter</button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ══ 7. REPORTS ══ */
+function ReportsTab(){
+  return(
+    <div className="fade-in">
+      <SHead title="Signalements d'annonces" sub={`${REPORTS.filter(r=>r.status==='pending').length} en attente de traitement`}/>
+      <div style={{display:'flex',gap:8,marginBottom:20,flexWrap:'wrap'}}>
+        {['Tous','En attente','Traités','Rejetés'].map(f=><button key={f} style={{padding:'7px 16px',borderRadius:10,fontSize:11,fontWeight:700,background:f==='Tous'?T.forest:T.white,color:f==='Tous'?T.cream:T.brown,border:`1px solid ${f==='Tous'?A.gold25:A.gold15}`}}>{f}</button>)}
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        {REPORTS.map(r=>{
+          const sev=r.severity==='high'?{c:T.bordeaux,bg:A.bord10,bd:A.bord25,l:'Critique'}:r.severity==='medium'?{c:T.orange,bg:A.orange10,bd:A.orange25,l:'Moyen'}:{c:T.gold,bg:A.gold10,bd:A.gold25,l:'Faible'};
+          const st=r.status==='pending'?{c:T.gold,bg:A.gold10,bd:A.gold25,l:'En attente'}:{c:T.vertCI,bg:A.vert10,bd:A.vert25,l:'Traité'};
+          return(
+            <div key={r.id} style={{borderRadius:18,padding:'16px 20px',background:T.white,border:`1px solid ${A.gold15}`,boxShadow:'0 2px 8px rgba(26,14,0,0.05)'}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:16}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6,flexWrap:'wrap'}}>
+                    <span style={{fontSize:14}}>⚠️</span>
+                    <span style={{fontSize:13,fontWeight:700,color:T.darkBrown}}>{r.property}</span>
+                    <Badge cfg={sev}/><Badge cfg={st}/>
+                  </div>
+                  <div style={{display:'flex',gap:12,fontSize:11,color:T.brown}}>
+                    <span style={{padding:'2px 8px',borderRadius:6,background:A.orange08,color:T.orangeDark,fontWeight:600}}>{r.reason}</span>
+                    <span>{r.date}</span>
+                  </div>
+                </div>
+                {r.status==='pending'&&(
+                  <div style={{display:'flex',gap:8,flexShrink:0}}>
+                    <button style={{padding:'7px 14px',borderRadius:10,fontSize:11,fontWeight:700,background:A.vert10,color:T.vertCI,border:`1px solid ${A.vert25}`}}>✓ Traiter</button>
+                    <button style={{padding:'7px 12px',borderRadius:10,fontSize:11,fontWeight:700,background:A.navy08,color:T.navy,border:`1px solid ${A.navy15}`}}>✕ Rejeter</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ══ 8. VISITS ══ */
+function VisitsTab(){
+  return(
+    <div className="fade-in">
+      <SHead title="Suivi des visites" sub={`${VISITS_DATA.length} visites enregistrées`} action={<button style={{padding:'9px 14px',borderRadius:12,fontSize:11,fontWeight:700,background:T.night,color:T.gold,border:`1px solid ${A.gold25}`}}>🔔 Envoyer rappels</button>}/>
+      <div style={{display:'flex',gap:8,marginBottom:20,flexWrap:'wrap'}}>
+        {[{l:'Toutes',n:VISITS_DATA.length,c:T.bois},{l:'Confirmées',n:1,c:T.vertCI},{l:'En attente',n:1,c:T.gold},{l:'Complétées',n:1,c:T.navy},{l:'Refusées',n:1,c:T.bordeaux}].map(f=>(
+          <button key={f.l} style={{padding:'7px 16px',borderRadius:10,fontSize:11,fontWeight:700,background:A.gold08,color:f.c,border:`1px solid ${A.gold15}`}}>{f.l} ({f.n})</button>
+        ))}
+        <SearchBar placeholder="Rechercher…"/>
+      </div>
+      <div style={{borderRadius:20,background:T.white,border:`1px solid ${A.gold15}`,overflow:'hidden'}}>
+        <div style={{display:'grid',gridTemplateColumns:'2fr 1.5fr 1.5fr 1fr 1fr 100px',padding:'10px 20px',background:A.gold08,borderBottom:`1px solid ${A.gold15}`}}>
+          {['Bien','Locataire','Propriétaire','Date & Heure','Statut','Actions'].map(h=><span key={h} style={{fontSize:9,fontWeight:900,color:T.brown,letterSpacing:'0.08em',textTransform:'uppercase'}}>{h}</span>)}
+        </div>
+        {VISITS_DATA.map((v,i,arr)=>{
+          const st=VSTATUS[v.status]||VSTATUS.pending;
+          return(
+            <div key={v.id} style={{display:'grid',gridTemplateColumns:'2fr 1.5fr 1.5fr 1fr 1fr 100px',alignItems:'center',padding:'13px 20px',borderBottom:i<arr.length-1?`1px solid ${A.gold08}`:'none'}}
+              onMouseEnter={e=>e.currentTarget.style.background=A.gold08} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+              <span style={{fontSize:12,fontWeight:700,color:T.darkBrown,fontFamily:'var(--font-cormorant)'}}>{v.property}</span>
+              <span style={{fontSize:11,color:T.bois}}>👤 {v.tenant}</span>
+              <span style={{fontSize:11,color:T.bois}}>🏠 {v.owner}</span>
+              <div><p style={{fontSize:11,fontWeight:600,color:T.bois}}>{v.date}</p><p style={{fontSize:10,color:T.brown}}>{v.time}</p></div>
+              <Badge cfg={st}/>
+              <button style={{padding:'6px 12px',borderRadius:9,fontSize:10,fontWeight:700,background:A.navy08,color:T.navy,border:`1px solid ${A.navy15}`}}>Détails</button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ══ 9. SURVEYS ══ */
+function SurveysTab(){
+  const avg=(SURVEYS.reduce((s,x)=>s+x.rating,0)/SURVEYS.length).toFixed(1);
+  return(
+    <div className="fade-in">
+      <SHead title="Enquêtes de satisfaction" sub={`${SURVEYS.length} réponses collectées`}/>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:14,marginBottom:24}}>
+        {[{icon:'⭐',label:'Note moyenne',val:avg,c:T.gold},{icon:'👥',label:'Réponses totales',val:SURVEYS.length,c:T.navy},{icon:'📈',label:'Satisfaits (4-5★)',val:SURVEYS.filter(s=>s.rating>=4).length,c:T.vertCI},{icon:'💬',label:'Avec commentaire',val:SURVEYS.filter(s=>s.comment).length,c:T.orange}].map(k=>(
+          <div key={k.label} style={{borderRadius:16,padding:'16px',background:T.white,border:`1px solid ${A.gold15}`,textAlign:'center'}}>
+            <div style={{fontSize:22,marginBottom:6}}>{k.icon}</div>
+            <div style={{fontFamily:'var(--font-cormorant)',fontSize:'1.8rem',fontWeight:900,color:k.c,lineHeight:1}}>{k.val}</div>
+            <div style={{fontSize:10,color:T.brown,marginTop:4}}>{k.label}</div>
+          </div>
+        ))}
+      </div>
+      {/* Distribution */}
+      <div style={{borderRadius:18,padding:'18px 20px',background:T.white,border:`1px solid ${A.gold15}`,marginBottom:20}}>
+        <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.05rem',fontWeight:700,color:T.darkBrown,marginBottom:14}}>Distribution des notes</h3>
+        {[5,4,3,2,1].map(r=>{const cnt=SURVEYS.filter(s=>s.rating===r).length;const pct=Math.round(cnt/SURVEYS.length*100);return(
+          <div key={r} style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+            <span style={{fontSize:11,fontWeight:800,width:24,textAlign:'right',color:T.gold}}>{r}★</span>
+            <div style={{flex:1,height:18,borderRadius:99,background:A.gold08,overflow:'hidden'}}>
+              <div style={{height:'100%',borderRadius:99,width:`${pct}%`,background:r>=4?T.vertCI:r>=3?T.gold:T.bordeaux}}/>
+            </div>
+            <span style={{fontSize:10,color:T.brown,width:60}}>{cnt} ({pct}%)</span>
+          </div>
+        );})}
+      </div>
+      {/* Comments */}
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        {SURVEYS.map(s=>(
+          <div key={s.id} style={{borderRadius:14,padding:'14px 16px',background:T.white,border:`1px solid ${A.gold15}`}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                <span>{'★'.repeat(s.rating)}{'☆'.repeat(5-s.rating)}</span>
+                <Badge cfg={ROLE[s.role==='tenant'?'tenant':'owner']}/>
+                <span style={{padding:'2px 8px',borderRadius:6,fontSize:9,fontWeight:700,background:A.navy08,color:T.navy}}>{s.trigger.replace('_',' ')}</span>
+              </div>
+              <span style={{fontSize:10,color:T.brown}}>{s.date}</span>
+            </div>
+            <p style={{fontSize:12,color:T.bois,fontStyle:'italic'}}>« {s.comment} »</p>
+            <p style={{fontSize:10,color:T.brown,marginTop:4}}>— {s.user}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ══ 10. CGV ══ */
+function CgvTab(){
+  const [active,setActive]=useState('locataire');
+  const docs=[{id:'locataire',l:'CGV Locataire / Acheteur',icon:'📜'},{id:'proprietaire',l:'CGV Propriétaire',icon:'📄'},{id:'notaire',l:'Charte Notaire',icon:'⚖️'}];
+  return(
+    <div className="fade-in">
+      <SHead title="Documents Légaux & CGV" sub="Consultez, téléchargez et partagez les chartes d'utilisation"/>
+      <div style={{display:'flex',gap:8,marginBottom:20}}>
+        {docs.map(d=><button key={d.id} onClick={()=>setActive(d.id)} style={{padding:'10px 18px',borderRadius:12,fontSize:12,fontWeight:700,background:active===d.id?T.night:T.white,color:active===d.id?T.gold:T.brown,border:`1px solid ${active===d.id?A.gold30:A.gold20}`}}>{d.icon} {d.l}</button>)}
+      </div>
+      <div style={{borderRadius:18,padding:'24px',background:T.white,border:`1px solid ${A.gold20}`,marginBottom:20}}>
+        <div style={{display:'flex',alignItems:'flex-start',gap:12,padding:'14px 16px',borderRadius:12,background:A.gold08,border:`1px solid ${A.gold15}`,marginBottom:20}}>
+          <span style={{fontSize:20}}>🛡️</span>
+          <div>
+            <h3 style={{fontSize:13,fontWeight:700,color:T.darkBrown,marginBottom:4}}>Valeur Juridique — {docs.find(d=>d.id===active)?.l}</h3>
+            <p style={{fontSize:11,color:T.brown}}>Ce document fait foi en cas de conflit juridique. Il établit le cadre de responsabilité et les droits de chaque partie.</p>
+          </div>
+        </div>
+        <div style={{display:'flex',gap:12,justifyContent:'center'}}>
+          <button style={{padding:'11px 24px',borderRadius:12,fontSize:12,fontWeight:800,background:'linear-gradient(135deg,#1A4F3A,#2D6A4F)',color:'#fff',border:'none',display:'flex',alignItems:'center',gap:8}}>⬇️ Télécharger PDF</button>
+          <button style={{padding:'11px 24px',borderRadius:12,fontSize:12,fontWeight:800,background:'#EA4335',color:'#fff',border:'none',display:'flex',alignItems:'center',gap:8}}>✉️ Partager Gmail</button>
+        </div>
+      </div>
+      {/* Suivi acceptations */}
+      <div style={{borderRadius:18,background:T.white,border:`1px solid ${A.gold15}`,overflow:'hidden'}}>
+        <div style={{padding:'14px 20px',borderBottom:`1px solid ${A.gold10}`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.05rem',fontWeight:700,color:T.darkBrown}}>Suivi des acceptations</h3>
+          <div style={{display:'flex',gap:8}}>
+            <span style={{fontSize:11,fontWeight:700,color:T.brown}}>4/{USERS.length} accepté(s)</span>
+            <button style={{padding:'5px 12px',borderRadius:8,fontSize:10,fontWeight:700,background:A.vert10,color:T.vertCI,border:`1px solid ${A.vert25}`}}>⬇️ Exporter CSV</button>
+          </div>
+        </div>
+        {USERS.map((u,i,arr)=>{
+          const r=ROLE[u.role]||ROLE.tenant;
+          const accepted=u.status==='active';
+          return(
+            <div key={u.id} style={{display:'flex',alignItems:'center',gap:14,padding:'12px 20px',borderBottom:i<arr.length-1?`1px solid ${A.gold08}`:'none'}}
+              onMouseEnter={e=>e.currentTarget.style.background=A.gold08} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+              <div style={{width:32,height:32,borderRadius:8,flexShrink:0,background:A.gold10,border:`1px solid ${A.gold25}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,fontWeight:900,color:T.gold}}>{u.name[0]}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <p style={{fontSize:12,fontWeight:700,color:T.darkBrown,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.name}</p>
+                <p style={{fontSize:10,color:T.brown}}>{u.email}</p>
+              </div>
+              <Badge cfg={r}/>
+              {accepted?<span style={{padding:'2px 9px',borderRadius:99,fontSize:9,fontWeight:800,background:A.vert10,color:T.vertCI,border:`1px solid ${A.vert25}`}}>✓ Acceptées</span>:<span style={{padding:'2px 9px',borderRadius:99,fontSize:9,fontWeight:800,background:A.bord10,color:T.bordeaux,border:`1px solid ${A.bord25}`}}>✕ Non acceptées</span>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ══ 11. ADS ══ */
+function AdsTab(){
+  return(
+    <div className="fade-in">
+      <SHead title="Gestion des publicités" sub="Annonces sponsorisées et boosts actifs"/>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:14,marginBottom:24}}>
+        {[{icon:'📣',l:'Annonces actives',val:2,c:T.vertCI,bg:A.vert10,bd:A.vert25},{icon:'👁️',l:'Impressions ce mois',val:'12 450',c:T.navy,bg:A.navy08,bd:A.navy20},{icon:'🖱️',l:'Clics totaux',val:204,c:T.orange,bg:A.orange10,bd:A.orange25}].map(s=>(
+          <div key={s.l} style={{borderRadius:16,padding:'16px',background:T.white,border:`1px solid ${s.bd}`}}>
+            <div style={{fontSize:20,marginBottom:6}}>{s.icon}</div>
+            <div style={{fontFamily:'var(--font-cormorant)',fontSize:'1.8rem',fontWeight:900,color:s.c,lineHeight:1}}>{s.val}</div>
+            <div style={{fontSize:10,fontWeight:700,color:T.brown,marginTop:4}}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{borderRadius:20,background:T.white,border:`1px solid ${A.gold15}`,overflow:'hidden'}}>
+        <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr 1fr 1fr 100px',padding:'10px 20px',background:A.gold08,borderBottom:`1px solid ${A.gold15}`}}>
+          {['Bien / Annonceur','Type','Durée','Période','Statut','Perf.','Actions'].map(h=><span key={h} style={{fontSize:9,fontWeight:900,color:T.brown,letterSpacing:'0.08em',textTransform:'uppercase'}}>{h}</span>)}
+        </div>
+        {ADS.map((a,i,arr)=>(
+          <div key={a.id} style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr 1fr 1fr 100px',alignItems:'center',padding:'13px 20px',borderBottom:i<arr.length-1?`1px solid ${A.gold08}`:'none'}}
+            onMouseEnter={e=>e.currentTarget.style.background=A.gold08} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+            <div>
+              <p style={{fontSize:12,fontWeight:700,color:T.darkBrown,fontFamily:'var(--font-cormorant)'}}>{a.property}</p>
+              <p style={{fontSize:10,color:T.brown}}>👤 {a.advertiser}</p>
+            </div>
+            <span style={{padding:'2px 9px',borderRadius:99,fontSize:9,fontWeight:800,background:a.type==='featured'?A.gold10:A.orange10,color:a.type==='featured'?T.gold:T.orange,border:`1px solid ${a.type==='featured'?A.gold25:A.orange25}`}}>{a.type==='featured'?'Sponsorisé':'Boost'}</span>
+            <span style={{fontSize:11,color:T.bois}}>{a.dur}</span>
+            <div><p style={{fontSize:10,color:T.bois}}>{a.start} →</p><p style={{fontSize:10,color:T.bois}}>{a.end}</p></div>
+            <span style={{padding:'2px 9px',borderRadius:99,fontSize:9,fontWeight:800,background:a.status==='active'?A.vert10:A.gold10,color:a.status==='active'?T.vertCI:T.gold,border:`1px solid ${a.status==='active'?A.vert25:A.gold25}`}}>{a.status==='active'?'Actif':'Expiré'}</span>
+            <div><p style={{fontSize:10,fontWeight:700,color:T.navy}}>👁️ {a.views.toLocaleString('fr')}</p><p style={{fontSize:10,color:T.brown}}>🖱️ {a.clicks}</p></div>
+            <div style={{display:'flex',gap:5}}>
+              <button style={{padding:'5px 9px',borderRadius:8,fontSize:10,fontWeight:700,background:A.navy08,color:T.navy,border:`1px solid ${A.navy15}`}}>Voir</button>
+              {a.status==='active'&&<button style={{padding:'5px 8px',borderRadius:8,fontSize:11,background:A.bord08,color:T.bordeaux,border:`1px solid ${A.bord15}`}}>🚫</button>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ══ 12. SECURITY ══ */
+function SecurityTab(){
+  return(
+    <div className="fade-in">
+      <SHead title="Historique des Connexions" sub="Surveillance des tentatives de connexion au portail admin" action={<button style={{padding:'9px 14px',borderRadius:12,fontSize:11,fontWeight:700,background:A.gold08,border:`1px solid ${A.gold20}`,color:T.brown}}>🔄 Actualiser</button>}/>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:20}}>
+        {[{l:'Total',val:LOGIN_HISTORY.length,c:T.darkBrown,bg:A.gold08,bd:A.gold20},{l:'Réussies',val:LOGIN_HISTORY.filter(l=>l.success).length,c:T.vertCI,bg:A.vert10,bd:A.vert25},{l:'Échouées',val:LOGIN_HISTORY.filter(l=>!l.success).length,c:T.bordeaux,bg:A.bord10,bd:A.bord25}].map(s=>(
+          <div key={s.l} style={{borderRadius:14,padding:'14px',background:s.bg,border:`1px solid ${s.bd}`,textAlign:'center'}}>
+            <div style={{fontFamily:'var(--font-cormorant)',fontSize:'2rem',fontWeight:900,color:s.c,lineHeight:1}}>{s.val}</div>
+            <div style={{fontSize:10,color:T.brown,marginTop:4}}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{display:'flex',gap:8,marginBottom:16}}>
+        {['Toutes','Réussies','Échouées'].map(f=><button key={f} style={{padding:'7px 16px',borderRadius:10,fontSize:11,fontWeight:700,background:f==='Toutes'?T.forest:T.white,color:f==='Toutes'?T.cream:T.brown,border:`1px solid ${f==='Toutes'?A.gold25:A.gold15}`}}>{f}</button>)}
+      </div>
+      <div style={{borderRadius:18,overflow:'hidden',background:T.white,border:`1px solid ${A.gold15}`}}>
+        <KenteLine h={3}/>
+        <div style={{display:'grid',gridTemplateColumns:'80px 2fr 1.5fr 120px 150px',padding:'10px 20px',background:T.night,borderBottom:`1px solid ${A.gold15}`}}>
+          {['Statut','Email','Date & Heure','IP','Navigateur / OS'].map(h=><span key={h} style={{fontSize:9,fontWeight:900,color:A.cream60,letterSpacing:'0.08em',textTransform:'uppercase'}}>{h}</span>)}
+        </div>
+        {LOGIN_HISTORY.map((l,i,arr)=>(
+          <div key={l.id} style={{display:'grid',gridTemplateColumns:'80px 2fr 1.5fr 120px 150px',alignItems:'center',padding:'12px 20px',borderBottom:i<arr.length-1?`1px solid ${A.gold08}`:'none',background:i%2===0?T.white:'rgba(249,243,232,0.4)'}}
+            onMouseEnter={e=>e.currentTarget.style.background='rgba(255,248,237,0.8)'} onMouseLeave={e=>e.currentTarget.style.background=i%2===0?T.white:'rgba(249,243,232,0.4)'}>
+            <span style={{fontSize:11,fontWeight:700,color:l.success?T.vertCI:T.bordeaux}}>{l.success?'✓ Réussie':'✕ Échouée'}</span>
+            <span style={{fontSize:12,fontWeight:600,color:T.darkBrown}}>{l.email}</span>
+            <span style={{fontSize:11,color:T.brown}}>🕐 {l.date}</span>
+            <span style={{fontSize:11,fontFamily:'monospace',color:T.brown}}>{l.ip}</span>
+            <span style={{fontSize:11,color:T.brown}}>🖥️ {l.browser} / {l.os}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ══ 13. ADMIN MANAGEMENT ══ */
+function ManagementTab(){
+  return(
+    <div className="fade-in" style={{maxWidth:700}}>
+      <SHead title="Gestion des Administrateurs" sub="Modifiez vos identifiants ou créez de nouveaux administrateurs"/>
+      <div style={{borderRadius:18,padding:'22px',background:T.white,border:`1px solid ${A.gold15}`,marginBottom:16}}>
+        <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.15rem',fontWeight:700,color:T.darkBrown,marginBottom:16}}>🔐 Modifier vos identifiants</h3>
+        <div style={{marginBottom:12}}>
+          <label style={{display:'block',fontSize:9,fontWeight:900,color:T.brown,letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:6}}>Type de modification</label>
+          <select style={{width:'100%',padding:'10px 14px',borderRadius:10,border:`1px solid ${A.gold20}`,background:'rgba(249,243,232,0.5)',fontSize:13}}>
+            <option>Changer l'email</option><option>Changer le mot de passe</option><option>Changer email et mot de passe</option>
+          </select>
+        </div>
+        <div style={{marginBottom:12}}>
+          <label style={{display:'block',fontSize:9,fontWeight:900,color:T.brown,letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:6}}>Nouvel email</label>
+          <input type="email" placeholder="nouveau@email.com" style={{width:'100%',padding:'10px 14px',borderRadius:10,border:`1px solid ${A.gold20}`,background:'rgba(249,243,232,0.5)',fontSize:13}}/>
+        </div>
+        <button style={{width:'100%',padding:'11px',borderRadius:12,background:'linear-gradient(135deg,#FF6B00,#D4A017)',color:'#fff',fontWeight:800,fontSize:13,border:'none'}}>✓ Mettre à jour</button>
+      </div>
+      <div style={{borderRadius:18,padding:'22px',background:T.white,border:`1px solid ${A.gold15}`}}>
+        <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.15rem',fontWeight:700,color:T.darkBrown,marginBottom:16}}>👑 Ajouter un administrateur</h3>
+        {['Nom complet','Email','Mot de passe'].map(f=>(
+          <div key={f} style={{marginBottom:12}}>
+            <label style={{display:'block',fontSize:9,fontWeight:900,color:T.brown,letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:6}}>{f}</label>
+            <input type={f==='Mot de passe'?'password':'text'} placeholder={f==='Email'?'admin@homeci.ci':f} style={{width:'100%',padding:'10px 14px',borderRadius:10,border:`1px solid ${A.gold20}`,background:'rgba(249,243,232,0.5)',fontSize:13}}/>
+          </div>
+        ))}
+        <button style={{width:'100%',padding:'11px',borderRadius:12,background:'linear-gradient(135deg,#009E49,#2D6A4F)',color:'#fff',fontWeight:800,fontSize:13,border:'none'}}>+ Créer l'administrateur</button>
+      </div>
+    </div>
+  );
+}
+
+/* ══ 14. AUDIT ══ */
+function AuditTab(){
+  return(
+    <div className="fade-in">
+      <SHead title="Journal d'Audit" sub={`${AUDIT_LOGS.length} entrées enregistrées`}/>
+      <div style={{display:'flex',gap:10,marginBottom:20,flexWrap:'wrap'}}>
+        <SearchBar placeholder="Rechercher (email, action, bien...)"/>
+        <select style={{padding:'10px 14px',borderRadius:12,border:`1px solid ${A.gold20}`,background:'rgba(255,255,255,0.9)',fontSize:12,fontWeight:700,color:T.bois}}>
+          <option>Toutes les actions</option>
+          {Object.entries(AUDIT_LABELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}
+        </select>
+      </div>
+      <div style={{borderRadius:18,overflow:'hidden',background:T.white,border:`1px solid ${A.gold15}`}}>
+        <div style={{display:'grid',gridTemplateColumns:'150px 2fr 1.5fr 1.5fr 1fr',padding:'10px 20px',background:A.gold08,borderBottom:`1px solid ${A.gold15}`}}>
+          {['Date','Action','Par','Cible','Motif'].map(h=><span key={h} style={{fontSize:9,fontWeight:900,color:T.brown,letterSpacing:'0.08em',textTransform:'uppercase'}}>{h}</span>)}
+        </div>
+        {AUDIT_LOGS.map((l,i,arr)=>{
+          const isGood=l.action.includes('approved')||l.action.includes('login')||l.action.includes('created')||l.action.includes('reactivated');
+          const isBad=l.action.includes('suspended')||l.action.includes('rejected')||l.action.includes('failed')||l.action.includes('deleted');
+          const color=isGood?T.vertCI:isBad?T.bordeaux:T.gold;
+          return(
+            <div key={l.id} style={{display:'grid',gridTemplateColumns:'150px 2fr 1.5fr 1.5fr 1fr',alignItems:'center',padding:'12px 20px',borderBottom:i<arr.length-1?`1px solid ${A.gold08}`:'none',background:i%2===0?T.white:'rgba(249,243,232,0.4)'}}
+              onMouseEnter={e=>e.currentTarget.style.background='rgba(255,248,237,0.8)'} onMouseLeave={e=>e.currentTarget.style.background=i%2===0?T.white:'rgba(249,243,232,0.4)'}>
+              <span style={{fontSize:10,color:T.brown}}>🕐 {l.date}</span>
+              <span style={{fontSize:11,fontWeight:700,color}}>{AUDIT_LABELS[l.action]||l.action}</span>
+              <span style={{fontSize:11,color:T.bois}}>{l.by}</span>
+              <span style={{fontSize:11,color:T.bois}}>{l.target||'—'}</span>
+              <span style={{fontSize:10,color:T.brown,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{l.reason||'—'}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 0'}}>
+        <button style={{padding:'7px 16px',borderRadius:10,fontSize:11,fontWeight:700,background:A.gold10,color:T.brown,border:`1px solid ${A.gold20}`}}>‹ Précédent</button>
+        <span style={{fontSize:11,fontWeight:700,color:T.brown}}>Page 1</span>
+        <button style={{padding:'7px 16px',borderRadius:10,fontSize:11,fontWeight:700,background:A.gold10,color:T.brown,border:`1px solid ${A.gold20}`}}>Suivant ›</button>
+      </div>
+    </div>
+  );
+}
+
+/* ══ 15. EXPORTS ══ */
+function ExportsTab(){
+  const opts=[
+    {type:'users',    icon:'👥', label:'Utilisateurs',        color:T.orange, cols:'uid, email, full_name, phone, role, verified, suspended, created_at'},
+    {type:'properties',icon:'🏠',label:'Biens immobiliers',   color:T.vertCI, cols:'id, title, owner_id, property_type, price, city, status, verified_notaire, views_count'},
+    {type:'visits',   icon:'📅', label:'Visites',             color:T.gold,   cols:'id, property_title, tenant_name, preferred_date, status, created_at'},
+    {type:'surveys',  icon:'⭐', label:'Enquêtes satisfaction',color:T.navy,   cols:'id, user_role, rating, comment, trigger, property_title'},
+    {type:'reports',  icon:'🚩', label:'Signalements',        color:T.bordeaux,cols:'id, property_title, reporter_role, reason, status, created_at'},
+  ];
+  return(
+    <div className="fade-in">
+      <SHead title="Export de Données" sub="Téléchargez les données de la plateforme au format CSV (compatible Excel)"/>
+      <div style={{borderRadius:14,padding:'14px 18px',background:A.gold08,border:`1px solid ${A.gold15}`,marginBottom:24,display:'flex',alignItems:'flex-start',gap:12}}>
+        <span style={{fontSize:20}}>⬇️</span>
+        <div>
+          <p style={{fontSize:12,fontWeight:700,color:T.darkBrown}}>Format CSV (point-virgule)</p>
+          <p style={{fontSize:11,color:T.brown,marginTop:2}}>Fichiers encodés en UTF-8 avec BOM pour ouverture directe dans Excel. Chargement à la demande — max 5000 lignes.</p>
+        </div>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:16}}>
+        {opts.map(o=>(
+          <div key={o.type} style={{borderRadius:18,padding:'20px',background:T.white,border:`1.5px solid ${A.gold15}`,transition:'transform 0.2s'}}
+            onMouseEnter={e=>e.currentTarget.style.transform='translateY(-3px)'} onMouseLeave={e=>e.currentTarget.style.transform=''}>
+            <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12}}>
+              <div style={{width:42,height:42,borderRadius:12,background:`${o.color}15`,border:`1px solid ${o.color}30`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>{o.icon}</div>
+              <div>
+                <h3 style={{fontSize:13,fontWeight:700,color:T.darkBrown,fontFamily:'var(--font-cormorant)'}}>{o.label}</h3>
+                <p style={{fontSize:10,color:T.brown}}>Cliquer pour charger</p>
+              </div>
+            </div>
+            <p style={{fontSize:9,color:T.brown,marginBottom:14,lineHeight:1.5}}><span style={{fontWeight:700}}>Colonnes :</span> {o.cols}</p>
+            <button style={{width:'100%',padding:'9px',borderRadius:10,fontSize:11,fontWeight:800,background:`linear-gradient(135deg,${o.color},${T.gold})`,color:'#fff',border:'none'}}>⬇️ Exporter CSV</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ══ 16. ANALYTICS ══ */
+function AnalyticsTab(){
+  const days=['1','3','5','7','9','11','13','15','17','19','21','23','25','27','29','30'];
+  const randData=(base,var_)=>days.map(()=>Math.max(0,base+Math.floor((Math.random()-.5)*var_)));
+  const userData=randData(8,10),propData=randData(4,6),visitData=randData(12,14),certData=randData(2,3);
+  const maxU=Math.max(...userData),maxP=Math.max(...propData),maxV=Math.max(...visitData);
+  return(
+    <div className="fade-in">
+      <SHead title="Analytics & Tendances" sub="Évolution sur les 30 derniers jours"/>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:14,marginBottom:24}}>
+        {[
+          {icon:'👥',l:'Inscriptions (30j)',val:userData.reduce((a,b)=>a+b,0),c:T.orange},
+          {icon:'🏠',l:'Publications (30j)',val:propData.reduce((a,b)=>a+b,0),c:T.vertCI},
+          {icon:'📅',l:'Visites (30j)',val:visitData.reduce((a,b)=>a+b,0),c:T.gold},
+          {icon:'🏛️',l:'Certifications (30j)',val:certData.reduce((a,b)=>a+b,0),c:T.navy},
+        ].map(k=>(
+          <div key={k.l} style={{borderRadius:16,padding:'16px',background:T.white,border:`1px solid ${A.gold15}`,textAlign:'center'}}>
+            <div style={{fontSize:22,marginBottom:6}}>{k.icon}</div>
+            <div style={{fontFamily:'var(--font-cormorant)',fontSize:'1.8rem',fontWeight:900,color:k.c,lineHeight:1}}>{k.val}</div>
+            <div style={{fontSize:10,fontWeight:700,color:T.brown,marginTop:4,textTransform:'uppercase',letterSpacing:'0.04em'}}>{k.l}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
+        {[
+          {title:'📈 Inscriptions quotidiennes',data:userData,color:T.orange,max:maxU},
+          {title:'🏠 Publications quotidiennes',data:propData,color:T.vertCI,max:maxP},
+          {title:'📅 Visites quotidiennes',data:visitData,color:T.gold,max:maxV},
+          {title:'🏛️ Certifications quotidiennes',data:certData,color:T.navy,max:Math.max(...certData)||1},
+        ].map(chart=>(
+          <div key={chart.title} style={{borderRadius:18,padding:'20px',background:T.white,border:`1px solid ${A.gold15}`}}>
+            <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.05rem',fontWeight:700,color:T.darkBrown,marginBottom:16}}>{chart.title}</h3>
+            <div style={{display:'flex',alignItems:'flex-end',gap:3,height:120}}>
+              {chart.data.map((v,i)=>(
+                <div key={i} title={`Jour ${days[i]} : ${v}`} style={{flex:1,borderRadius:'3px 3px 0 0',height:`${Math.max(4,(v/chart.max)*120)}px`,background:i===chart.data.length-1?chart.color:`${chart.color}55`,transition:'height 0.6s ease',cursor:'pointer'}}
+                  onMouseEnter={e=>e.currentTarget.style.background=chart.color} onMouseLeave={e=>e.currentTarget.style.background=i===chart.data.length-1?chart.color:`${chart.color}55`}/>
+              ))}
+            </div>
+            <div style={{display:'flex',justifyContent:'space-between',marginTop:6}}>
+              <span style={{fontSize:9,color:T.brown}}>1 avr</span>
+              <span style={{fontSize:9,color:T.brown}}>30 avr</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Type & ville */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,marginTop:20}}>
+        <div style={{borderRadius:18,padding:'20px',background:T.white,border:`1px solid ${A.gold15}`}}>
+          <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.05rem',fontWeight:700,color:T.darkBrown,marginBottom:14}}>🏠 Répartition par type</h3>
+          {[{l:'Villa',v:34,c:T.orange},{l:'Appartement',v:28,c:T.navy},{l:'Maison',v:22,c:T.vertCI},{l:'Terrain',v:12,c:T.gold},{l:'Autre',v:4,c:T.brown}].map(d=>(
+            <div key={d.l} style={{marginBottom:10}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+                <span style={{fontSize:11,fontWeight:600,color:T.bois}}>{d.l}</span>
+                <span style={{fontSize:11,fontWeight:800,color:d.c}}>{d.v}%</span>
+              </div>
+              <div style={{height:7,borderRadius:99,background:`${d.c}12`,overflow:'hidden'}}>
+                <div style={{height:'100%',borderRadius:99,width:`${d.v}%`,background:d.c}}/>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{borderRadius:18,padding:'20px',background:T.white,border:`1px solid ${A.gold15}`}}>
+          <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.05rem',fontWeight:700,color:T.darkBrown,marginBottom:14}}>📍 Top districts</h3>
+          {[{l:'Abidjan',v:68},{l:'Bouaké',v:12},{l:'Yamoussoukro',v:8},{l:'San-Pédro',v:6},{l:'Korhogo',v:4},{l:'Autres',v:2}].map(d=>(
+            <div key={d.l} style={{marginBottom:10}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+                <span style={{fontSize:11,fontWeight:600,color:T.bois}}>{d.l}</span>
+                <span style={{fontSize:11,fontWeight:800,color:T.orange}}>{d.v}%</span>
+              </div>
+              <div style={{height:7,borderRadius:99,background:A.orange10,overflow:'hidden'}}>
+                <div style={{height:'100%',borderRadius:99,width:`${d.v}%`,background:`linear-gradient(90deg,#FF6B00,#D4A017)`}}/>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══ MAIN ══ */
+function AdminDashboard(){
+  const [tab,setTab]=useState('overview');
+  const [collapsed,setCollapsed]=useState(false);
+  const time=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  const date=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  const activeNav=NAV.find(n=>n.id===tab);
+
+  const TABS_MAP={
+    overview:<OverviewTab setTab={setTab}/>,
+    users:<UsersTab/>,notaires:<NotairesTab/>,search:<SearchTab/>,
+    properties:<PropertiesTab/>,moderation:<ModerationTab/>,reports:<ReportsTab/>,
+    visits:<VisitsTab/>,surveys:<SurveysTab/>,cgv:<CgvTab/>,
+    ads:<AdsTab/>,security:<SecurityTab/>,management:<ManagementTab/>,
+    audit:<AuditTab/>,exports:<ExportsTab/>,analytics:<AnalyticsTab/>,
+  };
+
+  return(
+    <div style={{display:'flex',minHeight:'100vh',background:T.creamBg}}>
+      {/* ── SIDEBAR ── */}
+      <aside style={{width:collapsed?60:210,flexShrink:0,background:T.sidebar,borderRight:`1px solid rgba(212,160,23,0.12)`,display:'flex',flexDirection:'column',transition:'width 0.25s ease',overflow:'hidden',position:'sticky',top:0,height:'100vh'}}>
+        <KenteLine h={3}/>
+        <div style={{padding:'16px 12px 12px',display:'flex',alignItems:'center',gap:10,borderBottom:'1px solid rgba(212,160,23,0.10)'}}>
+          <div style={{width:34,height:34,borderRadius:10,background:A.gold10,border:`1px solid ${A.gold25}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>🐘</div>
+          {!collapsed&&<div><div style={{fontFamily:'var(--font-cormorant)',color:T.gold,fontSize:15,fontWeight:700,letterSpacing:'0.1em',lineHeight:1}}>HOMECI</div><div style={{fontSize:8,color:A.cream50,letterSpacing:'0.15em',textTransform:'uppercase',marginTop:2}}>Administration</div></div>}
+        </div>
+        <nav style={{flex:1,padding:'10px 6px',overflowY:'auto',display:'flex',flexDirection:'column',gap:2}}>
+          {NAV.map(n=>{
+            const isActive=tab===n.id;
+            return(
+              <button key={n.id} onClick={()=>setTab(n.id)} title={n.label} style={{display:'flex',alignItems:'center',gap:9,padding:'8px 8px',borderRadius:9,border:'none',background:isActive?A.gold15:'transparent',transition:'all .15s',textAlign:'left',position:'relative'}}
+                onMouseEnter={e=>{if(!isActive)e.currentTarget.style.background=A.white05;}} onMouseLeave={e=>{if(!isActive)e.currentTarget.style.background='transparent';}}>
+                <span style={{fontSize:15,flexShrink:0}}>{n.icon}</span>
+                {!collapsed&&<span style={{fontSize:11,fontWeight:isActive?800:500,color:isActive?T.gold:A.cream50,whiteSpace:'nowrap',flex:1}}>{n.label}</span>}
+                {n.count&&!collapsed&&<span style={{padding:'1px 6px',borderRadius:99,fontSize:9,fontWeight:900,background:n.urgent?T.bordeaux:A.gold15,color:n.urgent?'#fff':T.gold}}>{n.count}</span>}
+                {n.urgent&&collapsed&&<div style={{position:'absolute',top:4,right:4,width:8,height:8,borderRadius:99,background:T.bordeaux}}/>}
+              </button>
+            );
+          })}
+        </nav>
+        <div style={{padding:'10px 6px',borderTop:'1px solid rgba(212,160,23,0.10)'}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,padding:'7px 8px',borderRadius:9,background:A.white05,marginBottom:6}}>
+            <div style={{width:28,height:28,borderRadius:7,background:A.bord15,border:`1px solid ${A.bord25}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,flexShrink:0}}>👑</div>
+            {!collapsed&&<div style={{minWidth:0}}><p style={{fontSize:10,fontWeight:700,color:T.cream,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>Super Admin</p><p style={{fontSize:8,color:A.cream50}}>admin@homeci.ci</p></div>}
+          </div>
+          <button onClick={()=>setCollapsed(!collapsed)} style={{width:'100%',padding:'7px',borderRadius:9,border:'none',background:A.white05,color:A.cream50,fontSize:12,cursor:'pointer'}}>
+            {collapsed?'›':'‹ Réduire'}
+          </button>
+        </div>
+      </aside>
+
+      {/* ── MAIN ── */}
+      <div style={{flex:1,display:'flex',flexDirection:'column',minWidth:0}}>
+        {/* Header */}
+        <header style={{background:'rgba(27,94,58,0.97)',backdropFilter:'blur(16px)',borderBottom:`1px solid ${A.gold25}`,padding:'0 24px',height:54,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:10}}>
+          <div style={{display:'flex',alignItems:'center',gap:14}}>
+            <h1 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.1rem',fontWeight:700,color:T.cream}}>{activeNav?.label}</h1>
+            <div style={{display:'flex',alignItems:'center',gap:6,padding:'4px 10px',borderRadius:8,background:A.vert10,border:`1px solid ${A.vert20}`}}>
+              <div style={{width:7,height:7,borderRadius:99,background:T.vertCI,animation:'pulse 2s infinite'}}/>
+              <span style={{fontSize:10,fontWeight:700,color:T.vertCI}}>Temps réel</span>
+            </div>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <div style={{textAlign:'right'}}>
+              <p style={{fontSize:12,fontWeight:700,color:T.cream}}>{time}</p>
+              <p style={{fontSize:9,color:A.cream50,textTransform:'capitalize'}}>{date}</p>
+            </div>
+            <div style={{position:'relative'}}>
+              <button style={{width:34,height:34,borderRadius:9,border:`1px solid ${A.gold20}`,background:A.gold10,fontSize:15,display:'flex',alignItems:'center',justifyContent:'center'}}>🔔</button>
+              <div style={{position:'absolute',top:-4,right:-4,width:16,height:16,borderRadius:99,background:T.bordeaux,color:'#fff',fontSize:9,fontWeight:900,display:'flex',alignItems:'center',justifyContent:'center'}}>4</div>
+            </div>
+            <button style={{width:34,height:34,borderRadius:9,border:`1px solid ${A.gold20}`,background:A.gold10,fontSize:15,display:'flex',alignItems:'center',justifyContent:'center'}}>⚙️</button>
+          </div>
+        </header>
+
+        {/* Content */}
+        <main style={{flex:1,padding:'24px',overflowY:'auto'}}>
+          {TABS_MAP[tab]||<OverviewTab setTab={setTab}/>}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<AdminDashboard/>);
+</script>
+<div id="root"></div>
+</body>
+</html>

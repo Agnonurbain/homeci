@@ -1,6 +1,6 @@
 import { useState, lazy, Suspense } from 'react';
-import { 
-  Heart, Calendar, Search, Bell, FileText, CheckCircle, Clock
+import {
+  Heart, Calendar, Search, Bell, FileText
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -17,9 +17,10 @@ import PropertyViewModal from './PropertyViewModal';
 import CGVLocataireModal from './CGVLocataireModal';
 import ChatBox from './ChatBox';
 import TutorialButton from './TutorialButton';
-import { KenteLine } from './ui/KenteLine';
 import Toast from './ui/Toast';
 import { useToast } from '../hooks/useToast';
+import StatBadge from './shared/StatBadge';
+import MobilePaymentBanner from './shared/MobilePaymentBanner';
 
 // Specialized Tab Components
 import SearchTab from './tenant/SearchTab';
@@ -80,39 +81,59 @@ export default function TenantDashboard() {
     <div className="min-h-screen" style={{ background: HColors.creamBg }}>
 
       {/* Header */}
-      <div style={{ background: HColors.forest, borderBottom: `1px solid ${HAlpha.gold25}` }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 mb-5">
+      <div className="sticky top-14 z-10" style={{ background: HColors.forest, borderBottom: `1px solid ${HAlpha.gold25}` }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-0">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 mb-3.5">
             <div className="text-center sm:text-left">
-              <h1 className="font-bold mb-0.5 text-cream" style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(1.2rem, 5vw, 1.8rem)' }}>
+              <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(1.2rem, 4vw, 1.75rem)', fontWeight: 700, color: HColors.cream, lineHeight: 1 }}>
                 Bonjour, {firstName} 👋
               </h1>
-              <p className="text-[10px] sm:text-sm text-cream/50 uppercase tracking-widest font-bold">Trouvez et planifiez vos visites</p>
+              <p style={{ fontSize: 10, color: 'rgba(245,230,200,0.50)', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase' as const, marginTop: 4, fontFamily: 'var(--font-nunito)' }}>
+                Trouvez et planifiez vos visites
+              </p>
             </div>
             <div className="flex gap-2 flex-wrap justify-center sm:justify-start items-center">
               <TutorialButton />
-              <StatBadge icon={<Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />} label="Favoris" value={favoriteIds.length} accent="#FF6B00" onClick={() => navigate('/dashboard/favorites')} />
-              <StatBadge icon={<Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />} label="En attente" value={pendingVisitsCount} accent="#D4A017" onClick={() => navigate('/dashboard/visits')} />
-              {acceptedVisitsCount > 0 && <StatBadge icon={<CheckCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5" />} label="Acceptées" value={acceptedVisitsCount} accent="#009E49" onClick={() => navigate('/dashboard/visits')} />}
+              <StatBadge icon="❤️" label="Favoris" value={favoriteIds.length} color="#FF6B00" onClick={() => navigate('/dashboard/favorites')} />
+              <StatBadge icon="⏳" label="En attente" value={pendingVisitsCount} color="#D4A017" onClick={() => navigate('/dashboard/visits')} />
+              {acceptedVisitsCount > 0 && <StatBadge icon="✅" label="Acceptées" value={acceptedVisitsCount} color="#009E49" onClick={() => navigate('/dashboard/visits')} />}
             </div>
           </div>
 
           {/* Navigation Tabs */}
-          <nav className="flex space-x-1 sm:space-x-2 homeci-tabs-scroll">
+          <nav className="flex gap-0.5 homeci-tabs-scroll">
             {[
-              { id: 'search', icon: Search, label: 'Rechercher' },
-              { id: 'favorites', icon: Heart, label: 'Mes favoris' },
-              { id: 'visits', icon: Calendar, label: 'Mes visites' },
-              { id: 'notifications', icon: Bell, label: 'Notifications', count: unreadCount },
-              { id: 'dossier', icon: FileText, label: 'Mon Dossier' },
+              { id: 'search', icon: Search, label: 'Rechercher', count: undefined },
+              { id: 'favorites', icon: Heart, label: 'Mes favoris', count: favoriteIds.length || undefined },
+              { id: 'visits', icon: Calendar, label: 'Mes visites', count: visitRequests.length || undefined },
+              { id: 'notifications', icon: Bell, label: 'Notifications', count: unreadCount || undefined },
+              { id: 'dossier', icon: FileText, label: 'Mon Dossier', count: undefined },
             ].map(tab => (
               <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
-                className={`py-3 px-4 border-b-2 text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === tab.id ? 'border-gold text-gold' : 'border-transparent text-cream/50'}`}>
+                className="flex items-center gap-1.5 py-2.5 px-4 whitespace-nowrap transition-all"
+                style={{
+                  borderBottom: `2.5px solid ${activeTab === tab.id ? HColors.gold : 'transparent'}`,
+                  color: activeTab === tab.id ? HColors.gold : 'rgba(245,230,200,0.50)',
+                  fontWeight: activeTab === tab.id ? 700 : 500,
+                  fontSize: 13,
+                  fontFamily: 'var(--font-nunito)',
+                }}>
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
-                {tab.count ? (
-                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-bordeaux text-cream">{tab.count}</span>
-                ) : null}
+                {tab.count !== undefined && tab.count > 0 && (
+                  <span className="rounded-full text-[10px] font-extrabold"
+                    style={{
+                      padding: '1px 7px',
+                      ...(tab.id === 'notifications'
+                        ? { background: HColors.bordeaux, color: '#fff', border: `1px solid ${HColors.bordeaux}` }
+                        : activeTab === tab.id
+                          ? { background: HAlpha.gold20, color: HColors.gold, border: `1px solid ${HAlpha.gold20}` }
+                          : { background: HAlpha.gold10, color: 'rgba(245,230,200,0.50)', border: `1px solid ${HAlpha.gold20}` }
+                      ),
+                    }}>
+                    {tab.count}
+                  </span>
+                )}
               </button>
             ))}
           </nav>
@@ -171,20 +192,7 @@ export default function TenantDashboard() {
           </Suspense>
         )}
 
-        {/* Africa Kente Banner (Shared) */}
-        {(activeTab === 'search' || activeTab === 'visits') && (
-            <div className="mt-6 rounded-2xl overflow-hidden">
-                <KenteLine />
-                <div className="p-5 flex items-center gap-4 flex-wrap" style={{ background: 'linear-gradient(135deg,#0D1F12,#1A0E00)' }}>
-                    <div className="flex-1">
-                        <h3 className="font-bold mb-1 text-cream" style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.1rem' }}>
-                            💳 Paiements mobiles — Bientôt disponibles
-                        </h3>
-                        <p className="text-sm text-cream/60">Payez cautions et loyers via Orange Money, MTN MoMo, Wave...</p>
-                    </div>
-                </div>
-            </div>
-        )}
+        {(activeTab === 'search' || activeTab === 'visits' || activeTab === 'dossier') && <MobilePaymentBanner />}
       </div>
 
       {/* Modals */}
@@ -239,13 +247,3 @@ export default function TenantDashboard() {
   );
 }
 
-function StatBadge({ icon, label, value, accent, onClick }: any) {
-  return (
-    <button onClick={onClick} className="flex items-center gap-1 sm:gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-bold transition-all hover:scale-105"
-      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: HColors.cream }}>
-      <span style={{ color: accent }}>{icon}</span>
-      <span className="opacity-50">{label}</span>
-      <span className="px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded-full bg-white/10">{value}</span>
-    </button>
-  );
-}

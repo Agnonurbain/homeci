@@ -50,7 +50,7 @@ export default function SearchTab({
   const currentSort = SORT_OPTIONS.find(s => s.value === sortBy);
 
   return (
-    <div>
+    <div className="animate-in fade-in duration-500">
       <div className="flex items-center justify-between mb-5">
         <p className="text-sm" style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)' }}>
           {loading ? 'Chargement…' : (

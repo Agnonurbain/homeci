@@ -14,10 +14,10 @@ const PIE_COLORS = [HColors.gold, HColors.vertCI, HColors.orangeCI, HColors.bord
 
 function StatCard({ icon: Icon, label, value, accent = HColors.gold }: { icon: any; label: string; value: number; accent?: string }) {
   return (
-    <div className="rounded-2xl p-3 sm:p-5 text-center"
+    <div className="rounded-2xl p-3 sm:p-5 text-center transition-all hover:-translate-y-0.5 hover:shadow-md"
       style={{
         background: HColors.white, border: `1px solid ${HAlpha.gold15}`,
-        boxShadow: '0 2px 12px rgba(26,14,0,0.05)',
+        boxShadow: '0 2px 10px rgba(26,14,0,0.05)',
         minWidth: 0, overflow: 'hidden'
       }}>
       <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3"
@@ -44,7 +44,7 @@ interface StatsTabProps {
 
 export default function StatsTab({ stats, totalVisits, viewsChartData, typeChartData, monthlyChartData }: StatsTabProps) {
   return (
-    <div>
+    <div className="animate-in fade-in duration-500">
       <div className="mb-7">
         <h1 className="font-bold mb-1"
           style={{ fontFamily: 'var(--font-cormorant)', fontSize: '2rem', color: HColors.darkBrown }}>

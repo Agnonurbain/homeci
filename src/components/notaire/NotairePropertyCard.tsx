@@ -33,9 +33,9 @@ export function NotairePropertyCard({
   }[docSt] || { border: HAlpha.gold15, bar: HAlpha.gold20, label: docSt };
 
   return (
-    <div className="rounded-2xl overflow-hidden transition-all mb-3"
-      style={{ background: '#FFFFFF', border: `1px solid ${stColors.border}`, boxShadow: '0 2px 12px rgba(26,14,0,0.05)' }}>
-      <div className="h-1" style={{ background: stColors.bar, opacity: 0.45 }} />
+    <div className="overflow-hidden transition-all mb-3 hover:-translate-y-0.5 hover:shadow-lg"
+      style={{ background: '#FFFFFF', border: `1px solid ${stColors.border}`, boxShadow: '0 2px 16px rgba(26,14,0,0.06)', borderRadius: 18 }}>
+      <div style={{ height: 3, background: stColors.bar }} />
 
         <div className="flex flex-col sm:flex-row gap-4 p-4 items-stretch sm:items-start">
         <div className="flex items-start gap-3 flex-1 min-w-0">

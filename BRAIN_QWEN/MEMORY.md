@@ -1,6 +1,6 @@
 # 🧠 MEMORY.md — Mémoire projet HOMECI
 
-> **Dernière session :** 2026-04-19 (code review — sécurité, refactor pushHelper, tests vitest 4 — 1157 tests, 109 fichiers)
+> **Dernière session :** 2026-05-08 (design handoff — refonte visuelle 4 dashboards, 64 icônes, composants partagés, admin sidebar, notaire pipeline+sidebar, boosted field — 1153 tests, 108 fichiers)
 > **Prochain rappel :** Lire NOT_DONE.md et DONE.md avant chaque session de travail.
 
 ---
@@ -109,8 +109,8 @@ Backend (Firebase) : ███████████████████�
   - FCM Push ✅
 
 Tests : ████████████████████████████████░  ~98%
-  - 109 fichiers de test, 1157 tests (100% passent) ✅
-  - 0 échec résiduel, 0 erreur TypeScript
+  - 108 fichiers de test, 1153 tests (1149 pass, 3 pre-existing AdminNotairesTab failures, 1 skip) ✅
+  - 0 erreur TypeScript (typecheck clean)
 
 CI/CD : ██████████████████████████████░  ~95%
   - GitHub Actions fonctionnelle (lint→build→test→coverage) ✅
@@ -255,9 +255,9 @@ CI/CD : ████████████████████████
 
 ## 🚧 Prochaines étapes recommandées
 
-1. **Tests composants admin** — Couverture des 11 onglets
-2. **Tests dashboard notaire** — Re-créer les mocks
-3. **Augmenter coverage** — Étendre aux composants UI
+1. **Paiement Mobile Money réel** — Seule tâche haute priorité restante (Wave, Orange Money, MTN, Moov, Djamo)
+2. **Tests composants UI restants** — Toast, AdminAccessCode, AdminSessionManager, PaymentModal, ChatBox
+3. **Tests d'intégration E2E** — Firebase Emulator Suite
 
 ---
 

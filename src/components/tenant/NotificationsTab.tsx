@@ -2,6 +2,17 @@ import { Bell, Calendar, CheckCircle, XCircle, Star, MessageSquare, ChevronRight
 import type { Notification } from '../../services/notificationService';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
 
+const NOTIF_COLORS: Record<string, string> = {
+  visit_accepted: '#009E49',
+  visit_rejected: '#8B1D1D',
+  visit_requested: '#FF6B00',
+  counter_proposed: '#D4A017',
+  document_validated: '#009E49',
+  document_rejected: '#8B1D1D',
+  new_message: '#1A3A6B',
+  certification: '#009E49',
+};
+
 interface NotificationsTabProps {
   notifications: Notification[];
   unreadCount: number;
@@ -77,16 +88,16 @@ export default function NotificationsTab({
           {notifications.map(n => {
             const config = NOTIF_CONFIG[n.type] || NOTIF_CONFIG.system;
             return (
-              <div key={n.id} 
+              <div key={n.id}
                 onClick={() => handleNotifClick(n)}
-                className={`group p-5 rounded-2xl flex gap-4 items-start transition-all cursor-pointer hover:shadow-md hover:bg-gold/[0.02] ${!n.read ? 'bg-white border-l-4' : 'opacity-75'}`}
+                className={`group p-5 rounded-2xl flex gap-4 items-start transition-all cursor-pointer hover:shadow-md ${!n.read ? 'border-l-4' : 'opacity-75'}`}
                 style={{
-                  background: HColors.white,
-                  borderColor: !n.read ? HColors.gold : HAlpha.gold15,
+                  background: !n.read ? `${NOTIF_COLORS[n.type] || '#FF6B00'}08` : HColors.white,
+                  borderColor: !n.read ? (NOTIF_COLORS[n.type] || HColors.gold) : HAlpha.gold15,
                   border: !n.read ? undefined : `1.5px solid ${HAlpha.gold12}`,
                   transform: !n.read ? 'scale(1.01)' : 'none'
                 }}>
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110`}
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110"
                   style={{ background: `${config.color}15`, color: config.color, border: `1px solid ${config.color}30` }}>
                   {config.icon}
                 </div>
@@ -98,12 +109,12 @@ export default function NotificationsTab({
                     </span>
                   </div>
                   <p className="text-xs mt-1 leading-relaxed line-clamp-2" style={{ color: HColors.brown }}>{n.message}</p>
-                  
+
                   <div className="mt-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-gold opacity-0 group-hover:opacity-100 transition-opacity">
                     Voir les détails <ChevronRight className="w-3 h-3" />
                   </div>
                 </div>
-                {!n.read && <div className="w-2.5 h-2.5 rounded-full bg-orange-600 mt-1.5 shrink-0 animate-pulse" />}
+                {!n.read && <div className="w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 animate-pulse" style={{ background: NOTIF_COLORS[n.type] || '#FF6B00' }} />}
               </div>
             );
           })}

@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HOMECI — Dashboard Locataire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --font-cormorant: 'Cormorant', Georgia, serif; --font-nunito: 'Nunito', system-ui, sans-serif; }
+html, body { height: 100%; }
+body { background: #FFF8ED; font-family: var(--font-nunito); }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(212,160,23,0.25); border-radius: 3px; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+@keyframes heartbeat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+.fade-in { animation: fadeIn 0.35s ease both; }
+input:focus, select:focus { outline: none; }
+</style>
+</head>
+<body>
+<script type="text/babel">
+const { useState } = React;
+
+/* ── TOKENS ── */
+const T = {
+  orange: '#FF6B00', orangeDark: '#AF4B00',
+  vertCI: '#009E49', gold: '#D4A017',
+  forest: '#1B5E3A', night: '#0A3D1F',
+  cream: '#F5E6C8', creamBg: '#FFF8ED',
+  brown: '#8B6A30', bois: '#5C3D1E',
+  darkBrown: '#1A0E00',
+  bordeaux: '#8B1D1D', navy: '#1A3A6B',
+  white: '#FFFFFF',
+};
+const A = {
+  gold10:'rgba(212,160,23,0.10)', gold15:'rgba(212,160,23,0.15)',
+  gold20:'rgba(212,160,23,0.20)', gold25:'rgba(212,160,23,0.25)',
+  gold30:'rgba(212,160,23,0.30)', gold40:'rgba(212,160,23,0.40)',
+  orange10:'rgba(255,107,0,0.10)', orange15:'rgba(255,107,0,0.15)',
+  orange20:'rgba(255,107,0,0.20)', orange25:'rgba(255,107,0,0.25)',
+  vert10:'rgba(0,158,73,0.10)', vert20:'rgba(0,158,73,0.20)', vert25:'rgba(0,158,73,0.25)',
+  vert85:'rgba(0,158,73,0.85)',
+  navy08:'rgba(26,58,107,0.08)', navy20:'rgba(26,58,107,0.20)',
+  bord10:'rgba(139,29,29,0.10)', bord20:'rgba(139,29,29,0.20)', bord25:'rgba(139,29,29,0.25)',
+  cream50:'rgba(245,230,200,0.50)', cream60:'rgba(245,230,200,0.60)',
+  terra08:'rgba(192,124,62,0.08)', terra30:'rgba(192,124,62,0.30)',
+};
+
+function KenteLine({ h = 3 }) {
+  return <div style={{ height:h, background:'repeating-linear-gradient(90deg,#FF6B00 0,#FF6B00 14px,#009E49 14px,#009E49 28px,#FFF 28px,#FFF 42px,#D4A017 42px,#D4A017 56px)' }} />;
+}
+
+/* ── MOCK DATA ── */
+const PROPERTIES = [
+  { id:'p1', title:'Villa moderne Cocody Riviera', city:'Abidjan-Cocody', type:'Villa', price:'850 000', unit:'/mois', rooms:5, bath:3, area:280, verified:true, fav:true,  img:'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&w=600' },
+  { id:'p2', title:'Appartement Plateau 3 pièces', city:'Abidjan-Plateau', type:'Appartement', price:'320 000', unit:'/mois', rooms:3, bath:2, area:95, verified:true, fav:false, img:'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&w=600' },
+  { id:'p3', title:'Maison Marcory 4 pièces', city:'Abidjan-Marcory', type:'Maison', price:'480 000', unit:'/mois', rooms:4, bath:2, area:160, verified:false, fav:true, img:'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&w=600' },
+  { id:'p4', title:'Villa Angré golf résidence', city:'Abidjan-Angré', type:'Villa', price:'1 200 000', unit:'/mois', rooms:6, bath:4, area:420, verified:true, fav:false, img:'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&w=600' },
+  { id:'p5', title:'Appartement Deux-Plateaux F3', city:'Abidjan-2-Plateaux', type:'Appartement', price:'260 000', unit:'/mois', rooms:3, bath:1, area:80, verified:false, fav:false, img:'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&w=600' },
+  { id:'p6', title:'Terrain Bingerville 1200m²', city:'Bingerville', type:'Terrain', price:'25 000 000', unit:'', rooms:0, bath:0, area:1200, verified:true, fav:false, img:'https://images.pexels.com/photos/440731/pexels-photo-440731.jpeg?auto=compress&w=600' },
+];
+
+const VISITS = [
+  { id:'v1', title:'Villa Cocody Riviera', city:'Abidjan-Cocody', price:'850 000 FCFA/mois', date:'Mer. 30 Avr 2025', time:'10h00', status:'accepted',  statusLabel:'Visite confirmée', statusColor:T.vertCI, statusBg:A.vert10, statusBd:A.vert25 },
+  { id:'v2', title:'Appartement Plateau 3p', city:'Abidjan-Plateau', price:'320 000 FCFA/mois', date:'Lun. 28 Avr 2025', time:'14h30', status:'counter', statusLabel:'Nouvelle date proposée', statusColor:'#C07C3E', statusBg:A.terra08, statusBd:A.terra30 },
+  { id:'v3', title:'Maison Marcory 4 pièces', city:'Abidjan-Marcory', price:'480 000 FCFA/mois', date:'Mar. 22 Avr 2025', time:'09h00', status:'pending', statusLabel:'En attente', statusColor:T.gold, statusBg:A.gold10, statusBd:A.gold25 },
+  { id:'v4', title:'Villa Angré', city:'Abidjan-Angré', price:'1 200 000 FCFA/mois', date:'Ven. 18 Avr 2025', time:'16h00', status:'rejected', statusLabel:'Refusée', statusColor:T.bordeaux, statusBg:A.bord10, statusBd:A.bord25 },
+];
+
+const NOTIFS = [
+  { id:'n1', text:'Votre visite pour Villa Cocody a été confirmée', time:'Il y a 30 min', read:false, icon:'✅', color:T.vertCI },
+  { id:'n2', text:'Le propriétaire propose une nouvelle date pour Appart. Plateau', time:'Il y a 2h', read:false, icon:'📅', color:'#C07C3E' },
+  { id:'n3', text:'Prix mis à jour : Villa Angré 1 200 000 FCFA/mois', time:'Hier', read:true, icon:'💰', color:T.gold },
+  { id:'n4', text:'Nouveau bien ajouté à Cocody — Correspond à vos critères', time:'Il y a 2j', read:true, icon:'🏠', color:T.orange },
+  { id:'n5', text:'Votre dossier locataire est complet', time:'Il y a 3j', read:true, icon:'📄', color:T.navy },
+];
+
+const DOSSIER_DOCS = [
+  { label:"Pièce d'identité", status:'valide' },
+  { label:'Bulletins de salaire (3 derniers)', status:'valide' },
+  { label:"Avis d'imposition", status:'valide' },
+  { label:'Justificatif de domicile', status:'en_attente' },
+  { label:'Contrat de travail', status:'valide' },
+];
+
+const TABS = [
+  { id:'search',        label:'Rechercher',     icon:'🔍', count:null },
+  { id:'favorites',     label:'Mes favoris',    icon:'❤️', count:3 },
+  { id:'visits',        label:'Mes visites',    icon:'📅', count:4 },
+  { id:'notifications', label:'Notifications',  icon:'🔔', count:2 },
+  { id:'dossier',       label:'Mon Dossier',    icon:'📄', count:null },
+];
+
+/* ── PROPERTY CARD ── */
+function PropCard({ prop, favs, onToggleFav }) {
+  const isFav = favs.includes(prop.id);
+  return (
+    <div className="fade-in" style={{
+      borderRadius:20, overflow:'hidden', background:T.white,
+      border:`1px solid ${isFav ? A.orange25 : 'rgba(245,230,200,0.6)'}`,
+      boxShadow: isFav ? '0 4px 20px rgba(255,107,0,0.1)' : '0 2px 12px rgba(10,61,31,0.07)',
+      transition:'transform 0.2s, box-shadow 0.2s',
+    }}
+    onMouseEnter={e=>{ e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow='0 8px 28px rgba(10,61,31,0.12)'; }}
+    onMouseLeave={e=>{ e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=isFav?'0 4px 20px rgba(255,107,0,0.1)':'0 2px 12px rgba(10,61,31,0.07)'; }}>
+      {/* Image */}
+      <div style={{ position:'relative', aspectRatio:'16/10', overflow:'hidden', background:T.darkBrown }}>
+        <img src={prop.img} alt={prop.title} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+        <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 55%)' }} />
+        {/* Badges top-left */}
+        <div style={{ position:'absolute', top:10, left:10, display:'flex', gap:6, flexWrap:'wrap' }}>
+          <span style={{ padding:'3px 9px', borderRadius:6, fontSize:9, fontWeight:800, letterSpacing:'0.05em',
+            background:A.orange15, color:T.orangeDark }}>{prop.type}</span>
+          {prop.verified && (
+            <span style={{ padding:'3px 9px', borderRadius:6, fontSize:9, fontWeight:800,
+              background:A.vert85, color:'#fff', display:'flex', alignItems:'center', gap:4 }}>🛡️ Vérifié Notaire</span>
+          )}
+        </div>
+        {/* Fav button */}
+        <button onClick={() => onToggleFav(prop.id)} style={{
+          position:'absolute', bottom:44, right:10,
+          width:32, height:32, borderRadius:99,
+          background:'rgba(0,0,0,0.28)', backdropFilter:'blur(4px)',
+          border:'none', cursor:'pointer', fontSize:16,
+          display:'flex', alignItems:'center', justifyContent:'center',
+          animation: isFav ? 'heartbeat 0.3s ease' : 'none',
+        }}>{isFav ? '❤️' : '🤍'}</button>
+        {/* Price */}
+        <div style={{ position:'absolute', bottom:10, left:14 }}>
+          <span style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.35rem', fontWeight:700, color:'#fff', textShadow:'0 2px 8px rgba(0,0,0,0.4)' }}>
+            {prop.price} FCFA
+          </span>
+          {prop.unit && <span style={{ display:'block', fontSize:10, color:'rgba(255,255,255,0.6)' }}>{prop.unit}</span>}
+        </div>
+        {/* Transaction badge */}
+        <span style={{ position:'absolute', bottom:12, right:10, padding:'3px 9px', borderRadius:99, fontSize:9, fontWeight:800,
+          background: prop.unit ? A.orange15 : A.vert10, color: prop.unit ? T.orangeDark : T.vertCI }}>
+          {prop.unit ? 'Location' : 'Vente'}
+        </span>
+      </div>
+
+      {/* Body */}
+      <div style={{ padding:'12px 14px' }}>
+        <h3 style={{ fontFamily:'var(--font-cormorant)', fontSize:'1rem', fontWeight:700, color:T.darkBrown, marginBottom:6, lineHeight:1.2 }}>{prop.title}</h3>
+        <div style={{ display:'flex', alignItems:'center', gap:12, fontSize:11, color:T.brown, marginBottom:10 }}>
+          <span>📍 {prop.city}</span>
+        </div>
+        <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:12 }}>
+          {prop.rooms > 0 && <span style={{ fontSize:11, color:T.bois, display:'flex', alignItems:'center', gap:4 }}>🛏️ {prop.rooms} ch.</span>}
+          {prop.bath > 0 && <span style={{ fontSize:11, color:T.bois, display:'flex', alignItems:'center', gap:4 }}>🚿 {prop.bath} sdb</span>}
+          <span style={{ fontSize:11, color:T.bois, display:'flex', alignItems:'center', gap:4 }}>📐 {prop.area} m²</span>
+        </div>
+        <div style={{ display:'flex', gap:8 }}>
+          <button style={{
+            flex:1, padding:'8px', borderRadius:10, fontSize:11, fontWeight:700, cursor:'pointer',
+            background:'linear-gradient(135deg,#FF6B00,#D4A017)', color:'#fff', border:'none',
+          }}>Demander une visite</button>
+          <button style={{
+            padding:'8px 12px', borderRadius:10, fontSize:11, fontWeight:600, cursor:'pointer',
+            background:A.gold10, color:T.brown, border:`1px solid ${A.gold20}`,
+          }}>Voir</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── VISIT CARD ── */
+function VisitCard({ visit }) {
+  const isCounter = visit.status === 'counter';
+  return (
+    <div className="fade-in" style={{
+      borderRadius:18, overflow:'hidden', background:T.white,
+      border:`1px solid ${visit.statusBd}`, boxShadow:'0 2px 12px rgba(26,14,0,0.06)',
+      marginBottom:12,
+    }}>
+      <div style={{ height:3, background:visit.statusColor }} />
+      <div style={{ display:'flex', gap:16, padding:'14px 16px' }}>
+        {/* Thumbnail */}
+        <div style={{
+          width:80, height:80, borderRadius:14, flexShrink:0,
+          background:`${visit.statusColor}15`, border:`1px solid ${visit.statusBd}`,
+          display:'flex', alignItems:'center', justifyContent:'center', fontSize:28,
+        }}>🏠</div>
+        {/* Info */}
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8, marginBottom:6 }}>
+            <h3 style={{ fontFamily:'var(--font-cormorant)', fontSize:'1rem', fontWeight:700, color:T.darkBrown, lineHeight:1.2 }}>
+              {visit.title}
+            </h3>
+            <span style={{
+              padding:'3px 10px', borderRadius:99, fontSize:9, fontWeight:800,
+              background:visit.statusBg, color:visit.statusColor, border:`1px solid ${visit.statusBd}`,
+              flexShrink:0, whiteSpace:'nowrap',
+            }}>{visit.statusLabel}</span>
+          </div>
+          <div style={{ fontSize:11, color:T.brown, marginBottom:6, display:'flex', gap:12, flexWrap:'wrap' }}>
+            <span>📍 {visit.city}</span>
+            <span style={{ fontWeight:700, color:T.orange }}>💰 {visit.price}</span>
+          </div>
+          <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:11, color:T.bois }}>
+            <span style={{ color:T.orange }}>📅</span>
+            <span style={{ fontWeight:600 }}>{visit.date} à {visit.time}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Counter proposal banner */}
+      {isCounter && (
+        <div style={{ margin:'0 14px 14px', padding:'12px 14px', borderRadius:12, background:A.terra08, border:`1px solid ${A.terra30}` }}>
+          <p style={{ fontSize:11, fontWeight:700, color:'#7A4200', marginBottom:8 }}>
+            📅 Le propriétaire propose une nouvelle date : <strong>Mar. 29 Avr à 11h00</strong>
+          </p>
+          <div style={{ display:'flex', gap:8 }}>
+            <button style={{ flex:1, padding:'8px', borderRadius:9, fontSize:11, fontWeight:800,
+              background:'linear-gradient(135deg,#FF6B00,#D4A017)', color:'#fff', border:'none', cursor:'pointer' }}>
+              ✅ Confirmer
+            </button>
+            <button style={{ flex:1, padding:'8px', borderRadius:9, fontSize:11, fontWeight:600,
+              background:A.terra08, border:`1px solid ${A.terra30}`, color:'#7A4200', cursor:'pointer' }}>
+              Proposer autre chose
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Action footer */}
+      <div style={{ padding:'0 14px 14px', display:'flex', gap:8, flexWrap:'wrap' }}>
+        <button style={{ padding:'7px 12px', borderRadius:9, fontSize:11, fontWeight:600,
+          background:'rgba(245,245,245,0.8)', border:'1px solid #e5e7eb', color:T.bois, cursor:'pointer' }}>
+          👁️ Voir le bien
+        </button>
+        {visit.status === 'accepted' && (
+          <button style={{ padding:'7px 14px', borderRadius:9, fontSize:11, fontWeight:700,
+            background:'linear-gradient(135deg,#FF6B00,#D4A017)', color:'#fff', border:'none', cursor:'pointer' }}>
+            💬 Discuter
+          </button>
+        )}
+        {visit.status === 'rejected' && (
+          <button style={{ padding:'7px 12px', borderRadius:9, fontSize:11, fontWeight:600,
+            background:A.navy08, border:`1px solid ${A.navy20}`, color:T.navy, cursor:'pointer' }}>
+            📅 Replanifier
+          </button>
+        )}
+        {(visit.status === 'pending' || visit.status === 'counter') && (
+          <button style={{ padding:'7px 12px', borderRadius:9, fontSize:11, fontWeight:600,
+            background:A.bord10, border:`1px solid ${A.bord20}`, color:T.bordeaux, cursor:'pointer' }}>
+            Annuler
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── NOTIFICATIONS TAB ── */
+function NotifsTab() {
+  const [notifs, setNotifs] = useState(NOTIFS);
+  const unread = notifs.filter(n => !n.read).length;
+  return (
+    <div>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
+        <div>
+          <h2 style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.6rem', fontWeight:700, color:T.darkBrown }}>Notifications</h2>
+          <p style={{ fontSize:12, color:T.brown }}>{unread} non lue{unread > 1 ? 's' : ''}</p>
+        </div>
+        <button onClick={() => setNotifs(n => n.map(x => ({...x, read:true})))} style={{
+          padding:'7px 14px', borderRadius:10, fontSize:11, fontWeight:700,
+          background:A.gold10, border:`1px solid ${A.gold25}`, color:T.brown, cursor:'pointer',
+        }}>Tout marquer comme lu</button>
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+        {notifs.map(n => (
+          <div key={n.id} onClick={() => setNotifs(ns => ns.map(x => x.id===n.id?{...x,read:true}:x))} style={{
+            display:'flex', alignItems:'flex-start', gap:12, padding:'12px 16px',
+            borderRadius:14, background:n.read ? T.white : `${n.color}08`,
+            border:`1px solid ${n.read ? A.gold15 : `${n.color}30`}`,
+            cursor:'pointer', transition:'all 0.15s',
+          }}>
+            <div style={{
+              width:36, height:36, borderRadius:10, flexShrink:0,
+              background:`${n.color}15`, border:`1px solid ${n.color}25`,
+              display:'flex', alignItems:'center', justifyContent:'center', fontSize:16,
+            }}>{n.icon}</div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <p style={{ fontSize:12, fontWeight: n.read ? 500 : 700, color:T.bois, lineHeight:1.4 }}>{n.text}</p>
+              <p style={{ fontSize:10, color:T.brown, marginTop:3 }}>{n.time}</p>
+            </div>
+            {!n.read && <div style={{ width:8, height:8, borderRadius:99, background:n.color, flexShrink:0, marginTop:4 }} />}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── DOSSIER TAB ── */
+function DossierTab() {
+  const valid = DOSSIER_DOCS.filter(d => d.status==='valide').length;
+  const pct = Math.round(valid / DOSSIER_DOCS.length * 100);
+  return (
+    <div style={{ maxWidth:680 }}>
+      {/* Score card */}
+      <div style={{
+        borderRadius:20, padding:'24px', marginBottom:20,
+        background:'linear-gradient(135deg,#0A3D1F,#1B5E3A)',
+        border:`1px solid ${A.gold25}`,
+      }}>
+        <div style={{ display:'flex', alignItems:'center', gap:20 }}>
+          <div style={{ position:'relative', width:80, height:80, flexShrink:0 }}>
+            <svg width="80" height="80" style={{ transform:'rotate(-90deg)' }}>
+              <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(212,160,23,0.2)" strokeWidth="6" />
+              <circle cx="40" cy="40" r="34" fill="none" stroke={T.gold} strokeWidth="6"
+                strokeDasharray={`${2*Math.PI*34*pct/100} ${2*Math.PI*34}`} strokeLinecap="round" />
+            </svg>
+            <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <span style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.3rem', fontWeight:900, color:T.gold }}>{pct}%</span>
+            </div>
+          </div>
+          <div>
+            <h2 style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.5rem', fontWeight:700, color:T.cream }}>Mon Dossier Locataire</h2>
+            <p style={{ fontSize:12, color:'rgba(245,230,200,0.6)', marginTop:2 }}>{valid}/{DOSSIER_DOCS.length} documents validés</p>
+            <div style={{ marginTop:8 }}>
+              {pct === 100 ? (
+                <span style={{ padding:'4px 12px', borderRadius:99, fontSize:10, fontWeight:800,
+                  background:A.vert10, color:T.vertCI, border:`1px solid ${A.vert25}` }}>✅ Dossier complet</span>
+              ) : (
+                <span style={{ padding:'4px 12px', borderRadius:99, fontSize:10, fontWeight:800,
+                  background:A.gold10, color:T.gold, border:`1px solid ${A.gold25}` }}>⏳ En cours de complétion</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Documents list */}
+      <div style={{ borderRadius:18, background:T.white, border:`1px solid ${A.gold15}`, overflow:'hidden' }}>
+        <div style={{ padding:'14px 18px', borderBottom:`1px solid ${A.gold10}` }}>
+          <h3 style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.1rem', fontWeight:700, color:T.darkBrown }}>Documents requis</h3>
+        </div>
+        {DOSSIER_DOCS.map((doc, i) => {
+          const isValid = doc.status === 'valide';
+          return (
+            <div key={i} style={{
+              display:'flex', alignItems:'center', justifyContent:'space-between',
+              padding:'12px 18px', borderBottom: i < DOSSIER_DOCS.length-1 ? `1px solid ${A.gold10}` : 'none',
+              background: isValid ? A.vert10.replace('0.10','0.03') : 'transparent',
+            }}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <span style={{ fontSize:16 }}>{isValid ? '📄' : '📋'}</span>
+                <span style={{ fontSize:12, fontWeight:600, color:T.bois }}>{doc.label}</span>
+              </div>
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                {isValid ? (
+                  <span style={{ padding:'3px 10px', borderRadius:99, fontSize:9, fontWeight:800,
+                    background:A.vert10, color:T.vertCI, border:`1px solid ${A.vert25}` }}>✓ Validé</span>
+                ) : (
+                  <>
+                    <span style={{ padding:'3px 10px', borderRadius:99, fontSize:9, fontWeight:800,
+                      background:A.gold10, color:T.gold, border:`1px solid ${A.gold25}` }}>⏳ En attente</span>
+                    <button style={{ padding:'5px 12px', borderRadius:8, fontSize:10, fontWeight:700,
+                      background:'linear-gradient(135deg,#FF6B00,#D4A017)', color:'#fff', border:'none', cursor:'pointer' }}>
+                      Ajouter
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Mobile payment banner */}
+      <div style={{ borderRadius:18, overflow:'hidden', marginTop:16 }}>
+        <KenteLine />
+        <div style={{ padding:'18px 20px', background:'linear-gradient(135deg,#0D1F12,#1A0E00)', display:'flex', alignItems:'center', gap:16 }}>
+          <div style={{ fontSize:32 }}>💳</div>
+          <div>
+            <h3 style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.1rem', fontWeight:700, color:T.cream, marginBottom:4 }}>
+              Paiements mobiles — Bientôt disponibles
+            </h3>
+            <p style={{ fontSize:11, color:'rgba(245,230,200,0.55)' }}>Payez cautions et loyers via Orange Money, MTN MoMo, Wave, Flooz, Djamo</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════ MAIN ══════════════════════ */
+function TenantDashboard() {
+  const [tab, setTab] = useState('search');
+  const [favs, setFavs] = useState(['p1','p3']);
+  const [searchQ, setSearchQ] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
+  const [showSortMenu, setShowSortMenu] = useState(false);
+
+  const toggleFav = id => setFavs(f => f.includes(id) ? f.filter(x=>x!==id) : [...f, id]);
+  const unreadNotifs = 2;
+
+  return (
+    <div style={{ minHeight:'100vh', background:T.creamBg, fontFamily:'var(--font-nunito)' }}>
+
+      {/* ══ HEADER ══ */}
+      <header style={{ background:T.forest, borderBottom:`1px solid ${A.gold25}`, position:'sticky', top:0, zIndex:20 }}>
+        <div style={{ maxWidth:1200, margin:'0 auto', padding:'18px 24px 0' }}>
+
+          {/* Top bar */}
+          <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:16, marginBottom:14 }}>
+            <div>
+              <h1 style={{ fontFamily:'var(--font-cormorant)', fontSize:'clamp(1.2rem,4vw,1.75rem)', fontWeight:700, color:T.cream, lineHeight:1 }}>
+                Bonjour, Aminata 👋
+              </h1>
+              <p style={{ fontSize:10, color:A.cream50, fontWeight:700, letterSpacing:'0.14em', textTransform:'uppercase', marginTop:4 }}>
+                Trouvez et planifiez vos visites
+              </p>
+            </div>
+            {/* Stat badges */}
+            <div style={{ display:'flex', gap:8, flexWrap:'wrap', alignItems:'center' }}>
+              {[
+                { icon:'❤️', label:'Favoris', val:favs.length, color:T.orange, tabId:'favorites' },
+                { icon:'⏳', label:'En attente', val:2, color:T.gold, tabId:'visits' },
+                { icon:'✅', label:'Acceptées', val:1, color:T.vertCI, tabId:'visits' },
+              ].map(b => (
+                <button key={b.label} onClick={() => setTab(b.tabId)} style={{
+                  display:'flex', alignItems:'center', gap:6, padding:'6px 12px',
+                  borderRadius:10, border:`1px solid ${b.color}30`, background:`${b.color}12`,
+                  cursor:'pointer', transition:'all 0.15s',
+                }}
+                onMouseEnter={e=>e.currentTarget.style.transform='scale(1.04)'}
+                onMouseLeave={e=>e.currentTarget.style.transform='scale(1)'}>
+                  <span style={{ fontSize:13 }}>{b.icon}</span>
+                  <span style={{ color:b.color, fontSize:11, fontWeight:900 }}>{b.val}</span>
+                  <span style={{ color:A.cream50, fontSize:10, fontWeight:600 }}>{b.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ── TABS ── */}
+          <nav style={{ display:'flex', gap:2, overflowX:'auto' }}>
+            {TABS.map(t => {
+              const isActive = tab === t.id;
+              return (
+                <button key={t.id} onClick={() => setTab(t.id)} style={{
+                  display:'flex', alignItems:'center', gap:6, padding:'10px 16px',
+                  borderBottom: isActive ? `2.5px solid ${T.gold}` : '2.5px solid transparent',
+                  color: isActive ? T.gold : A.cream50,
+                  fontFamily:'var(--font-nunito)', fontWeight: isActive ? 700 : 500,
+                  fontSize:13, whiteSpace:'nowrap', background:'transparent', border:'none',
+                  borderBottom: isActive ? `2.5px solid ${T.gold}` : '2.5px solid transparent',
+                  cursor:'pointer', transition:'all 0.15s',
+                }}>
+                  <span>{t.icon}</span>
+                  {t.label}
+                  {t.count !== null && (
+                    <span style={{
+                      padding:'1px 7px', borderRadius:99, fontSize:10, fontWeight:800,
+                      background: t.id === 'notifications' && t.count > 0 ? T.bordeaux : isActive ? A.gold20 : A.gold10,
+                      color: t.id === 'notifications' && t.count > 0 ? '#fff' : isActive ? T.gold : A.cream50,
+                      border:`1px solid ${t.id === 'notifications' && t.count > 0 ? T.bordeaux : A.gold20}`,
+                    }}>{t.count}</span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+      </header>
+
+      {/* ══ CONTENT ══ */}
+      <main style={{ maxWidth:1200, margin:'0 auto', padding:'28px 24px' }}>
+
+        {/* ── SEARCH TAB ── */}
+        {tab === 'search' && (
+          <div className="fade-in">
+            {/* Search + filter bar */}
+            <div style={{ display:'flex', gap:10, marginBottom:16, flexWrap:'wrap' }}>
+              <div style={{ flex:1, minWidth:220, position:'relative' }}>
+                <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', fontSize:14 }}>🔍</span>
+                <input type="text" placeholder="Rechercher un bien..." value={searchQ}
+                  onChange={e => setSearchQ(e.target.value)}
+                  style={{ width:'100%', padding:'11px 14px 11px 36px', borderRadius:12,
+                    border:`1px solid ${A.gold20}`, background:'rgba(255,255,255,0.85)',
+                    fontSize:13, color:T.darkBrown }} />
+              </div>
+              {[
+                { label:'Type de bien', opts:['Tous', 'Villa', 'Appartement', 'Maison', 'Terrain'] },
+                { label:'Transaction', opts:['Tous', 'Location', 'Vente'] },
+                { label:'District', opts:['Toute la CI', 'Abidjan', 'Yamoussoukro', 'Bouaké'] },
+              ].map(f => (
+                <select key={f.label} style={{
+                  padding:'11px 14px', borderRadius:12, border:`1px solid ${A.gold20}`,
+                  background:'rgba(255,255,255,0.85)', fontSize:12, fontWeight:700,
+                  color:T.bois, cursor:'pointer',
+                }}>
+                  {f.opts.map(o => <option key={o}>{o}</option>)}
+                </select>
+              ))}
+              {/* Sort button */}
+              <div style={{ position:'relative' }}>
+                <button onClick={() => setShowSortMenu(!showSortMenu)} style={{
+                  padding:'11px 14px', borderRadius:12, border:`1px solid ${A.gold20}`,
+                  background:'rgba(255,255,255,0.85)', fontSize:12, fontWeight:700,
+                  color:T.brown, cursor:'pointer', display:'flex', alignItems:'center', gap:6,
+                }}>↕️ {sortBy === 'newest' ? 'Plus récents' : sortBy === 'price_asc' ? 'Prix ↑' : 'Prix ↓'}</button>
+                {showSortMenu && (
+                  <div style={{
+                    position:'absolute', top:'calc(100% + 4px)', right:0, zIndex:30,
+                    background:'#fff', borderRadius:12, border:`1px solid ${A.gold20}`,
+                    boxShadow:'0 8px 24px rgba(26,14,0,0.12)', overflow:'hidden', minWidth:160,
+                  }}>
+                    {['newest','price_asc','price_desc','views'].map(s => (
+                      <button key={s} onClick={() => { setSortBy(s); setShowSortMenu(false); }} style={{
+                        display:'block', width:'100%', textAlign:'left', padding:'9px 14px',
+                        fontSize:12, fontWeight: s===sortBy ? 700 : 500,
+                        color: s===sortBy ? T.orange : T.bois, background: s===sortBy ? A.orange10 : 'transparent',
+                        border:'none', cursor:'pointer',
+                      }}>
+                        {{ newest:'Plus récents', price_asc:'Prix croissant', price_desc:'Prix décroissant', views:'Plus populaires' }[s]}
+                        {s===sortBy && ' ✓'}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* View toggle */}
+              <div style={{ display:'flex', borderRadius:12, overflow:'hidden', border:`1px solid ${A.gold20}` }}>
+                {['list','map'].map(m => (
+                  <button key={m} style={{
+                    padding:'11px 14px', fontSize:12, fontWeight:600, cursor:'pointer',
+                    background: m==='list' ? T.forest : 'rgba(255,255,255,0.85)',
+                    color: m==='list' ? T.cream : T.brown, border:'none',
+                  }}>{ m==='list' ? '☰ Liste' : '🗺️ Carte'}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Results count */}
+            <p style={{ fontSize:13, color:T.brown, marginBottom:16 }}>
+              <strong style={{ color:T.darkBrown }}>{PROPERTIES.length}</strong> biens disponibles
+            </p>
+
+            {/* Property grid */}
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:20 }}>
+              {PROPERTIES.map(p => <PropCard key={p.id} prop={p} favs={favs} onToggleFav={toggleFav} />)}
+            </div>
+
+            {/* Mobile payment banner */}
+            <div style={{ borderRadius:18, overflow:'hidden', marginTop:28 }}>
+              <KenteLine />
+              <div style={{ padding:'18px 20px', background:'linear-gradient(135deg,#0D1F12,#1A0E00)', display:'flex', alignItems:'center', gap:16 }}>
+                <div style={{ fontSize:32 }}>💳</div>
+                <div style={{ flex:1 }}>
+                  <h3 style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.1rem', fontWeight:700, color:T.cream, marginBottom:4 }}>
+                    Paiements mobiles — Bientôt disponibles
+                  </h3>
+                  <p style={{ fontSize:11, color:'rgba(245,230,200,0.55)' }}>Payez cautions et loyers via Orange Money, MTN MoMo, Wave, Flooz, Djamo</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── FAVORITES TAB ── */}
+        {tab === 'favorites' && (
+          <div className="fade-in">
+            <div style={{ marginBottom:20 }}>
+              <h2 style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.8rem', fontWeight:700, color:T.darkBrown }}>Mes Favoris</h2>
+              <p style={{ fontSize:12, color:T.brown, marginTop:2 }}>{favs.length} bien(s) sauvegardé(s)</p>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:20 }}>
+              {PROPERTIES.filter(p => favs.includes(p.id)).map(p =>
+                <PropCard key={p.id} prop={p} favs={favs} onToggleFav={toggleFav} />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── VISITS TAB ── */}
+        {tab === 'visits' && (
+          <div className="fade-in">
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
+              <div>
+                <h2 style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.8rem', fontWeight:700, color:T.darkBrown }}>Mes Visites</h2>
+                <p style={{ fontSize:12, color:T.brown, marginTop:2 }}>{VISITS.length} demande(s)</p>
+              </div>
+              <div style={{ display:'flex', gap:8 }}>
+                {[{l:'Toutes',v:'all'},{l:'En attente',v:'pending'},{l:'Confirmées',v:'accepted'}].map(f => (
+                  <button key={f.v} style={{
+                    padding:'7px 14px', borderRadius:10, fontSize:11, fontWeight:700,
+                    background: f.v==='all' ? T.forest : A.gold10,
+                    color: f.v==='all' ? T.cream : T.brown,
+                    border:`1px solid ${f.v==='all' ? T.forest : A.gold20}`, cursor:'pointer',
+                  }}>{f.l}</button>
+                ))}
+              </div>
+            </div>
+            {VISITS.map(v => <VisitCard key={v.id} visit={v} />)}
+
+            {/* Banner */}
+            <div style={{ borderRadius:18, overflow:'hidden', marginTop:12 }}>
+              <KenteLine />
+              <div style={{ padding:'16px 20px', background:'linear-gradient(135deg,#0D1F12,#1A0E00)', display:'flex', gap:14 }}>
+                <span style={{ fontSize:28 }}>💳</span>
+                <div>
+                  <p style={{ fontFamily:'var(--font-cormorant)', fontSize:'1.05rem', fontWeight:700, color:T.cream }}>Paiements mobiles — Bientôt disponibles</p>
+                  <p style={{ fontSize:10, color:'rgba(245,230,200,0.5)', marginTop:2 }}>Payez cautions et loyers via Orange Money, MTN MoMo, Wave...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── NOTIFICATIONS TAB ── */}
+        {tab === 'notifications' && <div className="fade-in"><NotifsTab /></div>}
+
+        {/* ── DOSSIER TAB ── */}
+        {tab === 'dossier' && <div className="fade-in"><DossierTab /></div>}
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<TenantDashboard />);
+</script>
+<div id="root"></div>
+</body>
+</html>

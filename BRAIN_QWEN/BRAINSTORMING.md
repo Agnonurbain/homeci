@@ -170,4 +170,4 @@ cd functions && npm run serve    # Build + emulators
 ---
 
 *Ce fichier est le point d'entrée unique. Toujours le lire en premier.*
-*Dernière mise à jour : 2026-04-13 (tâches basses priorités + CI fix — 1118 tests, 105 fichiers, 8 tâches basses accomplies, 9 Cloud Functions)*
+*Dernière mise à jour : 2026-05-08 (design handoff — refonte visuelle 4 dashboards — 1153 tests, 108 fichiers)*

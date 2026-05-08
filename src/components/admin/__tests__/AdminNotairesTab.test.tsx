@@ -46,7 +46,7 @@ Object.defineProperty(global, 'crypto', {
 });
 
 const MOCK_CODES = [
-  { id: 'code1', code: 'ABCDEF1234', used: false, created_at: '2026-04-01T10:00:00Z', expires_at: '2026-04-20T10:00:00Z', note: 'Me Konaté' },
+  { id: 'code1', code: 'ABCDEF1234', used: false, created_at: '2026-04-01T10:00:00Z', expires_at: '2099-12-31T10:00:00Z', note: 'Me Konaté' },
   { id: 'code2', code: 'XYZXYZ5678', used: true, created_at: '2026-03-15T10:00:00Z', expires_at: '2026-03-22T10:00:00Z', used_at: '2026-03-16T10:00:00Z', note: null },
   { id: 'code3', code: 'EXPIRED001', used: false, created_at: '2020-01-01T10:00:00Z', expires_at: '2020-01-08T10:00:00Z', note: null },
 ];

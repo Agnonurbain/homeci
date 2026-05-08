@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HOMECI — Dashboard Propriétaire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--font-cormorant:'Cormorant',Georgia,serif;--font-nunito:'Nunito',system-ui,sans-serif}
+html,body{height:100%}
+body{background:#FFF8ED;font-family:var(--font-nunito)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(212,160,23,0.25);border-radius:3px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.fade-in{animation:fadeIn .35s ease both}
+input:focus,select:focus,textarea:focus{outline:none}
+button{font-family:var(--font-nunito);cursor:pointer}
+</style>
+</head>
+<body>
+<script type="text/babel">
+const { useState } = React;
+
+/* ── TOKENS ── */
+const T = {
+  orange:'#FF6B00', orangeDark:'#AF4B00',
+  vertCI:'#009E49', gold:'#D4A017',
+  forest:'#1B5E3A', night:'#0A3D1F',
+  cream:'#F5E6C8', creamBg:'#FFF8ED',
+  brown:'#8B6A30', bois:'#5C3D1E', darkBrown:'#1A0E00',
+  bordeaux:'#8B1D1D', navy:'#1A3A6B', navyDark:'#1A3A2A',
+  white:'#FFFFFF',
+};
+const A = {
+  gold08:'rgba(212,160,23,0.08)',gold10:'rgba(212,160,23,0.10)',gold12:'rgba(212,160,23,0.12)',
+  gold15:'rgba(212,160,23,0.15)',gold20:'rgba(212,160,23,0.20)',gold25:'rgba(212,160,23,0.25)',
+  gold30:'rgba(212,160,23,0.30)',gold35:'rgba(212,160,23,0.35)',
+  orange08:'rgba(255,107,0,0.08)',orange10:'rgba(255,107,0,0.10)',
+  orange15:'rgba(255,107,0,0.15)',orange20:'rgba(255,107,0,0.20)',orange25:'rgba(255,107,0,0.25)',
+  vert10:'rgba(0,158,73,0.10)',vert15:'rgba(0,158,73,0.15)',vert20:'rgba(0,158,73,0.20)',vert25:'rgba(0,158,73,0.25)',
+  navy08:'rgba(26,58,107,0.08)',navy18:'rgba(26,58,107,0.18)',navy20:'rgba(26,58,107,0.20)',
+  bord10:'rgba(139,29,29,0.10)',bord20:'rgba(139,29,29,0.20)',bord25:'rgba(139,29,29,0.25)',
+  terra08:'rgba(192,124,62,0.08)',terra30:'rgba(192,124,62,0.30)',
+  cream50:'rgba(245,230,200,0.50)',cream60:'rgba(245,230,200,0.60)',
+  brown60:'rgba(139,106,48,0.60)',
+};
+
+function KenteLine({h=3}){
+  return <div style={{height:h,flexShrink:0,background:'repeating-linear-gradient(90deg,#FF6B00 0,#FF6B00 14px,#009E49 14px,#009E49 28px,#FFF 28px,#FFF 42px,#D4A017 42px,#D4A017 56px)'}}/>;
+}
+
+/* ── MOCK DATA ── */
+const PROPERTIES = [
+  {id:'p1',title:'Villa Cocody Riviera 5 pièces',city:'Abidjan-Cocody',type:'villa',price:850000,tx:'location',rooms:5,bath:3,area:280,status:'published',verified:true,views:234,pending_visits:2,img:'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&w=400',boosted:true},
+  {id:'p2',title:'Appartement Plateau 3 pièces',city:'Abidjan-Plateau',type:'appartement',price:320000,tx:'location',rooms:3,bath:2,area:95,status:'pending',verified:false,views:89,pending_visits:0,img:'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&w=400',boosted:false},
+  {id:'p3',title:'Terrain Bingerville 1200m²',city:'Bingerville',type:'terrain',price:25000000,tx:'vente',rooms:0,bath:0,area:1200,status:'published',verified:true,views:156,pending_visits:1,img:'https://images.pexels.com/photos/440731/pexels-photo-440731.jpeg?auto=compress&w=400',boosted:false},
+];
+
+const VISITS = [
+  {id:'v1',property:'Villa Cocody Riviera 5 pièces',city:'Abidjan-Cocody',tenant:'Aya Koffi',date:'Mer. 30 Avr 2025',time:'10h00',status:'pending',counter_date:null},
+  {id:'v2',property:'Villa Cocody Riviera 5 pièces',city:'Abidjan-Cocody',tenant:'Traoré Aminata',date:'Ven. 02 Mai 2025',time:'14h30',status:'counter_tenant',counter_date:'Mar. 29 Avr à 11h00'},
+  {id:'v3',property:'Terrain Bingerville',city:'Bingerville',tenant:'Diallo Ibrahim',date:'Lun. 28 Avr 2025',time:'09h00',status:'accepted',counter_date:null},
+  {id:'v4',property:'Villa Cocody Riviera',city:'Abidjan-Cocody',tenant:'N\'Guessan Paul',date:'Mar. 22 Avr 2025',time:'16h00',status:'completed',counter_date:null},
+  {id:'v5',property:'Appartement Plateau',city:'Abidjan-Plateau',tenant:'Ouattara Mariam',date:'Ven. 18 Avr 2025',time:'11h00',status:'rejected',counter_date:null},
+];
+
+const NOTIFS = [
+  {id:'n1',type:'visit_request', title:'Nouvelle demande de visite',    msg:'Aya Koffi souhaite visiter la Villa Cocody Riviera le 30 Avr à 10h00',      color:T.orange,  icon:'📅', read:false, date:'Il y a 30 min'},
+  {id:'n2',type:'visit_request', title:'Contre-proposition reçue',      msg:'Traoré Aminata propose une nouvelle date pour la Villa Cocody Riviera',       color:T.gold,    icon:'🔄', read:false, date:'Il y a 2h'},
+  {id:'n3',type:'notaire_approved',title:'Bien certifié notaire',       msg:'Votre Terrain Bingerville a été certifié par Maître Adjoua',                  color:T.vertCI,  icon:'🏛️', read:true,  date:'Hier 14h32'},
+  {id:'n4',type:'visit_completed',title:'Visite effectuée',             msg:'La visite de Diallo Ibrahim pour le Terrain Bingerville est marquée effectuée',color:T.navy,    icon:'✅', read:true,  date:'Il y a 2j'},
+  {id:'n5',type:'new_message',   title:'Nouveau message',               msg:'Aya Koffi vous a envoyé un message concernant la Villa Cocody',               color:T.navy,    icon:'💬', read:true,  date:'Il y a 3j'},
+];
+
+const MONTHLY = [
+  {m:'Nov',biens:1},{m:'Déc',biens:0},{m:'Jan',biens:1},{m:'Fév',biens:0},{m:'Mar',biens:1},{m:'Avr',biens:2},
+];
+const VIEWS_DATA = [
+  {name:'Villa Cocody',vues:234},{name:'Terrain Bing.',vues:156},{name:'Appart. Plateau',vues:89},
+];
+const TYPE_DATA = [
+  {name:'Villa',value:1},{name:'Appartement',value:1},{name:'Terrain',value:1},
+];
+
+const VSTATUS = {
+  pending:        {l:'En attente',      c:T.gold,     bg:A.gold10,   bd:A.gold25,   icon:'⏳'},
+  counter_tenant: {l:'Contre-prop. reçue',c:'#C07C3E', bg:A.terra08,  bd:A.terra30,  icon:'🔄'},
+  accepted:       {l:'Confirmée',       c:T.vertCI,   bg:A.vert10,   bd:A.vert25,   icon:'✅'},
+  completed:      {l:'Effectuée',       c:T.navy,     bg:A.navy08,   bd:A.navy18,   icon:'🏠'},
+  rejected:       {l:'Refusée',         c:T.bordeaux, bg:A.bord10,   bd:A.bord25,   icon:'❌'},
+};
+
+const PSTATUS = {
+  published:{l:'Publié',    c:T.vertCI,   bg:A.vert10,  bd:A.vert25},
+  pending:  {l:'En attente',c:T.gold,     bg:A.gold10,  bd:A.gold25},
+  rejected: {l:'Rejeté',   c:T.bordeaux, bg:A.bord10,  bd:A.bord25},
+};
+
+/* ── SHARED ── */
+function Badge({cfg}){return <span style={{padding:'2px 9px',borderRadius:99,fontSize:9,fontWeight:800,letterSpacing:'0.04em',background:cfg.bg,color:cfg.c,border:`1px solid ${cfg.bd}`}}>{cfg.l}</span>;}
+
+function PropIcon({type}){
+  return <span style={{fontSize:20}}>{type==='villa'?'🏡':type==='terrain'?'🌿':type==='appartement'?'🏢':'🏠'}</span>;
+}
+
+function StatBadge({icon,label,value,color,onClick}){
+  return(
+    <button onClick={onClick} style={{display:'flex',alignItems:'center',gap:6,padding:'6px 12px',borderRadius:10,border:`1px solid ${color}30`,background:`${color}12`,cursor:'pointer',transition:'all .15s'}}
+      onMouseEnter={e=>e.currentTarget.style.transform='scale(1.04)'}
+      onMouseLeave={e=>e.currentTarget.style.transform=''}>
+      <span style={{fontSize:13}}>{icon}</span>
+      <span style={{color,fontSize:11,fontWeight:900}}>{value}</span>
+      <span style={{color:A.cream50,fontSize:10,fontWeight:600}}>{label}</span>
+    </button>
+  );
+}
+
+/* ══ ONGLET 1 — MES BIENS ══ */
+function PropertiesTab(){
+  const stats={total:PROPERTIES.length,published:PROPERTIES.filter(p=>p.status==='published').length,pending:PROPERTIES.filter(p=>p.status==='pending').length,verified:PROPERTIES.filter(p=>p.verified).length,views:PROPERTIES.reduce((s,p)=>s+p.views,0)};
+
+  return(
+    <div className="fade-in">
+      {/* Header */}
+      <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:28,flexWrap:'wrap',gap:16}}>
+        <div>
+          <h1 style={{fontFamily:'var(--font-cormorant)',fontSize:'2rem',fontWeight:700,color:T.darkBrown,lineHeight:1}}>Mes Biens</h1>
+          <p style={{fontSize:12,color:T.brown,marginTop:4,fontWeight:700,letterSpacing:'0.06em',textTransform:'uppercase',opacity:.6}}>{stats.total} bien(s) enregistré(s)</p>
+        </div>
+        <div style={{display:'flex',gap:10}}>
+          <button style={{padding:'10px 16px',borderRadius:12,fontSize:12,fontWeight:700,background:T.white,color:T.brown,border:`1px solid ${A.gold20}`,display:'flex',alignItems:'center',gap:6}}>
+            ⬇️ Exporter CSV
+          </button>
+          <button style={{padding:'10px 20px',borderRadius:12,fontSize:12,fontWeight:800,background:'linear-gradient(135deg,#FF6B00,#D4A017)',color:'#fff',border:'none',display:'flex',alignItems:'center',gap:6,boxShadow:'0 4px 14px rgba(255,107,0,0.3)'}}>
+            + Ajouter un bien
+          </button>
+        </div>
+      </div>
+
+      {/* Stat cards */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:12,marginBottom:28}}>
+        {[
+          {icon:'🏠',l:'Total',val:stats.total,c:T.gold},
+          {icon:'👁️',l:'Vues totales',val:stats.views,c:T.orange},
+          {icon:'📅',l:'Visites reçues',val:VISITS.length,c:T.navy},
+          {icon:'✅',l:'Publiés',val:stats.published,c:T.vertCI},
+          {icon:'🛡️',l:'Vérifiés notaire',val:stats.verified,c:T.gold},
+        ].map(s=>(
+          <div key={s.l} style={{borderRadius:16,padding:'14px 16px',background:T.white,border:`1px solid ${A.gold15}`,textAlign:'center',boxShadow:'0 2px 10px rgba(26,14,0,0.05)'}}>
+            <div style={{fontSize:20,marginBottom:6}}>{s.icon}</div>
+            <div style={{fontFamily:'var(--font-cormorant)',fontSize:'1.7rem',fontWeight:900,color:s.c,lineHeight:1}}>{s.val}</div>
+            <div style={{fontSize:9,fontWeight:700,color:T.brown,marginTop:4,textTransform:'uppercase',letterSpacing:'0.05em'}}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Alert banner for needs_status_update */}
+      <div style={{borderRadius:14,padding:'14px 18px',background:A.orange08,border:`1.5px solid ${A.orange25}`,marginBottom:20,display:'flex',alignItems:'center',gap:14}}>
+        <div style={{width:38,height:38,borderRadius:99,background:T.orange,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>⚠️</div>
+        <div style={{flex:1}}>
+          <p style={{fontSize:12,fontWeight:700,color:T.orangeDark}}>Visite effectuée — «&nbsp;Villa Cocody Riviera 5 pièces&nbsp;»</p>
+          <p style={{fontSize:10,color:A.brown60,marginTop:2}}>Indiquez le résultat : loué, vendu ou transaction non aboutie</p>
+        </div>
+        <button style={{padding:'8px 16px',borderRadius:10,background:T.orange,color:'#fff',fontWeight:800,fontSize:10,border:'none',letterSpacing:'0.06em',textTransform:'uppercase',whiteSpace:'nowrap'}}>Mettre à jour</button>
+      </div>
+
+      {/* Properties table */}
+      <div style={{borderRadius:20,overflow:'hidden',background:T.white,border:`1.5px solid ${A.gold15}`,boxShadow:'0 4px 24px rgba(26,14,0,0.05)'}}>
+        <div style={{display:'grid',gridTemplateColumns:'2.5fr 1fr 1fr 1.5fr 1fr 1.2fr',padding:'12px 22px',background:A.gold08,borderBottom:`1.5px solid ${A.gold15}`}}>
+          {['Bien','Catégorie','Loyer / Prix','Vérification & Statut','Engagement','Actions'].map(h=>(
+            <span key={h} style={{fontSize:9,fontWeight:900,color:T.brown,letterSpacing:'0.08em',textTransform:'uppercase'}}>{h}</span>
+          ))}
+        </div>
+        {PROPERTIES.map((p,i,arr)=>{
+          const st=PSTATUS[p.status]||PSTATUS.pending;
+          return(
+            <div key={p.id} style={{display:'grid',gridTemplateColumns:'2.5fr 1fr 1fr 1.5fr 1fr 1.2fr',alignItems:'center',padding:'16px 22px',borderBottom:i<arr.length-1?`1px solid ${A.gold08}`:'none',transition:'background .15s'}}
+              onMouseEnter={e=>e.currentTarget.style.background='rgba(255,248,237,0.7)'}
+              onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+              {/* Bien */}
+              <div style={{display:'flex',alignItems:'center',gap:10,minWidth:0}}>
+                <div style={{width:52,height:42,borderRadius:10,overflow:'hidden',flexShrink:0,background:A.gold08}}>
+                  <img src={p.img} alt={p.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                </div>
+                <div style={{minWidth:0}}>
+                  <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap',marginBottom:3}}>
+                    <p style={{fontSize:12,fontWeight:700,color:T.darkBrown,fontFamily:'var(--font-cormorant)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:160}}>{p.title}</p>
+                    {p.boosted&&<span style={{padding:'1px 6px',borderRadius:4,fontSize:8,fontWeight:900,background:'rgba(212,160,23,0.15)',color:T.gold,letterSpacing:'0.05em'}}>⚡ BOOST</span>}
+                  </div>
+                  <p style={{fontSize:10,color:T.brown}}>📍 {p.city}</p>
+                </div>
+              </div>
+              {/* Catégorie */}
+              <div style={{display:'flex',alignItems:'center',gap:6}}>
+                <PropIcon type={p.type}/>
+                <span style={{fontSize:11,color:T.bois,textTransform:'capitalize'}}>{p.type}</span>
+              </div>
+              {/* Prix */}
+              <div>
+                <p style={{fontFamily:'var(--font-cormorant)',fontSize:'1rem',fontWeight:700,color:T.darkBrown,lineHeight:1}}>{p.price.toLocaleString('fr')} FCFA</p>
+                <p style={{fontSize:9,color:T.brown,marginTop:2}}>{p.tx==='location'?'/ mois':'Prix de vente'}</p>
+              </div>
+              {/* Vérification */}
+              <div style={{display:'flex',flexDirection:'column',gap:5}}>
+                <Badge cfg={st}/>
+                {p.verified
+                  ?<span style={{fontSize:9,fontWeight:700,color:T.vertCI,display:'flex',alignItems:'center',gap:3}}>🛡️ Certifié notaire</span>
+                  :<span style={{fontSize:9,fontWeight:700,color:T.gold,display:'flex',alignItems:'center',gap:3}}>⏳ En attente notaire</span>
+                }
+              </div>
+              {/* Engagement */}
+              <div style={{display:'flex',flexDirection:'column',gap:3}}>
+                <span style={{fontSize:11,color:T.bois}}>👁️ {p.views} vues</span>
+                {p.pending_visits>0&&<span style={{fontSize:10,fontWeight:700,color:T.orange}}>📅 {p.pending_visits} visite(s)</span>}
+              </div>
+              {/* Actions */}
+              <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+                <button style={{padding:'5px 10px',borderRadius:8,fontSize:10,fontWeight:700,background:A.navy08,color:T.navy,border:`1px solid ${A.navy18}`}}>Voir</button>
+                <button style={{padding:'5px 10px',borderRadius:8,fontSize:10,fontWeight:700,background:A.gold08,color:T.brown,border:`1px solid ${A.gold20}`}}>✏️</button>
+                <button style={{padding:'5px 10px',borderRadius:8,fontSize:10,fontWeight:700,background:A.orange08,color:T.orange,border:`1px solid ${A.orange20}`}}>⚡</button>
+                <button style={{padding:'5px 9px',borderRadius:8,fontSize:12,background:A.gold08,color:T.brown,border:`1px solid ${A.gold15}`}}>⋯</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ══ ONGLET 2 — DEMANDES DE VISITE ══ */
+function RequestsTab(){
+  const [filter,setFilter]=useState('all');
+  const filtered=filter==='all'?VISITS:VISITS.filter(v=>v.status===filter||(filter==='accepted'&&v.status==='completed'));
+  const counts={all:VISITS.length,pending:VISITS.filter(v=>v.status==='pending').length,accepted:VISITS.filter(v=>v.status==='accepted'||v.status==='completed').length,rejected:VISITS.filter(v=>v.status==='rejected').length};
+
+  return(
+    <div className="fade-in">
+      <div style={{marginBottom:28}}>
+        <h1 style={{fontFamily:'var(--font-cormorant)',fontSize:'2rem',fontWeight:700,color:T.darkBrown,lineHeight:1}}>Demandes de Visite</h1>
+        <p style={{fontSize:12,color:T.brown,marginTop:4,fontWeight:700,letterSpacing:'0.06em',textTransform:'uppercase',opacity:.6}}>{VISITS.length} demande(s) reçue(s)</p>
+      </div>
+
+      {/* Filters */}
+      <div style={{display:'flex',gap:8,marginBottom:24,flexWrap:'wrap'}}>
+        {[
+          {id:'all',l:`Toutes (${counts.all})`},
+          {id:'pending',l:`En attente (${counts.pending})`},
+          {id:'accepted',l:`Acceptées (${counts.accepted})`},
+          {id:'rejected',l:`Refusées (${counts.rejected})`},
+        ].map(f=>(
+          <button key={f.id} onClick={()=>setFilter(f.id)} style={{padding:'9px 18px',borderRadius:12,fontSize:12,fontWeight:700,background:filter===f.id?T.navyDark:T.white,color:filter===f.id?T.cream:T.brown,border:filter===f.id?'none':`1px solid ${A.gold20}`}}>
+            {f.l}
+          </button>
+        ))}
+      </div>
+
+      {/* Visit cards */}
+      <div style={{display:'flex',flexDirection:'column',gap:14}}>
+        {filtered.map(v=>{
+          const st=VSTATUS[v.status]||VSTATUS.pending;
+          return(
+            <div key={v.id} style={{borderRadius:20,padding:'18px 22px',background:T.white,border:`1px solid ${A.gold15}`,boxShadow:'0 2px 10px rgba(26,14,0,0.05)',transition:'transform .2s'}}
+              onMouseEnter={e=>e.currentTarget.style.transform='translateY(-2px)'}
+              onMouseLeave={e=>e.currentTarget.style.transform=''}>
+              <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:16,flexWrap:'wrap'}}>
+                <div style={{flex:1,minWidth:0}}>
+                  {/* Status + title */}
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10,flexWrap:'wrap'}}>
+                    <span style={{padding:'3px 10px',borderRadius:99,fontSize:9,fontWeight:800,background:st.bg,color:st.c,border:`1px solid ${st.bd}`}}>
+                      {st.icon} {st.l}
+                    </span>
+                    <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.05rem',fontWeight:700,color:T.darkBrown}}>{v.property}</h3>
+                  </div>
+                  {/* Meta */}
+                  <div style={{display:'grid',gridTemplateColumns:'repeat(4,auto)',gap:'6px 24px',fontSize:11,color:T.brown,alignItems:'center'}}>
+                    <span>👤 {v.tenant}</span>
+                    <span>📅 {v.date} à {v.time}</span>
+                    <span>📍 {v.city}</span>
+                    <button style={{padding:'3px 10px',borderRadius:6,fontSize:9,fontWeight:800,background:A.navy08,color:T.navy,border:`1px solid ${A.navy18}`,display:'flex',alignItems:'center',gap:4,width:'fit-content'}}>
+                      📄 Dossier locataire
+                    </button>
+                  </div>
+                  {/* Counter proposal banner */}
+                  {v.status==='counter_tenant'&&v.counter_date&&(
+                    <div style={{marginTop:10,padding:'10px 14px',borderRadius:12,background:A.terra08,border:`1px solid ${A.terra30}`,display:'flex',alignItems:'center',gap:10}}>
+                      <span style={{fontSize:12}}>📅</span>
+                      <p style={{fontSize:11,color:'#7A4200',fontWeight:600}}>Proposition du locataire : <strong>{v.counter_date}</strong></p>
+                    </div>
+                  )}
+                </div>
+                {/* Actions */}
+                <div style={{display:'flex',gap:8,flexShrink:0,flexWrap:'wrap',alignItems:'flex-start'}}>
+                  {(v.status==='pending'||v.status==='counter_tenant')&&(
+                    <button style={{padding:'9px 18px',borderRadius:12,fontSize:12,fontWeight:700,background:v.status==='counter_tenant'?T.navyDark:A.gold12,color:v.status==='counter_tenant'?T.cream:T.bois,border:v.status==='counter_tenant'?'none':`1px solid ${A.gold30}`}}>
+                      Répondre
+                    </button>
+                  )}
+                  {v.status==='accepted'&&(
+                    <button style={{padding:'9px 18px',borderRadius:12,fontSize:12,fontWeight:700,background:T.vertCI,color:'#fff',border:'none',display:'flex',alignItems:'center',gap:6}}>
+                      ✅ Visite effectuée
+                    </button>
+                  )}
+                  {v.status!=='rejected'&&(
+                    <button style={{padding:'9px 18px',borderRadius:12,fontSize:12,fontWeight:700,background:v.status==='accepted'||v.status==='completed'?'linear-gradient(135deg,#FF6B00,#D4A017)':'#e5e7eb',color:v.status==='accepted'||v.status==='completed'?'#fff':'#9ca3af',border:'none',display:'flex',alignItems:'center',gap:6}}>
+                      💬 Discuter
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ══ ONGLET 3 — STATISTIQUES ══ */
+function StatsTab(){
+  const maxViews=Math.max(...VIEWS_DATA.map(d=>d.vues));
+  const maxMonthly=Math.max(...MONTHLY.map(m=>m.biens),1);
+  const PIE_COLORS=[T.gold,T.vertCI,T.orange,T.bordeaux,T.navy];
+
+  return(
+    <div className="fade-in">
+      <div style={{marginBottom:28}}>
+        <h1 style={{fontFamily:'var(--font-cormorant)',fontSize:'2rem',fontWeight:700,color:T.darkBrown,lineHeight:1}}>Statistiques</h1>
+        <p style={{fontSize:12,color:T.brown,marginTop:4}}>Performance de votre portefeuille immobilier</p>
+      </div>
+
+      {/* KPI cards */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:14,marginBottom:28}}>
+        {[
+          {icon:'🏠',l:'Total biens',val:3,c:T.gold},
+          {icon:'👁️',l:'Vues totales',val:479,c:T.orange},
+          {icon:'📅',l:'Visites demandées',val:5,c:T.navy},
+          {icon:'🛡️',l:'Biens vérifiés',val:2,c:T.vertCI},
+        ].map(s=>(
+          <div key={s.l} style={{borderRadius:18,padding:'20px',background:T.white,border:`1px solid ${A.gold15}`,boxShadow:'0 2px 12px rgba(26,14,0,0.06)',textAlign:'center'}}>
+            <div style={{width:44,height:44,borderRadius:12,background:`${s.c}18`,border:`1px solid ${s.c}30`,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 12px',fontSize:20}}>{s.icon}</div>
+            <div style={{fontFamily:'var(--font-cormorant)',fontSize:'2rem',fontWeight:900,color:s.c,lineHeight:1}}>{s.val}</div>
+            <div style={{fontSize:10,fontWeight:700,color:T.brown,marginTop:6,textTransform:'uppercase',letterSpacing:'0.05em'}}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,marginBottom:20}}>
+        {/* Vues par bien */}
+        <div style={{borderRadius:20,padding:'22px',background:T.white,border:`1px solid ${A.gold15}`}}>
+          <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.15rem',fontWeight:700,color:T.darkBrown,marginBottom:20,display:'flex',alignItems:'center',gap:8}}>
+            📈 Vues par bien (top 6)
+          </h3>
+          <div style={{display:'flex',flexDirection:'column',gap:12}}>
+            {VIEWS_DATA.map(d=>(
+              <div key={d.name}>
+                <div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}>
+                  <span style={{fontSize:12,fontWeight:600,color:T.bois}}>{d.name}</span>
+                  <span style={{fontSize:12,fontWeight:800,color:T.gold}}>{d.vues}</span>
+                </div>
+                <div style={{height:8,borderRadius:99,background:A.gold08,overflow:'hidden'}}>
+                  <div style={{height:'100%',borderRadius:99,width:`${(d.vues/maxViews)*100}%`,background:'linear-gradient(90deg,#D4A017,#FF6B00)'}}/>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Répartition par type — donut SVG */}
+        <div style={{borderRadius:20,padding:'22px',background:T.white,border:`1px solid ${A.gold15}`}}>
+          <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.15rem',fontWeight:700,color:T.darkBrown,marginBottom:20,display:'flex',alignItems:'center',gap:8}}>
+            🥧 Répartition par type
+          </h3>
+          <div style={{display:'flex',alignItems:'center',gap:24}}>
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              {(()=>{
+                let offset=0;
+                const total=TYPE_DATA.reduce((s,d)=>s+d.value,0);
+                const circ=2*Math.PI*46;
+                return TYPE_DATA.map((d,i)=>{
+                  const dash=(d.value/total)*circ;
+                  const el=<circle key={i} cx="60" cy="60" r="46" fill="none"
+                    stroke={PIE_COLORS[i%PIE_COLORS.length]} strokeWidth="18"
+                    strokeDasharray={`${dash} ${circ-dash}`}
+                    strokeDashoffset={-offset}
+                    transform="rotate(-90 60 60)"/>;
+                  offset+=dash;
+                  return el;
+                });
+              })()}
+              <circle cx="60" cy="60" r="30" fill="white"/>
+              <text x="60" y="55" textAnchor="middle" fontSize="12" fontWeight="900" fill={T.darkBrown} fontFamily="var(--font-cormorant)">3</text>
+              <text x="60" y="68" textAnchor="middle" fontSize="8" fill={T.brown} fontFamily="var(--font-nunito)">biens</text>
+            </svg>
+            <div>
+              {TYPE_DATA.map((d,i)=>(
+                <div key={d.name} style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                  <div style={{width:10,height:10,borderRadius:3,background:PIE_COLORS[i%PIE_COLORS.length],flexShrink:0}}/>
+                  <span style={{fontSize:12,color:T.bois,flex:1}}>{d.name}</span>
+                  <span style={{fontSize:12,fontWeight:800,color:PIE_COLORS[i%PIE_COLORS.length]}}>{Math.round(d.value/3*100)}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Biens ajoutés par mois */}
+      <div style={{borderRadius:20,padding:'22px',background:T.white,border:`1px solid ${A.gold15}`}}>
+        <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.15rem',fontWeight:700,color:T.darkBrown,marginBottom:20,display:'flex',alignItems:'center',gap:8}}>
+          📅 Biens ajoutés — 6 derniers mois
+        </h3>
+        <div style={{display:'flex',alignItems:'flex-end',gap:16,height:100}}>
+          {MONTHLY.map((m,i)=>(
+            <div key={m.m} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
+              <div style={{width:'100%',borderRadius:'6px 6px 0 0',height:`${Math.max(6,(m.biens/maxMonthly)*90)}px`,background:i===MONTHLY.length-1?T.vertCI:`${T.vertCI}50`,transition:'height .6s ease'}}/>
+              <span style={{fontSize:10,color:T.brown,fontWeight:700}}>{m.m}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══ ONGLET 4 — NOTIFICATIONS ══ */
+function NotificationsTab(){
+  const [notifs,setNotifs]=useState(NOTIFS);
+  const unread=notifs.filter(n=>!n.read).length;
+
+  return(
+    <div className="fade-in">
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:28,flexWrap:'wrap',gap:16}}>
+        <div>
+          <h1 style={{fontFamily:'var(--font-cormorant)',fontSize:'2rem',fontWeight:700,color:T.darkBrown,lineHeight:1}}>Centre de Notifications</h1>
+          <p style={{fontSize:12,color:T.brown,marginTop:4}}>Vous avez <strong>{unread}</strong> message(s) non lu(s)</p>
+        </div>
+        {unread>0&&(
+          <button onClick={()=>setNotifs(n=>n.map(x=>({...x,read:true})))} style={{padding:'10px 20px',borderRadius:12,fontSize:12,fontWeight:700,color:T.gold,border:`1.5px solid ${A.gold25}`,background:'transparent',display:'flex',alignItems:'center',gap:6}}>
+            ✅ Tout marquer comme lu
+          </button>
+        )}
+      </div>
+
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        {notifs.map(n=>(
+          <div key={n.id} onClick={()=>setNotifs(ns=>ns.map(x=>x.id===n.id?{...x,read:true}:x))} style={{
+            borderRadius:18,padding:'16px 20px',background:T.white,cursor:'pointer',
+            border:`1.5px solid ${n.read?A.gold10:`${n.color}35`}`,
+            opacity:n.read?.8:1,transform:n.read?'none':'scale(1.01)',
+            transition:'all .15s',boxShadow:n.read?'none':'0 3px 14px rgba(26,14,0,0.06)',
+          }}
+          onMouseEnter={e=>e.currentTarget.style.boxShadow='0 4px 20px rgba(26,14,0,0.1)'}
+          onMouseLeave={e=>e.currentTarget.style.boxShadow=n.read?'none':'0 3px 14px rgba(26,14,0,0.06)'}>
+            <div style={{display:'flex',alignItems:'flex-start',gap:14}}>
+              <div style={{width:42,height:42,borderRadius:12,flexShrink:0,background:`${n.color}15`,border:`1px solid ${n.color}30`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>{n.icon}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:8,marginBottom:4}}>
+                  <p style={{fontSize:13,fontWeight:n.read?500:700,color:T.darkBrown}}>{n.title}</p>
+                  <span style={{fontSize:9,color:T.brown,whiteSpace:'nowrap',flexShrink:0}}>{n.date}</span>
+                </div>
+                <p style={{fontSize:11,color:T.brown,lineHeight:1.5}}>{n.msg}</p>
+                {!n.read&&(
+                  <div style={{marginTop:8,display:'flex',alignItems:'center',gap:4,fontSize:10,fontWeight:700,color:T.gold,opacity:.8}}>
+                    Voir les détails ›
+                  </div>
+                )}
+              </div>
+              {!n.read&&<div style={{width:8,height:8,borderRadius:99,background:n.color,flexShrink:0,marginTop:4}}/>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ══ MAIN ══ */
+function OwnerDashboard(){
+  const [tab,setTab]=useState('properties');
+
+  const TABS=[
+    {id:'properties',icon:'🏠',label:'Mes Biens',      fullLabel:'Mes Biens',     count:PROPERTIES.length},
+    {id:'requests',  icon:'📅',label:'Visites',         fullLabel:'Demandes',      count:VISITS.filter(v=>v.status==='pending').length},
+    {id:'stats',     icon:'📊',label:'Stats',           fullLabel:'Statistiques',  count:undefined},
+    {id:'notifications',icon:'🔔',label:'Notif.',       fullLabel:'Notifications', count:NOTIFS.filter(n=>!n.read).length},
+  ];
+
+  const TABS_MAP={
+    properties:<PropertiesTab/>,
+    requests:<RequestsTab/>,
+    stats:<StatsTab/>,
+    notifications:<NotificationsTab/>,
+  };
+
+  return(
+    <div style={{minHeight:'100vh',background:T.creamBg,fontFamily:'var(--font-nunito)'}}>
+
+      {/* ── HEADER ── */}
+      <div style={{background:'rgba(27,94,58,0.97)',backdropFilter:'blur(16px)',borderBottom:`1.5px solid ${A.gold25}`,position:'sticky',top:0,zIndex:20}}>
+        <KenteLine h={3}/>
+        {/* Top identity bar */}
+        <div style={{maxWidth:1200,margin:'0 auto',padding:'14px 28px 0'}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:16,marginBottom:12}}>
+            {/* Identity */}
+            <div style={{display:'flex',alignItems:'center',gap:12}}>
+              <div style={{width:44,height:44,borderRadius:12,background:A.gold10,border:`1.5px solid ${A.gold25}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>🏘️</div>
+              <div>
+                <h1 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.35rem',fontWeight:700,color:T.cream,lineHeight:1}}>Mon Espace</h1>
+                <p style={{fontSize:11,color:A.cream50,marginTop:2,fontWeight:600}}>Kouassi Emmanuel · Propriétaire</p>
+              </div>
+            </div>
+            {/* Quick stats badges */}
+            <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
+              <StatBadge icon="🏠" label="Biens" value={PROPERTIES.length} color={T.gold} onClick={()=>setTab('properties')}/>
+              <StatBadge icon="⏳" label="En attente" value={VISITS.filter(v=>v.status==='pending').length} color={T.orange} onClick={()=>setTab('requests')}/>
+              <StatBadge icon="✅" label="Acceptées" value={VISITS.filter(v=>v.status==='accepted').length} color={T.vertCI} onClick={()=>setTab('requests')}/>
+              {/* Realtime */}
+              <div style={{display:'flex',alignItems:'center',gap:6,padding:'6px 12px',borderRadius:10,background:A.gold10,border:`1px solid ${A.gold25}`}}>
+                <div style={{width:7,height:7,borderRadius:99,background:T.vertCI,animation:'pulse 2s infinite'}}/>
+                <span style={{fontSize:10,fontWeight:700,color:T.gold}}>Temps réel</span>
+              </div>
+              <button style={{padding:'6px 14px',borderRadius:10,background:'linear-gradient(135deg,#FF6B00,#D4A017)',color:'#fff',fontWeight:800,fontSize:11,border:'none'}}>+ Ajouter un bien</button>
+            </div>
+          </div>
+
+          {/* ── TABS ── */}
+          <div style={{display:'flex',alignItems:'center',gap:2}}>
+            <nav style={{display:'flex',flex:1,gap:1,overflowX:'auto'}}>
+              {TABS.map(t=>{
+                const isActive=tab===t.id;
+                return(
+                  <button key={t.id} onClick={()=>setTab(t.id)} style={{
+                    display:'flex',alignItems:'center',gap:6,padding:'12px 18px',
+                    borderBottom:isActive?`2.5px solid ${T.orangeDark}`:'2.5px solid transparent',
+                    color:isActive?T.orangeDark:A.cream50,
+                    fontWeight:isActive?700:500,fontSize:13,background:'transparent',
+                    border:'none',borderBottom:isActive?`2.5px solid ${T.orangeDark}`:'2.5px solid transparent',
+                    cursor:'pointer',whiteSpace:'nowrap',transition:'all .15s',
+                  }}>
+                    <span>{t.icon}</span>
+                    <span className="hidden sm:inline">{t.fullLabel}</span>
+                    <span className="sm:hidden">{t.label}</span>
+                    {t.count!==undefined&&t.count>0&&(
+                      <span style={{padding:'1px 7px',borderRadius:99,fontSize:10,fontWeight:800,background:t.id==='notifications'?T.bordeaux:A.orange20,color:t.id==='notifications'?'#fff':T.orangeDark}}>
+                        {t.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+            {/* Tutorial button placeholder */}
+            <button style={{padding:'6px 12px',borderRadius:10,background:A.gold10,border:`1px solid ${A.gold20}`,color:T.gold,fontSize:11,fontWeight:700}}>
+              ? Tutoriel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── CONTENT ── */}
+      <main style={{maxWidth:1200,margin:'0 auto',padding:'28px'}}>
+        {TABS_MAP[tab]||<PropertiesTab/>}
+
+        {/* Kente Banner (search + visits tabs) */}
+        {(tab==='properties'||tab==='requests')&&(
+          <div style={{borderRadius:18,overflow:'hidden',marginTop:28}}>
+            <KenteLine/>
+            <div style={{padding:'18px 24px',background:'linear-gradient(135deg,#0D1F12,#1A0E00)',display:'flex',alignItems:'center',gap:16}}>
+              <span style={{fontSize:32}}>💳</span>
+              <div>
+                <h3 style={{fontFamily:'var(--font-cormorant)',fontSize:'1.1rem',fontWeight:700,color:T.cream,marginBottom:4}}>Paiements mobiles — Bientôt disponibles</h3>
+                <p style={{fontSize:11,color:'rgba(245,230,200,0.55)'}}>Recevez cautions et loyers via Orange Money, MTN MoMo, Wave, Flooz, Djamo</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<OwnerDashboard/>);
+</script>
+<div id="root"></div>
+</body>
+</html>

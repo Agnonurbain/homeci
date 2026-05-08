@@ -144,6 +144,7 @@ vi.mock('../../services/analyticsService', () => ({
 vi.mock('../../services/adService', () => ({
   adService: {
     getActiveBanners: vi.fn(async () => []),
+    getBoostedPropertyIds: vi.fn(async () => new Set()),
   },
 }));
 
