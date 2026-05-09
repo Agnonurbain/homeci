@@ -21,8 +21,7 @@ describe('delegateService', () => {
         property_title: 'Appartement Cocody',
         action: 'certify',
       });
-      // Le token suit le format HC-XXXXXX (alphanumeric)
-      expect(token).toMatch(/^HC-[A-Z0-9]{6}$/);
+      expect(token).toMatch(/^HC-[A-F0-9]{24}$/);
       expect(firestoreMocks.addDoc).toHaveBeenCalledTimes(1);
       const callArgs = (firestoreMocks.addDoc.mock.calls[0][1] as Record<string, unknown>);
       expect(callArgs.token).toBe(token);

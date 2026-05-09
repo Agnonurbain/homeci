@@ -27,3 +27,4 @@ test_results.json
 *.sw?
 .env
 lint_output.txt
+.vercel

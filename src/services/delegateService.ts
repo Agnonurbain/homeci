@@ -33,8 +33,9 @@ export const delegateService = {
     action: 'certify' | 'reject';
     rejection_reason?: string;
   }): Promise<string> {
-    // Générer un code court et lisible (ex: HC-123456)
-    const tokenStr = 'HC-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    const bytes = crypto.getRandomValues(new Uint8Array(12));
+    const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+    const tokenStr = 'HC-' + hex;
     
     await addDoc(collection(db, 'delegation_tokens'), {
       token: tokenStr,

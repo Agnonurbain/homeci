@@ -117,8 +117,10 @@ service cloud.firestore {
       // On lit/modifie (pour isRead) uniquement ses propres notifications
       allow read, update: if isAuth() && resource.data.user_id == request.auth.uid;
       
-      // N'importe qui peut créer des notifs destinées à d'autres via le système
-      allow create: if isAuth();
+      allow create: if isAuth()
+        && request.resource.data.user_id is string
+        && request.resource.data.type is string
+        && request.resource.data.message is string;
     }
 
     // ── MAIL (Trigger Email Extension) ──
@@ -141,8 +143,9 @@ service cloud.firestore {
     // ── ADMIN LOGS ──
     match /admin_logs/{logId} {
       allow read: if isAdmin();
-      // Create: authentifié (login attempts) ou admin/notaire (audit actions)
-      allow create: if isAuth();
+      allow create: if isAuth()
+        && request.resource.data.action is string
+        && request.resource.data.performed_by == request.auth.uid;
       allow update, delete: if false;
     }
 
@@ -175,9 +178,7 @@ service cloud.firestore {
     }
 
     match /chats/{chatId} {
-      // Lecture : Participants, Admin ou Notaire
       allow read: if isAuth() && (
-        resource == null || 
         resource.data.owner_id == request.auth.uid ||
         resource.data.tenant_id == request.auth.uid ||
         isAdmin() || isNotaire()
@@ -243,7 +244,9 @@ service cloud.firestore {
 
     // ── DELEGATION TOKENS ──
     match /delegation_tokens/{tokenId} {
-      allow read: if true;
+      allow read: if isAuth() && (
+        resource.data.notary_id == request.auth.uid || isAdmin()
+      );
       allow create: if isAuth() && (isNotaire() || isAdmin());
       allow update: if isAuth() && (isNotaire() || isAdmin());
     }

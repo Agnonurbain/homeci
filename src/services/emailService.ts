@@ -11,6 +11,10 @@ export interface EmailOptions {
  * Envoie un email en créant un document dans la collection "mail".
  * Nécessite l'installation de l'extension Firebase "Trigger Email" depuis la console.
  */
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 export const emailService = {
   async sendEmail({ to, subject, html }: EmailOptions): Promise<void> {
     try {
@@ -43,15 +47,16 @@ export const emailService = {
   async notifyVisitUpdate(tenantEmail: string, propertyTitle: string, status: 'approved' | 'rejected' | 'completed') {
     const statusText = status === 'approved' ? 'approuvée' : status === 'rejected' ? 'rejetée' : 'terminée';
     const color = status === 'approved' ? '#009E49' : status === 'rejected' ? '#D32F2F' : '#333333';
-    
+    const safeTitle = escapeHtml(propertyTitle);
+
     await this.sendEmail({
       to: tenantEmail,
-      subject: `Votre visite pour le bien "${propertyTitle}" est ${statusText}`,
+      subject: `Votre visite pour le bien "${safeTitle}" est ${statusText}`,
       html: `
         <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
           <h2 style="color: ${color};">Mise à jour de votre visite</h2>
           <p>Bonjour,</p>
-          <p>Le statut de votre demande de visite pour le bien <strong>${propertyTitle}</strong> a changé.</p>
+          <p>Le statut de votre demande de visite pour le bien <strong>${safeTitle}</strong> a changé.</p>
           <p>Nouveau statut : <strong style="color: ${color};">${statusText.toUpperCase()}</strong></p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
           <p style="font-size: 0.9em; color: #777;">L'équipe HomeCI</p>
@@ -61,14 +66,15 @@ export const emailService = {
   },
 
   async notifyPropertyApproval(ownerEmail: string, propertyTitle: string) {
+    const safeTitle = escapeHtml(propertyTitle);
     await this.sendEmail({
       to: ownerEmail,
-      subject: `Félicitations ! Votre bien "${propertyTitle}" a été vérifié et approuvé`,
+      subject: `Félicitations ! Votre bien "${safeTitle}" a été vérifié et approuvé`,
       html: `
         <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
           <h2 style="color: #D4A017;">Bien validé ✅</h2>
           <p>Bonjour,</p>
-          <p>Bonne nouvelle ! Votre bien <strong>${propertyTitle}</strong> a passé toutes les vérifications (Admin/Notaire) et est désormais publié sur HomeCI.</p>
+          <p>Bonne nouvelle ! Votre bien <strong>${safeTitle}</strong> a passé toutes les vérifications (Admin/Notaire) et est désormais publié sur HomeCI.</p>
           <p>Il est maintenant visible par tous les locataires potentiels.</p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
           <p style="font-size: 0.9em; color: #777;">L'équipe Notariale HomeCI</p>
@@ -78,14 +84,15 @@ export const emailService = {
   },
 
   async notifyStatusReminder(ownerEmail: string, propertyTitle: string, visitDate: string) {
+    const safeTitle = escapeHtml(propertyTitle);
     await this.sendEmail({
       to: ownerEmail,
-      subject: `Rappel : Quel est le statut de votre bien "${propertyTitle}" ?`,
+      subject: `Rappel : Quel est le statut de votre bien "${safeTitle}" ?`,
       html: `
         <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
           <h2 style="color: #FF6B00;">Suite à votre visite du ${new Date(visitDate).toLocaleDateString('fr-FR')}</h2>
           <p>Bonjour,</p>
-          <p>Votre visite pour le bien <strong>${propertyTitle}</strong> a eu lieu il y a plus de 24h.</p>
+          <p>Votre visite pour le bien <strong>${safeTitle}</strong> a eu lieu il y a plus de 24h.</p>
           <p>Pourriez-vous mettre à jour le statut du bien sur HomeCI ? Est-il <strong>Loué</strong>, <strong>Vendu</strong>, ou toujours <strong>Disponible</strong> ?</p>
           <p>Une mise à jour rapide permet de libérer les autres demandes de visites en attente.</p>
           <a href="${window.location.origin}/dashboard" style="display: inline-block; padding: 10px 20px; background-color: #FF6B00; color: white; text-decoration: none; border-radius: 5px; margin-top: 15px;">Accéder à mon tableau de bord</a>
