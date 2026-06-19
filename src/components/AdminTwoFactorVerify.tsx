@@ -59,17 +59,18 @@ export default function AdminTwoFactorVerify({ userId, onSuccess, onBack }: Admi
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider text-center"
+            <label htmlFor="admin-2fa-code" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider text-center"
               style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
               Code à 6 chiffres
             </label>
             <input
+              id="admin-2fa-code"
               type="text"
               value={token}
               onChange={(e) => setToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
               placeholder="000000"
               maxLength={6}
-              className="w-full text-center text-3xl font-mono font-bold tracking-[0.5em] py-4 rounded-xl outline-none transition-all"
+              className="w-full text-center text-3xl font-mono font-bold tracking-[0.5em] py-4 rounded-xl outline-none focus:ring-2 focus:ring-[#D4A017]/40 transition-all"
               style={{ background: HColors.creamBg, border: `2px solid ${HAlpha.gold25}`, color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}
             />
           </div>
@@ -90,7 +91,7 @@ export default function AdminTwoFactorVerify({ userId, onSuccess, onBack }: Admi
         </form>
 
         <button onClick={onBack}
-          className="w-full mt-3 py-2.5 rounded-xl font-bold text-xs transition-all hover:bg-gray-100"
+          className="w-full mt-3 py-2.5 rounded-xl font-bold text-xs transition-all hover:bg-[rgba(212,160,23,0.08)]"
           style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
           ← Retour
         </button>

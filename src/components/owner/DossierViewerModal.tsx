@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { 
-  X, CheckCircle, 
+import {
+  X, CheckCircle,
   AlertTriangle, ShieldCheck, UserCircle, Wallet,
   Briefcase, Users, ExternalLink
 } from 'lucide-react';
@@ -8,6 +8,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
 import type { Profile } from '../../contexts/AuthContext';
+import { useEscapeClose } from '../../hooks/useEscapeClose';
 
 interface DossierViewerModalProps {
   tenantId: string;
@@ -16,6 +17,7 @@ interface DossierViewerModalProps {
 }
 
 export default function DossierViewerModal({ tenantId, tenantName, onClose }: DossierViewerModalProps) {
+  useEscapeClose(onClose);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasConsented, setHasConsented] = useState(false);
@@ -43,14 +45,14 @@ export default function DossierViewerModal({ tenantId, tenantName, onClose }: Do
     const url = (dossier as any)[`${docId}_url`];
 
     if (!url) return (
-      <div className="flex items-center justify-between p-3 rounded-xl border border-dashed border-gray-200 opacity-60 bg-gray-50">
+      <div className="flex items-center justify-between p-3 rounded-xl border border-dashed border-[rgba(212,160,23,0.15)] opacity-60 bg-[#FFF8ED]">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
+          <div className="w-8 h-8 rounded-lg bg-[rgba(212,160,23,0.08)] flex items-center justify-center text-[#8B6A30]">
             {icon}
           </div>
-          <span className="text-xs font-medium text-gray-500">{label}</span>
+          <span className="text-xs font-medium text-[#8B6A30]">{label}</span>
         </div>
-        <span className="text-[10px] font-bold text-gray-400 uppercase">Non fourni</span>
+        <span className="text-[10px] font-bold text-[#8B6A30] uppercase">Non fourni</span>
       </div>
     );
 
@@ -65,7 +67,7 @@ export default function DossierViewerModal({ tenantId, tenantName, onClose }: Do
           <div className="min-w-0">
             <p className="text-xs font-bold truncate" style={{ color: HColors.darkBrown }}>{label}</p>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="flex items-center gap-1 text-[8px] font-bold text-emerald-600 uppercase">
+              <span className="flex items-center gap-1 text-[8px] font-bold text-[#009E49] uppercase">
                 <CheckCircle className="w-2.5 h-2.5" /> FOURNI
               </span>
             </div>
@@ -106,7 +108,7 @@ export default function DossierViewerModal({ tenantId, tenantName, onClose }: Do
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-gray-50/50">
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#FFF8ED]/50">
           {!hasConsented ? (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500 py-4">
               <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border border-amber-200 shadow-sm space-y-4">
@@ -148,18 +150,18 @@ export default function DossierViewerModal({ tenantId, tenantName, onClose }: Do
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-12 gap-3">
                   <div className="w-8 h-8 border-4 border-gold border-b-transparent rounded-full animate-spin" />
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Chargement du dossier...</p>
+                  <p className="text-xs font-bold text-[#8B6A30] uppercase tracking-widest">Chargement du dossier...</p>
                 </div>
               ) : !profile ? (
                 <div className="text-center py-12">
                   <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-                  <p className="text-sm font-medium text-gray-500">Impossible de charger le dossier de ce locataire.</p>
+                  <p className="text-sm font-medium text-[#8B6A30]">Impossible de charger le dossier de ce locataire.</p>
                 </div>
               ) : (
                 <>
                   {/* Income Sec */}
                   <div className="space-y-3">
-                    <h3 className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-2">Revenus & Emploi</h3>
+                    <h3 className="text-xs font-bold tracking-widest uppercase text-[#8B6A30] mb-2">Revenus & Emploi</h3>
                     <div className="grid sm:grid-cols-2 gap-3">
                       {renderDocRow('pay_slip_1', 'Bulletin de paie (M)', <Wallet />)}
                       {renderDocRow('pay_slip_2', 'Bulletin de paie (M-1)', <Wallet />)}
@@ -170,7 +172,7 @@ export default function DossierViewerModal({ tenantId, tenantName, onClose }: Do
 
                   {/* Guarantor Sec */}
                   <div className="space-y-3">
-                    <h3 className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-2">Le Garant (Caution)</h3>
+                    <h3 className="text-xs font-bold tracking-widest uppercase text-[#8B6A30] mb-2">Le Garant (Caution)</h3>
                     <div className="grid sm:grid-cols-2 gap-3">
                       {renderDocRow('guarantor_identity', 'Identité du Garant', <Users />)}
                       {renderDocRow('guarantor_income', 'Revenus du Garant', <Wallet />)}

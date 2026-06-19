@@ -22,21 +22,21 @@ export default function Toast({ message, type = 'info', duration = 4000, onClose
   }, [duration, onClose]);
 
   const icons = {
-    success: <CheckCircle className="w-5 h-5 text-emerald-500" />,
-    error: <XCircle className="w-5 h-5 text-red-500" />,
-    info: <Info className="w-5 h-5 text-blue-500" />,
+    success: <CheckCircle className="w-5 h-5 text-[#009E49]" />,
+    error: <XCircle className="w-5 h-5 text-[#8B1D1D]" />,
+    info: <Info className="w-5 h-5 text-[#009E49]" />,
     warning: <AlertTriangle className="w-5 h-5 text-amber-500" />,
   };
 
   const colors = {
-    success: 'border-emerald-100 bg-emerald-50 text-emerald-900',
-    error: 'border-red-100 bg-red-50 text-red-900',
-    info: 'border-blue-100 bg-blue-50 text-blue-900',
+    success: 'border-[rgba(0,158,73,0.15)] bg-[rgba(0,158,73,0.10)] text-[#0A3D1F]',
+    error: 'border-[rgba(139,29,29,0.15)] bg-[rgba(139,29,29,0.10)] text-[#8B1D1D]',
+    info: 'border-[rgba(0,158,73,0.15)] bg-[rgba(0,158,73,0.10)] text-[#0A3D1F]',
     warning: 'border-amber-100 bg-amber-50 text-amber-900',
   };
 
   return (
-    <div className={`fixed top-4 right-4 z-[9999] flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-lg border-opacity-30 transition-all duration-300 transform
+    <div className={`fixed top-4 right-4 z-[70] flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-lg border-opacity-30 transition-all duration-300 transform
       ${colors[type]} 
       ${isExiting ? 'opacity-0 translate-x-8' : 'opacity-100 translate-x-0'}
       animate-in slide-in-from-right-8`}

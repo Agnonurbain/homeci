@@ -7,6 +7,7 @@ import { analyticsService } from '../services/analyticsService';
 import { collection, query, where, getDocs, updateDoc, doc, Timestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useEscapeClose } from '../hooks/useEscapeClose';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -65,6 +66,7 @@ async function markNotaireCodeUsed(docId: string) {
 }
 
 export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
+  useEscapeClose(onClose);
   const { signIn, signUp, signInWithProvider, resetPassword } = useAuth();
   useBodyScrollLock(isOpen);
   const [socialLoading, setSocialLoading] = useState<string|null>(null);
@@ -208,7 +210,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
     }
   };
 
-  const inputCls = `w-full px-4 py-3 rounded-xl text-sm outline-none transition-all`;
+  const inputCls = `w-full px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#D4A017]/40 transition-all`;
   const inputStyle = {
     background: 'rgba(13,31,18,0.6)',
     border: '1px solid rgba(212,160,23,0.2)',
@@ -308,13 +310,13 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               </div>
 
               <div>
-                <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                <label htmlFor="auth-forgot-email" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
                   style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
                   Email
                 </label>
-                <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                <input id="auth-forgot-email" type="email" value={email} onChange={e => setEmail(e.target.value)}
                   placeholder="votre@email.com"
-                  className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#D4A017]/40 transition-all"
                   style={{ background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.25)',
                            color: HColors.cream, fontFamily: 'var(--font-nunito)' }} />
               </div>
@@ -377,13 +379,13 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               <>
                 {/* Nom */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                  <label htmlFor="auth-fullname" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
                     style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
                     Nom complet
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: HAlpha.gold50 }} />
-                    <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
+                    <input id="auth-fullname" type="text" value={fullName} onChange={e => setFullName(e.target.value)}
                       placeholder="Votre nom et prénom"
                       className={`${inputCls} pl-10`} style={inputStyle} required />
                   </div>
@@ -474,7 +476,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                               onChange={e => { setNotaireCode(e.target.value.toUpperCase()); setNotaireCodeError(''); }}
                               placeholder="Ex: AB3K7P2Z"
                               maxLength={12}
-                              className="flex-1 px-3 py-2 rounded-lg text-xs font-mono tracking-widest outline-none"
+                              className="flex-1 px-3 py-2 rounded-lg text-xs font-mono tracking-widest outline-none focus:ring-2 focus:ring-[#D4A017]/40"
                               style={{ background: 'rgba(13,31,18,0.9)', border: '1px solid rgba(212,160,23,0.3)',
                                        color: HColors.cream }}
                             />
@@ -506,22 +508,22 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
 
             {/* Email */}
             <div>
-              <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+              <label htmlFor="auth-email" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
                 style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
                 Email
               </label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+              <input id="auth-email" type="email" value={email} onChange={e => setEmail(e.target.value)}
                 placeholder="votre@email.com" className={inputCls} style={inputStyle} required />
             </div>
 
             {/* Mot de passe */}
             <div>
-              <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+              <label htmlFor="auth-password" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
                 style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
                 Mot de passe
               </label>
               <div className="relative">
-                <input type={showPassword ? 'text' : 'password'} value={password}
+                <input id="auth-password" type={showPassword ? 'text' : 'password'} value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder={mode === 'signup' ? 'Minimum 6 caractères' : '••••••••'}
                   className={`${inputCls} pr-12`} style={inputStyle} required minLength={6} />

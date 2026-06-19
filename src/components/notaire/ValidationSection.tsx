@@ -98,7 +98,7 @@ export function ValidationSection({
                     <input type="text" placeholder="Motif du refus..."
                       value={refusalReasons[actionKey] || ''}
                       onChange={e => setRefusalReasons(prev => ({ ...prev, [actionKey]: e.target.value }))}
-                      className="flex-1 px-3 py-2 rounded-lg text-xs outline-none"
+                      className="flex-1 px-3 py-2 rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#D4A017]/40"
                       style={{ background: 'rgba(139,29,29,0.05)', color: HColors.darkBrown, border: `1px solid ${HAlpha.bord20}` }} />
                     <button onClick={() => setShowRefusalInput(null)} className="p-2 text-brown sm:hidden">
                       <X className="w-4 h-4" />

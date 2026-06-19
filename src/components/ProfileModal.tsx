@@ -5,6 +5,7 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { storageService } from '../services/storageService';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useEscapeClose } from '../hooks/useEscapeClose';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 
 interface ProfileModalProps {
@@ -13,6 +14,7 @@ interface ProfileModalProps {
 }
 
 export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
+  useEscapeClose(onClose);
   const { user, profile, refreshProfile } = useAuth();
   useBodyScrollLock(isOpen);
 
@@ -187,23 +189,23 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
           {/* Nom */}
           <div>
-            <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+            <label htmlFor="profile-fullname" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
               style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
               Nom complet *
             </label>
             <div className="flex items-center gap-2 px-4 py-3 rounded-xl"
               style={{ background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.25)' }}>
               <User className="w-4 h-4 shrink-0" style={{ color: HAlpha.gold50 }} />
-              <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
+              <input id="profile-fullname" type="text" value={fullName} onChange={e => setFullName(e.target.value)}
                 placeholder="Votre nom et prénom"
-                className="flex-1 bg-transparent outline-none text-sm"
+                className="flex-1 bg-transparent outline-none focus:ring-2 focus:ring-[#D4A017]/40 text-sm"
                 style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }} />
             </div>
           </div>
 
           {/* Téléphone */}
           <div>
-            <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+            <label htmlFor="profile-phone" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
               style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
               Téléphone
             </label>
@@ -211,9 +213,9 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
               style={{ background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.25)' }}>
               <Phone className="w-4 h-4 shrink-0" style={{ color: HAlpha.gold50 }} />
               <span className="text-sm shrink-0" style={{ color: HAlpha.cream50, fontFamily: 'var(--font-nunito)' }}>+225</span>
-              <input type="tel" value={phone} onChange={e => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
+              <input id="profile-phone" type="tel" value={phone} onChange={e => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
                 placeholder="07 00 00 00 00" maxLength={10}
-                className="flex-1 bg-transparent outline-none text-sm"
+                className="flex-1 bg-transparent outline-none focus:ring-2 focus:ring-[#D4A017]/40 text-sm"
                 style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }} />
             </div>
           </div>
@@ -222,48 +224,48 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
           {(profile.role === 'proprietaire' || profile.role === 'notaire') && (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                <label htmlFor="profile-employer" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
                   style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
                   {profile.role === 'notaire' ? 'Cabinet / Étude notariale' : 'Entreprise (optionnel)'}
                 </label>
                 <div className="flex items-center gap-2 px-4 py-3 rounded-xl"
                   style={{ background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.25)' }}>
                   <Building2 className="w-4 h-4 shrink-0" style={{ color: HAlpha.gold50 }} />
-                  <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)}
+                  <input id="profile-employer" type="text" value={companyName} onChange={e => setCompanyName(e.target.value)}
                     placeholder="Nom de l'entreprise"
-                    className="flex-1 bg-transparent outline-none text-sm"
+                    className="flex-1 bg-transparent outline-none focus:ring-2 focus:ring-[#D4A017]/40 text-sm"
                     style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }} />
                 </div>
               </div>
 
               {profile.role === 'notaire' && (
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                  <label htmlFor="profile-occupation" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
                     style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
                     N° d'agrément Notaire *
                   </label>
                   <div className="flex items-center gap-2 px-4 py-3 rounded-xl"
                     style={{ background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.25)' }}>
                     <Award className="w-4 h-4 shrink-0" style={{ color: HAlpha.gold50 }} />
-                    <input type="text" value={notaireId} onChange={e => setNotaireId(e.target.value)}
+                    <input id="profile-occupation" type="text" value={notaireId} onChange={e => setNotaireId(e.target.value)}
                       placeholder="Ex: NOT-2024-XXXX"
-                      className="flex-1 bg-transparent outline-none text-sm"
+                      className="flex-1 bg-transparent outline-none focus:ring-2 focus:ring-[#D4A017]/40 text-sm"
                       style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }} />
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                <label htmlFor="profile-city" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
                   style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
                   Adresse professionnelle
                 </label>
                 <div className="flex items-center gap-2 px-4 py-3 rounded-xl"
                   style={{ background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.25)' }}>
                   <MapPin className="w-4 h-4 shrink-0" style={{ color: HAlpha.gold50 }} />
-                  <input type="text" value={address} onChange={e => setAddress(e.target.value)}
+                  <input id="profile-city" type="text" value={address} onChange={e => setAddress(e.target.value)}
                     placeholder="Ville, Commune, Quartier"
-                    className="flex-1 bg-transparent outline-none text-sm"
+                    className="flex-1 bg-transparent outline-none focus:ring-2 focus:ring-[#D4A017]/40 text-sm"
                     style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }} />
                 </div>
               </div>
@@ -271,7 +273,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
               {profile.role === 'proprietaire' && (
                 <div className="flex items-center gap-3 px-4 py-2">
                   <input type="checkbox" id="isAgent" checked={isAgent} onChange={e => setIsAgent(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
+                    className="w-4 h-4 rounded border-[rgba(212,160,23,0.20)] text-orange-600 focus:ring-orange-500" />
                   <label htmlFor="isAgent" className="text-sm cursor-pointer" style={{ color: HAlpha.cream70, fontFamily: 'var(--font-nunito)' }}>
                     Je suis un agent immobilier ou une agence
                   </label>
@@ -284,16 +286,16 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
           {profile.role === 'locataire' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                <label htmlFor="profile-revenue" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
                   style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
                   Votre Budget Max (FCFA)
                 </label>
                 <div className="flex items-center gap-2 px-4 py-3 rounded-xl"
                   style={{ background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.25)' }}>
                   <Wallet className="w-4 h-4 shrink-0" style={{ color: HAlpha.gold50 }} />
-                  <input type="number" value={prefBudget} onChange={e => setPrefBudget(e.target.value)}
+                  <input id="profile-revenue" type="number" value={prefBudget} onChange={e => setPrefBudget(e.target.value)}
                     placeholder="Ex: 500000"
-                    className="flex-1 bg-transparent outline-none text-sm"
+                    className="flex-1 bg-transparent outline-none focus:ring-2 focus:ring-[#D4A017]/40 text-sm"
                     style={{ color: HColors.cream, fontFamily: 'var(--font-nunito)' }} />
                 </div>
               </div>

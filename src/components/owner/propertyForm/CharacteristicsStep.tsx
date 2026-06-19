@@ -19,7 +19,7 @@ const S = {
   label: { color: 'rgba(122,85,0,0.8)', fontFamily: 'var(--font-nunito)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' } as React.CSSProperties as any,
   labelSm: { color: 'rgba(192,124,62,0.85)', fontFamily: 'var(--font-nunito)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' } as React.CSSProperties as any,
 };
-const inputCls = 'w-full px-3 py-2.5 rounded-xl text-sm outline-none';
+const inputCls = 'w-full px-3 py-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#D4A017]/40';
 
 export default function CharacteristicsStep({ formData, onChange, toggleAmenity }: CharacteristicsStepProps) {
   const isResidential = ['appartement', 'maison', 'villa'].includes(formData.property_type);
@@ -36,7 +36,7 @@ export default function CharacteristicsStep({ formData, onChange, toggleAmenity 
         </div>
         <div>
           <h3 className="font-bold text-lg" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>Caractéristiques</h3>
-          <p className="text-xs text-gray-500">Surface, pièces et équipements</p>
+          <p className="text-xs text-[#8B6A30]">Surface, pièces et équipements</p>
         </div>
       </div>
 

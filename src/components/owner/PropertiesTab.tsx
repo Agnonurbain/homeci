@@ -43,7 +43,7 @@ export default function PropertiesTab({
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
           <button onClick={onExportCSV}
-            className="flex-1 sm:flex-none justify-center px-3 sm:px-4 py-2.5 rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-widest flex items-center gap-2 transition-all hover:bg-gray-100 border border-gray-200"
+            className="flex-1 sm:flex-none justify-center px-3 sm:px-4 py-2.5 rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-widest flex items-center gap-2 transition-all hover:bg-[rgba(212,160,23,0.08)] border border-[rgba(212,160,23,0.15)]"
             style={{ color: HColors.brown, fontFamily: 'var(--font-nunito)', background: HColors.white }}>
             <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> <span className="hidden xs:inline">Exporter</span><span className="xs:hidden">Export</span>
           </button>

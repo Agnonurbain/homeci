@@ -208,11 +208,11 @@ export default function VisitsTab({
                     <div className="space-y-3 pt-3" style={{ borderTop: '1px solid rgba(192,124,62,0.25)' }}>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <label className="text-[10px] font-bold text-terra-dark uppercase mb-1 block">Nouvelle Date</label>
-                          <input type="date" value={counterForm.date}
+                          <label htmlFor="visit-new-date" className="text-[10px] font-bold text-terra-dark uppercase mb-1 block">Nouvelle Date</label>
+                          <input id="visit-new-date" type="date" value={counterForm.date}
                             min={new Date().toISOString().split('T')[0]}
                             onChange={e => setCounterForm(f => f ? { ...f, date: e.target.value } : f)}
-                            className="w-full px-3 py-2 rounded-xl text-xs outline-none"
+                            className="w-full px-3 py-2 rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#D4A017]/40"
                             style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid rgba(192,124,62,0.3)' }} />
                         </div>
                         <div>
@@ -221,7 +221,7 @@ export default function VisitsTab({
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => setCounterForm(null)} className="flex-1 px-3 py-2 text-xs rounded-xl font-medium border border-gray-200">Annuler</button>
+                        <button onClick={() => setCounterForm(null)} className="flex-1 px-3 py-2 text-xs rounded-xl font-medium border border-[rgba(212,160,23,0.15)]">Annuler</button>
                         <button onClick={() => { onProposeCounter(visit.id, counterForm.date, counterForm.time); setCounterForm(null); }}
                           disabled={!counterForm.date || !counterForm.time}
                           className="flex-1 px-3 py-2 text-xs rounded-xl font-semibold bg-navy text-white disabled:opacity-50">
@@ -247,12 +247,12 @@ export default function VisitsTab({
               {/* Actions Footer */}
               <div className="px-4 pb-4 flex items-center gap-2 flex-wrap">
                 <button onClick={() => onViewProperty(visit.property_id)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-50 border border-gray-100 hover:bg-gray-100 transition-colors">
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-[#FFF8ED] border border-[rgba(212,160,23,0.12)] hover:bg-[rgba(212,160,23,0.08)] transition-colors">
                   <Eye className="w-3.5 h-3.5" /> Voir le bien
                 </button>
 
                 {visit.status === 'accepted' && (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-green-50 text-green-700 border border-green-100">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-[rgba(0,158,73,0.10)] text-[#007536] border border-[rgba(0,158,73,0.15)]">
                     <Phone className="w-3.5 h-3.5" /> Contact révélé après paiement caution
                   </div>
                 )}
@@ -278,7 +278,7 @@ export default function VisitsTab({
 
                 {onCancel && (visit.status === 'pending' || visit.status === 'counter_proposed') && (
                   <button onClick={() => onCancel(visit.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors">
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-[rgba(139,29,29,0.10)] text-[#8B1D1D] border border-[rgba(139,29,29,0.15)] hover:bg-[rgba(139,29,29,0.15)] transition-colors">
                     <X className="w-3.5 h-3.5" /> Annuler
                   </button>
                 )}

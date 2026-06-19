@@ -131,15 +131,15 @@ export default function ChatInput({
 
       {/* Upload progress bar */}
       {uploading && (
-        <div className="mb-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-50 border border-blue-100">
-          <LoaderIcon className="w-3.5 h-3.5 animate-spin text-blue-500" />
-          <div className="flex-1 h-1.5 bg-blue-100 rounded-full overflow-hidden">
+        <div className="mb-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-[rgba(0,158,73,0.10)] border border-[rgba(0,158,73,0.15)]">
+          <LoaderIcon className="w-3.5 h-3.5 animate-spin text-[#009E49]" />
+          <div className="flex-1 h-1.5 bg-[rgba(0,158,73,0.15)] rounded-full overflow-hidden">
             <div
-              className="h-full bg-blue-500 rounded-full transition-all duration-300"
+              className="h-full bg-[#009E49] rounded-full transition-all duration-300"
               style={{ width: `${uploading.progress}%` }}
             />
           </div>
-          <span className="text-[0.65rem] font-bold text-blue-600 truncate max-w-[100px]">
+          <span className="text-[0.65rem] font-bold text-[#009E49] truncate max-w-[100px]">
             {uploading.fileName}
           </span>
         </div>
@@ -147,42 +147,42 @@ export default function ChatInput({
 
       {/* File preview */}
       {selectedFile && !uploading && (
-        <div className="mb-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 animate-in slide-in-from-bottom-1 duration-200">
+        <div className="mb-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-[#FFF8ED] border border-[rgba(212,160,23,0.15)] animate-in slide-in-from-bottom-1 duration-200">
           {filePreview ? (
-            <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-gray-200">
+            <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-[rgba(212,160,23,0.15)]">
               <img src={filePreview} alt="Aperçu" className="w-full h-full object-cover" />
             </div>
           ) : (
-            <div className="w-12 h-12 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center shrink-0">
-              <span className="text-[0.55rem] font-bold text-red-600 uppercase">PDF</span>
+            <div className="w-12 h-12 rounded-lg bg-[rgba(139,29,29,0.10)] border border-[rgba(139,29,29,0.15)] flex items-center justify-center shrink-0">
+              <span className="text-[0.55rem] font-bold text-[#8B1D1D] uppercase">PDF</span>
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-[0.7rem] font-bold text-gray-700 truncate">{selectedFile.name}</p>
-            <p className="text-[0.6rem] text-gray-400">{(selectedFile.size / 1024).toFixed(0)} Ko</p>
+            <p className="text-[0.7rem] font-bold text-[#5A4000] truncate">{selectedFile.name}</p>
+            <p className="text-[0.6rem] text-[#8B6A30]">{(selectedFile.size / 1024).toFixed(0)} Ko</p>
           </div>
           <button
             type="button"
             onClick={removeSelectedFile}
-            className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+            className="p-1 rounded-full hover:bg-[rgba(212,160,23,0.15)] transition-colors"
           >
-            <X className="w-3.5 h-3.5 text-gray-400" />
+            <X className="w-3.5 h-3.5 text-[#8B6A30]" />
           </button>
         </div>
       )}
 
-      <div className="relative group flex items-end gap-2 bg-gray-50 rounded-2xl p-1 border border-transparent transition-all focus-within:border-amber-200 focus-within:bg-white focus-within:shadow-sm">
+      <div className="relative group flex items-end gap-2 bg-[#FFF8ED] rounded-2xl p-1 border border-transparent transition-all focus-within:border-amber-200 focus-within:bg-white focus-within:shadow-sm">
         {/* Attachment button */}
         {onSendWithAttachment && (
           <button
             type="button"
             disabled={isDisabled}
             onClick={() => fileInputRef.current?.click()}
-            className="shrink-0 w-10 h-10 mb-1 rounded-full flex items-center justify-center transition-all focus:outline-none disabled:opacity-40 hover:bg-gray-200/60"
+            className="shrink-0 w-10 h-10 mb-1 rounded-full flex items-center justify-center transition-all focus:outline-none focus:ring-2 focus:ring-[#D4A017]/40 disabled:opacity-40 hover:bg-[rgba(212,160,23,0.15)]/60"
             title="Joindre un fichier (image ou PDF, max 10 MB)"
           >
             <Paperclip
-              className="w-4.5 h-4.5 text-gray-400 group-focus-within:text-orange-500 transition-colors"
+              className="w-4.5 h-4.5 text-[#8B6A30] group-focus-within:text-orange-500 transition-colors"
               style={{ transform: 'rotate(-45deg)' }}
             />
           </button>
@@ -201,13 +201,13 @@ export default function ChatInput({
           onChange={(e) => setNewMessage(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={selectedFile ? 'Ajouter un commentaire (optionnel)...' : 'Répondre...'}
-          className="flex-1 max-h-32 min-h-[48px] bg-transparent resize-none p-3.5 text-sm focus:outline-none placeholder-gray-400 text-gray-800"
+          className="flex-1 max-h-32 min-h-[48px] bg-transparent resize-none p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A017]/40 placeholder-[#8B6A30] text-[#1A0E00]"
           style={{ fontFamily: 'var(--font-nunito)' }}
         />
         <button
           type="submit"
           disabled={(!newMessage.trim() && !selectedFile) || isDisabled}
-          className="shrink-0 w-12 h-12 mb-1 mr-1 rounded-full flex items-center justify-center transition-all focus:outline-none disabled:opacity-40"
+          className="shrink-0 w-12 h-12 mb-1 mr-1 rounded-full flex items-center justify-center transition-all focus:outline-none focus:ring-2 focus:ring-[#D4A017]/40 disabled:opacity-40"
           style={{
             background: (newMessage.trim() || selectedFile) && !isDisabled
               ? `linear-gradient(135deg, ${HColors.orangeCI}, ${HColors.gold})`

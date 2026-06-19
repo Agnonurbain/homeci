@@ -86,7 +86,7 @@ export const UsersSection: FC<UsersSectionProps> = ({
     <SectionTitle title="Gestion des Utilisateurs" sub="Liste des utilisateurs inscrits sur la plateforme" />
     <div className="rounded-2xl overflow-hidden shadow-sm" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold15}` }}>
       <div className="flex flex-wrap items-center gap-2 px-4 sm:px-5 py-3.5" style={{ borderBottom: `1px solid ${HAlpha.gold10}`, background: 'rgba(249,243,232,0.5)' }}>
-        <select value={filterRole} onChange={e => setFilterRole(e.target.value)} className="min-w-0 flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs outline-none" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`, color: HColors.darkBrown }}>
+        <select value={filterRole} onChange={e => setFilterRole(e.target.value)} className="min-w-0 flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#D4A017]/40" style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`, color: HColors.darkBrown }}>
           <option value="">Tous les rôles</option>
           {['locataire', 'proprietaire', 'agent', 'notaire', 'admin'].map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
         </select>
@@ -124,7 +124,7 @@ export const UsersSection: FC<UsersSectionProps> = ({
                 <td className="px-5 py-3.5"><span className="px-2.5 py-0.5 rounded-full text-xs font-semibold" style={{ background: user.suspended ? HAlpha.bord10 : HAlpha.vertCI10, color: user.suspended ? HColors.bordeaux : HColors.vertCI }}>{user.suspended ? 'Suspendu' : 'Actif'}</span></td>
                 <td className="px-5 py-3.5 text-xs text-brown">{new Date(user.created_at).toLocaleDateString('fr-FR')}</td>
                 <td className="px-5 py-3.5">
-                  <button onClick={() => onViewDetails(user)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white border border-gray-200 transition-all hover:bg-gray-50"><Eye className="w-3.5 h-3.5" /> Détails</button>
+                  <button onClick={() => onViewDetails(user)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white border border-[rgba(212,160,23,0.15)] transition-all hover:bg-[#FFF8ED]"><Eye className="w-3.5 h-3.5" /> Détails</button>
                 </td>
               </tr>
             ))}
@@ -167,7 +167,7 @@ export const ModerationSection: FC<ModerationSectionProps> = ({
           <p className="text-sm" style={{ color: HColors.brown }}>Utilisez un jeton à usage unique fourni par un notaire pour finaliser une modération.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:min-w-[300px]">
-          <input type="text" value={tokenInput} onChange={e => setTokenInput(e.target.value.toUpperCase())} placeholder="JETON (HC-XXXXXX)" className="flex-1 px-4 py-2.5 rounded-xl font-mono font-bold tracking-widest outline-none border border-orange-200 text-sm" />
+          <input type="text" value={tokenInput} onChange={e => setTokenInput(e.target.value.toUpperCase())} placeholder="JETON (HC-XXXXXX)" className="flex-1 px-4 py-2.5 rounded-xl font-mono font-bold tracking-widest outline-none focus:ring-2 focus:ring-[#D4A017]/40 border border-orange-200 text-sm" />
           <button onClick={handleApplyToken} disabled={consuming || !tokenInput} className="px-6 py-2.5 rounded-xl font-bold transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2 min-h-[48px] sm:min-h-0" style={{ background: `linear-gradient(135deg,${HColors.orangeCI},${HColors.gold})`, color: '#FFF' }}>
             {consuming ? <LoaderIcon className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />} Valider
           </button>
@@ -176,7 +176,7 @@ export const ModerationSection: FC<ModerationSectionProps> = ({
 
       <div className="space-y-4">
         {properties.length === 0 ? (
-          <div className="rounded-2xl p-16 text-center border bg-white"><h3 className="font-bold text-gray-400">File de modération vide</h3></div>
+          <div className="rounded-2xl p-16 text-center border bg-white"><h3 className="font-bold text-[#8B6A30]">File de modération vide</h3></div>
         ) : properties.map(p => (
           <div key={p.id} className="rounded-2xl overflow-hidden border bg-white flex flex-col sm:flex-row items-center gap-4 p-5 hover:shadow-md transition-all">
             <img src={p.images?.[0] || ''} alt="" className="w-20 h-20 rounded-xl object-cover border" />
@@ -189,8 +189,8 @@ export const ModerationSection: FC<ModerationSectionProps> = ({
               </div>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => onViewDetails(p)} className="px-4 py-2 text-xs font-medium rounded-xl border bg-gray-50 hover:bg-gray-100"><Eye className="w-3.5 h-3.5 mr-1 inline" /> Voir</button>
-              <button onClick={() => onReject(p.id)} className="px-4 py-2 text-xs font-medium rounded-xl border border-red-200 text-red-600 bg-red-50 hover:bg-red-100"><XCircle className="w-3.5 h-3.5 mr-1 inline" /> Rejeter</button>
+              <button onClick={() => onViewDetails(p)} className="px-4 py-2 text-xs font-medium rounded-xl border bg-[#FFF8ED] hover:bg-[rgba(212,160,23,0.08)]"><Eye className="w-3.5 h-3.5 mr-1 inline" /> Voir</button>
+              <button onClick={() => onReject(p.id)} className="px-4 py-2 text-xs font-medium rounded-xl border border-[rgba(139,29,29,0.20)] text-[#8B1D1D] bg-[rgba(139,29,29,0.10)] hover:bg-[rgba(139,29,29,0.15)]"><XCircle className="w-3.5 h-3.5 mr-1 inline" /> Rejeter</button>
             </div>
           </div>
         ))}

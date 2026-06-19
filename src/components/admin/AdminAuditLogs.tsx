@@ -166,7 +166,7 @@ export default function AdminAuditLogs() {
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             placeholder="Rechercher (email, action, bien...)"
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl outline-none text-sm"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-[#D4A017]/40 text-sm"
             style={{ background: HColors.white, border: `1.5px solid ${HAlpha.gold20}`, color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}
           />
         </div>
@@ -175,7 +175,7 @@ export default function AdminAuditLogs() {
           <select
             value={filterAction}
             onChange={e => { setFilterAction(e.target.value as AuditAction); setPage(1); }}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl outline-none text-sm"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-[#D4A017]/40 text-sm"
             style={{ background: HColors.white, border: `1.5px solid ${HAlpha.gold20}`, color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}
           >
             <option value="">Toutes les actions</option>

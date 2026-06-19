@@ -290,12 +290,12 @@ export default function AdminAdsTab() {
                 </div>
                 <div className="px-6 pb-6 space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold mb-1.5"
+                    <label htmlFor="ads-boost-type" className="block text-xs font-semibold mb-1.5"
                       style={{ color: 'rgba(245,230,200,0.6)', fontFamily: 'var(--font-nunito)' }}>
                       Bien à sponsoriser
                     </label>
-                    <select value={boostPropertyId} onChange={e => setBoostPropertyId(e.target.value)}
-                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                    <select id="ads-boost-type" value={boostPropertyId} onChange={e => setBoostPropertyId(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#D4A017]/40"
                       style={inputStyle}>
                       <option value="">Sélectionner un bien...</option>
                       {properties.map(p => (
@@ -494,7 +494,7 @@ export default function AdminAdsTab() {
                         style={{ color: 'rgba(245,230,200,0.6)', fontFamily: 'var(--font-nunito)' }}>{f.label}</label>
                       <input type="text" value={f.value} onChange={e => f.set(e.target.value)}
                         placeholder={f.placeholder}
-                        className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                        className="w-full px-3 py-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#D4A017]/40"
                         style={inputStyle} />
                     </div>
                   ))}
@@ -507,16 +507,16 @@ export default function AdminAdsTab() {
                     </p>
                     <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <label className="block text-xs mb-1" style={{ color: 'rgba(245,230,200,0.5)', fontFamily: 'var(--font-nunito)' }}>Ville</label>
-                        <input type="text" value={bannerTargetCity} onChange={e => setBannerTargetCity(e.target.value)}
+                        <label htmlFor="ads-filter-ville" className="block text-xs mb-1" style={{ color: 'rgba(245,230,200,0.5)', fontFamily: 'var(--font-nunito)' }}>Ville</label>
+                        <input id="ads-filter-ville" type="text" value={bannerTargetCity} onChange={e => setBannerTargetCity(e.target.value)}
                           placeholder="Abidjan"
-                          className="w-full px-2 py-2 rounded-lg text-xs outline-none"
+                          className="w-full px-2 py-2 rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#D4A017]/40"
                           style={inputStyle} />
                       </div>
                       <div>
-                        <label className="block text-xs mb-1" style={{ color: 'rgba(245,230,200,0.5)', fontFamily: 'var(--font-nunito)' }}>Transaction</label>
-                        <select value={bannerTargetTx} onChange={e => setBannerTargetTx(e.target.value)}
-                          className="w-full px-2 py-2 rounded-lg text-xs outline-none"
+                        <label htmlFor="ads-filter-transaction" className="block text-xs mb-1" style={{ color: 'rgba(245,230,200,0.5)', fontFamily: 'var(--font-nunito)' }}>Transaction</label>
+                        <select id="ads-filter-transaction" value={bannerTargetTx} onChange={e => setBannerTargetTx(e.target.value)}
+                          className="w-full px-2 py-2 rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#D4A017]/40"
                           style={inputStyle}>
                           <option value="" style={{ background: HColors.night }}>Toutes</option>
                           <option value="location" style={{ background: HColors.night }}>Location</option>
@@ -524,9 +524,9 @@ export default function AdminAdsTab() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs mb-1" style={{ color: 'rgba(245,230,200,0.5)', fontFamily: 'var(--font-nunito)' }}>Type de bien</label>
-                        <select value={bannerTargetType} onChange={e => setBannerTargetType(e.target.value)}
-                          className="w-full px-2 py-2 rounded-lg text-xs outline-none"
+                        <label htmlFor="ads-filter-type" className="block text-xs mb-1" style={{ color: 'rgba(245,230,200,0.5)', fontFamily: 'var(--font-nunito)' }}>Type de bien</label>
+                        <select id="ads-filter-type" value={bannerTargetType} onChange={e => setBannerTargetType(e.target.value)}
+                          className="w-full px-2 py-2 rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#D4A017]/40"
                           style={inputStyle}>
                           <option value="" style={{ background: HColors.night }}>Tous</option>
                           <option value="villa" style={{ background: HColors.night }}>Villa</option>

@@ -29,6 +29,7 @@ import MobilePaymentBanner from './shared/MobilePaymentBanner';
 import { useOwnerProperties } from '../hooks/useOwnerProperties';
 import { useOwnerVisits } from '../hooks/useOwnerVisits';
 import { useOwnerNotifications } from '../hooks/useOwnerNotifications';
+import { useTabNavigation } from '../hooks/useTabNavigation';
 
 // Sub-components
 import PropertiesTab from './owner/PropertiesTab';
@@ -51,6 +52,7 @@ export default function OwnerAgentDashboard() {
   type Tab = 'properties' | 'requests' | 'stats' | 'notifications';
   const validTabs: Tab[] = ['properties', 'requests', 'stats', 'notifications'];
   const tabFromUrl = location.pathname.split('/')[2];
+  const { containerRef: tabsRef, handleKeyDown: tabKeyDown } = useTabNavigation(validTabs, tabFromUrl as Tab || 'properties', (id) => navigate(`/dashboard/${id}`));
   const activeTab: Tab = validTabs.includes(tabFromUrl as Tab) ? tabFromUrl as Tab : 'properties';
 
   // Core data hooks
@@ -146,16 +148,15 @@ export default function OwnerAgentDashboard() {
 
           {/* Tabs */}
           <div className="flex items-center gap-2 mt-2">
-            <nav className="flex gap-1 homeci-tabs-scroll flex-1" style={{ minWidth: 0 }}>
+            <nav ref={tabsRef as React.RefObject<HTMLElement>} role="tablist" onKeyDown={tabKeyDown} className="flex gap-1 homeci-tabs-scroll flex-1" style={{ minWidth: 0 }}>
               {[
                 { id: 'properties', icon: Home, label: 'Biens', fullLabel: 'Mes Biens', count: props.stats.total },
                 { id: 'requests', icon: Calendar, label: 'Visites', fullLabel: 'Demandes', count: visits.pendingCount },
                 { id: 'stats', icon: BarChart3, label: 'Stats', fullLabel: 'Statistiques' },
                 { id: 'notifications', icon: Bell, label: 'Notif.', fullLabel: 'Notifications', count: notifs.unreadCount },
               ].map(tab => (
-                <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
-                  aria-label={tab.fullLabel}
-                  aria-current={activeTab === tab.id ? 'page' : undefined}
+                <button key={tab.id} data-tab-id={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
+                  role="tab" aria-selected={activeTab === tab.id} tabIndex={activeTab === tab.id ? 0 : -1}
                   className="py-3 px-3 sm:px-4 text-[11px] sm:text-[13px] font-medium transition-all whitespace-nowrap flex items-center gap-1.5 sm:gap-2"
                   style={{
                     borderBottom: `2.5px solid ${activeTab === tab.id ? HColors.orangeDark : 'transparent'}`,

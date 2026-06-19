@@ -351,40 +351,41 @@ export default function LocationPicker({
 
       {/* Bandeau auto-localisation */}
       {(autoLoading || geoLabel) && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-100 rounded-xl text-sm">
+        <div className="flex items-center gap-2 px-3 py-2 bg-[rgba(0,158,73,0.10)] border border-[rgba(0,158,73,0.15)] rounded-xl text-sm">
           {autoLoading
-            ? <><Loader className="w-4 h-4 text-blue-500 animate-spin shrink-0" /><span className="text-blue-700">Localisation en cours…</span></>
-            : <><Navigation className="w-4 h-4 text-blue-500 shrink-0" /><span className="text-blue-700">Carte centrée sur : <strong>{geoLabel}</strong></span></>
+            ? <><Loader className="w-4 h-4 text-[#009E49] animate-spin shrink-0" /><span className="text-[#007536]">Localisation en cours…</span></>
+            : <><Navigation className="w-4 h-4 text-[#009E49] shrink-0" /><span className="text-[#007536]">Carte centrée sur : <strong>{geoLabel}</strong></span></>
           }
         </div>
       )}
 
       {/* Barre de recherche manuelle */}
       <div ref={wrapRef} className="relative">
-        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+        <label htmlFor="location-search" className="block text-sm font-semibold text-[#5A4000] mb-1.5">
           Affiner la position exacte
         </label>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8B6A30] pointer-events-none" />
           <input
+            id="location-search"
             type="text"
             value={query}
             onChange={e => handleInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && results.length > 0 && selectResult(results[0])}
             onFocus={() => results.length > 0 && setShowDrop(true)}
             placeholder={`Rue, résidence, bâtiment… (${geoContext})`}
-            className="w-full pl-9 pr-9 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            className="w-full pl-9 pr-9 py-2.5 border border-[rgba(212,160,23,0.20)] rounded-xl text-sm focus:ring-2 focus:ring-[#D4A017]/40 focus:border-transparent"
           />
-          {searching && <Loader className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500 animate-spin" />}
+          {searching && <Loader className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#009E49] animate-spin" />}
         </div>
 
         {showDrop && results.length > 0 && (
-          <div className="absolute top-full left-0 right-0 z-[9999] mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+          <div className="absolute top-full left-0 right-0 z-[20] mt-1 bg-white border border-[rgba(212,160,23,0.15)] rounded-xl shadow-xl overflow-hidden">
             {results.map((r, i) => (
               <button key={i} type="button" onMouseDown={() => selectResult(r)}
-                className="w-full text-left px-4 py-3 text-sm hover:bg-emerald-50 transition-colors flex items-start gap-2 border-b last:border-0 border-gray-50">
-                <MapPin className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
-                <span className="text-gray-700 line-clamp-2">{r.display_name}</span>
+                className="w-full text-left px-4 py-3 text-sm hover:bg-[rgba(0,158,73,0.10)] transition-colors flex items-start gap-2 border-b last:border-0 border-[rgba(212,160,23,0.05)]">
+                <MapPin className="w-4 h-4 text-[#009E49] mt-0.5 shrink-0" />
+                <span className="text-[#5A4000] line-clamp-2">{r.display_name}</span>
               </button>
             ))}
           </div>
@@ -398,9 +399,9 @@ export default function LocationPicker({
       </div>
 
       {/* Info */}
-      <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl p-3">
-        <MapPin className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-        <p className="text-xs text-blue-700">
+      <div className="flex items-start gap-2 bg-[rgba(0,158,73,0.10)] border border-[rgba(0,158,73,0.15)] rounded-xl p-3">
+        <MapPin className="w-4 h-4 text-[#009E49] mt-0.5 shrink-0" />
+        <p className="text-xs text-[#007536]">
           La carte se centre automatiquement selon les champs remplis.
           <strong> Cliquez sur la carte</strong> pour affiner la position exacte du bien.
           L'adresse précise reste confidentielle pour les visiteurs.
@@ -408,7 +409,7 @@ export default function LocationPicker({
       </div>
 
       {/* Carte */}
-      <div className="border-2 border-gray-200 rounded-xl overflow-hidden" style={{ height: '380px' }}>
+      <div className="border-2 border-[rgba(212,160,23,0.15)] rounded-xl overflow-hidden" style={{ height: '380px' }}>
         <MapContainer
           center={position || defaultCenter}
           zoom={position ? 15 : 13}
@@ -427,15 +428,15 @@ export default function LocationPicker({
 
       {/* Statut */}
       {position ? (
-        <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-100 rounded-xl text-sm">
-          <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-          <span className="text-emerald-700 font-medium">Position enregistrée</span>
-          <span className="ml-auto text-emerald-600 text-xs font-mono">
+        <div className="flex items-center gap-2 px-3 py-2 bg-[rgba(0,158,73,0.10)] border border-[rgba(0,158,73,0.15)] rounded-xl text-sm">
+          <CheckCircle className="w-4 h-4 text-[#009E49] shrink-0" />
+          <span className="text-[#007536] font-medium">Position enregistrée</span>
+          <span className="ml-auto text-[#009E49] text-xs font-mono">
             {position[0].toFixed(4)}, {position[1].toFixed(4)}
           </span>
         </div>
       ) : (
-        <p className="text-xs text-gray-400 text-center">
+        <p className="text-xs text-[#8B6A30] text-center">
           Aucune position — remplissez les champs de localisation ou cliquez sur la carte
         </p>
       )}

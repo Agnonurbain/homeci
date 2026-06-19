@@ -187,7 +187,7 @@ export default function RoleSelectModal({ uid, displayName, photoURL, onDone }: 
                           onChange={e => { setNotaireCode(e.target.value.toUpperCase()); setCodeStatus('idle'); setValidCodeDocId(null); }}
                           onKeyDown={e => e.key === 'Enter' && handleCheckCode()}
                           placeholder="Code d'invitation (ex: NOT-XXXX)"
-                          className="flex-1 px-3 py-2.5 rounded-xl text-sm outline-none transition-all"
+                          className="flex-1 px-3 py-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#D4A017]/40 transition-all"
                           style={{
                             background: 'rgba(13,31,18,0.7)',
                             border: codeStatus === 'valid'   ? '1.5px solid rgba(45,106,79,0.8)' :

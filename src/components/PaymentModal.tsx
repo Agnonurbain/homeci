@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Phone, CheckCircle, Loader, Shield, ArrowRight, X } from 'lucide-react';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useEscapeClose } from '../hooks/useEscapeClose';
 import { useAuth } from '../contexts/AuthContext';
 import { paymentService } from '../services/paymentService';
 import { movapayService } from '../services/movapayService';
@@ -50,6 +51,7 @@ interface PaymentModalProps {
 // ─── Composant ──────────────────────────────────────────────────────────────
 
 export default function PaymentModal({ config, onSuccess, onClose }: PaymentModalProps) {
+  useEscapeClose(onClose);
   useBodyScrollLock(true);
   const { user } = useAuth();
 
@@ -235,7 +237,7 @@ export default function PaymentModal({ config, onSuccess, onClose }: PaymentModa
               </div>
 
               <div>
-                <label className="block text-xs font-semibold mb-1.5"
+                <label htmlFor="payment-phone" className="block text-xs font-semibold mb-1.5"
                   style={{ color: 'rgba(245,230,200,0.6)', fontFamily: 'var(--font-nunito)' }}>
                   Numéro {provider.name}
                 </label>
@@ -245,12 +247,13 @@ export default function PaymentModal({ config, onSuccess, onClose }: PaymentModa
                     +225
                   </span>
                   <input
+                    id="payment-phone"
                     type="tel"
                     value={phone}
                     onChange={e => setPhone(e.target.value.replace(/[^\d\s]/g, ''))}
                     placeholder={`${provider.prefix} XX XX XX XX`}
                     maxLength={14}
-                    className="flex-1 px-3 py-2.5 rounded-xl text-sm outline-none"
+                    className="flex-1 px-3 py-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#D4A017]/40"
                     style={{
                       background: 'rgba(255,255,255,0.06)',
                       border: `1px solid ${error ? 'rgba(139,29,29,0.5)' : 'rgba(255,255,255,0.1)'}`,
@@ -299,7 +302,7 @@ export default function PaymentModal({ config, onSuccess, onClose }: PaymentModa
                   onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
                   placeholder="• • • •"
                   maxLength={4}
-                  className="w-full px-4 py-3.5 rounded-xl text-center text-xl tracking-[0.5em] outline-none"
+                  className="w-full px-4 py-3.5 rounded-xl text-center text-xl tracking-[0.5em] outline-none focus:ring-2 focus:ring-[#D4A017]/40"
                   style={{
                     background: 'rgba(255,255,255,0.06)',
                     border: `1px solid ${error ? 'rgba(139,29,29,0.5)' : 'rgba(255,255,255,0.1)'}`,

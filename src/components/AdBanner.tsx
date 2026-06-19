@@ -62,7 +62,7 @@ export default function AdBanner({ context, className = '' }: AdBannerProps) {
       </button>
 
       {/* Image */}
-      <div className="relative aspect-[16/7] overflow-hidden bg-gray-100">
+      <div className="relative aspect-[16/7] overflow-hidden bg-[rgba(212,160,23,0.08)]">
         <img
           src={banner.imageUrl}
           alt={banner.title}

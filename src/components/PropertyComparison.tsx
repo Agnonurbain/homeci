@@ -9,6 +9,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { X, Check, XCircle, Ruler, Award } from 'lucide-react';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { TYPE_LABELS } from '../constants/labels';
+import { useEscapeClose } from '../hooks/useEscapeClose';
 
 const STORAGE_KEY = 'homeci_comparison';
 const MAX_PROPERTIES = 4;
@@ -125,6 +126,7 @@ interface ComparisonPanelProps {
 }
 
 export function ComparisonPanel({ properties, onClose, onRemove }: ComparisonPanelProps) {
+  useEscapeClose(onClose);
   if (properties.length < 2) return null;
 
   const ROWS = [
@@ -152,7 +154,7 @@ export function ComparisonPanel({ properties, onClose, onRemove }: ComparisonPan
           <h2 className="text-xl font-bold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>
             Comparaison de biens ({properties.length})
           </h2>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-[rgba(212,160,23,0.08)] transition-colors">
             <X className="w-5 h-5" style={{ color: HColors.brown }} />
           </button>
         </div>
@@ -177,7 +179,7 @@ export function ComparisonPanel({ properties, onClose, onRemove }: ComparisonPan
                       <div className="text-sm font-bold" style={{ color: HColors.darkBrown }}>{p.title}</div>
                       <div className="text-xs" style={{ color: HColors.gold, fontWeight: 700 }}>{p.price.toLocaleString('fr-FR')} FCFA</div>
                       <button onClick={() => onRemove(p.id)}
-                        className="p-1 rounded-lg hover:bg-red-50 transition-colors"
+                        className="p-1 rounded-lg hover:bg-[rgba(139,29,29,0.10)] transition-colors"
                         style={{ color: HColors.bordeaux }}>
                         <XCircle className="w-4 h-4" />
                       </button>

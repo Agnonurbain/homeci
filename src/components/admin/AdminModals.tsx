@@ -1,6 +1,7 @@
 import React from 'react';
 import { XCircle } from 'lucide-react';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
+import { useEscapeClose } from '../../hooks/useEscapeClose';
 import { TYPE_LABELS, ROLE_CFG } from '../../constants/labels';
 import type { Property } from '../../types/property';
 import type { Profile } from '../../contexts/AuthContext';
@@ -11,6 +12,7 @@ interface UserModalProps {
 }
 
 export const UserDetailModal: React.FC<UserModalProps> = ({ user, onClose }) => {
+  useEscapeClose(onClose);
   if (!user) return null;
   const cfg = ROLE_CFG[user.role] || ROLE_CFG.locataire;
 
@@ -79,6 +81,7 @@ interface PropertyModalProps {
 }
 
 export const PropertyDetailModal: React.FC<PropertyModalProps> = ({ property, onClose, onReject }) => {
+  useEscapeClose(onClose);
   if (!property) return null;
 
   return (
@@ -136,7 +139,7 @@ export const PropertyDetailModal: React.FC<PropertyModalProps> = ({ property, on
         <div className="flex gap-2 px-6 py-4" style={{ borderTop: `1px solid ${HAlpha.gold10}` }}>
           {property.status === 'pending' && (
             <button onClick={() => { onReject(property.id); onClose(); }}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-red-50"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-[rgba(139,29,29,0.10)]"
               style={{ background: HAlpha.bord10, border: `1px solid ${HAlpha.bord25}`, color: HColors.bordeaux }}>
               <XCircle className="w-4 h-4" /> Rejeter
             </button>

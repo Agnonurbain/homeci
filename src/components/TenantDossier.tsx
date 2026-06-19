@@ -86,7 +86,7 @@ function SubmitConfirmModal({
   submitting: boolean;
 }) {
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
          onClick={onCancel}>
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200"
            onClick={(e) => e.stopPropagation()}>
@@ -94,13 +94,13 @@ function SubmitConfirmModal({
           <h3 className="text-lg font-bold" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>
             Soumettre le dossier
           </h3>
-          <button onClick={onCancel} className="p-1 rounded-lg hover:bg-gray-100">
-            <X className="w-5 h-5 text-gray-500" />
+          <button onClick={onCancel} className="p-1 rounded-lg hover:bg-[rgba(212,160,23,0.08)]">
+            <X className="w-5 h-5 text-[#8B6A30]" />
           </button>
         </div>
 
         <div className="space-y-3 mb-6">
-          <p className="text-sm text-gray-700" style={{ fontFamily: 'var(--font-nunito)' }}>
+          <p className="text-sm text-[#5A4000]" style={{ fontFamily: 'var(--font-nunito)' }}>
             Votre dossier contient <strong>{stats.completedRequired}/{stats.totalRequired}</strong> documents requis.
             Une fois soumis, il sera visible par les propriétaires pour étude de solvabilité.
           </p>
@@ -113,7 +113,7 @@ function SubmitConfirmModal({
           <button
             onClick={onCancel}
             disabled={submitting}
-            className="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold border border-[rgba(212,160,23,0.20)] text-[#5A4000] hover:bg-[#FFF8ED] transition-colors disabled:opacity-50"
           >
             Annuler
           </button>
@@ -224,13 +224,13 @@ export default function TenantDossier() {
                     </div>
                     <div className="min-w-0">
                       <h4 className="font-bold text-xs sm:text-sm truncate" style={{ color: HColors.darkBrown }}>
-                        {docDef.label} {docDef.required && <span className="text-red-500 font-normal">*</span>}
+                        {docDef.label} {docDef.required && <span className="text-[#8B1D1D] font-normal">*</span>}
                       </h4>
                       <p className="text-[9px] sm:text-[10px]" style={{ color: HColors.brownMid }}>{docDef.hint}</p>
 
                       {url && (
                         <div className="mt-1 flex flex-wrap items-center gap-2">
-                          <span className="flex items-center gap-1 text-[8px] sm:text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                          <span className="flex items-center gap-1 text-[8px] sm:text-[9px] font-bold text-[#009E49] bg-[rgba(0,158,73,0.10)] px-1.5 py-0.5 rounded">
                             <CheckCircle className="w-2.5 h-2.5" /> DOCUMENT FOURNI
                           </span>
                         </div>
@@ -244,13 +244,13 @@ export default function TenantDossier() {
                         <div className="flex items-center gap-1">
                           <button
                             onClick={handleDeleteConfirm}
-                            className="px-2 py-1 rounded-lg text-xs font-bold text-white bg-red-500 hover:bg-red-600 transition-colors"
+                            className="px-2 py-1 rounded-lg text-xs font-bold text-white bg-[#8B1D1D] hover:bg-[#6B1515] transition-colors"
                           >
                             Confirmer
                           </button>
                           <button
                             onClick={() => setDeleteConfirmId(null)}
-                            className="px-2 py-1 rounded-lg text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                            className="px-2 py-1 rounded-lg text-xs font-bold text-[#7A5500] bg-[rgba(212,160,23,0.08)] hover:bg-[rgba(212,160,23,0.15)] transition-colors"
                           >
                             Annuler
                           </button>
@@ -258,17 +258,17 @@ export default function TenantDossier() {
                       ) : (
                         <div className="flex items-center gap-1">
                           <a href={url} target="_blank" rel="noopener noreferrer"
-                            className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors" title="Voir">
+                            className="p-2 rounded-lg hover:bg-[rgba(212,160,23,0.08)] text-[#7A5500] transition-colors" title="Voir">
                             <Eye className="w-4 h-4" />
                           </a>
-                          <label className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 cursor-pointer transition-colors" title="Remplacer">
+                          <label className="p-2 rounded-lg hover:bg-[rgba(212,160,23,0.08)] text-[#8B6A30] cursor-pointer transition-colors" title="Remplacer">
                             <Upload className="w-4 h-4" />
                             <input type="file" className="hidden" accept=".pdf,image/*"
                               onChange={(e) => e.target.files?.[0] && handleFileSelect(docDef.id, e.target.files[0])} />
                           </label>
                           <button
                             onClick={() => handleDeleteRequest(docDef.id)}
-                            className="p-2 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition-colors"
+                            className="p-2 rounded-lg hover:bg-[rgba(139,29,29,0.10)] text-[#8B1D1D] hover:text-[#8B1D1D] transition-colors"
                             title="Supprimer"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -323,7 +323,7 @@ export default function TenantDossier() {
             </h2>
             <div className="flex flex-wrap justify-center md:justify-start gap-4">
                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-                 <CheckCircle className={`w-4 h-4 ${stats.completedRequired === stats.totalRequired ? 'text-emerald-500' : 'text-white/20'}`} />
+                 <CheckCircle className={`w-4 h-4 ${stats.completedRequired === stats.totalRequired ? 'text-[#009E49]' : 'text-white/20'}`} />
                  <span className="text-[10px] font-bold" style={{ color: HAlpha.white70 }}>
                    {stats.completedRequired} / {stats.totalRequired} documents requis
                  </span>
@@ -340,9 +340,9 @@ export default function TenantDossier() {
                  <span className="text-[10px] font-bold" style={{ color: HAlpha.white70 }}>Confidentialité Garantie</span>
                </div>
                {isSubmitted && (
-                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30">
-                   <Send className="w-4 h-4 text-emerald-400" />
-                   <span className="text-[10px] font-bold text-emerald-300">Soumis le {(profile.dossier as any)?.submitted_at ? new Date((profile.dossier as any).submitted_at).toLocaleDateString('fr-FR') : '—'}</span>
+                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[rgba(0,158,73,0.20)] border border-[rgba(0,158,73,0.30)]">
+                   <Send className="w-4 h-4 text-[#009E49]" />
+                   <span className="text-[10px] font-bold text-[rgba(0,158,73,0.70)]">Soumis le {(profile.dossier as any)?.submitted_at ? new Date((profile.dossier as any).submitted_at).toLocaleDateString('fr-FR') : '—'}</span>
                  </div>
                )}
             </div>
@@ -379,14 +379,14 @@ export default function TenantDossier() {
 
       {/* Error & Success Banners */}
       {error && (
-        <div className="p-4 rounded-2xl flex items-center gap-3 bg-red-500/10 border border-red-500/20 text-red-200 text-sm">
+        <div className="p-4 rounded-2xl flex items-center gap-3 bg-[#8B1D1D]/10 border border-[rgba(139,29,29,0.20)] text-[rgba(139,29,29,0.50)] text-sm">
           <AlertTriangle className="w-5 h-5 shrink-0" />
           <span className="flex-1">{error}</span>
           <button onClick={clearError} className="ml-2 font-bold hover:opacity-70">✕</button>
         </div>
       )}
       {success && (
-        <div className="p-4 rounded-2xl flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-200 text-sm">
+        <div className="p-4 rounded-2xl flex items-center gap-3 bg-[rgba(0,158,73,0.10)] border border-[rgba(0,158,73,0.20)] text-[rgba(0,158,73,0.50)] text-sm">
           <CheckCircle className="w-5 h-5 shrink-0" />
           <span className="flex-1">{success}</span>
           <button onClick={clearSuccess} className="ml-2 font-bold hover:opacity-70">✕</button>

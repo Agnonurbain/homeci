@@ -2,6 +2,7 @@ import { AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 import type { DisclaimerData } from '../../hooks/useOwnerVisits';
 import { KenteLine } from '../ui/KenteLine';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
+import { useEscapeClose } from '../../hooks/useEscapeClose';
 
 /* ── Props ─────────────────────────────────────────────────────────────────── */
 
@@ -13,6 +14,7 @@ interface VisitDisclaimerModalProps {
 /* ── Component ────────────────────────────────────────────────────────────── */
 
 export default function VisitDisclaimerModal({ data, onClose }: VisitDisclaimerModalProps) {
+  useEscapeClose(onClose);
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-4"
       style={{ background: 'rgba(10,61,31,0.7)', backdropFilter: 'blur(6px)' }}>

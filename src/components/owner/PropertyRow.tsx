@@ -123,7 +123,7 @@ export default function PropertyRow({
           </button>
           
           <button onClick={() => onEdit(property.id)}
-            className="p-1.5 sm:p-2 rounded-xl transition-all hover:bg-emerald-50"
+            className="p-1.5 sm:p-2 rounded-xl transition-all hover:bg-[rgba(0,158,73,0.10)]"
             style={{ color: HColors.vertCI, border: `1px solid ${HAlpha.vertCI20}` }} 
             title="Modifier">
             <Edit className="w-4 h-4" />

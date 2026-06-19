@@ -198,6 +198,15 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
+/* Interactive elements: cursor-pointer by default */
+button, [role="button"], a, select, summary,
+input[type="checkbox"], input[type="radio"] {
+  cursor: pointer;
+}
+button:disabled, [aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 /* Touch targets minimum 44px (WCAG 2.1) */
 @media (pointer: coarse) {
   button, a, select, input[type="checkbox"], input[type="radio"] {

@@ -51,7 +51,7 @@ describe('DocumentsStep', () => {
     renderStep();
     expect(screen.getByText('Documents obligatoires')).toBeInTheDocument();
     // Progress bar should exist
-    const progressBar = document.querySelector('.bg-blue-600');
+    const progressBar = document.querySelector('.bg-\\[\\#009E49\\]');
     expect(progressBar).toBeInTheDocument();
   });
 
@@ -126,7 +126,7 @@ describe('DocumentsStep', () => {
     ];
     renderStep({ documents: existingDocs });
     // Progress bar should exist
-    const progressBar = document.querySelector('.bg-blue-600');
+    const progressBar = document.querySelector('.bg-\\[\\#009E49\\]');
     expect(progressBar).toBeInTheDocument();
     // 2 required (titre_foncier + permis_construire) + 1 identity = 3, 2 uploaded
     expect(document.body.textContent).toContain('2/3');

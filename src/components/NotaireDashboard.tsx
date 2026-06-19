@@ -143,11 +143,11 @@ export default function NotaireDashboard() {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40" />
                   <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                          placeholder="Rechercher un dossier..."
-                         className="w-full pl-10 pr-4 py-3 text-sm outline-none"
+                         className="w-full pl-10 pr-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#D4A017]/40"
                          style={{ background: '#FFFFFF', border: `1px solid ${HAlpha.gold15}`, borderRadius: 12, fontSize: 13, color: HColors.darkBrown }} />
                 </div>
                 <select value={filterType} onChange={e => setFilterType(e.target.value)}
-                        className="px-4 py-3 text-sm outline-none font-bold"
+                        className="px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#D4A017]/40 font-bold"
                         style={{ background: '#FFFFFF', border: `1px solid ${HAlpha.gold15}`, color: HColors.darkBrown, borderRadius: 12, fontSize: 12 }}>
                   <option value="">Tous les biens</option>
                   {Object.entries(TYPE_LABELS).map(([k,v]) => <option key={k} value={k}>{v}</option>)}

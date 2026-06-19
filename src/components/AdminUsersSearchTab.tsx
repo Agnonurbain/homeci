@@ -135,7 +135,7 @@ export default function AdminUsersSearchTab({ showToast }: { showToast: (msg: st
           <Search className="w-4 h-4 shrink-0" style={{ color: HAlpha.gold50 }} />
           <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
             placeholder="Rechercher par nom, email, téléphone ou ID..."
-            className="flex-1 bg-transparent outline-none text-sm"
+            className="flex-1 bg-transparent outline-none focus:ring-2 focus:ring-[#D4A017]/40 text-sm"
             style={{ color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }} />
           {searchQuery && (
             <button onClick={() => setSearchQuery('')}>
@@ -144,7 +144,7 @@ export default function AdminUsersSearchTab({ showToast }: { showToast: (msg: st
           )}
         </div>
         <select value={filterRole} onChange={e => setFilterRole(e.target.value)}
-          className="px-3 py-3 rounded-xl text-xs outline-none"
+          className="px-3 py-3 rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#D4A017]/40"
           style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`, color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
           <option value="">Tous les rôles</option>
           <option value="locataire">Locataire</option>
@@ -153,7 +153,7 @@ export default function AdminUsersSearchTab({ showToast }: { showToast: (msg: st
           <option value="admin">Admin</option>
         </select>
         <select value={filterStatus} onChange={e => setFilterStatus(e.target.value as any)}
-          className="px-3 py-3 rounded-xl text-xs outline-none"
+          className="px-3 py-3 rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#D4A017]/40"
           style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`, color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
           <option value="all">Tous les statuts</option>
           <option value="active">Actifs</option>
@@ -281,13 +281,13 @@ export default function AdminUsersSearchTab({ showToast }: { showToast: (msg: st
             </div>
 
             <div className="mb-4">
-              <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+              <label htmlFor="users-search" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
                 style={{ color: 'rgba(212,160,23,0.7)', fontFamily: 'var(--font-nunito)' }}>
                 Motif de suspension *
               </label>
-              <textarea value={suspendModal.reason} onChange={e => setSuspendModal(prev => prev ? { ...prev, reason: e.target.value } : null)}
+              <textarea id="users-search" value={suspendModal.reason} onChange={e => setSuspendModal(prev => prev ? { ...prev, reason: e.target.value } : null)}
                 rows={3} placeholder="Décrivez la raison de la suspension..."
-                className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
+                className="w-full px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#D4A017]/40 resize-none"
                 style={{ background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.25)',
                          color: HColors.cream, fontFamily: 'var(--font-nunito)' }} />
             </div>

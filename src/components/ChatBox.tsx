@@ -87,7 +87,7 @@ export default function ChatBox({ chatId, currentUserId, otherUserName, otherUse
                   {otherUserName}
                 </h3>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#009E49] animate-pulse" />
                   <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: HAlpha.gold50, fontFamily: 'var(--font-nunito)' }}>
                     {otherUserRole}
                   </p>
@@ -124,7 +124,7 @@ export default function ChatBox({ chatId, currentUserId, otherUserName, otherUse
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Rechercher dans la conversation..."
-              className="flex-1 bg-white/80 rounded-xl px-3 py-1.5 text-sm outline-none border border-amber-200 focus:border-amber-500 transition-colors"
+              className="flex-1 bg-white/80 rounded-xl px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-[#D4A017]/40 border border-amber-200 focus:border-amber-500 transition-colors"
               style={{ fontFamily: 'var(--font-nunito)' }}
             />
             <button
@@ -206,7 +206,7 @@ export default function ChatBox({ chatId, currentUserId, otherUserName, otherUse
             </div>
           )}
           {!hasMore && messages.length > MESSAGES_PER_PAGE && (
-            <div className="text-center py-2 text-xs opacity-50 text-gray-500" style={{ fontFamily: 'var(--font-nunito)' }}>
+            <div className="text-center py-2 text-xs opacity-50 text-[#8B6A30]" style={{ fontFamily: 'var(--font-nunito)' }}>
               Début de la conversation
             </div>
           )}
@@ -251,7 +251,7 @@ export default function ChatBox({ chatId, currentUserId, otherUserName, otherUse
 
         {/* Error Banner */}
         {error && (
-          <div className="shrink-0 px-4 py-2 text-xs text-center font-medium text-red-700 bg-red-50 border-t border-red-200 flex items-center justify-between">
+          <div className="shrink-0 px-4 py-2 text-xs text-center font-medium text-[#8B1D1D] bg-[rgba(139,29,29,0.10)] border-t border-[rgba(139,29,29,0.20)] flex items-center justify-between">
             <span>{error}</span>
             <button onClick={() => setError(null)} className="ml-2 font-bold hover:opacity-70">✕</button>
           </div>

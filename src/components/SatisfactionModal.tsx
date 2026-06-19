@@ -3,6 +3,7 @@ import { X, Star, Send, CheckCircle } from 'lucide-react';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { analyticsService } from '../services/analyticsService';
 import { surveyService } from '../services/surveyService';
+import { useEscapeClose } from '../hooks/useEscapeClose';
 
 interface SatisfactionModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ const STAR_LABELS = ['Très insatisfait', 'Insatisfait', 'Neutre', 'Satisfait', 
 export default function SatisfactionModal({
   isOpen, onClose, userId, userRole, trigger, propertyId, propertyTitle,
 }: SatisfactionModalProps) {
+  useEscapeClose(onClose);
   const [rating, setRating] = useState(0);
   const [hoveredStar, setHoveredStar] = useState(0);
   const [comment, setComment] = useState('');
@@ -157,7 +159,7 @@ export default function SatisfactionModal({
               placeholder="Un commentaire ? (optionnel)"
               rows={3}
               maxLength={500}
-              className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none transition-all"
+              className="w-full px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#D4A017]/40 resize-none transition-all"
               style={{
                 background: 'rgba(13,31,18,0.6)',
                 border: `1px solid ${HAlpha.gold15}`,

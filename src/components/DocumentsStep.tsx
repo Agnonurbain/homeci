@@ -109,30 +109,30 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-          <FileText className="w-6 h-6 text-blue-600" />
+        <div className="w-12 h-12 bg-[rgba(0,158,73,0.15)] rounded-lg flex items-center justify-center">
+          <FileText className="w-6 h-6 text-[#009E49]" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Documents officiels</h3>
-          <p className="text-sm text-gray-600">
+          <h3 className="text-lg font-semibold text-[#1A0E00]">Documents officiels</h3>
+          <p className="text-sm text-[#7A5500]">
             Ces documents seront vérifiés par un notaire avant publication
           </p>
         </div>
       </div>
 
       {/* Progression */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div className="bg-[rgba(0,158,73,0.10)] border border-[rgba(0,158,73,0.20)] rounded-lg p-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-blue-800">Documents obligatoires</span>
-          <span className="text-sm font-bold text-blue-800">{uploadedRequired}/{requiredCount}</span>
+          <span className="text-sm font-medium text-[#007536]">Documents obligatoires</span>
+          <span className="text-sm font-bold text-[#007536]">{uploadedRequired}/{requiredCount}</span>
         </div>
-        <div className="w-full bg-blue-200 rounded-full h-2">
+        <div className="w-full bg-[rgba(0,158,73,0.20)] rounded-full h-2">
           <div
-            className="bg-blue-600 h-2 rounded-full transition-all"
+            className="bg-[#009E49] h-2 rounded-full transition-all"
             style={{ width: `${requiredCount > 0 ? (uploadedRequired / requiredCount) * 100 : 0}%` }}
           />
         </div>
-        <p className="text-xs text-blue-700 mt-2">
+        <p className="text-xs text-[#007536] mt-2">
           Les documents seront examinés sous 48h par notre équipe notariale
         </p>
       </div>
@@ -148,23 +148,23 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
             <div
               key={def.type}
               className={`border rounded-lg p-4 transition-colors ${
-                doc ? 'border-emerald-300 bg-emerald-50' : 'border-gray-200 bg-white'
+                doc ? 'border-[rgba(0,158,73,0.30)] bg-[rgba(0,158,73,0.10)]' : 'border-[rgba(212,160,23,0.15)] bg-white'
               }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-gray-900">{def.label}</span>
+                    <span className="text-sm font-medium text-[#1A0E00]">{def.label}</span>
                     {def.required && (
-                      <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Obligatoire</span>
+                      <span className="text-xs bg-[rgba(139,29,29,0.15)] text-[#8B1D1D] px-2 py-0.5 rounded-full">Obligatoire</span>
                     )}
                     {!def.required && (
-                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Optionnel</span>
+                      <span className="text-xs bg-[rgba(212,160,23,0.08)] text-[#7A5500] px-2 py-0.5 rounded-full">Optionnel</span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500">{def.hint}</p>
+                  <p className="text-xs text-[#8B6A30]">{def.hint}</p>
                   {error && (
-                    <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                    <p className="text-xs text-[#8B1D1D] mt-1 flex items-center gap-1">
                       <AlertTriangle className="w-3 h-3" /> {error}
                     </p>
                   )}
@@ -173,14 +173,14 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
                 <div className="flex items-center gap-2">
                   {doc ? (
                     <>
-                      <span className="flex items-center gap-1 text-xs text-emerald-700 bg-emerald-100 px-2 py-1 rounded-full">
+                      <span className="flex items-center gap-1 text-xs text-[#007536] bg-[rgba(0,158,73,0.15)] px-2 py-1 rounded-full">
                         <Clock className="w-3 h-3" /> En attente de validation
                       </span>
                       <a
                         href={fixDocUrl(doc.url)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-1.5 text-[#009E49] hover:bg-[rgba(0,158,73,0.10)] rounded-lg transition-colors"
                         title="Voir le document"
                       >
                         <Eye className="w-4 h-4" />
@@ -188,7 +188,7 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
                       <button
                         type="button"
                         onClick={() => removeDocument(def.type)}
-                        className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-1.5 text-[#8B1D1D] hover:bg-[rgba(139,29,29,0.10)] rounded-lg transition-colors"
                         title="Supprimer"
                       >
                         <X className="w-4 h-4" />
@@ -197,12 +197,12 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
                   ) : (
                     <label className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors ${
                       isUploading
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                        ? 'bg-[rgba(212,160,23,0.08)] text-[#8B6A30] cursor-not-allowed'
+                        : 'bg-[#009E49] text-white hover:bg-[#007536]'
                     }`}>
                       {isUploading ? (
                         <>
-                          <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                          <span className="w-4 h-4 border-2 border-[#8B6A30] border-t-transparent rounded-full animate-spin" />
                           Upload...
                         </>
                       ) : (
@@ -229,12 +229,12 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
 
               {/* Statut si uploadé */}
               {doc && doc.status === 'valide' && (
-                <div className="mt-2 flex items-center gap-1 text-xs text-emerald-700">
+                <div className="mt-2 flex items-center gap-1 text-xs text-[#007536]">
                   <CheckCircle className="w-3 h-3" /> Validé par le notaire
                 </div>
               )}
               {doc && doc.status === 'refuse' && (
-                <div className="mt-2 text-xs text-red-700 bg-red-50 rounded p-2">
+                <div className="mt-2 text-xs text-[#8B1D1D] bg-[rgba(139,29,29,0.10)] rounded p-2">
                   ❌ Refusé : {doc.rejection_reason || 'Document non conforme'}
                 </div>
               )}
@@ -256,8 +256,8 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
           <FileText className="w-6 h-6 text-amber-600" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Identité du propriétaire</h3>
-          <p className="text-sm text-gray-600">
+          <h3 className="text-lg font-semibold text-[#1A0E00]">Identité du propriétaire</h3>
+          <p className="text-sm text-[#7A5500]">
             Fournissez au moins une pièce d'identité valide (obligatoire)
           </p>
         </div>
@@ -273,18 +273,18 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
             <div
               key={def.type}
               className={`border rounded-lg p-4 transition-colors ${
-                doc ? 'border-emerald-300 bg-emerald-50' : 'border-gray-200 bg-white'
+                doc ? 'border-[rgba(0,158,73,0.30)] bg-[rgba(0,158,73,0.10)]' : 'border-[rgba(212,160,23,0.15)] bg-white'
               }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-gray-900">{def.label}</span>
-                    <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">Au choix</span>
+                    <span className="text-sm font-medium text-[#1A0E00]">{def.label}</span>
+                    <span className="text-xs bg-[rgba(0,158,73,0.10)] text-[#009E49] px-2 py-0.5 rounded-full">Au choix</span>
                   </div>
-                  <p className="text-xs text-gray-500">{def.hint}</p>
+                  <p className="text-xs text-[#8B6A30]">{def.hint}</p>
                   {error && (
-                    <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                    <p className="text-xs text-[#8B1D1D] mt-1 flex items-center gap-1">
                       <AlertTriangle className="w-3 h-3" /> {error}
                     </p>
                   )}
@@ -293,14 +293,14 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
                 <div className="flex items-center gap-2">
                   {doc ? (
                     <>
-                      <span className="flex items-center gap-1 text-xs text-emerald-700 bg-emerald-100 px-2 py-1 rounded-full">
+                      <span className="flex items-center gap-1 text-xs text-[#007536] bg-[rgba(0,158,73,0.15)] px-2 py-1 rounded-full">
                         <Clock className="w-3 h-3" /> En attente de validation
                       </span>
                       <a
                         href={fixDocUrl(doc.url)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-1.5 text-[#009E49] hover:bg-[rgba(0,158,73,0.10)] rounded-lg transition-colors"
                         title="Voir le document"
                       >
                         <Eye className="w-4 h-4" />
@@ -308,7 +308,7 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
                       <button
                         type="button"
                         onClick={() => removeDocument(def.type)}
-                        className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-1.5 text-[#8B1D1D] hover:bg-[rgba(139,29,29,0.10)] rounded-lg transition-colors"
                         title="Supprimer"
                       >
                         <X className="w-4 h-4" />
@@ -317,12 +317,12 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
                   ) : (
                     <label className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors ${
                       isUploading
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                        ? 'bg-[rgba(212,160,23,0.08)] text-[#8B6A30] cursor-not-allowed'
+                        : 'bg-[#009E49] text-white hover:bg-[#007536]'
                     }`}>
                       {isUploading ? (
                         <>
-                          <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                          <span className="w-4 h-4 border-2 border-[#8B6A30] border-t-transparent rounded-full animate-spin" />
                           Upload...
                         </>
                       ) : (
@@ -349,12 +349,12 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
 
               {/* Statut si uploadé */}
               {doc && doc.status === 'valide' && (
-                <div className="mt-2 flex items-center gap-1 text-xs text-emerald-700">
+                <div className="mt-2 flex items-center gap-1 text-xs text-[#007536]">
                   <CheckCircle className="w-3 h-3" /> Validé par le notaire
                 </div>
               )}
               {doc && doc.status === 'refuse' && (
-                <div className="mt-2 text-xs text-red-700 bg-red-50 rounded p-2">
+                <div className="mt-2 text-xs text-[#8B1D1D] bg-[rgba(139,29,29,0.10)] rounded p-2">
                   ❌ Refusé : {doc.rejection_reason || 'Document non conforme'}
                 </div>
               )}

@@ -3,6 +3,7 @@ import { Calendar, X, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { availabilityService, type PropertyAvailability } from '../../services/availabilityService';
 import type { Property } from '../../services/propertyService';
 import ScrollTimePicker from '../ScrollTimePicker';
+import { useEscapeClose } from '../../hooks/useEscapeClose';
 
 interface VisitRequestModalProps {
   property: Property | null;
@@ -11,6 +12,7 @@ interface VisitRequestModalProps {
 }
 
 export default function VisitRequestModal({ property, onClose, onSubmit }: VisitRequestModalProps) {
+  useEscapeClose(onClose);
   const [form, setForm] = useState({ date: '', time: '' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -77,16 +79,16 @@ export default function VisitRequestModal({ property, onClose, onSubmit }: Visit
         <div className="p-8 space-y-6">
           {success ? (
             <div className="flex flex-col items-center justify-center py-8 text-center space-y-4 animate-in zoom-in duration-500">
-               <div className="w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+               <div className="w-20 h-20 rounded-full bg-[rgba(0,158,73,0.10)] flex items-center justify-center text-[#009E49]">
                   <CheckCircle className="w-12 h-12" />
                </div>
-               <h4 className="text-xl font-bold text-gray-900">Demande envoyée !</h4>
-               <p className="text-sm text-gray-500">Le propriétaire a été notifié. Vous recevrez une notification dès qu'il aura répondu.</p>
+               <h4 className="text-xl font-bold text-[#1A0E00]">Demande envoyée !</h4>
+               <p className="text-sm text-[#8B6A30]">Le propriétaire a été notifié. Vous recevrez une notification dès qu'il aura répondu.</p>
             </div>
           ) : (
             <>
               {error && (
-                <div className="p-4 rounded-xl bg-red-50 border border-red-100 flex items-center gap-3 text-red-600 text-sm">
+                <div className="p-4 rounded-xl bg-[rgba(139,29,29,0.10)] border border-[rgba(139,29,29,0.15)] flex items-center gap-3 text-[#8B1D1D] text-sm">
                   <AlertTriangle className="w-5 h-5 shrink-0" />
                   {error}
                 </div>
@@ -94,17 +96,17 @@ export default function VisitRequestModal({ property, onClose, onSubmit }: Visit
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Date Souhaitée</label>
-                  <input type="date" 
+                  <label htmlFor="visit-date" className="block text-xs font-bold text-[#8B6A30] uppercase tracking-wider mb-2 ml-1">Date Souhaitée</label>
+                  <input id="visit-date" type="date"
                     min={new Date().toISOString().split('T')[0]}
                     value={form.date}
                     onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:border-gold focus:ring-0 transition-all outline-none text-sm font-semibold"
+                    className="w-full px-4 py-3 rounded-2xl bg-[#FFF8ED] border border-[rgba(212,160,23,0.12)] focus:border-gold focus:ring-0 transition-all outline-none focus:ring-2 focus:ring-[#D4A017]/40 text-sm font-semibold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Heure</label>
+                  <label className="block text-xs font-bold text-[#8B6A30] uppercase tracking-wider mb-2 ml-1">Heure</label>
                   <ScrollTimePicker 
                     value={form.time}
                     onChange={(time) => setForm(f => ({ ...f, time }))}

@@ -131,7 +131,7 @@ export default function AdminManagement() {
   if (loading) {
     return (
       <div className="text-center py-12">
-        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#8B1D1D]"></div>
       </div>
     );
   }
@@ -139,8 +139,8 @@ export default function AdminManagement() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Gestion des Administrateurs</h2>
-        <p className="text-gray-600">
+        <h2 className="text-3xl font-bold text-[#1A0E00] mb-2">Gestion des Administrateurs</h2>
+        <p className="text-[#7A5500]">
           {isAdminPrincipal
             ? 'Vous êtes l\'administrateur principal. Gérez vos informations et les autres administrateurs.'
             : 'Modifiez vos informations de connexion. Les changements nécessitent l\'approbation de l\'administrateur principal.'}
@@ -148,34 +148,35 @@ export default function AdminManagement() {
       </div>
 
       {message && (
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
-          <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-green-800">{message}</p>
+        <div className="p-4 bg-[rgba(0,158,73,0.10)] border border-[rgba(0,158,73,0.20)] rounded-lg flex items-start gap-3">
+          <CheckCircle className="w-5 h-5 text-[#009E49] flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-[#007536]">{message}</p>
         </div>
       )}
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-red-800">{error}</p>
+        <div className="p-4 bg-[rgba(139,29,29,0.10)] border border-[rgba(139,29,29,0.20)] rounded-lg flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-[#8B1D1D] flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-[#8B1D1D]">{error}</p>
         </div>
       )}
 
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(212,160,23,0.15)]">
+        <h3 className="text-xl font-semibold text-[#1A0E00] mb-4 flex items-center gap-2">
           <Lock className="w-5 h-5" />
           Modifier vos identifiants
         </h3>
 
         <form onSubmit={handleCredentialChange} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="admin-mgmt-change-type" className="block text-sm font-medium text-[#5A4000] mb-2">
               Type de modification
             </label>
             <select
+              id="admin-mgmt-change-type"
               value={changeType}
               onChange={(e) => setChangeType(e.target.value as any)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-2 border border-[rgba(212,160,23,0.20)] rounded-lg focus:ring-2 focus:ring-[#D4A017]/40 focus:border-[#D4A017]"
             >
               <option value="email">Changer l'email</option>
               <option value="password">Changer le mot de passe</option>
@@ -185,19 +186,20 @@ export default function AdminManagement() {
 
           {(changeType === 'email' || changeType === 'both') && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="admin-mgmt-email" className="block text-sm font-medium text-[#5A4000] mb-2">
                 Nouvel email
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  <Mail className="h-5 w-5 text-[#8B6A30]" />
                 </div>
                 <input
+                  id="admin-mgmt-email"
                   type="email"
                   required
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full pl-10 pr-3 py-2 border border-[rgba(212,160,23,0.20)] rounded-lg focus:ring-2 focus:ring-[#D4A017]/40 focus:border-[#D4A017]"
                   placeholder="nouveau@email.com"
                 />
               </div>
@@ -207,25 +209,26 @@ export default function AdminManagement() {
           {(changeType === 'password' || changeType === 'both') && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="admin-mgmt-password" className="block text-sm font-medium text-[#5A4000] mb-2">
                   Nouveau mot de passe
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
+                    <Lock className="h-5 w-5 text-[#8B6A30]" />
                   </div>
                   <input
+                    id="admin-mgmt-password"
                     type={showPassword ? "text" : "password"}
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full pl-10 pr-12 py-2 border border-[rgba(212,160,23,0.20)] rounded-lg focus:ring-2 focus:ring-[#D4A017]/40 focus:border-[#D4A017]"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#8B6A30] hover:text-[#7A5500]"
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
@@ -233,19 +236,20 @@ export default function AdminManagement() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="admin-mgmt-confirm-password" className="block text-sm font-medium text-[#5A4000] mb-2">
                   Confirmer le mot de passe
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
+                    <Lock className="h-5 w-5 text-[#8B6A30]" />
                   </div>
                   <input
+                    id="admin-mgmt-confirm-password"
                     type={showPassword ? "text" : "password"}
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full pl-10 pr-3 py-2 border border-[rgba(212,160,23,0.20)] rounded-lg focus:ring-2 focus:ring-[#D4A017]/40 focus:border-[#D4A017]"
                     placeholder="••••••••"
                   />
                 </div>
@@ -255,7 +259,7 @@ export default function AdminManagement() {
 
           <button
             type="submit"
-            className="w-full bg-red-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-[#8B1D1D] text-white py-2 px-4 rounded-lg font-medium hover:bg-[#6B1515] transition-colors flex items-center justify-center gap-2"
           >
             <CheckCircle className="w-5 h-5" />
             {isAdminPrincipal ? 'Mettre à jour' : 'Soumettre la demande'}
@@ -271,66 +275,69 @@ export default function AdminManagement() {
 
       {isAdminPrincipal && (
         <>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(212,160,23,0.15)]">
+            <h3 className="text-xl font-semibold text-[#1A0E00] mb-4 flex items-center gap-2">
               <UserPlus className="w-5 h-5" />
               Ajouter un nouvel administrateur
             </h3>
 
             <form onSubmit={handleCreateAdmin} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="admin-mgmt-displayname" className="block text-sm font-medium text-[#5A4000] mb-2">
                   Nom complet
                 </label>
                 <input
+                  id="admin-mgmt-displayname"
                   type="text"
                   required
                   value={newAdminName}
                   onChange={(e) => setNewAdminName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full px-3 py-2 border border-[rgba(212,160,23,0.20)] rounded-lg focus:ring-2 focus:ring-[#D4A017]/40 focus:border-[#D4A017]"
                   placeholder="Jean Dupont"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="admin-mgmt-new-email" className="block text-sm font-medium text-[#5A4000] mb-2">
                   Email
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-400" />
+                    <Mail className="h-5 w-5 text-[#8B6A30]" />
                   </div>
                   <input
+                    id="admin-mgmt-new-email"
                     type="email"
                     required
                     value={newAdminEmail}
                     onChange={(e) => setNewAdminEmail(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full pl-10 pr-3 py-2 border border-[rgba(212,160,23,0.20)] rounded-lg focus:ring-2 focus:ring-[#D4A017]/40 focus:border-[#D4A017]"
                     placeholder="admin@homeci.com"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="admin-mgmt-new-password" className="block text-sm font-medium text-[#5A4000] mb-2">
                   Mot de passe
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
+                    <Lock className="h-5 w-5 text-[#8B6A30]" />
                   </div>
                   <input
+                    id="admin-mgmt-new-password"
                     type={showNewAdminPassword ? "text" : "password"}
                     required
                     value={newAdminPassword}
                     onChange={(e) => setNewAdminPassword(e.target.value)}
-                    className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full pl-10 pr-12 py-2 border border-[rgba(212,160,23,0.20)] rounded-lg focus:ring-2 focus:ring-[#D4A017]/40 focus:border-[#D4A017]"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
                     onClick={() => setShowNewAdminPassword(!showNewAdminPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#8B6A30] hover:text-[#7A5500]"
                   >
                     {showNewAdminPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
@@ -339,7 +346,7 @@ export default function AdminManagement() {
 
               <button
                 type="submit"
-                className="w-full bg-green-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-[#009E49] text-white py-2 px-4 rounded-lg font-medium hover:bg-[#007536] transition-colors flex items-center justify-center gap-2"
               >
                 <UserPlus className="w-5 h-5" />
                 Créer l'administrateur
@@ -348,22 +355,22 @@ export default function AdminManagement() {
           </div>
 
           {credentialRequests.length > 0 && (
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(212,160,23,0.15)]">
+              <h3 className="text-xl font-semibold text-[#1A0E00] mb-4 flex items-center gap-2">
                 <Shield className="w-5 h-5" />
                 Demandes de modification en attente
-                <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs font-semibold ml-2">
+                <span className="bg-[#8B1D1D] text-white px-2 py-0.5 rounded-full text-xs font-semibold ml-2">
                 {credentialRequests.length}
                 </span>
               </h3>
 
               <div className="space-y-4">
                 {credentialRequests.map((request) => (
-                  <div key={request.id} className="border border-gray-200 rounded-lg p-4">
+                  <div key={request.id} className="border border-[rgba(212,160,23,0.15)] rounded-lg p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h4 className="font-semibold text-gray-900">{request.profiles.full_name}</h4>
-                        <p className="text-sm text-gray-600">{request.profiles.email}</p>
+                        <h4 className="font-semibold text-[#1A0E00]">{request.profiles.full_name}</h4>
+                        <p className="text-sm text-[#7A5500]">{request.profiles.email}</p>
                       </div>
                       <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
                         {request.request_type === 'email_change' && 'Changement d\'email'}
@@ -374,26 +381,26 @@ export default function AdminManagement() {
 
                     {request.new_email && (
                       <div className="mb-3 text-sm">
-                        <span className="font-medium text-gray-700">Nouvel email :</span>
-                        <span className="ml-2 text-gray-900">{request.new_email}</span>
+                        <span className="font-medium text-[#5A4000]">Nouvel email :</span>
+                        <span className="ml-2 text-[#1A0E00]">{request.new_email}</span>
                       </div>
                     )}
 
-                    <div className="text-sm text-gray-500 mb-4">
+                    <div className="text-sm text-[#8B6A30] mb-4">
                       Demandé le {new Date(request.requested_at).toLocaleString('fr-FR')}
                     </div>
 
                     <div className="flex gap-3">
                       <button
                         onClick={() => handleRequestAction('approved')}
-                        className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 font-medium"
+                        className="flex-1 px-4 py-2 bg-[#009E49] text-white rounded-lg hover:bg-[#007536] transition-colors flex items-center justify-center gap-2 font-medium"
                       >
                         <CheckCircle className="w-4 h-4" />
                         Approuver
                       </button>
                       <button
                         onClick={() => handleRequestAction('rejected')}
-                        className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 font-medium"
+                        className="flex-1 px-4 py-2 bg-[#8B1D1D] text-white rounded-lg hover:bg-[#6B1515] transition-colors flex items-center justify-center gap-2 font-medium"
                       >
                         <XCircle className="w-4 h-4" />
                         Rejeter

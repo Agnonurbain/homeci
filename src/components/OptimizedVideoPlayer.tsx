@@ -161,7 +161,7 @@ export const OptimizedVideoPlayer = ({
           max={duration || 0}
           value={currentTime}
           onChange={handleSeek}
-          className="w-full h-1 mb-3 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+          className="w-full h-1 mb-3 bg-[#5A4000] rounded-lg appearance-none cursor-pointer"
           style={{
             background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
               (currentTime / duration) * 100
@@ -173,7 +173,7 @@ export const OptimizedVideoPlayer = ({
           <div className="flex items-center gap-3">
             <button
               onClick={togglePlay}
-              className="text-white hover:text-blue-400 transition-colors"
+              className="text-white hover:text-[#009E49] transition-colors"
             >
               {isPlaying ? (
                 <Pause className="w-6 h-6" />
@@ -184,7 +184,7 @@ export const OptimizedVideoPlayer = ({
 
             <button
               onClick={toggleMute}
-              className="text-white hover:text-blue-400 transition-colors"
+              className="text-white hover:text-[#009E49] transition-colors"
             >
               {isMuted ? (
                 <VolumeX className="w-6 h-6" />
@@ -200,7 +200,7 @@ export const OptimizedVideoPlayer = ({
 
           <button
             onClick={toggleFullscreen}
-            className="text-white hover:text-blue-400 transition-colors"
+            className="text-white hover:text-[#009E49] transition-colors"
           >
             <Maximize className="w-6 h-6" />
           </button>

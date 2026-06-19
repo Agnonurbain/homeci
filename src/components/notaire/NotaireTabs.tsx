@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
 import { BarChart3 } from 'lucide-react';
+import { useTabNavigation } from '../../hooks/useTabNavigation';
 
 interface Tab {
   id: string;
@@ -14,7 +15,9 @@ interface Tab {
 
 export function NotaireTabs({ activeTab, stats }: { activeTab: string, stats: any }) {
   const navigate = useNavigate();
-  
+  const tabIds = ['disponible', 'en_cours', 'pret', 'certifie', 'stats'];
+  const { containerRef, handleKeyDown } = useTabNavigation(tabIds, activeTab, (id) => navigate(`/dashboard/${id}`));
+
   const tabs: Tab[] = [
     { id: 'disponible', label: 'Disponibles', count: stats.disponible, accent: HColors.orangeCI, bg: HAlpha.orange10, bd: HAlpha.orange25 },
     { id: 'en_cours', label: 'En cours', count: stats.enCours, accent: HColors.gold, bg: HAlpha.gold10, bd: HAlpha.gold25 },
@@ -24,10 +27,10 @@ export function NotaireTabs({ activeTab, stats }: { activeTab: string, stats: an
   ];
 
   return (
-    <nav className="flex gap-1 overflow-x-auto homeci-tabs-scroll pb-2 mt-4">
+    <nav ref={containerRef as React.RefObject<HTMLElement>} role="tablist" onKeyDown={handleKeyDown} className="flex gap-1 overflow-x-auto homeci-tabs-scroll pb-2 mt-4">
       {tabs.map(tab => (
-        <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
-          aria-label={tab.label} aria-current={activeTab === tab.id ? 'page' : undefined}
+        <button key={tab.id} data-tab-id={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
+          role="tab" aria-selected={activeTab === tab.id} tabIndex={activeTab === tab.id ? 0 : -1}
           className="flex items-center gap-2 px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap"
           style={activeTab === tab.id
             ? { borderColor: HColors.gold, color: HColors.gold, fontFamily: 'var(--font-nunito)' }

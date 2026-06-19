@@ -4,6 +4,7 @@ import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useEscapeClose } from '../hooks/useEscapeClose';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { KenteLine } from './ui/KenteLine';
 
@@ -13,6 +14,7 @@ interface CGVNotaireModalProps {
 }
 
 export default function CGVNotaireModal({ onAccept, onClose }: CGVNotaireModalProps) {
+  useEscapeClose(onClose);
   const { user, refreshProfile } = useAuth();
   useBodyScrollLock(true);
   const [checked, setChecked] = useState(false);

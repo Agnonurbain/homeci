@@ -70,14 +70,14 @@ export default function SearchTab({
               <span className="hidden sm:inline">{currentSort?.label}</span>
             </button>
             {showSortMenu && (
-              <div className="absolute right-0 top-full mt-1 z-30 w-48 rounded-xl shadow-lg border overflow-hidden bg-white animate-in fade-in zoom-in-95 duration-150"
+              <div className="absolute right-0 top-full mt-1 z-20 w-48 rounded-xl shadow-lg border overflow-hidden bg-white animate-in fade-in zoom-in-95 duration-150"
                    style={{ borderColor: HAlpha.gold20 }}>
                 {SORT_OPTIONS.map(opt => (
                   <button
                     key={opt.value}
                     onClick={() => { onSortChange(opt.value); setShowSortMenu(false); setPage(1); }}
                     className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium transition-colors ${
-                      sortBy === opt.value ? 'bg-amber-50 text-amber-800' : 'text-gray-700 hover:bg-gray-50'
+                      sortBy === opt.value ? 'bg-amber-50 text-amber-800' : 'text-[#5A4000] hover:bg-[#FFF8ED]'
                     }`}
                     style={{ fontFamily: 'var(--font-nunito)' }}
                   >
@@ -138,7 +138,7 @@ export default function SearchTab({
             <div className="mt-8 flex justify-center gap-2">
               {Array.from({ length: totalPages }).map((_, i) => (
                 <button key={i} onClick={() => { setPage(i + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className={`w-10 h-10 rounded-xl font-bold transition-all ${page === i + 1 ? 'bg-navy text-white scale-110 shadow-lg' : 'bg-white text-gray-400 hover:bg-gray-50'}`}
+                  className={`w-10 h-10 rounded-xl font-bold transition-all ${page === i + 1 ? 'bg-navy text-white scale-110 shadow-lg' : 'bg-white text-[#8B6A30] hover:bg-[#FFF8ED]'}`}
                   style={page === i + 1 ? { background: HColors.navy, color: HColors.cream } : {}}>
                   {i + 1}
                 </button>

@@ -4,6 +4,7 @@ import type { VisitAction } from '../../hooks/useOwnerVisits';
 import { KenteLine } from '../ui/KenteLine';
 import ScrollTimePicker from '../ScrollTimePicker';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
+import { useEscapeClose } from '../../hooks/useEscapeClose';
 
 /* ── Props ─────────────────────────────────────────────────────────────────── */
 
@@ -24,6 +25,7 @@ export default function VisitResponseModal({
   visit, counterDate, counterTime, actionLoading,
   onCounterDateChange, onCounterTimeChange, onAction, onClose,
 }: VisitResponseModalProps) {
+  useEscapeClose(onClose);
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
       style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}>
@@ -101,13 +103,13 @@ export default function VisitResponseModal({
             </p>
             <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[10px] sm:text-xs mb-1 uppercase font-bold tracking-wider" style={{ color: 'rgba(212,160,23,0.6)', fontFamily: 'var(--font-nunito)' }}>
+                <label htmlFor="visit-response-date" className="block text-[10px] sm:text-xs mb-1 uppercase font-bold tracking-wider" style={{ color: 'rgba(212,160,23,0.6)', fontFamily: 'var(--font-nunito)' }}>
                   Nouvelle date
                 </label>
-                <input type="date" value={counterDate}
+                <input id="visit-response-date" type="date" value={counterDate}
                   min={new Date().toISOString().split('T')[0]}
                   onChange={e => onCounterDateChange(e.target.value)}
-                  className="w-full px-3 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm outline-none"
+                  className="w-full px-3 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm outline-none focus:ring-2 focus:ring-[#D4A017]/40"
                   style={{
                     background: 'rgba(13,31,18,0.7)', border: '1px solid rgba(212,160,23,0.2)',
                     color: HColors.cream, fontFamily: 'var(--font-nunito)'

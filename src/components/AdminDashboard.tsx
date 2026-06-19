@@ -60,7 +60,7 @@ export default function AdminDashboard() {
   };
 
   if (!profile || profile.role !== 'admin') {
-    return <div className="p-20 text-center font-bold text-red-600">Accès non autorisé.</div>;
+    return <div className="p-20 text-center font-bold text-[#8B1D1D]">Accès non autorisé.</div>;
   }
 
   return (

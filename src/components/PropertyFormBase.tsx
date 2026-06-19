@@ -257,7 +257,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
               ))}
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-gold/10 text-gray-400 hover:text-gold transition-colors">
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-gold/10 text-[#8B6A30] hover:text-gold transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -265,7 +265,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
         {/* Content */}
         <div className="p-8 min-h-[500px]">
           {mediaError && (
-            <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium">
+            <div className="mb-4 p-3 rounded-xl bg-[rgba(139,29,29,0.10)] border border-[rgba(139,29,29,0.20)] text-[#8B1D1D] text-sm font-medium">
               ⚠️ {mediaError}
             </div>
           )}
@@ -291,7 +291,7 @@ export default function PropertyFormBase({ mode, propertyId, onClose, onSuccess 
         </div>
 
         {/* Footer */}
-        <div className="px-8 py-5 border-t bg-gray-50 flex items-center justify-between">
+        <div className="px-8 py-5 border-t bg-[#FFF8ED] flex items-center justify-between">
           <button 
             type="button"
             onClick={() => setStep(step - 1)}

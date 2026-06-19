@@ -92,7 +92,7 @@ export default function ScrollTimePicker({ value, onChange, className = '', vari
   return (
     <div ref={ref} className={`relative ${className}`}>
       <button type="button" onClick={() => setOpen(o => !o)}
-        className="w-full px-3 py-2.5 rounded-xl text-sm text-left flex items-center justify-between outline-none"
+        className="w-full px-3 py-2.5 rounded-xl text-sm text-left flex items-center justify-between outline-none focus:ring-2 focus:ring-[#D4A017]/40"
         style={btnStyle}>
         <span style={{ fontWeight: value ? 600 : 400, opacity: value ? 1 : 0.45 }}>
           {value || 'Choisir'}

@@ -78,7 +78,7 @@ export default function OptimizedImage({
   return (
     <div
       ref={imgRef}
-      className={`relative overflow-hidden bg-gray-200 ${className}`}
+      className={`relative overflow-hidden bg-[rgba(212,160,23,0.12)] ${className}`}
       style={{ width, height }}
     >
       {imageSrc && (
@@ -98,7 +98,7 @@ export default function OptimizedImage({
       )}
       {!isLoaded && !imageSrc && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-4 border-[#009E49] border-t-transparent rounded-full animate-spin"></div>
         </div>
       )}
     </div>

@@ -143,14 +143,14 @@ export default function AvailabilityManager({ propertyId, ownerId }: Props) {
                     type="time"
                     value={start}
                     onChange={(e) => handleTimeChange(day.id, 0, `${e.target.value}-${end}`)}
-                    className="px-2 py-1.5 rounded-lg text-sm bg-black/30 border border-white/10 text-white outline-none"
+                    className="px-2 py-1.5 rounded-lg text-sm bg-black/30 border border-white/10 text-white outline-none focus:ring-2 focus:ring-[#D4A017]/40"
                   />
-                  <span className="text-sm text-gray-500">à</span>
+                  <span className="text-sm text-[#8B6A30]">à</span>
                   <input
                     type="time"
                     value={end}
                     onChange={(e) => handleTimeChange(day.id, 0, `${start}-${e.target.value}`)}
-                    className="px-2 py-1.5 rounded-lg text-sm bg-black/30 border border-white/10 text-white outline-none"
+                    className="px-2 py-1.5 rounded-lg text-sm bg-black/30 border border-white/10 text-white outline-none focus:ring-2 focus:ring-[#D4A017]/40"
                   />
                 </div>
               )}

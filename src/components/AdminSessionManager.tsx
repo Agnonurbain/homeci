@@ -100,10 +100,10 @@ export default function AdminSessionManager({
                 <Clock className="w-6 h-6 text-yellow-600" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 mb-1">
+                <h3 className="font-semibold text-[#1A0E00] mb-1">
                   Session sur le point d'expirer
                 </h3>
-                <p className="text-sm text-gray-700 mb-3">
+                <p className="text-sm text-[#5A4000] mb-3">
                   Votre session expirera dans <strong>{timeRemaining} secondes</strong> en raison d'inactivité.
                 </p>
                 <button

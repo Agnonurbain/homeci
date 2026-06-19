@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, lazy, Suspense, useCallback } from 'react';
 import {
   Heart, Calendar, Search, Bell, FileText
 } from 'lucide-react';
@@ -10,6 +10,7 @@ import { useFavorites } from '../hooks/useFavorites';
 import { useTenantProperties } from '../hooks/useTenantProperties';
 import { useTenantVisits } from '../hooks/useTenantVisits';
 import { useTenantNotifications } from '../hooks/useTenantNotifications';
+import { useTabNavigation } from '../hooks/useTabNavigation';
 
 // Components
 import { PropertyGridSkeleton } from './Skeletons';
@@ -53,6 +54,7 @@ export default function TenantDashboard() {
   const tabFromUrl = location.pathname.split('/')[2];
   const validTabs = ['search', 'favorites', 'visits', 'notifications', 'dossier'];
   const activeTab = validTabs.includes(tabFromUrl) ? tabFromUrl as any : 'search';
+  const { containerRef: tabsRef, handleKeyDown: tabKeyDown } = useTabNavigation(validTabs, activeTab, (id) => navigate(`/dashboard/${id}`));
 
   const [viewingPropertyId, setViewingPropertyId] = useState<string | null>(null);
   const [visitModalProperty, setVisitModalProperty] = useState<any | null>(null);
@@ -101,7 +103,7 @@ export default function TenantDashboard() {
           </div>
 
           {/* Navigation Tabs */}
-          <nav className="flex gap-0.5 homeci-tabs-scroll">
+          <nav ref={tabsRef as React.RefObject<HTMLElement>} role="tablist" onKeyDown={tabKeyDown} className="flex gap-0.5 homeci-tabs-scroll">
             {[
               { id: 'search', icon: Search, label: 'Rechercher', count: undefined },
               { id: 'favorites', icon: Heart, label: 'Mes favoris', count: favoriteIds.length || undefined },
@@ -109,7 +111,8 @@ export default function TenantDashboard() {
               { id: 'notifications', icon: Bell, label: 'Notifications', count: unreadCount || undefined },
               { id: 'dossier', icon: FileText, label: 'Mon Dossier', count: undefined },
             ].map(tab => (
-              <button key={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
+              <button key={tab.id} data-tab-id={tab.id} onClick={() => navigate(`/dashboard/${tab.id}`)}
+                role="tab" aria-selected={activeTab === tab.id} tabIndex={activeTab === tab.id ? 0 : -1}
                 className="flex items-center gap-1.5 py-2.5 px-4 whitespace-nowrap transition-all"
                 style={{
                   borderBottom: `2.5px solid ${activeTab === tab.id ? HColors.gold : 'transparent'}`,

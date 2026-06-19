@@ -1,5 +1,6 @@
 import { Shield, X } from 'lucide-react';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useEscapeClose } from '../hooks/useEscapeClose';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { KenteLine } from './ui/KenteLine';
 
@@ -8,6 +9,7 @@ interface PrivacyPolicyModalProps {
 }
 
 export default function PrivacyPolicyModal({ onClose }: PrivacyPolicyModalProps) {
+  useEscapeClose(onClose);
   useBodyScrollLock(true);
 
   const H3 = ({ children }: { children: React.ReactNode }) => (

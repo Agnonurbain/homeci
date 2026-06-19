@@ -109,30 +109,30 @@ export default function AdminLogin({ onSuccess }: AdminLoginProps) {
             {/* Formulaire */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                <label htmlFor="admin-email" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
                   style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
                   Adresse email
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: HColors.brown }} />
-                  <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                  <input id="admin-email" type="email" required value={email} onChange={e => setEmail(e.target.value)}
                     disabled={loading} placeholder="admin@homeci.ci"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl outline-none transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-[#D4A017]/40 transition-all"
                     style={{ background: HColors.creamBg, border: `1.5px solid ${HAlpha.gold20}`,
                              color: HColors.darkBrown, fontFamily: 'var(--font-nunito)', fontSize: '0.9rem' }} />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                <label htmlFor="admin-password" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
                   style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
                   Mot de passe
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: HColors.brown }} />
-                  <input type={showPassword ? 'text' : 'password'} required value={password}
+                  <input id="admin-password" type={showPassword ? 'text' : 'password'} required value={password}
                     onChange={e => setPassword(e.target.value)} disabled={loading} placeholder="••••••••"
-                    className="w-full pl-10 pr-12 py-3 rounded-xl outline-none transition-all"
+                    className="w-full pl-10 pr-12 py-3 rounded-xl outline-none focus:ring-2 focus:ring-[#D4A017]/40 transition-all"
                     style={{ background: HColors.creamBg, border: `1.5px solid ${HAlpha.gold20}`,
                              color: HColors.darkBrown, fontFamily: 'var(--font-nunito)', fontSize: '0.9rem' }} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}

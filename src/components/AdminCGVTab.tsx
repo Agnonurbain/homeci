@@ -154,7 +154,7 @@ export default function AdminCGVTab({ users }: AdminCGVTabProps) {
             Suivi des acceptations
           </h3>
           <select value={filterCgv} onChange={e => setFilterCgv(e.target.value as typeof filterCgv)}
-            className="min-w-0 flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs outline-none"
+            className="min-w-0 flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#D4A017]/40"
             style={{ background: HColors.white, border: `1px solid ${HAlpha.gold20}`, color: HColors.darkBrown }}>
             <option value="all">Tous</option>
             <option value="accepted">CGV acceptées</option>

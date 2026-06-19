@@ -34,7 +34,7 @@ export default function MediaStep({
         </div>
         <div>
           <h3 className="font-bold text-lg" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)' }}>Photos & Vidéos</h3>
-          <p className="text-xs text-gray-500">Ajoutez des visuels de haute qualité pour attirer les locataires</p>
+          <p className="text-xs text-[#8B6A30]">Ajoutez des visuels de haute qualité pour attirer les locataires</p>
         </div>
       </div>
 
@@ -42,7 +42,7 @@ export default function MediaStep({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <label style={S.label}>Photos (jusqu'à 15)</label>
-          <span className="text-[10px] font-bold text-gray-400">
+          <span className="text-[10px] font-bold text-[#8B6A30]">
             {mode === 'edit' ? existingImages.length + images.length : images.length} / 15
           </span>
         </div>
@@ -53,7 +53,7 @@ export default function MediaStep({
             <div key={`exist-${idx}`} className="aspect-square relative rounded-xl overflow-hidden border border-gold/20">
               <img src={url} alt="" className="w-full h-full object-cover" />
               <button type="button" onClick={() => onRemoveImage(idx, true)}
-                className="absolute top-1 right-1 p-1 bg-black/60 text-white rounded-full hover:bg-red-600 transition-colors">
+                className="absolute top-1 right-1 p-1 bg-black/60 text-white rounded-full hover:bg-[#6B1515] transition-colors">
                 <Trash2 className="w-3 h-3" />
               </button>
             </div>
@@ -64,7 +64,7 @@ export default function MediaStep({
             <div key={`new-${idx}`} className="aspect-square relative rounded-xl overflow-hidden border border-gold/40">
               <img src={url} alt="" className="w-full h-full object-cover" />
               <button type="button" onClick={() => onRemoveImage(idx, false)}
-                className="absolute top-1 right-1 p-1 bg-black/60 text-white rounded-full hover:bg-red-600 transition-colors">
+                className="absolute top-1 right-1 p-1 bg-black/60 text-white rounded-full hover:bg-[#6B1515] transition-colors">
                 <Trash2 className="w-3 h-3" />
               </button>
             </div>
@@ -86,7 +86,7 @@ export default function MediaStep({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <label style={S.label}>Vidéos (jusqu'à 3)</label>
-          <span className="text-[10px] font-bold text-gray-400">
+          <span className="text-[10px] font-bold text-[#8B6A30]">
              {mode === 'edit' ? existingVideos.length + videos.length : videos.length} / 3
           </span>
         </div>
@@ -97,7 +97,7 @@ export default function MediaStep({
             <div key={`v-exist-${idx}`} className="aspect-video relative rounded-xl overflow-hidden bg-black/5 flex items-center justify-center">
               <video src={url} className="w-full h-full" controls />
               <button type="button" onClick={() => onRemoveVideo(idx, true)}
-                className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full hover:bg-red-600">
+                className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full hover:bg-[#6B1515]">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
@@ -120,7 +120,7 @@ export default function MediaStep({
               style={{ borderColor: HAlpha.gold25 }}>
               <Film className="w-8 h-8 text-gold mb-2" />
               <span className="text-xs font-bold text-gold uppercase tracking-wider">Ajouter une vidéo</span>
-              <p className="text-[10px] text-gray-400 mt-1">Format mp4, max 100 Mo</p>
+              <p className="text-[10px] text-[#8B6A30] mt-1">Format mp4, max 100 Mo</p>
               <input type="file" className="hidden" multiple accept="video/*" onChange={onVideoChange} />
             </label>
           )}

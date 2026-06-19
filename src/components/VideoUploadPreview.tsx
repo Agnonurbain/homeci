@@ -48,13 +48,13 @@ export const VideoUploadPreview = ({
   const getStatusColor = () => {
     switch (status) {
       case 'completed':
-        return 'bg-green-500';
+        return 'bg-[#009E49]';
       case 'error':
-        return 'bg-red-500';
+        return 'bg-[#8B1D1D]';
       case 'uploading':
-        return 'bg-blue-500';
+        return 'bg-[#009E49]';
       default:
-        return 'bg-gray-400';
+        return 'bg-[#8B6A30]';
     }
   };
 
@@ -72,9 +72,9 @@ export const VideoUploadPreview = ({
   };
 
   return (
-    <div className="relative bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+    <div className="relative bg-white border border-[rgba(212,160,23,0.15)] rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
       <div className="flex gap-4 p-4">
-        <div className="relative w-32 h-20 bg-gray-900 rounded overflow-hidden flex-shrink-0">
+        <div className="relative w-32 h-20 bg-[#1A0E00] rounded overflow-hidden flex-shrink-0">
           {previewUrl ? (
             <img
               src={previewUrl}
@@ -83,23 +83,23 @@ export const VideoUploadPreview = ({
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Video className="w-8 h-8 text-gray-500" />
+              <Video className="w-8 h-8 text-[#8B6A30]" />
             </div>
           )}
 
           {status === 'completed' && (
-            <div className="absolute top-1 right-1 bg-green-500 rounded-full p-1">
+            <div className="absolute top-1 right-1 bg-[#009E49] rounded-full p-1">
               <CheckCircle className="w-4 h-4 text-white" />
             </div>
           )}
         </div>
 
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-medium text-gray-900 truncate mb-2">
+          <h4 className="text-sm font-medium text-[#1A0E00] truncate mb-2">
             {file.name}
           </h4>
 
-          <div className="flex flex-wrap gap-3 text-xs text-gray-600 mb-2">
+          <div className="flex flex-wrap gap-3 text-xs text-[#7A5500] mb-2">
             <div className="flex items-center gap-1">
               <HardDrive className="w-3 h-3" />
               <span>{formatFileSize(file.size)}</span>
@@ -119,9 +119,9 @@ export const VideoUploadPreview = ({
           </div>
 
           {status === 'uploading' && (
-            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-[rgba(212,160,23,0.12)] rounded-full h-2 overflow-hidden">
               <div
-                className="h-full bg-blue-600 transition-all duration-300"
+                className="h-full bg-[#009E49] transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -129,14 +129,14 @@ export const VideoUploadPreview = ({
 
           <div className="flex items-center gap-2 mt-2">
             <div className={`w-2 h-2 rounded-full ${getStatusColor()}`} />
-            <span className="text-xs text-gray-600">{getStatusText()}</span>
+            <span className="text-xs text-[#7A5500]">{getStatusText()}</span>
           </div>
         </div>
 
         {onRemove && status !== 'uploading' && (
           <button
             onClick={onRemove}
-            className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+            className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-[#8B6A30] hover:text-[#8B1D1D] hover:bg-[rgba(139,29,29,0.10)] rounded-full transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

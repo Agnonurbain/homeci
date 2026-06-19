@@ -109,12 +109,12 @@ export const AdminNotairesTab: React.FC<AdminNotairesTabProps> = ({ showToast })
         <h3 className="font-bold mb-4" style={{ color: HColors.darkBrown, fontFamily: 'var(--font-cormorant)', fontSize: '1.2rem' }}>Générer un nouveau code</h3>
         <div className="flex flex-wrap gap-3 items-end">
           <div className="flex-1 min-w-48">
-            <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: HColors.brownMid }}>Note (optionnel)</label>
-            <input type="text" value={note} onChange={e => setNote(e.target.value)} placeholder="Ex: Me Konaté, Cabinet Abidjan..." className="w-full px-3 py-2.5 rounded-xl outline-none text-sm bg-gray-50 border border-gray-200" />
+            <label htmlFor="notaire-note" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: HColors.brownMid }}>Note (optionnel)</label>
+            <input id="notaire-note" type="text" value={note} onChange={e => setNote(e.target.value)} placeholder="Ex: Me Konaté, Cabinet Abidjan..." className="w-full px-3 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-[#D4A017]/40 text-sm bg-[#FFF8ED] border border-[rgba(212,160,23,0.15)]" />
           </div>
           <div>
-            <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: HColors.brownMid }}>Expire dans</label>
-            <select value={expireDays} onChange={e => setExpireDays(Number(e.target.value))} className="px-3 py-2.5 rounded-xl outline-none text-sm bg-gray-50 border border-gray-200">
+            <label htmlFor="notaire-expire" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: HColors.brownMid }}>Expire dans</label>
+            <select id="notaire-expire" value={expireDays} onChange={e => setExpireDays(Number(e.target.value))} className="px-3 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-[#D4A017]/40 text-sm bg-[#FFF8ED] border border-[rgba(212,160,23,0.15)]">
               <option value={1}>1 jour</option><option value={3}>3 jours</option><option value={7}>7 jours</option><option value={30}>30 jours</option>
             </select>
           </div>
@@ -134,19 +134,19 @@ export const AdminNotairesTab: React.FC<AdminNotairesTabProps> = ({ showToast })
         {loading ? (
           <div className="flex justify-center py-10"><LoaderIcon className="w-6 h-6 animate-spin text-gold" /></div>
         ) : codes.length === 0 ? (
-          <div className="text-center py-12"><Award className="w-10 h-10 mx-auto mb-3 opacity-20" /><p className="text-sm font-semibold text-gray-400">Aucun code généré pour l'instant</p></div>
+          <div className="text-center py-12"><Award className="w-10 h-10 mx-auto mb-3 opacity-20" /><p className="text-sm font-semibold text-[#8B6A30]">Aucun code généré pour l'instant</p></div>
         ) : (
           <div className="divide-y">
             {codes.map((c, _i) => {
               const expired = isExpired(c);
               const inactive = c.used || expired;
               return (
-                <div key={c.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-all" style={{ opacity: inactive ? 0.6 : 1 }}>
+                <div key={c.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-[#FFF8ED] transition-all" style={{ opacity: inactive ? 0.6 : 1 }}>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <span className="font-mono font-bold tracking-widest text-sm text-darkBrown">{c.code}</span>
                       {c.note && <span className="text-xs px-2 py-0.5 rounded-full bg-orange-50 text-orange-700">{c.note}</span>}
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${c.used ? 'bg-green-100 text-green-700' : expired ? 'bg-red-100 text-red-700' : 'bg-gold/10 text-gold-700'}`} style={{ color: c.used ? '#009E49' : expired ? '#B91C1C' : '#D4A017' }}>{c.used ? 'Utilisé' : expired ? 'Expiré' : 'Actif'}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${c.used ? 'bg-[rgba(0,158,73,0.15)] text-[#007536]' : expired ? 'bg-[rgba(139,29,29,0.15)] text-[#8B1D1D]' : 'bg-gold/10 text-gold-700'}`} style={{ color: c.used ? '#009E49' : expired ? '#B91C1C' : '#D4A017' }}>{c.used ? 'Utilisé' : expired ? 'Expiré' : 'Actif'}</span>
                     </div>
                     <div className="flex gap-3 text-xs text-brown">
                       <span>Créé le {new Date(c.created_at).toLocaleDateString('fr-FR')}</span>
@@ -156,8 +156,8 @@ export const AdminNotairesTab: React.FC<AdminNotairesTabProps> = ({ showToast })
                   <div className="flex items-center gap-2 shrink-0">
                     {!inactive && (
                       <>
-                        <button onClick={() => handleCopy(c.code, c.id)} className="px-2.5 py-1.5 text-xs font-bold rounded-lg border bg-white hover:bg-gray-50"><Copy className="w-3 h-3 mr-1 inline" /> {copiedId === c.id ? 'Copié !' : 'Copier'}</button>
-                        <button onClick={() => handleRevoke(c.id)} className="px-2.5 py-1.5 text-xs font-bold rounded-lg border border-red-200 text-red-600 bg-red-50 hover:bg-red-100"><XCircle className="w-3 h-3 mr-1 inline" /> Révoquer</button>
+                        <button onClick={() => handleCopy(c.code, c.id)} className="px-2.5 py-1.5 text-xs font-bold rounded-lg border bg-white hover:bg-[#FFF8ED]"><Copy className="w-3 h-3 mr-1 inline" /> {copiedId === c.id ? 'Copié !' : 'Copier'}</button>
+                        <button onClick={() => handleRevoke(c.id)} className="px-2.5 py-1.5 text-xs font-bold rounded-lg border border-[rgba(139,29,29,0.20)] text-[#8B1D1D] bg-[rgba(139,29,29,0.10)] hover:bg-[rgba(139,29,29,0.15)]"><XCircle className="w-3 h-3 mr-1 inline" /> Révoquer</button>
                       </>
                     )}
                   </div>

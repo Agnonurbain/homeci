@@ -100,7 +100,7 @@ export default function AdminTwoFactorSetup({ onCompleted, onSkip }: AdminTwoFac
 
           <div className="flex gap-3">
             <button onClick={onSkip}
-              className="flex-1 py-3 rounded-xl font-bold text-sm transition-all hover:bg-gray-100"
+              className="flex-1 py-3 rounded-xl font-bold text-sm transition-all hover:bg-[rgba(212,160,23,0.08)]"
               style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
               Plus tard
             </button>
@@ -216,7 +216,7 @@ export default function AdminTwoFactorSetup({ onCompleted, onSkip }: AdminTwoFac
             onChange={(e) => setToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
             placeholder="000000"
             maxLength={6}
-            className="w-full text-center text-3xl font-mono font-bold tracking-[0.5em] py-4 rounded-xl outline-none"
+            className="w-full text-center text-3xl font-mono font-bold tracking-[0.5em] py-4 rounded-xl outline-none focus:ring-2 focus:ring-[#D4A017]/40"
             style={{ background: HColors.creamBg, border: `2px solid ${HAlpha.gold25}`, color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}
           />
         </div>

@@ -15,7 +15,7 @@ export default function TutorialButton() {
   };
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4"
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4"
       style={{ background: 'rgba(10,22,14,0.85)', backdropFilter: 'blur(6px)' }}>
       <div className="w-full max-w-md rounded-2xl p-8 text-center tutorial-card-glow"
         style={{

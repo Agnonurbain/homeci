@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { AlertCircle, Loader, Stamp, Share2, Clipboard } from 'lucide-react';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
+import { useEscapeClose } from '../../hooks/useEscapeClose';
 
 export function RevokeModal({ isOpen, onClose, onConfirm, property, hasActiveVisit, loading }: any) {
+  useEscapeClose(onClose);
   const [reason, setReason] = useState('');
   if (!isOpen) return null;
 
@@ -11,7 +13,7 @@ export function RevokeModal({ isOpen, onClose, onConfirm, property, hasActiveVis
       <div className="w-full max-w-md rounded-3xl overflow-hidden animate-in fade-in zoom-in duration-300"
         style={{ background: '#FFFFFF', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
         <div className="p-6 text-center space-y-4">
-          <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto"
+          <div className="w-16 h-16 rounded-full bg-[rgba(139,29,29,0.10)] flex items-center justify-center mx-auto"
             style={{ background: HAlpha.bord10 }}>
             <AlertCircle className="w-8 h-8" style={{ color: HColors.bordeaux }} />
           </div>
@@ -32,15 +34,15 @@ export function RevokeModal({ isOpen, onClose, onConfirm, property, hasActiveVis
           )}
 
           <div className="space-y-2 text-left">
-            <label className="text-xs font-bold uppercase tracking-widest px-1" style={{ color: HAlpha.brown50 }}>Motif de décertification</label>
-            <textarea value={reason} onChange={e => setReason(e.target.value)}
+            <label htmlFor="decertify-reason" className="text-xs font-bold uppercase tracking-widest px-1" style={{ color: HAlpha.brown50 }}>Motif de décertification</label>
+            <textarea id="decertify-reason" value={reason} onChange={e => setReason(e.target.value)}
               placeholder="Indiquez la raison précise..."
-              className="w-full p-4 rounded-2xl text-sm outline-none min-h-[100px] resize-none"
+              className="w-full p-4 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-[#D4A017]/40 min-h-[100px] resize-none"
               style={{ background: HAlpha.gold05, border: `1.5px solid ${HAlpha.gold15}`, color: HColors.darkBrown }} />
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button onClick={onClose} className="flex-1 py-3.5 rounded-2xl font-bold text-sm transition-all hover:bg-gray-100"
+            <button onClick={onClose} className="flex-1 py-3.5 rounded-2xl font-bold text-sm transition-all hover:bg-[rgba(212,160,23,0.08)]"
               style={{ color: HColors.brownMid }}>Annuler</button>
             <button onClick={() => onConfirm(reason)} disabled={!reason.trim() || loading}
               className="flex-1 py-3.5 rounded-2xl font-bold text-sm text-white transition-all shadow-lg active:scale-95 disabled:opacity-50"
@@ -55,6 +57,7 @@ export function RevokeModal({ isOpen, onClose, onConfirm, property, hasActiveVis
 }
 
 export function DelegationModal({ token, onClose, action, propertyTitle }: any) {
+  useEscapeClose(onClose);
   const [copied, setCopied] = useState(false);
   if (!token) return null;
 
@@ -68,7 +71,7 @@ export function DelegationModal({ token, onClose, action, propertyTitle }: any) 
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
       <div className="w-full max-w-lg rounded-[2.5rem] p-8 text-center space-y-6 animate-in slide-in-from-bottom-8 duration-500"
         style={{ background: 'linear-gradient(145deg, #FDFCF8, #F5E6CC)', border: `2px solid ${HColors.gold}` }}>
-        <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto"
+        <div className="w-20 h-20 bg-[rgba(0,158,73,0.10)] rounded-full flex items-center justify-center mx-auto"
           style={{ background: HAlpha.vertCI10 }}>
           <Stamp className="w-10 h-10" style={{ color: HColors.vertCI }} />
         </div>

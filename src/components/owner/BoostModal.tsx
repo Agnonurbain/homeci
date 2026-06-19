@@ -4,6 +4,7 @@ import { BOOST_PRICES } from '../../types/ad';
 import type { Property } from '../../types/property';
 import type { BoostDuration } from '../../types/ad';
 import { KenteLine } from '../ui/KenteLine';
+import { useEscapeClose } from '../../hooks/useEscapeClose';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -20,6 +21,7 @@ interface BoostModalProps {
 export default function BoostModal({
   property, duration, onDurationChange, onConfirm, onClose
 }: BoostModalProps) {
+  useEscapeClose(onClose);
   const currentConfig = BOOST_PRICES[duration];
 
   return (

@@ -2,6 +2,7 @@ import { Home, CheckCircle, RefreshCw } from 'lucide-react';
 import type { Property } from '../../types/property';
 import { KenteLine } from '../ui/KenteLine';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
+import { useEscapeClose } from '../../hooks/useEscapeClose';
 
 /* ── Props ─────────────────────────────────────────────────────────────────── */
 
@@ -15,6 +16,7 @@ interface PropertyStatusModalProps {
 /* ── Component ────────────────────────────────────────────────────────────── */
 
 export default function PropertyStatusModal({ property, loading, onSelectStatus, onClose }: PropertyStatusModalProps) {
+  useEscapeClose(onClose);
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-4"
       style={{ background: 'rgba(10,61,31,0.7)', backdropFilter: 'blur(6px)' }}>

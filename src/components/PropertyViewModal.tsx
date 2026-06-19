@@ -16,6 +16,7 @@ const MapDisplay = lazy(() => import('./MapDisplay'));
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import { analyticsService } from '../services/analyticsService';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useEscapeClose } from '../hooks/useEscapeClose';
 import { fixDocUrl } from '../utils/fixDocUrl';
 import { reportService, REASON_LABELS } from '../services/reportService';
 import { TYPE_LABELS, DOC_LABELS } from '../constants/labels';
@@ -42,6 +43,7 @@ function formatPrice(p: number) {
 }
 
 export default function PropertyViewModal({ propertyId, onClose, onRequestVisit, onShowAuth }: PropertyViewModalProps) {
+  useEscapeClose(onClose);
   const { user, profile } = useAuth();
   useBodyScrollLock(true);
   const [property, setProperty] = useState<Property | null>(null);
@@ -165,7 +167,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
     return (
       <div className="space-y-3">
         <div className="p-3 rounded-xl space-y-2" style={{ background: HAlpha.gold05, border: `1px solid ${HAlpha.gold15}` }}>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Propriétaire</p>
+          <p className="text-xs font-semibold text-[#8B6A30] uppercase tracking-wide mb-2">Propriétaire</p>
           <div className="flex items-center gap-2"><Phone className="w-4 h-4" style={{ color: 'rgba(139,106,48,0.25)' }} /><p className="text-sm font-mono tracking-widest" style={{ color: 'rgba(139,106,48,0.45)', fontFamily: 'var(--font-nunito)' }}>+225 ·· ·· ·· ·· ··</p></div>
           <p className="text-xs flex items-center gap-1" style={{ color: HAlpha.brown50, fontFamily: 'var(--font-nunito)' }}><Lock className="w-3 h-3" />Vous pourrez récupérer le numéro du propriétaire via le Chat -{'>'} bouton Discuter</p>
         </div>
@@ -242,17 +244,17 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
 
           {/* ── Galerie photos ── */}
           {activeTab === 'photos' && (
-            <div className="relative h-64 md:h-80 bg-gray-200 rounded-2xl overflow-hidden mb-5">
+            <div className="relative h-64 md:h-80 bg-[rgba(212,160,23,0.12)] rounded-2xl overflow-hidden mb-5">
               <OptimizedImage src={images[imgIndex]} alt={property.title} className="w-full h-full rounded-2xl" priority />
               {images.length > 1 && (
                 <>
                   <button aria-label="Photo précédente" onClick={() => setImgIndex(i => (i - 1 + images.length) % images.length)}
                     className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow">
-                    <ChevronLeft className="w-4 h-4 text-gray-700" />
+                    <ChevronLeft className="w-4 h-4 text-[#5A4000]" />
                   </button>
                   <button aria-label="Photo suivante" onClick={() => setImgIndex(i => (i + 1) % images.length)}
                     className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow">
-                    <ChevronRight className="w-4 h-4 text-gray-700" />
+                    <ChevronRight className="w-4 h-4 text-[#5A4000]" />
                   </button>
                   <div className="absolute bottom-2 right-2 px-2 py-0.5 bg-black/60 text-white rounded-full text-xs">{imgIndex + 1}/{images.length}</div>
                 </>
@@ -363,7 +365,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {property.land_area && <InfoChip icon={<Layers className="w-4 h-4" />} label="Superficie" value={`${property.land_area} m²`} />}
                   {p.terrain_type && <InfoChip icon={<Maximize className="w-4 h-4" />} label="Usage" value={String(p.terrain_type).charAt(0).toUpperCase() + String(p.terrain_type).slice(1)} />}
-                  {p.has_acd && <InfoChip icon={<FileCheck className="w-4 h-4 text-emerald-600" />} label="Juridique" value="ACD Disponible" />}
+                  {p.has_acd && <InfoChip icon={<FileCheck className="w-4 h-4 text-[#009E49]" />} label="Juridique" value="ACD Disponible" />}
                 </div>
               )}
 
@@ -509,7 +511,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
                           Pourquoi signalez-vous cette annonce ?
                         </p>
                         <select value={reportReason} onChange={e => setReportReason(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl text-xs outline-none"
+                          className="w-full px-3 py-2 rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#D4A017]/40"
                           style={{ background: HAlpha.gold05, border: `1px solid ${HAlpha.gold20}`, color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }}>
                           <option value="">Sélectionnez un motif...</option>
                           {Object.entries(REASON_LABELS).map(([key, label]) => (
@@ -519,7 +521,7 @@ export default function PropertyViewModal({ propertyId, onClose, onRequestVisit,
                         <textarea value={reportDetails} onChange={e => setReportDetails(e.target.value)}
                           placeholder="Détails supplémentaires (optionnel)"
                           rows={2} maxLength={500}
-                          className="w-full px-3 py-2 rounded-xl text-xs outline-none resize-none"
+                          className="w-full px-3 py-2 rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#D4A017]/40 resize-none"
                           style={{ background: HAlpha.gold05, border: `1px solid ${HAlpha.gold15}`, color: HColors.darkBrown, fontFamily: 'var(--font-nunito)' }} />
                         <div className="flex gap-2">
                           <button onClick={() => setShowReportForm(false)}
@@ -571,9 +573,9 @@ function InfoChip({ icon, label, value }: { icon: React.ReactNode; label: string
 
 function Badge({ label, color = 'gray', icon }: { label: string; color?: string; icon?: React.ReactNode }) {
   const c: Record<string, string> = {
-    gray: 'bg-gray-100 text-gray-600',
-    emerald: 'bg-emerald-100 text-emerald-700',
-    blue: 'bg-blue-100 text-blue-700',
+    gray: 'bg-[rgba(212,160,23,0.08)] text-[#7A5500]',
+    emerald: 'bg-[rgba(0,158,73,0.15)] text-[#007536]',
+    blue: 'bg-[rgba(0,158,73,0.15)] text-[#007536]',
     orange: 'bg-orange-100 text-orange-700',
   };
   return (

@@ -59,7 +59,7 @@ export default function MessageBubble({ message, isMine, showTail, highlight, se
           className={`max-w-[85%] relative px-4 py-2.5 shadow-sm transition-all hover:shadow-md ${
             isMine
               ? 'bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-l-2xl rounded-tr-2xl'
-              : 'bg-white text-gray-800 rounded-r-2xl rounded-tl-2xl border border-amber-100/50'
+              : 'bg-white text-[#1A0E00] rounded-r-2xl rounded-tl-2xl border border-amber-100/50'
           } ${!showTail && isMine ? 'rounded-br-2xl' : ''} ${!showTail && !isMine ? 'rounded-bl-2xl' : ''}`}
           style={{ fontFamily: 'var(--font-nunito)', fontSize: '0.95rem' }}
         >
@@ -86,15 +86,15 @@ export default function MessageBubble({ message, isMine, showTail, highlight, se
               isMine ? 'bg-white/15' : 'bg-amber-50 border border-amber-100/50'
             }`}>
               <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                isMine ? 'bg-white/20' : 'bg-red-100'
+                isMine ? 'bg-white/20' : 'bg-[rgba(139,29,29,0.15)]'
               }`}>
-                <FileText className={`w-4.5 h-4.5 ${isMine ? 'text-white' : 'text-red-600'}`} />
+                <FileText className={`w-4.5 h-4.5 ${isMine ? 'text-white' : 'text-[#8B1D1D]'}`} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className={`text-[0.7rem] font-bold truncate ${isMine ? 'text-white/90' : 'text-gray-700'}`}>
+                <p className={`text-[0.7rem] font-bold truncate ${isMine ? 'text-white/90' : 'text-[#5A4000]'}`}>
                   {message.attachment_name || 'Document.pdf'}
                 </p>
-                <p className={`text-[0.6rem] ${isMine ? 'text-white/50' : 'text-gray-400'}`}>PDF</p>
+                <p className={`text-[0.6rem] ${isMine ? 'text-white/50' : 'text-[#8B6A30]'}`}>PDF</p>
               </div>
               <button
                 onClick={() => handleOpenLink(message.attachment_url!)}
@@ -120,7 +120,7 @@ export default function MessageBubble({ message, isMine, showTail, highlight, se
           )}
 
           {/* Time + read receipt */}
-          <div className={`flex items-center justify-end gap-1.5 mt-1 text-[0.65rem] font-bold opacity-70 ${isMine ? 'text-white' : 'text-gray-400'}`}>
+          <div className={`flex items-center justify-end gap-1.5 mt-1 text-[0.65rem] font-bold opacity-70 ${isMine ? 'text-white' : 'text-[#8B6A30]'}`}>
             <span>{formatTime(message.created_at)}</span>
             {isMine && (
               <span className="transition-all animate-in fade-in duration-500">
@@ -138,11 +138,11 @@ export default function MessageBubble({ message, isMine, showTail, highlight, se
       {/* Lightbox overlay */}
       {lightboxOpen && hasAttachment && isImage && (
         <div
-          className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200 cursor-pointer"
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200 cursor-pointer"
           onClick={() => setLightboxOpen(false)}
         >
           <button
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-[210]"
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-[100]"
             onClick={() => setLightboxOpen(false)}
           >
             <X className="w-6 h-6 text-white" />

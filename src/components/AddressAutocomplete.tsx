@@ -120,7 +120,7 @@ export function AddressAutocomplete({ value, onChange, placeholder = 'Rechercher
           onFocus={() => search && setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="w-full pl-10 pr-10 py-3 rounded-xl outline-none text-sm transition-all"
+          className="w-full pl-10 pr-10 py-3 rounded-xl outline-none focus:ring-2 focus:ring-[#D4A017]/40 text-sm transition-all"
           style={{
             background: HColors.white,
             border: `1.5px solid ${isOpen ? HColors.gold : HAlpha.gold20}`,
@@ -131,7 +131,7 @@ export function AddressAutocomplete({ value, onChange, placeholder = 'Rechercher
         {(search || displayValue) && (
           <button
             onClick={() => { setSearch(''); onChange({ city: '', commune: '', quartier: '' }); }}
-            className="absolute right-3 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            className="absolute right-3 p-1 rounded-full hover:bg-[rgba(212,160,23,0.08)] transition-colors"
           >
             <X className="w-4 h-4" style={{ color: HColors.brown }} />
           </button>

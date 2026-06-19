@@ -159,15 +159,16 @@ export function Hero({ onSearch }: HeroProps) {
 
           {/* ── Barre de recherche avancée (Smart Search) ── */}
           <div className="w-full relative mb-4 group">
-            <input 
-              type="text" 
+            <input
+              id="hero-search"
+              type="text"
               value={advValue}
               onChange={e => handleAdvancedSearch(e.target.value)}
               onKeyDown={e => {
                 if (e.key === 'Enter') handleSearch();
               }}
               placeholder="Ex: 'Appartement Cocody 3 pièces' ou 'Villa > 500000'"
-              className="w-full rounded-2xl py-4 sm:py-5 px-11 sm:px-14 text-base sm:text-lg outline-none transition-all shadow-xl"
+              className="w-full rounded-2xl py-4 sm:py-5 px-11 sm:px-14 text-base sm:text-lg outline-none focus:ring-2 focus:ring-[#D4A017]/40 transition-all shadow-xl"
               style={{ 
                 background: 'rgba(255,255,255,0.12)', 
                 border: '1px solid rgba(212,160,23,0.3)',
@@ -200,7 +201,7 @@ export function Hero({ onSearch }: HeroProps) {
                   style={{ color: HColors.gold, fontFamily: 'var(--font-nunito)' }}>Type de bien</label>
                 <div className="relative">
                   <select value={f.propertyType} onChange={e => upd('propertyType', e.target.value)}
-                    className="w-full bg-transparent outline-none text-sm appearance-none pr-6 cursor-pointer"
+                    className="w-full bg-transparent outline-none focus:ring-2 focus:ring-[#D4A017]/40 text-sm appearance-none pr-6 cursor-pointer"
                     style={{ color: f.propertyType ? HColors.white : HAlpha.white50, fontFamily: 'var(--font-nunito)' }}>
                     <option value="" style={{ background: HColors.night }}>Tous</option>
                     <option value="appartement"  style={{ background: HColors.night }}>Appartement</option>
@@ -220,7 +221,7 @@ export function Hero({ onSearch }: HeroProps) {
                   style={{ color: HColors.gold, fontFamily: 'var(--font-nunito)' }}>Transaction</label>
                 <div className="relative">
                   <select value={f.transactionType} onChange={e => upd('transactionType', e.target.value)}
-                    className="w-full bg-transparent outline-none text-sm appearance-none pr-6 cursor-pointer"
+                    className="w-full bg-transparent outline-none focus:ring-2 focus:ring-[#D4A017]/40 text-sm appearance-none pr-6 cursor-pointer"
                     style={{ color: f.transactionType ? HColors.white : HAlpha.white50, fontFamily: 'var(--font-nunito)' }}>
                     <option value="" style={{ background: HColors.night }}>Tous</option>
                     <option value="location" style={{ background: HColors.night }}>Location</option>
@@ -266,25 +267,25 @@ export function Hero({ onSearch }: HeroProps) {
                        backdropFilter: 'blur(12px)' }}>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {[
-                  { label:'District',    val:f.district,    opts:ALL_DISTRICTS, disabled:false,
+                  { label:'District',    id:'hero-district', val:f.district,    opts:ALL_DISTRICTS, disabled:false,
                     onChange:(v:string) => upd('district',v,['region','departement','city','commune','quartier']) },
-                  { label:'Région',      val:f.region,      opts:regions,  disabled:!regions.length,
+                  { label:'Région',      id:'hero-region',   val:f.region,      opts:regions,  disabled:!regions.length,
                     onChange:(v:string) => upd('region',v,['departement','city','commune','quartier']) },
-                  { label:'Département', val:f.departement, opts:depts,    disabled:!depts.length,
+                  { label:'Département', id:'hero-departement', val:f.departement, opts:depts,    disabled:!depts.length,
                     onChange:(v:string) => upd('departement',v,['city','commune','quartier']) },
-                  { label:'Ville',       val:f.city,        opts:villes,   disabled:!villes.length,
+                  { label:'Ville',       id:'hero-ville',    val:f.city,        opts:villes,   disabled:!villes.length,
                     onChange:(v:string) => upd('city',v,['commune','quartier']) },
-                  { label:'Commune',     val:f.commune,     opts:communes, disabled:!communes.length,
+                  { label:'Commune',     id:'hero-commune',  val:f.commune,     opts:communes, disabled:!communes.length,
                     onChange:(v:string) => upd('commune',v,['quartier']) },
-                  { label:'Quartier',    val:f.quartier,    opts:quartiers,disabled:!quartiers.length,
+                  { label:'Quartier',    id:'hero-quartier', val:f.quartier,    opts:quartiers,disabled:!quartiers.length,
                     onChange:(v:string) => upd('quartier',v) },
-                ].map(({ label, val, opts, disabled, onChange }) => (
+                ].map(({ label, id, val, opts, disabled, onChange }) => (
                   <div key={label}>
-                    <label className="block text-xs font-semibold mb-1 uppercase tracking-wider"
+                    <label htmlFor={id} className="block text-xs font-semibold mb-1 uppercase tracking-wider"
                       style={{ color: HAlpha.gold50, fontFamily: 'var(--font-nunito)' }}>{label}</label>
                     <div className="relative">
-                      <select value={val} disabled={disabled} onChange={e => onChange(e.target.value)}
-                        className="w-full appearance-none rounded-xl px-3 py-2.5 text-sm pr-8 focus:outline-none disabled:opacity-30"
+                      <select id={id} value={val} disabled={disabled} onChange={e => onChange(e.target.value)}
+                        className="w-full appearance-none rounded-xl px-3 py-2.5 text-sm pr-8 focus:outline-none focus:ring-2 focus:ring-[#D4A017]/40 disabled:opacity-30"
                         style={darkSel}>
                         <option value="" style={{ background: HColors.night }}>Tous</option>
                         {opts.map(o => <option key={o} value={o} style={{ background: HColors.night }}>{o}</option>)}

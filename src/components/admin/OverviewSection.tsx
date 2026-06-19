@@ -28,7 +28,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ stats, propert
         </div>
         <div className="divide-y">
           {recentProps.map(p => (
-            <button key={p.id} onClick={() => onViewProperty(p)} className="w-full flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition-all text-left">
+            <button key={p.id} onClick={() => onViewProperty(p)} className="w-full flex items-center gap-4 px-5 py-3 hover:bg-[#FFF8ED] transition-all text-left">
               <img src={p.images?.[0] || ''} alt="" className="w-10 h-10 rounded-lg object-cover border" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-darkBrown truncate">{p.title}</p>
@@ -61,18 +61,18 @@ export const PropertiesSection: React.FC<PropertiesSectionProps> = ({
 }) => (
   <div className="animate-in fade-in duration-500">
     <SectionTitle title="Tous les Biens" sub="Vue complète de tous les biens immobiliers de la plateforme" />
-    <div className="rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm">
-      <div className="flex flex-wrap items-center gap-3 px-5 py-3.5 bg-gray-50 border-b">
-        <select value={filterType} onChange={e => setFilterType(e.target.value)} className="px-3 py-2 rounded-xl text-xs outline-none border focus:ring-1 ring-gold">
+    <div className="rounded-2xl overflow-hidden bg-white border border-[rgba(212,160,23,0.12)] shadow-sm">
+      <div className="flex flex-wrap items-center gap-3 px-5 py-3.5 bg-[#FFF8ED] border-b">
+        <select value={filterType} onChange={e => setFilterType(e.target.value)} className="px-3 py-2 rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#D4A017]/40 border focus:ring-1 ring-gold">
           <option value="">Types</option>
           {Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
-        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="px-3 py-2 rounded-xl text-xs outline-none border focus:ring-1 ring-gold">
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="px-3 py-2 rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#D4A017]/40 border focus:ring-1 ring-gold">
           <option value="">Statuts</option>
           {['published', 'pending', 'draft', 'rejected', 'rented', 'sold'].map(s => <option key={s} value={s}>{s}</option>)}
         </select>
-        <input type="text" value={filterCity} onChange={e => setFilterCity(e.target.value)} placeholder="Ville..." className="px-3 py-2 rounded-xl text-xs outline-none border w-28 focus:ring-1 ring-gold" />
-        <select value={sort} onChange={e => setSort(e.target.value)} className="px-3 py-2 rounded-xl text-xs outline-none border focus:ring-1 ring-gold">
+        <input type="text" value={filterCity} onChange={e => setFilterCity(e.target.value)} placeholder="Ville..." className="px-3 py-2 rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#D4A017]/40 border w-28 focus:ring-1 ring-gold" />
+        <select value={sort} onChange={e => setSort(e.target.value)} className="px-3 py-2 rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#D4A017]/40 border focus:ring-1 ring-gold">
           <option value="date_desc">↓ Date</option><option value="date_asc">↑ Date</option><option value="price_desc">↓ Prix</option><option value="price_asc">↑ Prix</option>
         </select>
         <span className="ml-auto text-xs text-brown">{properties.length} bien(s)</span>
@@ -84,7 +84,7 @@ export const PropertiesSection: React.FC<PropertiesSectionProps> = ({
           </thead>
           <tbody className="divide-y">
             {properties.map((p, i) => (
-              <tr key={p.id} className="hover:bg-gray-50" style={{ background: i % 2 === 0 ? '#FFF' : '#F9F3E840' }}>
+              <tr key={p.id} className="hover:bg-[#FFF8ED]" style={{ background: i % 2 === 0 ? '#FFF' : '#F9F3E840' }}>
                 <td className="px-5 py-3 font-semibold text-darkBrown">{p.title}</td>
                 <td className="px-5 py-3 text-xs text-brown">{TYPE_LABELS[p.property_type]}</td>
                 <td className="px-5 py-3 text-xs text-brown">{p.city}</td>

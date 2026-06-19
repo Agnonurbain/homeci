@@ -204,11 +204,12 @@ export default function AdminAccessCode({ onSuccess, role = 'admin' }: AdminAcce
 
                 {/* Saisie */}
                 <form onSubmit={handleSubmit}>
-                  <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                  <label htmlFor="admin-access-code" className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
                     style={{ color: HColors.brownMid, fontFamily: 'var(--font-nunito)' }}>
                     Confirmez le code
                   </label>
                   <input
+                    id="admin-access-code"
                     ref={inputRef}
                     type="text"
                     value={input}
@@ -216,7 +217,7 @@ export default function AdminAccessCode({ onSuccess, role = 'admin' }: AdminAcce
                     placeholder="Ex: AB3K7P2Z"
                     maxLength={8}
                     autoFocus
-                    className="w-full px-4 py-3 rounded-xl outline-none text-center font-mono text-lg tracking-[0.3em] font-bold mb-4"
+                    className="w-full px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-[#D4A017]/40 text-center font-mono text-lg tracking-[0.3em] font-bold mb-4"
                     style={{ background: HColors.creamBg, border: `1.5px solid ${HAlpha.gold25}`,
                              color: HColors.darkBrown }}
                   />

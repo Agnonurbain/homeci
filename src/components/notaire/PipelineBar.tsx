@@ -60,7 +60,7 @@ export default function PipelineBar({ activeTab, stats }: PipelineBarProps) {
               {stage.desc}
             </span>
             {i < 3 && (
-              <span className="absolute top-1/2 -translate-y-1/2 z-[2]"
+              <span className="absolute top-1/2 -translate-y-1/2 z-10"
                 style={{ right: -10, color: 'rgba(212,160,23,0.4)', fontSize: 16, fontWeight: 900 }}>
                 ›
               </span>

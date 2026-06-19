@@ -50,7 +50,7 @@ const SEL = { background:'rgba(255,255,255,0.8)', border:'1px solid rgba(212,160
 const SEL_DIS = { ...SEL, background:'rgba(255,255,255,0.4)', color:'rgba(26,14,0,0.35)', cursor:'not-allowed' } as React.CSSProperties;
 const INP = { ...SEL } as React.CSSProperties;
 const LBL = { color:HAlpha.brown55, fontFamily:'var(--font-nunito)', fontSize:'0.65rem', fontWeight:700, letterSpacing:'0.07em', textTransform:'uppercase' } as React.CSSProperties;
-const cls = 'w-full px-3 py-2 rounded-xl outline-none';
+const cls = 'w-full px-3 py-2 rounded-xl outline-none focus:ring-2 focus:ring-[#D4A017]/40';
 
 export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
   const [open, setOpen] = useState(false);
@@ -149,7 +149,7 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
           value={advValue}
           onChange={e => handleAdvancedSearch(e.target.value)}
           placeholder="Recherche intelligente (ex: 'Appartement Cocody 3 pièces < 500000')"
-          className="w-full rounded-2xl py-4 px-12 text-sm outline-none transition-all shadow-sm"
+          className="w-full rounded-2xl py-4 px-12 text-sm outline-none focus:ring-2 focus:ring-[#D4A017]/40 transition-all shadow-sm"
           style={{ 
             background: '#fff', 
             border: '1px solid rgba(212,160,23,0.3)',
@@ -225,8 +225,8 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
           <div className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
             {/* Type de bien */}
             <div>
-              <label className="block mb-1.5" style={LBL}>Type de bien</label>
-              <select value={filters.propertyType} onChange={e => update('propertyType', e.target.value)} className={cls} style={SEL}>
+              <label htmlFor="filter-type" className="block mb-1.5" style={LBL}>Type de bien</label>
+              <select id="filter-type" value={filters.propertyType} onChange={e => update('propertyType', e.target.value)} className={cls} style={SEL}>
                 <option value="">Tous les types</option>
                 <option value="appartement">Appartement</option>
                 <option value="maison">Maison</option>
@@ -238,8 +238,8 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
             </div>
             {/* Transaction */}
             <div>
-              <label className="block mb-1.5" style={LBL}>Transaction</label>
-              <select value={filters.transactionType} onChange={e => update('transactionType', e.target.value)} className={cls} style={SEL}>
+              <label htmlFor="filter-transaction" className="block mb-1.5" style={LBL}>Transaction</label>
+              <select id="filter-transaction" value={filters.transactionType} onChange={e => update('transactionType', e.target.value)} className={cls} style={SEL}>
                 <option value="">Location & Vente</option>
                 <option value="location">Location</option>
                 <option value="vente">Vente</option>
@@ -301,11 +301,11 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
 
           {/* Prix & Chambres */}
           <div>
-            <label className="block mb-2 mt-3 md:mt-0" style={LBL}>Prix & Caractéristiques</label>
+            <label htmlFor="filter-price" className="block mb-2 mt-3 md:mt-0" style={LBL}>Prix & Caractéristiques</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div>
                 <p className="mb-1" style={{ ...LBL, fontSize:'0.6rem', color:'rgba(122,85,0,0.5)' }}>Prix min</p>
-                <input type="number" value={filters.minPrice}
+                <input id="filter-price" type="number" value={filters.minPrice}
                   onChange={e => update('minPrice', e.target.value)}
                   placeholder="0 FCFA" className={cls} style={INP} />
               </div>
