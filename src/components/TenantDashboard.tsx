@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense, useCallback } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import {
   Heart, Calendar, Search, Bell, FileText
 } from 'lucide-react';

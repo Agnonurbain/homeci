@@ -32,17 +32,17 @@ describe('NotaireTabs', () => {
     expect(screen.getByText('10')).toBeInTheDocument();
   });
 
-  it('applique aria-current="page" sur l\'onglet actif', () => {
+  it('applique aria-selected="true" sur l\'onglet actif', () => {
     render(<NotaireTabs activeTab="en_cours" stats={mockStats} />);
-    const activeTab = screen.getByRole('button', { name: 'En cours' });
-    expect(activeTab).toHaveAttribute('aria-current', 'page');
+    const activeTab = screen.getByRole('tab', { name: /En cours/i });
+    expect(activeTab).toHaveAttribute('aria-selected', 'true');
   });
 
-  it('n\'applique pas aria-current sur les onglets inactifs', () => {
+  it('n\'applique pas aria-selected sur les onglets inactifs', () => {
     render(<NotaireTabs activeTab="disponible" stats={mockStats} />);
-    const disponibleTab = screen.getByRole('button', { name: 'Disponibles' });
-    expect(disponibleTab).toHaveAttribute('aria-current', 'page');
-    const certifiesTab = screen.getByRole('button', { name: 'Certifiés' });
-    expect(certifiesTab).not.toHaveAttribute('aria-current');
+    const disponibleTab = screen.getByRole('tab', { name: /Disponibles/i });
+    expect(disponibleTab).toHaveAttribute('aria-selected', 'true');
+    const certifiesTab = screen.getByRole('tab', { name: /Certifiés/i });
+    expect(certifiesTab).toHaveAttribute('aria-selected', 'false');
   });
 });

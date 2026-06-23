@@ -55,8 +55,10 @@ export function Header({ onLoginClick, onSignupClick, onProfileClick }: HeaderPr
       {/* Bande Kente signature */}
       <KenteLine height={3} />
 
-      <nav style={{ background: 'rgba(10,61,31,0.96)', backdropFilter: 'blur(12px)',
-                    borderBottom: '1px solid rgba(212,160,23,0.15)' }}>
+      <nav style={{ background: 'rgba(10,61,31,0.95)', backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    borderBottom: '1px solid rgba(212,160,23,0.15)',
+                    boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-[72px]">
 
@@ -148,9 +150,10 @@ export function Header({ onLoginClick, onSignupClick, onProfileClick }: HeaderPr
                     Connexion
                   </button>
                   <button onClick={onSignupClick}
-                    className="px-5 py-2 rounded-lg text-sm font-bold transition-all hover:opacity-90"
+                    className="px-5 py-2 rounded-lg text-sm font-bold transition-all hover:opacity-90 hover:scale-[1.02]"
                     style={{ background: HColors.orangeCI, color: HColors.white,
-                             fontFamily: 'var(--font-nunito)' }}>
+                             fontFamily: 'var(--font-nunito)',
+                             boxShadow: '0 2px 12px rgba(255,107,0,0.3)' }}>
                     S'inscrire
                   </button>
                 </>

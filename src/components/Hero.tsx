@@ -29,7 +29,7 @@ const EMPTY: HeroSearchValues = {
 /* ── Motif losange Baoulé ─────────────────────────────────────────────────── */
 function BaoulePattern() {
   return (
-    <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
+    <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{
       backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L45 15L30 30L15 15Z' fill='%23D4A017'/%3E%3Cpath d='M0 30L15 45L0 60' fill='%23D4A017'/%3E%3Cpath d='M60 30L45 45L60 60' fill='%23D4A017'/%3E%3C/svg%3E")`,
       backgroundSize: '60px 60px',
     }} />
@@ -136,29 +136,30 @@ export function Hero({ onSearch }: HeroProps) {
 
         <div className="w-full max-w-3xl">
           {/* Devise */}
-          <p className="text-center tracking-[0.2em] text-sm mb-6 italic"
-            style={{ color: HColors.gold, fontFamily: 'var(--font-cormorant)' }}>
+          <p className="text-center tracking-[0.25em] text-sm mb-6 italic homeci-reveal-1"
+            style={{ color: HColors.gold, fontFamily: 'var(--font-cormorant)', textShadow: '0 0 20px rgba(212,160,23,0.3)' }}>
             Union, Discipline, Travail
           </p>
 
           {/* Titre */}
-          <h1 className="text-center leading-tight mb-4 sm:mb-6"
+          <h1 className="text-center leading-tight mb-4 sm:mb-6 homeci-reveal-2"
             style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(1.8rem, 6vw, 4.5rem)',
-                     fontWeight: 700, color: HColors.white, lineHeight: 1.1 }}>
+                     fontWeight: 700, color: HColors.white, lineHeight: 1.1,
+                     textShadow: '0 2px 30px rgba(0,0,0,0.3)' }}>
             L'immobilier ivoirien,{' '}
             <br className="hidden md:block" />
-            <span style={{ color: HColors.gold }}>certifié & sécurisé.</span>
+            <span className="homeci-text-shimmer">certifié & sécurisé.</span>
           </h1>
 
           {/* Sous-titre */}
-          <p className="text-center mb-10 max-w-xl mx-auto leading-relaxed"
-            style={{ fontFamily: 'var(--font-nunito)', fontSize: '1rem', color: HAlpha.white70 }}>
+          <p className="text-center mb-10 max-w-xl mx-auto leading-relaxed homeci-reveal-3"
+            style={{ fontFamily: 'var(--font-nunito)', fontSize: '1.05rem', color: HAlpha.white70 }}>
             Trouvez votre bien vérifié par notaire dans les 14 districts de Côte d'Ivoire.
             La solidité d'un éléphant au service de vos projets.
           </p>
 
           {/* ── Barre de recherche avancée (Smart Search) ── */}
-          <div className="w-full relative mb-4 group">
+          <div className="w-full relative mb-4 group homeci-reveal-4 homeci-search-glow rounded-2xl transition-all">
             <input
               id="hero-search"
               type="text"
@@ -168,13 +169,15 @@ export function Hero({ onSearch }: HeroProps) {
                 if (e.key === 'Enter') handleSearch();
               }}
               placeholder="Ex: 'Appartement Cocody 3 pièces' ou 'Villa > 500000'"
-              className="w-full rounded-2xl py-4 sm:py-5 px-11 sm:px-14 text-base sm:text-lg outline-none focus:ring-2 focus:ring-[#D4A017]/40 transition-all shadow-xl"
-              style={{ 
-                background: 'rgba(255,255,255,0.12)', 
-                border: '1px solid rgba(212,160,23,0.3)',
-                backdropFilter: 'blur(20px)',
+              className="w-full rounded-2xl py-4 sm:py-5 px-11 sm:px-14 text-base sm:text-lg outline-none transition-all"
+              style={{
+                background: 'rgba(255,255,255,0.10)',
+                border: '1px solid rgba(212,160,23,0.25)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
                 color: HColors.white,
-                fontFamily: 'var(--font-nunito)'
+                fontFamily: 'var(--font-nunito)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08)',
               }}
             />
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6" style={{ color: HColors.gold }} />
@@ -190,9 +193,10 @@ export function Hero({ onSearch }: HeroProps) {
           </div>
 
           {/* ── Barre de recherche glassmorphism (Dropdowns) ── */}
-          <div className="w-full rounded-2xl p-2 mb-4"
-            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
-                     backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+          <div className="w-full rounded-2xl p-2 mb-4 homeci-reveal-4"
+            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(212,160,23,0.15)',
+                     backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                     boxShadow: '0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.06)' }}>
 
             <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
               {/* Type de bien */}
@@ -248,8 +252,9 @@ export function Hero({ onSearch }: HeroProps) {
 
               {/* Bouton recherche */}
               <button onClick={handleSearch}
-                className="flex items-center justify-center gap-2 rounded-xl py-3.5 md:py-0 text-sm font-bold transition-all hover:scale-[1.02] active:scale-95 min-h-[48px]"
-                style={{ background: HGradients.cta, color: HColors.white, fontFamily: 'var(--font-nunito)' }}>
+                className="flex items-center justify-center gap-2 rounded-xl py-3.5 md:py-0 text-sm font-bold transition-all hover:scale-[1.03] active:scale-95 min-h-[48px]"
+                style={{ background: HGradients.cta, color: HColors.white, fontFamily: 'var(--font-nunito)',
+                         boxShadow: '0 4px 16px rgba(255,107,0,0.35), 0 1px 3px rgba(0,0,0,0.1)' }}>
                 <Search size={18} />
                 Rechercher
                 {activeCount > 0 && (
@@ -309,7 +314,7 @@ export function Hero({ onSearch }: HeroProps) {
           )}
 
           {/* ── Quick filters ── */}
-          <div className="flex flex-wrap justify-center gap-2 mb-8">
+          <div className="flex flex-wrap justify-center gap-2 mb-8 homeci-reveal-5">
             {([
               { label:'✦ Vérifié Notaire', kind:'notaire', value:'notaire'      },
               { label:'Villas',            kind:'type',    value:'villa'        },
@@ -371,11 +376,14 @@ export function Hero({ onSearch }: HeroProps) {
               { value: '14',   label: 'Districts couverts' },
               { value: '24/7', label: 'Support client' },
             ].map(s => (
-              <div key={s.label} className="flex flex-col items-center gap-1 px-4 py-4 rounded-2xl"
-                style={{ background: HAlpha.white05, border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div key={s.label} className="flex flex-col items-center gap-1.5 px-4 py-5 rounded-2xl homeci-stat-pop"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,160,23,0.12)',
+                         backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+                         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)' }}>
                 <span className="text-3xl font-bold leading-none"
-                  style={{ color: HColors.gold, fontFamily: 'var(--font-cormorant)' }}>{s.value}</span>
-                <span className="text-xs text-center"
+                  style={{ color: HColors.gold, fontFamily: 'var(--font-cormorant)',
+                           textShadow: '0 0 20px rgba(212,160,23,0.25)' }}>{s.value}</span>
+                <span className="text-[11px] text-center font-medium tracking-wide"
                   style={{ color: HAlpha.white50, fontFamily: 'var(--font-nunito)' }}>{s.label}</span>
               </div>
             ))}

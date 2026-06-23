@@ -25,25 +25,27 @@ export function PropertyCard({ property, onFavorite, isFavorite, isBoosted, onVi
   const isHotel = property.property_type === 'hotel' || property.property_type === 'appart_hotel';
 
   return (
-    <div className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
+    <div className="group rounded-2xl overflow-hidden homeci-card-premium"
       style={{
         background: HColors.white,
         border: isBoosted ? '2px solid rgba(212,160,23,0.5)' : `1px solid ${HAlpha.gold15}`,
-        boxShadow: isBoosted ? '0 4px 20px rgba(212,160,23,0.15)' : '0 2px 12px rgba(26,14,0,0.06)',
+        boxShadow: isBoosted
+          ? '0 4px 20px rgba(212,160,23,0.15), 0 0 0 1px rgba(212,160,23,0.1)'
+          : '0 2px 12px rgba(26,14,0,0.06), 0 0 0 1px rgba(212,160,23,0.05)',
       }}>
 
       {/* Image */}
       <div className="relative aspect-[16/10] overflow-hidden" style={{ background: HColors.darkBrown }}>
         <OptimizedImage
           src={imageSrc} alt={property.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-full object-cover homeci-img-zoom"
           onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
             (e.target as HTMLImageElement).src = PLACEHOLDER;
           }}
         />
         {/* Gradient overlay for price */}
         <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%)' }} />
+          style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 40%, transparent 60%)' }} />
 
         {/* Type badge — top left */}
         <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
@@ -67,7 +69,7 @@ export function PropertyCard({ property, onFavorite, isFavorite, isBoosted, onVi
 
         {/* Verified badge — top right */}
         {property.verified_notaire && (
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-lg"
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full homeci-verified-glow"
             style={{ background: HGradients.verified }}>
             <ShieldCheck className="w-3.5 h-3.5 text-white" />
             <span className="text-[10px] font-bold uppercase tracking-tight text-white"
@@ -86,8 +88,9 @@ export function PropertyCard({ property, onFavorite, isFavorite, isBoosted, onVi
 
         {/* Price overlay — bottom left */}
         <div className="absolute bottom-3 left-4">
-          <span className="text-2xl font-bold text-white tabular-nums drop-shadow-lg"
-            style={{ fontFamily: 'var(--font-cormorant)' }}>
+          <span className="text-[1.65rem] font-bold text-white tabular-nums"
+            style={{ fontFamily: 'var(--font-cormorant)',
+                     textShadow: '0 2px 8px rgba(0,0,0,0.5), 0 0 20px rgba(0,0,0,0.2)' }}>
             {formatPrice(property.price)}
           </span>
           <span className="block text-xs text-white/60" style={{ fontFamily: 'var(--font-nunito)' }}>
@@ -178,7 +181,8 @@ export function PropertyCard({ property, onFavorite, isFavorite, isBoosted, onVi
           <button onClick={onViewDetails || onContactClick}
             className="px-4 py-2 rounded-xl text-xs font-bold transition-all hover:opacity-90 active:scale-95 shrink-0"
             style={property.verified_notaire
-              ? { background: HGradients.cta, color: HColors.white, fontFamily: 'var(--font-nunito)' }
+              ? { background: HGradients.cta, color: HColors.white, fontFamily: 'var(--font-nunito)',
+                  boxShadow: '0 2px 8px rgba(255,107,0,0.25)' }
               : {
                 background: HAlpha.orange08, color: HColors.orangeDark, fontFamily: 'var(--font-nunito)',
                 border: `1px solid ${HAlpha.orange20}`

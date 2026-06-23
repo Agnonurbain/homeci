@@ -8,7 +8,7 @@ import PrivacyPolicyModal from './PrivacyPolicyModal';
 export function Footer() {
   const [showPrivacy, setShowPrivacy] = useState(false);
   return (
-    <footer style={{ background: HColors.night, borderTop: '1px solid rgba(212,160,23,0.15)' }}>
+    <footer style={{ background: 'linear-gradient(180deg, #0D2F15 0%, #0A3D1F 40%, #1A0E00 100%)', borderTop: '1px solid rgba(212,160,23,0.15)' }}>
 
       {/* Bande Kente */}
       <KenteLine height={5} />
@@ -30,9 +30,9 @@ export function Footer() {
             <div className="flex gap-2.5">
               {[Facebook, Twitter, Instagram, Linkedin].map((Icon, i) => (
                 <a key={i} href="#"
-                  className="p-2 rounded-lg transition-all hover:scale-110"
+                  className="p-2.5 rounded-lg homeci-social-icon"
                   style={{ background: HAlpha.orange08, border: `1px solid ${HAlpha.orange15}` }}>
-                  <Icon className="w-4 h-4" style={{ color: HColors.orangeCI, opacity: 0.7 }} />
+                  <Icon className="w-4 h-4" style={{ color: HColors.orangeCI }} />
                 </a>
               ))}
             </div>
@@ -41,7 +41,7 @@ export function Footer() {
           {/* Navigation */}
           <div>
             <h3 className="font-semibold mb-5 text-sm tracking-widest uppercase"
-              style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>Navigation</h3>
+              style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)', textShadow: '0 0 16px rgba(255,107,0,0.2)' }}>Navigation</h3>
             <ul className="space-y-3">
               {[
                 { label: 'Rechercher', href: '/#search' },
@@ -63,7 +63,7 @@ export function Footer() {
           {/* Villes */}
           <div>
             <h3 className="font-semibold mb-5 text-sm tracking-widest uppercase"
-              style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>Villes</h3>
+              style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)', textShadow: '0 0 16px rgba(255,107,0,0.2)' }}>Villes</h3>
             <ul className="space-y-3">
               {['Abidjan', 'Bouaké', 'Yamoussoukro', 'San Pedro', 'Korhogo'].map(v => (
                 <li key={v}>
@@ -77,7 +77,7 @@ export function Footer() {
           {/* Contact */}
           <div>
             <h3 className="font-semibold mb-5 text-sm tracking-widest uppercase"
-              style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)' }}>Contact</h3>
+              style={{ color: HColors.orangeCI, fontFamily: 'var(--font-nunito)', textShadow: '0 0 16px rgba(255,107,0,0.2)' }}>Contact</h3>
             <ul className="space-y-4">
               {[
                 { Icon: MapPin, text: "Abidjan, Cocody Riviera, Côte d'Ivoire" },
@@ -106,7 +106,7 @@ export function Footer() {
                   { name: 'Djamo',        logo: '/logos/djamo.jpeg' },
                 ].map(op => (
                   <img key={op.name} src={op.logo} alt={op.name}
-                    title={op.name} className="w-8 h-8 rounded-lg" />
+                    title={op.name} className="w-9 h-9 rounded-lg ring-1 ring-white/10 transition-transform hover:scale-110" />
                 ))}
               </div>
             </div>
