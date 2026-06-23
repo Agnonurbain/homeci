@@ -1,4 +1,4 @@
-import { MapPin, Bed, Bath, Maximize, Heart, ShieldCheck, Star, AlertTriangle, Film } from 'lucide-react';
+import { MapPin, Bed, Bath, Maximize, Heart, ShieldCheck, Star, AlertTriangle, Film, Zap } from 'lucide-react';
 import type { Property } from '../services/propertyService';
 import OptimizedImage from './OptimizedImage';
 import { KenteLine } from './ui/KenteLine';
@@ -52,7 +52,7 @@ export function PropertyCard({ property, onFavorite, isFavorite, isBoosted, onVi
           {isBoosted && (
             <span className="px-2.5 py-1 text-[10px] font-bold rounded-md uppercase tracking-wider backdrop-blur-sm flex items-center gap-1"
               style={{ background: 'rgba(212,160,23,0.9)', color: '#FFFFFF', fontFamily: 'var(--font-nunito)' }}>
-              ⚡ Sponsorisé
+              <Zap className="w-3 h-3" /> Sponsorisé
             </span>
           )}
           <span className="px-2.5 py-1 text-[10px] font-bold rounded-md uppercase tracking-wider backdrop-blur-sm"

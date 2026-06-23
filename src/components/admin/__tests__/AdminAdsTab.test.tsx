@@ -152,7 +152,8 @@ describe('AdminAdsTab', () => {
     fireEvent.click(newBoostBtn);
 
     await waitFor(() => {
-      expect(screen.getByText('⚡ Nouveau Boost')).toBeInTheDocument();
+      const headings = screen.getAllByText(/Nouveau Boost/);
+      expect(headings.length).toBeGreaterThanOrEqual(2);
     });
   });
 

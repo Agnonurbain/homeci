@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText, Upload, CheckCircle, Clock, X, Eye, AlertTriangle } from 'lucide-react';
+import { FileText, Upload, CheckCircle, Clock, X, Eye, AlertTriangle, Lock } from 'lucide-react';
 import { storageService } from '../services/storageService';
 import type { PropertyDocument } from '../services/propertyService';
 import { fixDocUrl } from '../utils/fixDocUrl';
@@ -246,7 +246,7 @@ export function DocumentsStep({ propertyType, propertyId, documents, onChange }:
       {/* Note légale */}
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
         <p className="text-sm text-amber-800">
-          <strong>🔒 Confidentialité :</strong> Vos documents sont chiffrés et uniquement accessibles par notre équipe notariale agréée. Ils ne sont jamais partagés avec les visiteurs ou locataires.
+          <strong><Lock className="w-3.5 h-3.5 inline mr-1" />Confidentialité :</strong> Vos documents sont chiffrés et uniquement accessibles par notre équipe notariale agréée. Ils ne sont jamais partagés avec les visiteurs ou locataires.
         </p>
       </div>
 

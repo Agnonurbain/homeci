@@ -1,3 +1,4 @@
+import { CreditCard } from 'lucide-react';
 import { KenteLine } from '../ui/KenteLine';
 
 export default function MobilePaymentBanner() {
@@ -8,7 +9,7 @@ export default function MobilePaymentBanner() {
         className="p-5 flex items-center gap-4 flex-wrap"
         style={{ background: 'linear-gradient(135deg,#0D1F12,#1A0E00)' }}
       >
-        <span style={{ fontSize: 32 }}>💳</span>
+        <CreditCard className="w-8 h-8" style={{ color: '#D4A017' }} />
         <div className="flex-1">
           <h3
             className="font-bold mb-1"

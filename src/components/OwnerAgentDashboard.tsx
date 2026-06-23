@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, Calendar, BarChart3, Bell, X, Plus } from 'lucide-react';
+import { Home, Calendar, BarChart3, Bell, X, Plus, Building2, Clock, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { adService } from '../services/adService';
@@ -120,7 +120,7 @@ export default function OwnerAgentDashboard() {
             <div className="flex items-center gap-3 text-center sm:text-left">
               <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
                 style={{ background: HAlpha.gold10, border: `1.5px solid ${HAlpha.gold25}` }}>
-                <span style={{ fontSize: 22 }}>🏘️</span>
+                <Building2 className="w-6 h-6" style={{ color: HColors.gold }} />
               </div>
               <div>
                 <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.35rem', fontWeight: 700, color: HColors.cream, lineHeight: 1 }}>
@@ -132,10 +132,10 @@ export default function OwnerAgentDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap justify-center">
-              <StatBadge icon="🏠" label="Biens" value={props.stats.total} color={HColors.gold} onClick={() => navigate('/dashboard/properties')} />
-              <StatBadge icon="⏳" label="En attente" value={visits.pendingCount} color={HColors.orangeCI} onClick={() => navigate('/dashboard/requests')} />
+              <StatBadge icon={<Home className="w-3.5 h-3.5" />} label="Biens" value={props.stats.total} color={HColors.gold} onClick={() => navigate('/dashboard/properties')} />
+              <StatBadge icon={<Clock className="w-3.5 h-3.5" />} label="En attente" value={visits.pendingCount} color={HColors.orangeCI} onClick={() => navigate('/dashboard/requests')} />
               {acceptedVisitsCount > 0 && (
-                <StatBadge icon="✅" label="Acceptées" value={acceptedVisitsCount} color={HColors.vertCI} onClick={() => navigate('/dashboard/requests')} />
+                <StatBadge icon={<CheckCircle2 className="w-3.5 h-3.5" />} label="Acceptées" value={acceptedVisitsCount} color={HColors.vertCI} onClick={() => navigate('/dashboard/requests')} />
               )}
               <RealTimeIndicator />
               <button onClick={handleAddProperty}

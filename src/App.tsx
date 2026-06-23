@@ -141,7 +141,7 @@ function AppContent() {
         <div className="flex items-center gap-3 mb-2">
           <div className="w-12 h-12 rounded-full flex items-center justify-center"
             style={{ background: 'rgba(212,160,23,0.15)', border: '2px solid rgba(212,160,23,0.4)' }}>
-            <span style={{ fontSize: '1.4rem' }}>🏛</span>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D4A017" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
           </div>
           <span className="font-bold tracking-widest"
             style={{ color: '#F5E6C8', fontFamily: 'var(--font-cormorant)', fontSize: '1.8rem', letterSpacing: '0.15em' }}>

@@ -9,10 +9,10 @@ vi.mock('react-router-dom', () => ({
 }));
 
 describe('HomeCIEmblem', () => {
-  it('rend la variante full par défaut avec éléphant et texte', () => {
+  it('rend la variante full par défaut avec SVG et texte', () => {
     render(<HomeCIEmblem />);
-    const elephant = screen.getByLabelText('éléphant');
-    expect(elephant).toBeInTheDocument();
+    const svg = screen.getByLabelText('HOMECI');
+    expect(svg).toBeInTheDocument();
     expect(screen.getByText('HOMECI')).toBeInTheDocument();
   });
 
@@ -20,7 +20,7 @@ describe('HomeCIEmblem', () => {
     render(<HomeCIEmblem variant="header" to="/dashboard" />);
     const link = screen.getByRole('link');
     expect(link).toHaveAttribute('href', '/dashboard');
-    expect(screen.getByLabelText('éléphant')).toBeInTheDocument();
+    expect(screen.getByLabelText('HOMECI')).toBeInTheDocument();
   });
 
   it('rend la variante watermark sans lien', () => {
@@ -29,9 +29,9 @@ describe('HomeCIEmblem', () => {
     expect(screen.getByText(/HOMECI/)).toBeInTheDocument();
   });
 
-  it('rend la variante favicon avec juste l\'éléphant', () => {
+  it('rend la variante favicon avec juste le SVG', () => {
     render(<HomeCIEmblem variant="favicon" />);
-    expect(screen.getByLabelText('éléphant')).toBeInTheDocument();
+    expect(screen.getByLabelText('HOMECI')).toBeInTheDocument();
     expect(screen.queryByText('HOMECI')).not.toBeInTheDocument();
   });
 

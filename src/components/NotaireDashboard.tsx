@@ -9,7 +9,7 @@ import PipelineBar from './notaire/PipelineBar';
 import NotaireSidebar from './notaire/NotaireSidebar';
 import { RevokeModal, DelegationModal } from './notaire/NotaireActionModals';
 import { NotaireListSkeleton, StatGridSkeleton } from './Skeletons';
-import { Search, Building2, FileCheck, X } from 'lucide-react';
+import { Search, Building2, FileCheck, X, Landmark, AlertCircle, ClipboardList, CheckCircle2 } from 'lucide-react';
 import CGVNotaireModal from './CGVNotaireModal';
 import { KenteLine } from './ui/KenteLine';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
@@ -86,7 +86,7 @@ export default function NotaireDashboard() {
             <div className="flex items-center gap-3 text-center sm:text-left">
               <div className="w-11 h-11 rounded-[14px] flex items-center justify-center shrink-0"
                    style={{ background: HAlpha.gold10, border: `1.5px solid ${HAlpha.gold25}` }}>
-                <span style={{ fontSize: 22 }}>🏛</span>
+                <Landmark className="w-6 h-6" style={{ color: HColors.gold }} />
               </div>
               <div>
                 <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.3rem', fontWeight: 700, color: HColors.cream, lineHeight: 1 }}>
@@ -98,9 +98,9 @@ export default function NotaireDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap justify-center">
-              <StatBadge icon="🔴" label="Urgent" value={urgentCount} color={HColors.orangeCI} onClick={() => navigate('/dashboard/disponible')} />
-              <StatBadge icon="📋" label="En cours" value={enCoursCount} color={HColors.gold} onClick={() => navigate('/dashboard/en_cours')} />
-              <StatBadge icon="✅" label="Certifiés ce mois" value={certifiesMoisCount} color={HColors.vertCI} onClick={() => navigate('/dashboard/certifie')} />
+              <StatBadge icon={<AlertCircle className="w-3.5 h-3.5" />} label="Urgent" value={urgentCount} color={HColors.orangeCI} onClick={() => navigate('/dashboard/disponible')} />
+              <StatBadge icon={<ClipboardList className="w-3.5 h-3.5" />} label="En cours" value={enCoursCount} color={HColors.gold} onClick={() => navigate('/dashboard/en_cours')} />
+              <StatBadge icon={<CheckCircle2 className="w-3.5 h-3.5" />} label="Certifiés ce mois" value={certifiesMoisCount} color={HColors.vertCI} onClick={() => navigate('/dashboard/certifie')} />
               <RealTimeIndicator />
               <TutorialButton />
             </div>
@@ -132,7 +132,7 @@ export default function NotaireDashboard() {
                 </div>
                 {activeTab === 'pret' && stats.pret > 0 && (
                   <div className="flex items-center gap-1.5" style={{ padding: '6px 12px', borderRadius: 10, background: 'rgba(139,29,29,0.08)', border: '1px solid rgba(139,29,29,0.2)' }}>
-                    <span style={{ fontSize: 12 }}>⚡</span>
+                    <AlertCircle className="w-3.5 h-3.5" style={{ color: HColors.bordeaux }} />
                     <span style={{ fontSize: 10, fontWeight: 800, color: HColors.bordeaux }}>{stats.pret} dossiers urgents</span>
                   </div>
                 )}

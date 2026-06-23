@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import { ClipboardList, Search, CheckCircle2, Landmark, type LucideIcon } from 'lucide-react';
 
 interface PipelineStage {
   id: string;
   label: string;
   color: string;
-  icon: string;
+  icon: LucideIcon;
   desc: string;
 }
 
@@ -14,10 +15,10 @@ interface PipelineBarProps {
 }
 
 const STAGES: PipelineStage[] = [
-  { id: 'disponible', label: 'Disponibles', color: '#FF6B00', icon: '📋', desc: 'À prendre en charge' },
-  { id: 'en_cours', label: 'En cours', color: '#D4A017', icon: '🔍', desc: 'Vérification docs' },
-  { id: 'pret', label: 'Prêts', color: '#1A3A6B', icon: '✅', desc: 'À certifier' },
-  { id: 'certifie', label: 'Certifiés', color: '#009E49', icon: '🏛️', desc: 'Ce mois' },
+  { id: 'disponible', label: 'Disponibles', color: '#FF6B00', icon: ClipboardList, desc: 'À prendre en charge' },
+  { id: 'en_cours', label: 'En cours', color: '#D4A017', icon: Search, desc: 'Vérification docs' },
+  { id: 'pret', label: 'Prêts', color: '#1A3A6B', icon: CheckCircle2, desc: 'À certifier' },
+  { id: 'certifie', label: 'Certifiés', color: '#009E49', icon: Landmark, desc: 'Ce mois' },
 ];
 
 export default function PipelineBar({ activeTab, stats }: PipelineBarProps) {
@@ -48,7 +49,7 @@ export default function PipelineBar({ activeTab, stats }: PipelineBarProps) {
                 marginBottom: 6,
               }}
             >
-              <span style={{ fontSize: 16 }}>{stage.icon}</span>
+              <stage.icon className="w-4 h-4" style={{ color: isActive ? stage.color : 'rgba(245,230,200,0.6)' }} />
             </div>
             <span style={{ fontFamily: 'var(--font-cormorant)', fontSize: 22, fontWeight: 900, color: isActive ? stage.color : 'rgba(245,230,200,0.8)', lineHeight: 1, marginBottom: 2 }}>
               {count}

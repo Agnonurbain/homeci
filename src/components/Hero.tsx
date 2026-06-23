@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, MapPin, Search, X } from 'lucide-react';
+import { ChevronDown, MapPin, Search, X, ShieldCheck } from 'lucide-react';
 import { HColors, HAlpha, HGradients } from '../styles/homeci-tokens';
 import { KenteLine } from './ui/KenteLine';
 import { HomeCIEmblem } from './HomeCIEmblem';
@@ -316,14 +316,14 @@ export function Hero({ onSearch }: HeroProps) {
           {/* ── Quick filters ── */}
           <div className="flex flex-wrap justify-center gap-2 mb-8 homeci-reveal-5">
             {([
-              { label:'✦ Vérifié Notaire', kind:'notaire', value:'notaire'      },
+              { label:'Vérifié Notaire', kind:'notaire', value:'notaire', hasIcon: true },
               { label:'Villas',            kind:'type',    value:'villa'        },
               { label:'Terrains',          kind:'type',    value:'terrain'      },
               { label:'Hôtels',            kind:'type',    value:'hotel'        },
               { label:'Appart-Hôtels',     kind:'type',    value:'appart_hotel' },
               { label:'À louer',           kind:'tx',      value:'location'     },
               { label:'À vendre',          kind:'tx',      value:'vente'        },
-            ] as {label:string;kind:string;value:string}[]).map(tag => {
+            ] as {label:string;kind:string;value:string;hasIcon?:boolean}[]).map(tag => {
               const isActive =
                 tag.kind === 'notaire' ? f.verifiedNotaire :
                 tag.kind === 'type'    ? f.propertyTypes.includes(tag.value) :
@@ -345,12 +345,13 @@ export function Hero({ onSearch }: HeroProps) {
               };
               return (
                 <button key={tag.label} onClick={toggle}
-                  className="px-4 py-2 rounded-full text-xs font-bold transition-all"
+                  className="px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-1.5"
                   style={isActive
                     ? { background: HAlpha.orange25, border: '2px solid ' + HColors.orangeCI,
                         color: HColors.white, fontFamily: 'var(--font-nunito)' }
                     : { background: HAlpha.white05, border: '1px solid rgba(255,255,255,0.15)',
                         color: HAlpha.white70, fontFamily: 'var(--font-nunito)' }}>
+                  {tag.hasIcon && <ShieldCheck className="w-3.5 h-3.5" />}
                   {tag.label}
                 </button>
               );

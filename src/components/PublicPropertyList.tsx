@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Lock, SlidersHorizontal } from 'lucide-react';
+import { Lock, SlidersHorizontal, Home } from 'lucide-react';
 import { propertyService } from '../services/propertyService';
 import { adService } from '../services/adService';
 import { PropertyCard } from './PropertyCard';
@@ -169,7 +169,7 @@ export default function PublicPropertyList({ onShowAuth, initialFilters }: Publi
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 rounded-2xl"
             style={{ background:'rgba(212,160,23,0.06)', border:'1px solid rgba(212,160,23,0.15)' }}>
-            <p className="text-3xl mb-3">🏠</p>
+            <Home className="w-8 h-8 mx-auto mb-3" style={{ color: '#D4A017' }} />
             <p className="text-lg font-semibold mb-1"
               style={{ color:HColors.darkBrown, fontFamily:'var(--font-cormorant)' }}>Aucun bien trouvé</p>
             <p className="text-sm" style={{ color:HColors.brown, fontFamily:'var(--font-nunito)' }}>

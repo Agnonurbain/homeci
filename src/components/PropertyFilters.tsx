@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { SlidersHorizontal, X, ChevronDown, MapPin, Search } from 'lucide-react';
+import { SlidersHorizontal, X, ChevronDown, MapPin, Search, Sofa, Car, ShieldCheck } from 'lucide-react';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 import {
   ALL_DISTRICTS, getRegionsByDistrict, getDepartementsByRegion,
@@ -330,17 +330,17 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
           {/* Options toggle */}
           <div className="flex flex-wrap gap-2">
             {[
-              { key:'furnished' as const,   label:'🛋  Meublé' },
-              { key:'parking' as const,      label:'🚗  Parking' },
-              { key:'verifiedOnly' as const, label:'✅  Vérifié Notaire' },
-            ].map(({ key, label }) => (
+              { key:'furnished' as const,   label:'Meublé', Icon: Sofa },
+              { key:'parking' as const,      label:'Parking', Icon: Car },
+              { key:'verifiedOnly' as const, label:'Vérifié Notaire', Icon: ShieldCheck },
+            ].map(({ key, label, Icon }) => (
               <label key={key} className="flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer text-sm transition-all"
                 style={filters[key]
                   ? { background:'rgba(212,160,23,0.12)', border:'1px solid rgba(212,160,23,0.4)', color:HColors.brownMid, fontFamily:'var(--font-nunito)', fontWeight:600 }
                   : { background:'rgba(255,255,255,0.6)', border:'1px solid rgba(212,160,23,0.15)', color:HColors.brown, fontFamily:'var(--font-nunito)' }}>
                 <input type="checkbox" checked={filters[key] as boolean}
                   onChange={e => update(key, e.target.checked)} className="sr-only" />
-                {label}
+                <Icon className="w-4 h-4 shrink-0" /> {label}
               </label>
             ))}
           </div>

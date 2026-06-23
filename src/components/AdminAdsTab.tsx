@@ -280,7 +280,7 @@ export default function AdminAdsTab() {
                   <div className="flex items-center justify-between mt-4 mb-4">
                     <h2 className="text-lg font-bold"
                       style={{ color: HColors.cream, fontFamily: 'var(--font-cormorant)' }}>
-                      ⚡ Nouveau Boost
+                      <Zap className="w-4 h-4 inline" /> Nouveau Boost
                     </h2>
                     <button onClick={() => setShowBoostForm(false)} className="p-1.5 rounded-lg"
                       style={{ background: 'rgba(255,255,255,0.06)' }}>

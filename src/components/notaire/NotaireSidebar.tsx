@@ -1,3 +1,4 @@
+import { Landmark, TrendingUp, Clock, Zap, Handshake } from 'lucide-react';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
 
 interface NotaireSidebarProps {
@@ -36,10 +37,10 @@ export default function NotaireSidebar({ stats, onCreateDelegation }: NotaireSid
           </p>
         </div>
         <div className="grid grid-cols-2" style={{ gap: 1, background: `${HAlpha.gold10}` }}>
-          <KPICell icon="🏛️" value={stats.certifie} label="Certifiés ce mois" color="#009E49" />
-          <KPICell icon="📈" value="87%" label="Taux approbation" color="#1A3A6B" />
-          <KPICell icon="⏳" value={stats.enCours} label="En attente" color="#D4A017" />
-          <KPICell icon="⚡" value={stats.disponible} label="Dossiers urgents" color="#8B1D1D" />
+          <KPICell icon={<Landmark className="w-5 h-5" />} value={stats.certifie} label="Certifiés ce mois" color="#009E49" />
+          <KPICell icon={<TrendingUp className="w-5 h-5" />} value="87%" label="Taux approbation" color="#1A3A6B" />
+          <KPICell icon={<Clock className="w-5 h-5" />} value={stats.enCours} label="En attente" color="#D4A017" />
+          <KPICell icon={<Zap className="w-5 h-5" />} value={stats.disponible} label="Dossiers urgents" color="#8B1D1D" />
         </div>
       </div>
 
@@ -97,7 +98,7 @@ export default function NotaireSidebar({ stats, onCreateDelegation }: NotaireSid
 
       {/* Delegation CTA */}
       <div className="text-center" style={{ borderRadius: 18, padding: 16, background: 'linear-gradient(135deg,#0A3D1F,#1B5E3A)', border: `1px solid ${HAlpha.gold25}` }}>
-        <div style={{ fontSize: 24, marginBottom: 8 }}>🤝</div>
+        <Handshake className="w-6 h-6 mx-auto" style={{ color: HColors.gold, marginBottom: 8 }} />
         <h4 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1rem', fontWeight: 700, color: HColors.cream }}>
           Délégation de pouvoir
         </h4>
@@ -114,10 +115,10 @@ export default function NotaireSidebar({ stats, onCreateDelegation }: NotaireSid
   );
 }
 
-function KPICell({ icon, value, label, color }: { icon: string; value: number | string; label: string; color: string }) {
+function KPICell({ icon, value, label, color }: { icon: React.ReactNode; value: number | string; label: string; color: string }) {
   return (
     <div className="text-center" style={{ padding: '14px 12px', background: '#fff' }}>
-      <div style={{ fontSize: 18, marginBottom: 4 }}>{icon}</div>
+      <div className="flex justify-center" style={{ color, marginBottom: 4 }}>{icon}</div>
       <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 22, fontWeight: 900, color, lineHeight: 1 }}>
         {value}
       </div>

@@ -1,6 +1,6 @@
 import { useState, lazy, Suspense } from 'react';
 import {
-  Heart, Calendar, Search, Bell, FileText
+  Heart, Calendar, Search, Bell, FileText, Clock, CheckCircle2
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -96,9 +96,9 @@ export default function TenantDashboard() {
             </div>
             <div className="flex gap-2 flex-wrap justify-center sm:justify-start items-center">
               <TutorialButton />
-              <StatBadge icon="❤️" label="Favoris" value={favoriteIds.length} color="#FF6B00" onClick={() => navigate('/dashboard/favorites')} />
-              <StatBadge icon="⏳" label="En attente" value={pendingVisitsCount} color="#D4A017" onClick={() => navigate('/dashboard/visits')} />
-              {acceptedVisitsCount > 0 && <StatBadge icon="✅" label="Acceptées" value={acceptedVisitsCount} color="#009E49" onClick={() => navigate('/dashboard/visits')} />}
+              <StatBadge icon={<Heart className="w-3.5 h-3.5" />} label="Favoris" value={favoriteIds.length} color="#FF6B00" onClick={() => navigate('/dashboard/favorites')} />
+              <StatBadge icon={<Clock className="w-3.5 h-3.5" />} label="En attente" value={pendingVisitsCount} color="#D4A017" onClick={() => navigate('/dashboard/visits')} />
+              {acceptedVisitsCount > 0 && <StatBadge icon={<CheckCircle2 className="w-3.5 h-3.5" />} label="Acceptées" value={acceptedVisitsCount} color="#009E49" onClick={() => navigate('/dashboard/visits')} />}
             </div>
           </div>
 

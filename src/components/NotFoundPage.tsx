@@ -1,4 +1,4 @@
-import { Home, ArrowLeft } from 'lucide-react';
+import { Home, ArrowLeft, Landmark } from 'lucide-react';
 import { HColors, HAlpha } from '../styles/homeci-tokens';
 
 export default function NotFoundPage() {
@@ -25,7 +25,7 @@ export default function NotFoundPage() {
         {/* Elephant icon */}
         <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
           style={{ background: HAlpha.orange10, border: `2px solid ${HAlpha.orange25}` }}>
-          <span style={{ fontSize: '2.5rem' }}>🐘</span>
+          <Landmark className="w-10 h-10" style={{ color: '#D4A017' }} />
         </div>
 
         <h1 className="text-2xl font-bold mb-3"

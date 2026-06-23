@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import {
   Users, Home, FileCheck, TrendingUp,
-  Activity, UserCog, Award, Flag, Star, CalendarCheck,
+  Activity, Award, Flag, Star, CalendarCheck,
   UserSearch, FileText, Megaphone, Shield, FileDown, BarChart3,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Crown, Landmark,
 } from 'lucide-react';
 import { KenteLine } from '../ui/KenteLine';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
@@ -18,22 +18,22 @@ interface AdminSidebarProps {
 }
 
 const TABS = [
-  { id: 'overview', icon: TrendingUp, label: 'Vue d\'ensemble', emoji: '📊' },
-  { id: 'users', icon: Users, label: 'Utilisateurs', emoji: '👥' },
-  { id: 'notaires', icon: Award, label: 'Codes Notaires', emoji: '🏛' },
-  { id: 'user-search', icon: UserSearch, label: 'Recherche', emoji: '🔍' },
-  { id: 'properties', icon: Home, label: 'Biens', emoji: '🏠' },
-  { id: 'verification', icon: FileCheck, label: 'Modération', emoji: '✅' },
-  { id: 'reports', icon: Flag, label: 'Signalements', emoji: '🚩' },
-  { id: 'visits', icon: CalendarCheck, label: 'Visites', emoji: '📅' },
-  { id: 'surveys', icon: Star, label: 'Satisfaction', emoji: '⭐' },
-  { id: 'cgv', icon: FileText, label: 'Docs Légaux', emoji: '📜' },
-  { id: 'ads', icon: Megaphone, label: 'Publicités', emoji: '📢' },
-  { id: 'security', icon: Activity, label: 'Sécurité', emoji: '🔐' },
-  { id: 'admin-management', icon: UserCog, label: 'Admins', emoji: '👑' },
-  { id: 'audit', icon: Shield, label: 'Journal d\'Audit', emoji: '📋' },
-  { id: 'exports', icon: FileDown, label: 'Exports', emoji: '💾' },
-  { id: 'analytics', icon: BarChart3, label: 'Analytics', emoji: '📈' },
+  { id: 'overview', icon: TrendingUp, label: 'Vue d\'ensemble' },
+  { id: 'users', icon: Users, label: 'Utilisateurs' },
+  { id: 'notaires', icon: Award, label: 'Codes Notaires' },
+  { id: 'user-search', icon: UserSearch, label: 'Recherche' },
+  { id: 'properties', icon: Home, label: 'Biens' },
+  { id: 'verification', icon: FileCheck, label: 'Modération' },
+  { id: 'reports', icon: Flag, label: 'Signalements' },
+  { id: 'visits', icon: CalendarCheck, label: 'Visites' },
+  { id: 'surveys', icon: Star, label: 'Satisfaction' },
+  { id: 'cgv', icon: FileText, label: 'Docs Légaux' },
+  { id: 'ads', icon: Megaphone, label: 'Publicités' },
+  { id: 'security', icon: Activity, label: 'Sécurité' },
+  { id: 'admin-management', icon: Crown, label: 'Admins' },
+  { id: 'audit', icon: Shield, label: 'Journal d\'Audit' },
+  { id: 'exports', icon: FileDown, label: 'Exports' },
+  { id: 'analytics', icon: BarChart3, label: 'Analytics' },
 ] as const;
 
 function getTabCount(id: string, stats: AdminStats): number | undefined {
@@ -65,7 +65,7 @@ export default function AdminSidebar({ activeTab, setActiveTab, stats, adminName
           className="w-[34px] h-[34px] rounded-[10px] flex items-center justify-center shrink-0"
           style={{ background: HAlpha.gold10, border: `1px solid ${HAlpha.gold25}` }}
         >
-          <span style={{ fontSize: 18 }}>🐘</span>
+          <Landmark className="w-5 h-5" style={{ color: HColors.gold }} />
         </div>
         {!collapsed && (
           <div className="min-w-0">
@@ -98,7 +98,7 @@ export default function AdminSidebar({ activeTab, setActiveTab, stats, adminName
               }}
               title={collapsed ? tab.label : undefined}
             >
-              <span style={{ fontSize: 15, flexShrink: 0 }}>{tab.emoji}</span>
+              <tab.icon className="w-4 h-4 shrink-0" style={{ color: isActive ? HColors.gold : 'rgba(245,230,200,0.45)' }} />
               {!collapsed && (
                 <>
                   <span style={{
@@ -140,7 +140,7 @@ export default function AdminSidebar({ activeTab, setActiveTab, stats, adminName
             className="w-7 h-7 rounded-[7px] flex items-center justify-center shrink-0"
             style={{ background: HAlpha.bord15, border: `1px solid ${HAlpha.bord25}` }}
           >
-            <span style={{ fontSize: 12 }}>👑</span>
+            <Crown className="w-3.5 h-3.5" style={{ color: HColors.gold }} />
           </div>
           {!collapsed && (
             <div className="min-w-0">

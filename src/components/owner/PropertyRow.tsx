@@ -69,7 +69,7 @@ export default function PropertyRow({
               {property.boosted && (
                 <span className="inline-flex items-center shrink-0"
                   style={{ padding: '1px 6px', borderRadius: 99, fontSize: 9, fontWeight: 900, background: 'rgba(212,160,23,0.12)', color: '#D4A017', border: '1px solid rgba(212,160,23,0.25)', letterSpacing: '0.04em' }}>
-                  ⚡ BOOST
+                  <Zap className="w-3 h-3 inline" /> BOOST
                 </span>
               )}
             </p>

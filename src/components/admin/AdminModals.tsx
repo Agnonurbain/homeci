@@ -1,5 +1,5 @@
 import React from 'react';
-import { XCircle } from 'lucide-react';
+import { XCircle, Mail, Phone, Building2, User, ShieldCheck, CalendarDays } from 'lucide-react';
 import { HColors, HAlpha } from '../../styles/homeci-tokens';
 import { useEscapeClose } from '../../hooks/useEscapeClose';
 import { TYPE_LABELS, ROLE_CFG } from '../../constants/labels';
@@ -47,12 +47,12 @@ export const UserDetailModal: React.FC<UserModalProps> = ({ user, onClose }) => 
 
           <div className="space-y-2">
             {[
-              { label: 'Email', value: user.email, icon: '✉' },
-              { label: 'Téléphone', value: user.phone || '—', icon: '📞' },
-              { label: 'Entreprise', value: user.company_name || '—', icon: '🏢' },
-              { label: 'Statut', value: user.suspended ? 'Suspendu' : 'Actif', icon: '👤' },
-              { label: 'Vérifié', value: user.verified ? 'Oui ✓' : 'Non', icon: '🔒' },
-              { label: 'Inscrit le', value: new Date(user.created_at).toLocaleDateString('fr-FR'), icon: '📅' },
+              { label: 'Email', value: user.email, icon: <Mail className="w-3.5 h-3.5" /> },
+              { label: 'Téléphone', value: user.phone || '—', icon: <Phone className="w-3.5 h-3.5" /> },
+              { label: 'Entreprise', value: user.company_name || '—', icon: <Building2 className="w-3.5 h-3.5" /> },
+              { label: 'Statut', value: user.suspended ? 'Suspendu' : 'Actif', icon: <User className="w-3.5 h-3.5" /> },
+              { label: 'Vérifié', value: user.verified ? 'Oui' : 'Non', icon: <ShieldCheck className="w-3.5 h-3.5" /> },
+              { label: 'Inscrit le', value: new Date(user.created_at).toLocaleDateString('fr-FR'), icon: <CalendarDays className="w-3.5 h-3.5" /> },
             ].map(({ label, value, icon }) => (
               <div key={label} className="flex items-center justify-between gap-3 py-2.5 px-3 rounded-xl"
                 style={{ background: HColors.creamBg, border: `1px solid ${HAlpha.gold10}` }}>

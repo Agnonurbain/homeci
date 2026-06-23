@@ -16,7 +16,7 @@ interface MoMoProvider {
   color: string;
   bg: string;
   prefix: string;
-  logo: string; // emoji/text logo
+  logo: string;
 }
 
 const PROVIDERS: MoMoProvider[] = [
